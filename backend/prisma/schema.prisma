@@ -161,9 +161,10 @@ enum UserRole {
 
 model User {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
+  upn       String   @unique
   password  String
   role      UserRole
+  approved  Boolean  @default(false)
   studentId Int?     @unique
   student   Student? @relation(fields: [studentId], references: [id])
   createdAt DateTime @default(now())

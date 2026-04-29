@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from './auth.dto';
-import { AuthGuard } from './auth.guard';
+import { LoginDto, RegisterDto, ApproveStudentDto } from './auth.dto';
+import { AuthGuard, TeacherGuard } from './auth.guard';
 import { Request } from 'express';
 
 @Controller('auth')
@@ -13,6 +13,14 @@ export class AuthController {
 
   @Post('register')
   register(@Body() dto: RegisterDto) { return this.authService.register(dto); }
+
+  @Get('pending-students')
+  @UseGuards(TeacherGuard)
+  pendingStudents() { return this.authService.listPendingStudents(); }
+
+  @Post('approve-student')
+  @UseGuards(TeacherGuard)
+  approveStudent(@Body() dto: ApproveStudentDto) { return this.authService.approveStudent(dto); }
 
   @Get('me')
   @UseGuards(AuthGuard)

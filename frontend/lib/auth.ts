@@ -2,7 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export interface AuthUser {
   id: number;
-  email: string;
+  upn: string;
   role: 'TEACHER' | 'STUDENT';
   studentId?: number;
 }
@@ -33,29 +33,24 @@ export function authHeaders(): HeadersInit {
   return token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
 }
 
-export async function login(email: string, password: string) {
+export async function login(upn: string, password: string) {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ upn, password }),
   });
-  if (!res.ok) throw new Error('Invalid credentials');
+  if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
   setAuth(data.token, data.user);
   return data.user as AuthUser;
 }
 
-export async function register(email: string, password: string, role: 'TEACHER' | 'STUDENT', studentId?: number) {
+export async function register(upn: string, password: string): Promise<{ pending: true }> {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, role, studentId }),
+    body: JSON.stringify({ upn, password }),
   });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err);
-  }
-  const data = await res.json();
-  setAuth(data.token, data.user);
-  return data.user as AuthUser;
+  if (!res.ok) throw new Error(await res.text());
+  return { pending: true };
 }

@@ -1,7 +1,9 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { QuizService } from './quiz.service';
 import { SubmitAnswerDto } from './quiz.dto';
+import { AuthGuard } from '../auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('phonics')
 export class QuizController {
   constructor(private readonly quizService: QuizService) {}

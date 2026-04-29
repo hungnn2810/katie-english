@@ -1,3 +1,5 @@
+import { authHeaders } from './auth';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export interface PhonemeData {
@@ -18,7 +20,9 @@ export interface SubmitResult {
 }
 
 export async function fetchRandomWord(level = 1): Promise<WordData> {
-  const res = await fetch(`${API_URL}/phonics/words/random?level=${level}`);
+  const res = await fetch(`${API_URL}/phonics/words/random?level=${level}`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error('Failed to fetch word');
   return res.json();
 }
@@ -29,7 +33,7 @@ export async function submitAnswer(
 ): Promise<SubmitResult> {
   const res = await fetch(`${API_URL}/phonics/submit`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...authHeaders() },
     body: JSON.stringify({ wordId, selectedPhonemes }),
   });
   if (!res.ok) throw new Error('Failed to submit answer');

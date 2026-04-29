@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login } from '@/lib/auth';
+import { login, register } from '@/lib/auth';
 
 type Role = 'TEACHER' | 'STUDENT';
 
@@ -11,16 +11,30 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(''); setLoading(true);
+    setError(''); setNotice(''); setLoading(true);
     try {
-      const user = await login(email, password);
-      router.push(user.role === 'TEACHER' ? '/teacher' : '/student');
-    } catch {
-      setError('Invalid email or password');
+      if (mode === 'register') {
+        const result = await register(email, password, role ?? 'STUDENT');
+        if (result.pending) {
+          setNotice('Account created. A teacher must approve your account before you can sign in.');
+          setMode('login');
+          setPassword('');
+          return;
+        }
+        router.push(result.user.role === 'TEACHER' ? '/teacher' : '/game');
+      } else {
+        const user = await login(email, password);
+        router.push(user.role === 'TEACHER' ? '/teacher' : '/game');
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '';
+      setError(message || (mode === 'register' ? 'Registration failed' : 'Invalid email or password'));
     } finally { setLoading(false); }
   }
 
@@ -59,7 +73,7 @@ export default function LoginPage() {
               <p className="text-gray-500 mb-10">Who are you logging in as?</p>
               <div className="grid grid-cols-2 gap-4">
                 <button
-                  onClick={() => setRole('TEACHER')}
+                  onClick={() => { setRole('TEACHER'); setMode('login'); }}
                   className="group flex flex-col items-center gap-4 p-8 bg-white rounded-2xl border-2 border-gray-200 hover:border-indigo-500 hover:shadow-lg transition-all"
                 >
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform"
@@ -72,7 +86,7 @@ export default function LoginPage() {
                   </div>
                 </button>
                 <button
-                  onClick={() => setRole('STUDENT')}
+                  onClick={() => { setRole('STUDENT'); setMode('login'); }}
                   className="group flex flex-col items-center gap-4 p-8 bg-white rounded-2xl border-2 border-gray-200 hover:border-yellow-400 hover:shadow-lg transition-all"
                 >
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform"
@@ -102,7 +116,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-600 mb-1">Email</label>
                   <input
@@ -125,6 +139,9 @@ export default function LoginPage() {
                     required
                   />
                 </div>
+                {notice && (
+                  <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm">{notice}</div>
+                )}
                 {error && (
                   <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">{error}</div>
                 )}
@@ -134,8 +151,17 @@ export default function LoginPage() {
                   className="w-full py-3 rounded-xl text-white font-bold text-sm transition-all disabled:opacity-60"
                   style={{ background: role === 'TEACHER' ? 'linear-gradient(135deg, #667eea, #764ba2)' : 'linear-gradient(135deg, #f093fb, #f5576c)' }}
                 >
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? (mode === 'register' ? 'Creating account...' : 'Signing in...') : (mode === 'register' ? 'Create Account' : 'Sign In')}
                 </button>
+                {role === 'STUDENT' && (
+                  <button
+                    type="button"
+                    onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                    className="w-full text-sm text-gray-400 hover:text-gray-600"
+                  >
+                    {mode === 'login' ? 'Create a student account' : 'Back to sign in'}
+                  </button>
+                )}
               </form>
             </div>
           )}

@@ -1,91 +1,152 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { getStudents, getAvailableHomework, startSession, Student, HomeworkItem } from '@/lib/admin-api';
+import AuthGate from '@/components/AuthGate';
+import { getAvailableHomework, startSession, HomeworkItem } from '@/lib/admin-api';
+import { AuthUser, clearAuth } from '@/lib/auth';
 
-export default function HomeworkSelectPage() {
+const CARD_GRADIENTS = [
+  { from: '#667eea', to: '#764ba2' },
+  { from: '#f093fb', to: '#f5576c' },
+  { from: '#4facfe', to: '#00f2fe' },
+  { from: '#43e97b', to: '#38f9d7' },
+  { from: '#fa709a', to: '#fee140' },
+  { from: '#a18cd1', to: '#fbc2eb' },
+];
+
+function PageContent({ user }: { user: AuthUser }) {
   const router = useRouter();
-  const [students, setStudents] = useState<Student[]>([]);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [homework, setHomework] = useState<HomeworkItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState<number | null>(null);
   const [error, setError] = useState('');
 
-  useEffect(() => { getStudents().then(setStudents).catch(() => {}); }, []);
+  useEffect(() => {
+    if (!user.studentId) { setLoading(false); return; }
+    getAvailableHomework(user.studentId)
+      .then(setHomework)
+      .catch(() => setError('Failed to load homework'))
+      .finally(() => setLoading(false));
+  }, [user.studentId]);
 
-  async function handleStudentSelect(id: number) {
-    const s = students.find((x) => x.id === id) ?? null;
-    setSelectedStudent(s);
-    setHomework([]);
-    if (!id) return;
-    setLoading(true);
+  async function handleStart(homeworkId: number) {
+    if (!user.studentId) return;
+    setStarting(homeworkId); setError('');
     try {
-      const hw = await getAvailableHomework(id);
-      setHomework(hw);
-    } catch {
-      setError('Failed to load homework');
-    } finally { setLoading(false); }
-  }
-
-  async function handleStartHomework(homeworkId: number) {
-    if (!selectedStudent) return;
-    setLoading(true); setError('');
-    try {
-      const session = await startSession(selectedStudent.id, homeworkId);
+      const session = await startSession(user.studentId, homeworkId);
       router.push(`/game/session/${session.id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to start');
-      setLoading(false);
+      setStarting(null);
     }
   }
 
   return (
-    <main className="max-w-xl mx-auto p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-blue-600">Homework</h1>
-        <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">← Home</Link>
-      </div>
-
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-600 mb-2">Who are you?</label>
-        <select
-          className="w-full border rounded-xl px-4 py-3 text-sm"
-          onChange={(e) => handleStudentSelect(Number(e.target.value))}
-          defaultValue=""
-        >
-          <option value="">Select your name...</option>
-          {students.map((s) => <option key={s.id} value={s.id}>{s.fullname}</option>)}
-        </select>
-      </div>
-
-      {loading && <p className="text-gray-400 text-sm text-center py-4">Loading...</p>}
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-
-      {selectedStudent && !loading && (
-        <div>
-          {homework.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-8">No available homework right now.</p>
-          ) : (
-            <div className="space-y-3">
-              {homework.map((h) => (
-                <button
-                  key={h.id}
-                  onClick={() => handleStartHomework(h.id)}
-                  className="w-full text-left bg-white border border-gray-200 rounded-xl px-5 py-4 hover:border-blue-400 hover:shadow transition"
-                >
-                  <div className="font-medium text-gray-800">
-                    {h.words.map((w) => w.word.text).join(', ')}
-                  </div>
-                  <div className="text-sm text-gray-400 mt-1">
-                    {h.timeInSeconds}s per word · Due {new Date(h.closedDatetime).toLocaleString()}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%)', minWidth: 1024 }}>
+      {/* Header */}
+      <header className="px-10 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+            <span className="text-indigo-700 font-black text-lg">K</span>
+          </div>
+          <span className="text-white text-xl font-bold">Katie English</span>
         </div>
-      )}
-    </main>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #f093fb, #f5576c)' }}>
+              {user.email[0].toUpperCase()}
+            </div>
+            <span className="text-indigo-200 text-sm">{user.email}</span>
+          </div>
+          <button onClick={() => { clearAuth(); router.push('/login'); }}
+            className="text-indigo-300 hover:text-white text-sm transition-colors">
+            Sign out
+          </button>
+        </div>
+      </header>
+
+      {/* Main */}
+      <main className="px-10 py-6">
+        <div className="mb-8">
+          <h1 className="text-4xl font-black text-white mb-2">My Homework</h1>
+          <p className="text-indigo-300">Choose an assignment to start practicing</p>
+        </div>
+
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-10 h-10 border-4 border-indigo-300 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
+        {!user.studentId && !loading && (
+          <div className="bg-white bg-opacity-10 rounded-2xl p-8 text-center max-w-md mx-auto">
+            <div className="text-5xl mb-4">🎓</div>
+            <h2 className="text-white font-bold text-xl mb-2">Account not linked</h2>
+            <p className="text-indigo-300 text-sm">Your account hasn't been linked to a student profile yet. Please ask your teacher.</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-500 bg-opacity-20 border border-red-400 rounded-2xl px-6 py-4 text-red-200 text-sm mb-6">{error}</div>
+        )}
+
+        {!loading && user.studentId && homework.length === 0 && !error && (
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">📚</div>
+            <p className="text-indigo-200 text-lg font-semibold">No homework right now!</p>
+            <p className="text-indigo-400 text-sm mt-1">Check back later when your teacher assigns something.</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-6">
+          {homework.map((h, i) => {
+            const g = CARD_GRADIENTS[i % CARD_GRADIENTS.length];
+            const wordList = h.words.map((w) => w.word.text);
+            const dueDate = new Date(h.closedDatetime);
+            const daysLeft = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
+            return (
+              <div key={h.id} className="rounded-2xl overflow-hidden shadow-xl hover:scale-105 transition-transform cursor-pointer"
+                onClick={() => handleStart(h.id)}
+                style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}>
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="text-4xl">📝</div>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${daysLeft <= 1 ? 'bg-red-500 text-white' : 'bg-white bg-opacity-20 text-white'}`}>
+                      {daysLeft <= 0 ? 'Due today' : daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
+                    </span>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="text-white font-bold text-sm mb-2 opacity-80">WORDS TO PRACTICE</div>
+                    <div className="flex flex-wrap gap-1">
+                      {wordList.slice(0, 5).map((w) => (
+                        <span key={w} className="bg-white bg-opacity-20 text-white text-sm px-3 py-1 rounded-lg font-semibold">{w}</span>
+                      ))}
+                      {wordList.length > 5 && (
+                        <span className="bg-white bg-opacity-10 text-white text-sm px-3 py-1 rounded-lg">+{wordList.length - 5}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-white text-opacity-80 text-xs">{h.timeInSeconds}s per word</div>
+                    <button
+                      disabled={starting === h.id}
+                      className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold text-sm px-5 py-2 rounded-xl transition-all disabled:opacity-60">
+                      {starting === h.id ? 'Starting...' : 'Start →'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+    </div>
   );
+}
+
+export default function HomeworkSelectPage() {
+  return <AuthGate requiredRole="STUDENT">{(user) => <PageContent user={user} />}</AuthGate>;
 }

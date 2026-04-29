@@ -10,6 +10,8 @@ export class CreateStudentDto {
   dateOfBirth: string;
   classId?: number;
   parents: CreateParentDto[];
+  upn: string;
+  password: string;
 }
 
 export class UpdateStudentDto {

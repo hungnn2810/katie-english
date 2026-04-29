@@ -11,6 +11,21 @@ async function req<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+// Approvals
+export interface PendingStudent {
+  id: number;
+  email: string;
+  createdAt: string;
+  studentId?: number | null;
+}
+
+export const getPendingStudents = () => req<PendingStudent[]>('/auth/pending-students');
+export const approveStudent = (userId: number) =>
+  req<{ approved: true }>('/auth/approve-student', {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  });
+
 // Classes
 export const getClasses = () => req<ClassItem[]>('/classes');
 export const getClass = (id: number) => req<ClassDetail>(`/classes/${id}`);

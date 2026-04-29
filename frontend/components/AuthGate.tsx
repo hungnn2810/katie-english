@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { getUser, AuthUser } from '@/lib/auth';
 
 interface Props {
-  requiredRole: 'TEACHER' | 'STUDENT';
+  requiredRole?: 'TEACHER' | 'STUDENT';
   children: (user: AuthUser) => React.ReactNode;
 }
 
@@ -15,7 +15,10 @@ export default function AuthGate({ requiredRole, children }: Props) {
   useEffect(() => {
     const u = getUser();
     if (!u) { router.replace('/login'); return; }
-    if (u.role !== requiredRole) { router.replace(u.role === 'TEACHER' ? '/teacher' : '/student'); return; }
+    if (requiredRole && u.role !== requiredRole) {
+      router.replace(u.role === 'TEACHER' ? '/teacher' : '/game/homework');
+      return;
+    }
     setUser(u);
   }, []);
 

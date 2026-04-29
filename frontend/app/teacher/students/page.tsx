@@ -1,23 +1,23 @@
 'use client';
 import { useEffect, useState } from 'react';
-import AuthGate from '@/components/AuthGate';
-import TeacherShell from '@/components/TeacherShell';
-import { getStudents, createStudent, deleteStudent, getClasses, Student, ClassItem, CreateStudentInput } from '@/lib/admin-api';
-import { AuthUser } from '@/lib/auth';
+import { getStudents, createStudent, deleteStudent, getClasses, Student, ClassItem, CreateStudentInput, getPendingStudents, approveStudent, PendingStudent } from '@/lib/admin-api';
 
 const emptyParent = { name: '', phoneNumber: '', type: 'FATHER' as const };
 const emptyForm = (): CreateStudentInput => ({ fullname: '', sex: 'MALE', dateOfBirth: '', classId: undefined, parents: [{ ...emptyParent }] });
 
-function PageContent({ user }: { user: AuthUser }) {
+export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [pending, setPending] = useState<PendingStudent[]>([]);
   const [form, setForm] = useState(emptyForm());
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
+  const [pendingError, setPendingError] = useState('');
 
   const load = () => getStudents().then(setStudents).catch(() => {});
-  useEffect(() => { load(); getClasses().then(setClasses); }, []);
+  const loadPending = () => getPendingStudents().then(setPending).catch((e: unknown) => setPendingError(e instanceof Error ? e.message : 'Failed'));
+  useEffect(() => { load(); getClasses().then(setClasses); loadPending(); }, []);
 
   function setParent(i: number, k: string, v: string) {
     setForm((f) => { const p = [...f.parents]; p[i] = { ...p[i], [k]: v }; return { ...f, parents: p }; });
@@ -34,7 +34,7 @@ function PageContent({ user }: { user: AuthUser }) {
   const filtered = students.filter((s) => s.fullname.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <TeacherShell user={user} title="Students" subtitle={`${students.length} students enrolled`}>
+    <>
       <div className="flex items-center gap-4 mb-6">
         <div className="flex-1 relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -46,6 +46,35 @@ function PageContent({ user }: { user: AuthUser }) {
           {showForm ? 'Cancel' : '+ Add Student'}
         </button>
       </div>
+
+      {(pending.length > 0 || pendingError) && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-amber-800">Pending Approvals ({pending.length})</h3>
+            <button onClick={loadPending} className="text-xs text-amber-600 hover:text-amber-800">Refresh</button>
+          </div>
+          {pendingError && <p className="text-red-500 text-sm mb-2">{pendingError}</p>}
+          <div className="space-y-2">
+            {pending.map((p) => (
+              <div key={p.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-amber-100">
+                <div>
+                  <div className="font-semibold text-gray-800 text-sm">{p.email}</div>
+                  <div className="text-xs text-gray-400">Requested {new Date(p.createdAt).toLocaleString()}</div>
+                </div>
+                <button
+                  onClick={async () => {
+                    try { await approveStudent(p.id); loadPending(); load(); }
+                    catch (e: unknown) { setPendingError(e instanceof Error ? e.message : 'Failed'); }
+                  }}
+                  className="px-4 py-1.5 rounded-lg text-xs font-bold text-white"
+                  style={{ background: 'linear-gradient(135deg, #43e97b, #38f9d7)' }}>
+                  Approve
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
@@ -157,10 +186,6 @@ function PageContent({ user }: { user: AuthUser }) {
           </tbody>
         </table>
       </div>
-    </TeacherShell>
+    </>
   );
-}
-
-export default function StudentsPage() {
-  return <AuthGate requiredRole="TEACHER">{(user) => <PageContent user={user} />}</AuthGate>;
 }

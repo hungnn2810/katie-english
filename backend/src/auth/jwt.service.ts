@@ -5,7 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET ?? 'katie-secret-2024';
 
 export interface JwtPayload {
   sub: number;
-  email: string;
+  upn: string;
   role: 'TEACHER' | 'STUDENT';
   studentId?: number;
 }

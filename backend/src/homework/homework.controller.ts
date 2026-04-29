@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { HomeworkService } from './homework.service';
 import { CreateHomeworkDto, UpdateHomeworkDto } from './homework.dto';
+import { AuthGuard } from '../auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('homework')
 export class HomeworkController {
   constructor(private readonly service: HomeworkService) {}

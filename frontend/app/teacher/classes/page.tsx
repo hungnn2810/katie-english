@@ -1,9 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import AuthGate from '@/components/AuthGate';
-import TeacherShell from '@/components/TeacherShell';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus } from '@/lib/admin-api';
-import { AuthUser } from '@/lib/auth';
 
 const STATUS_CONFIG: Record<ClassStatus, { label: string; color: string; bg: string }> = {
   PENDING:    { label: 'Pending',     color: '#d97706', bg: '#fef3c7' },
@@ -13,7 +10,7 @@ const STATUS_CONFIG: Record<ClassStatus, { label: string; color: string; bg: str
 
 const empty = { name: '', code: '', startDate: '', endDate: '', status: 'PENDING' as ClassStatus };
 
-function PageContent({ user }: { user: AuthUser }) {
+export default function ClassesPage() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState<number | null>(null);
@@ -41,7 +38,7 @@ function PageContent({ user }: { user: AuthUser }) {
   }
 
   return (
-    <TeacherShell user={user} title="Classes" subtitle={`${classes.length} class${classes.length !== 1 ? 'es' : ''} total`}>
+    <>
       <div className="flex justify-end mb-6">
         <button onClick={() => { setShowForm(!showForm); setEditing(null); setForm(empty); }}
           className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all"
@@ -121,10 +118,6 @@ function PageContent({ user }: { user: AuthUser }) {
           );
         })}
       </div>
-    </TeacherShell>
+    </>
   );
-}
-
-export default function ClassesPage() {
-  return <AuthGate requiredRole="TEACHER">{(user) => <PageContent user={user} />}</AuthGate>;
 }

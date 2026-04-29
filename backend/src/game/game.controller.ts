@@ -1,11 +1,13 @@
 import {
   Controller, Get, Post, Param, Body, ParseIntPipe,
-  UseInterceptors, UploadedFile,
+  UseInterceptors, UploadedFile, UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GameService } from './game.service';
 import { StartSessionDto, SaveWordResultDto } from './game.dto';
+import { AuthGuard } from '../auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('game')
 export class GameController {
   constructor(private readonly service: GameService) {}

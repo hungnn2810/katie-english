@@ -1,11 +1,19 @@
 export class LoginDto {
-  email: string;
+  upn: string;
   password: string;
 }
 
 export class RegisterDto {
-  email: string;
+  upn: string;
   password: string;
-  role: 'TEACHER' | 'STUDENT';
+}
+
+export class ApproveStudentDto {
+  userId: number;
   studentId?: number;
+  fullname?: string;
+  sex?: 'MALE' | 'FEMALE';
+  dateOfBirth?: string;
+  classId?: number;
+  parents?: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
 }

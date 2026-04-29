@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import AuthGate from '@/components/AuthGate';
+import { authHeaders } from '@/lib/auth';
 import { saveWordResult, completeSession, GameSession } from '@/lib/admin-api';
 
 type WordState = 'waiting' | 'recording' | 'done';
@@ -17,7 +19,9 @@ interface WordEntry {
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 async function fetchSession(id: number): Promise<GameSession> {
-  const res = await fetch(`${API_URL}/game/session/${id}`);
+  const res = await fetch(`${API_URL}/game/session/${id}`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error('Session not found');
   return res.json();
 }
@@ -190,95 +194,121 @@ export default function SessionPage() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
   }, [stopTimer, stopSpeech]);
 
-  if (pageState === 'loading') return <main className="p-8 text-center text-gray-400">Loading session...</main>;
-  if (pageState === 'error') return <main className="p-8 text-center text-red-500">Session not found.</main>;
-  if (pageState === 'uploading') return <main className="p-8 text-center text-gray-400">Saving your results...</main>;
+  if (pageState === 'loading') {
+    return (
+      <AuthGate requiredRole="STUDENT">
+        {() => <main className="p-8 text-center text-gray-400">Loading session...</main>}
+      </AuthGate>
+    );
+  }
+  if (pageState === 'error') {
+    return (
+      <AuthGate requiredRole="STUDENT">
+        {() => <main className="p-8 text-center text-red-500">Session not found.</main>}
+      </AuthGate>
+    );
+  }
+  if (pageState === 'uploading') {
+    return (
+      <AuthGate requiredRole="STUDENT">
+        {() => <main className="p-8 text-center text-gray-400">Saving your results...</main>}
+      </AuthGate>
+    );
+  }
 
   if (pageState === 'results') {
     const avg = words.length ? Math.round(words.reduce((s, w) => s + w.score, 0) / words.length) : 0;
     return (
-      <main className="max-w-xl mx-auto p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Results</h1>
-        <div className="text-4xl font-bold text-blue-600 mb-6">{results?.score ?? avg}%</div>
-        <div className="space-y-2 mb-8">
-          {words.map((w) => (
-            <div key={w.wordId} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-5 py-3">
-              <div>
-                <div className="font-medium text-gray-800">{w.text}</div>
-                <div className="text-sm text-gray-400">You said: &quot;{w.transcribed || '—'}&quot;</div>
-              </div>
-              <div className={`text-lg font-bold ${w.score >= 80 ? 'text-green-600' : w.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>
-                {w.score}%
-              </div>
+      <AuthGate requiredRole="STUDENT">
+        {() => (
+          <main className="max-w-xl mx-auto p-8">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Results</h1>
+            <div className="text-4xl font-bold text-blue-600 mb-6">{results?.score ?? avg}%</div>
+            <div className="space-y-2 mb-8">
+              {words.map((w) => (
+                <div key={w.wordId} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-5 py-3">
+                  <div>
+                    <div className="font-medium text-gray-800">{w.text}</div>
+                    <div className="text-sm text-gray-400">You said: &quot;{w.transcribed || '—'}&quot;</div>
+                  </div>
+                  <div className={`text-lg font-bold ${w.score >= 80 ? 'text-green-600' : w.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>
+                    {w.score}%
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <button onClick={() => router.push('/game/homework')} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700">
-          Done
-        </button>
-      </main>
+            <button onClick={() => router.push('/game/homework')} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700">
+              Done
+            </button>
+          </main>
+        )}
+      </AuthGate>
     );
   }
 
   const current = words[currentIndex];
 
   return (
-    <main className="max-w-xl mx-auto p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-gray-800">
-          Word {currentIndex + 1} / {words.length}
-        </h1>
-        {pageState === 'playing' && (
-          <div className={`text-2xl font-bold tabular-nums ${timeLeft <= 5 ? 'text-red-500' : 'text-blue-600'}`}>
-            {timeLeft}s
+    <AuthGate requiredRole="STUDENT">
+      {() => (
+        <main className="max-w-xl mx-auto p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-bold text-gray-800">
+              Word {currentIndex + 1} / {words.length}
+            </h1>
+            {pageState === 'playing' && (
+              <div className={`text-2xl font-bold tabular-nums ${timeLeft <= 5 ? 'text-red-500' : 'text-blue-600'}`}>
+                {timeLeft}s
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Camera preview */}
-      <div className="relative mb-4 bg-black rounded-xl overflow-hidden aspect-video">
-        <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-        {cameraError && (
-          <div className="absolute inset-0 flex items-center justify-center text-white text-sm bg-gray-900 bg-opacity-80">
-            {cameraError}
+          {/* Camera preview */}
+          <div className="relative mb-4 bg-black rounded-xl overflow-hidden aspect-video">
+            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+            {cameraError && (
+              <div className="absolute inset-0 flex items-center justify-center text-white text-sm bg-gray-900 bg-opacity-80">
+                {cameraError}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {pageState === 'ready' && (
-        <div className="text-center py-4">
-          <p className="text-gray-500 mb-4 text-sm">
-            You have {words.length} word{words.length !== 1 ? 's' : ''} to blend. {timeInSeconds} seconds per word.
-          </p>
-          <button onClick={handleStart} className="bg-blue-600 text-white px-8 py-3 rounded-xl text-lg font-semibold hover:bg-blue-700">
-            Start
-          </button>
-        </div>
+          {pageState === 'ready' && (
+            <div className="text-center py-4">
+              <p className="text-gray-500 mb-4 text-sm">
+                You have {words.length} word{words.length !== 1 ? 's' : ''} to blend. {timeInSeconds} seconds per word.
+              </p>
+              <button onClick={handleStart} className="bg-blue-600 text-white px-8 py-3 rounded-xl text-lg font-semibold hover:bg-blue-700">
+                Start
+              </button>
+            </div>
+          )}
+
+          {pageState === 'playing' && current && (
+            <div className="text-center">
+              <div className="text-5xl font-bold text-gray-800 mb-4 tracking-wide">{current.text}</div>
+              <div className="min-h-8 mb-4 text-lg text-blue-600 italic">
+                {transcript || <span className="text-gray-300">Listening...</span>}
+              </div>
+              <button
+                onClick={handleSubmitWord}
+                className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700"
+              >
+                Submit
+              </button>
+
+              {/* Word progress */}
+              <div className="flex gap-1 justify-center mt-6">
+                {words.map((w, i) => (
+                  <div key={w.wordId} className={`h-2 flex-1 rounded-full ${
+                    w.state === 'done' ? 'bg-green-400' : i === currentIndex ? 'bg-blue-400' : 'bg-gray-200'
+                  }`} />
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
       )}
-
-      {pageState === 'playing' && current && (
-        <div className="text-center">
-          <div className="text-5xl font-bold text-gray-800 mb-4 tracking-wide">{current.text}</div>
-          <div className="min-h-8 mb-4 text-lg text-blue-600 italic">
-            {transcript || <span className="text-gray-300">Listening...</span>}
-          </div>
-          <button
-            onClick={handleSubmitWord}
-            className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700"
-          >
-            Submit
-          </button>
-
-          {/* Word progress */}
-          <div className="flex gap-1 justify-center mt-6">
-            {words.map((w, i) => (
-              <div key={w.wordId} className={`h-2 flex-1 rounded-full ${
-                w.state === 'done' ? 'bg-green-400' : i === currentIndex ? 'bg-blue-400' : 'bg-gray-200'
-              }`} />
-            ))}
-          </div>
-        </div>
-      )}
-    </main>
+    </AuthGate>
   );
 }
