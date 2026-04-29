@@ -1,99 +1,165 @@
+import { authHeaders } from './auth';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 async function req<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...authHeaders(), ...(options?.headers ?? {}) },
     ...options,
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
+// Classes
+export const getClasses = () => req<ClassItem[]>('/classes');
+export const getClass = (id: number) => req<ClassDetail>(`/classes/${id}`);
+export const createClass = (data: CreateClassInput) =>
+  req<ClassItem>('/classes', { method: 'POST', body: JSON.stringify(data) });
+export const updateClass = (id: number, data: Partial<CreateClassInput>) =>
+  req<ClassItem>(`/classes/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteClass = (id: number) =>
+  req<ClassItem>(`/classes/${id}`, { method: 'DELETE' });
+
 // Students
-export const getStudents = () => req<Student[]>('/students');
-export const getStudent = (id: number) => req<StudentDetail>(`/students/${id}`);
-export const createStudent = (data: { name: string; email: string }) =>
+export const getStudents = (classId?: number) =>
+  req<Student[]>(classId ? `/students?classId=${classId}` : '/students');
+export const getStudent = (id: number) => req<Student>(`/students/${id}`);
+export const createStudent = (data: CreateStudentInput) =>
   req<Student>('/students', { method: 'POST', body: JSON.stringify(data) });
-export const updateStudent = (id: number, data: { name?: string; email?: string }) =>
+export const updateStudent = (id: number, data: Partial<CreateStudentInput>) =>
   req<Student>(`/students/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteStudent = (id: number) =>
   req<Student>(`/students/${id}`, { method: 'DELETE' });
 
-// Classes
-export const getClasses = () => req<ClassItem[]>('/classes');
-export const getClass = (id: number) => req<ClassDetail>(`/classes/${id}`);
-export const createClass = (data: { name: string; description?: string }) =>
-  req<ClassItem>('/classes', { method: 'POST', body: JSON.stringify(data) });
-export const updateClass = (id: number, data: { name?: string; description?: string }) =>
-  req<ClassItem>(`/classes/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-export const deleteClass = (id: number) =>
-  req<ClassItem>(`/classes/${id}`, { method: 'DELETE' });
-export const addStudentToClass = (classId: number, studentId: number) =>
-  req(`/classes/${classId}/students/${studentId}`, { method: 'POST', body: '{}' });
-export const removeStudentFromClass = (classId: number, studentId: number) =>
-  req(`/classes/${classId}/students/${studentId}`, { method: 'DELETE' });
-export const assignHomeworkToClass = (classId: number, homeworkId: number, dueDate?: string) =>
-  req(`/classes/${classId}/homework/${homeworkId}`, {
-    method: 'POST',
-    body: JSON.stringify({ dueDate }),
-  });
-export const removeHomeworkFromClass = (classId: number, homeworkId: number) =>
-  req(`/classes/${classId}/homework/${homeworkId}`, { method: 'DELETE' });
-
-// Phonemes (read-only, for homework builder)
-export const fetchPhonemes = () =>
-  req<{ id: number; symbol: string; audioUrl: string; type: string }[]>('/phonics/phonemes');
-
 // Homework
-export const getHomeworkList = () => req<HomeworkItem[]>('/homework');
+export const getHomeworkList = (classId?: number) =>
+  req<HomeworkItem[]>(classId ? `/homework?classId=${classId}` : '/homework');
 export const getHomework = (id: number) => req<HomeworkDetail>(`/homework/${id}`);
-export const createHomework = (data: { title: string; description?: string; phonemeIds: number[] }) =>
+export const createHomework = (data: CreateHomeworkInput) =>
   req<HomeworkDetail>('/homework', { method: 'POST', body: JSON.stringify(data) });
-export const updateHomework = (id: number, data: { title?: string; description?: string; phonemeIds?: number[] }) =>
+export const updateHomework = (id: number, data: Partial<CreateHomeworkInput>) =>
   req<HomeworkDetail>(`/homework/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteHomework = (id: number) =>
   req<HomeworkItem>(`/homework/${id}`, { method: 'DELETE' });
 
-// Types
-export interface Student {
-  id: number;
-  name: string;
-  email: string;
-  createdAt: string;
+// Words (for homework builder)
+export const getWords = () =>
+  req<{ id: number; text: string; difficulty: number }[]>('/phonics/words');
+
+// Game
+export const getAvailableHomework = (studentId: number) =>
+  req<HomeworkItem[]>(`/game/homework/${studentId}`);
+export const startSession = (studentId: number, homeworkId: number) =>
+  req<GameSession>('/game/session/start', {
+    method: 'POST',
+    body: JSON.stringify({ studentId, homeworkId }),
+  });
+export const saveWordResult = (sessionId: number, wordId: number, transcribedText: string) =>
+  req<WordResult>(`/game/session/${sessionId}/word-result`, {
+    method: 'POST',
+    body: JSON.stringify({ wordId, transcribedText }),
+  });
+export async function completeSession(sessionId: number, videoBlob?: Blob) {
+  const form = new FormData();
+  if (videoBlob) form.append('recording', videoBlob, 'recording.webm');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const res = await fetch(`${API_URL}/game/session/${sessionId}/complete`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<GameSession>;
 }
 
-export interface StudentDetail extends Student {
-  classes: { class: ClassItem; joinedAt: string }[];
+// Types
+export type ClassStatus = 'PENDING' | 'INPROGRESS' | 'ENDED';
+
+export interface CreateClassInput {
+  name: string;
+  code: string;
+  startDate: string;
+  endDate: string;
+  status?: ClassStatus;
 }
 
 export interface ClassItem {
   id: number;
   name: string;
-  description?: string;
+  code: string;
+  startDate: string;
+  endDate: string;
+  status: ClassStatus;
   createdAt: string;
-  _count: { students: number; homeworks: number };
+  _count?: { students: number; homeworks: number };
 }
 
-export interface ClassDetail {
+export interface ClassDetail extends ClassItem {
+  students: Student[];
+  homeworks: HomeworkItem[];
+}
+
+export interface CreateStudentInput {
+  fullname: string;
+  sex: 'MALE' | 'FEMALE';
+  dateOfBirth: string;
+  classId?: number;
+  parents: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
+}
+
+export interface Student {
   id: number;
-  name: string;
-  description?: string;
-  students: { student: Student; joinedAt: string }[];
-  homeworks: { homework: HomeworkDetail; dueDate?: string; assignedAt: string }[];
+  fullname: string;
+  sex: 'MALE' | 'FEMALE';
+  dateOfBirth: string;
+  classId?: number;
+  class?: ClassItem;
+  parents: { id: number; name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
+  createdAt: string;
+}
+
+export interface CreateHomeworkInput {
+  dayAssigned: string;
+  closedDatetime: string;
+  timeInSeconds: number;
+  classId: number;
+  wordIds: number[];
 }
 
 export interface HomeworkItem {
   id: number;
-  title: string;
-  description?: string;
+  dayAssigned: string;
+  closedDatetime: string;
+  timeInSeconds: number;
+  classId: number;
+  class?: ClassItem;
+  words: { orderIndex: number; word: { id: number; text: string } }[];
   createdAt: string;
-  _count: { phonemes: number; classes: number };
 }
 
-export interface HomeworkDetail {
+export interface HomeworkDetail extends HomeworkItem {
+  sessions: GameSession[];
+}
+
+export interface GameSession {
   id: number;
-  title: string;
-  description?: string;
-  phonemes: { orderIndex: number; phoneme: { id: number; symbol: string; audioUrl: string; type: string } }[];
-  classes?: { class: ClassItem }[];
+  studentId: number;
+  homeworkId: number;
+  videoUrl?: string;
+  score?: number;
+  completedAt?: string;
+  startedAt: string;
+  homework?: HomeworkItem;
+  student?: Student;
+  wordResults?: WordResult[];
+}
+
+export interface WordResult {
+  id: number;
+  sessionId: number;
+  wordId: number;
+  transcribedText?: string;
+  score: number;
+  word?: { id: number; text: string };
 }

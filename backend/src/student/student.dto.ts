@@ -1,9 +1,21 @@
-export class CreateStudentDto {
+export class CreateParentDto {
   name: string;
-  email: string;
+  phoneNumber: string;
+  type: 'FATHER' | 'MOTHER';
+}
+
+export class CreateStudentDto {
+  fullname: string;
+  sex: 'MALE' | 'FEMALE';
+  dateOfBirth: string;
+  classId?: number;
+  parents: CreateParentDto[];
 }
 
 export class UpdateStudentDto {
-  name?: string;
-  email?: string;
+  fullname?: string;
+  sex?: 'MALE' | 'FEMALE';
+  dateOfBirth?: string;
+  classId?: number | null;
+  parents?: CreateParentDto[];
 }

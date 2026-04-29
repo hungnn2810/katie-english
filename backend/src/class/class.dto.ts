@@ -1,13 +1,15 @@
 export class CreateClassDto {
   name: string;
-  description?: string;
+  code: string;
+  startDate: string;
+  endDate: string;
+  status?: 'PENDING' | 'INPROGRESS' | 'ENDED';
 }
 
 export class UpdateClassDto {
   name?: string;
-  description?: string;
-}
-
-export class AssignHomeworkDto {
-  dueDate?: string;
+  code?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: 'PENDING' | 'INPROGRESS' | 'ENDED';
 }

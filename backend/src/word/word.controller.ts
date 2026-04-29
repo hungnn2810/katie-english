@@ -5,6 +5,11 @@ import { WordService } from './word.service';
 export class WordController {
   constructor(private readonly wordService: WordService) {}
 
+  @Get()
+  findAll() {
+    return this.wordService.findAll();
+  }
+
   @Get('random')
   getRandom(
     @Query('level', new DefaultValuePipe(1), ParseIntPipe) level: number,

@@ -7,107 +7,166 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ClassStatus {
+  PENDING
+  INPROGRESS
+  ENDED
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
+
+enum ParentType {
+  FATHER
+  MOTHER
+}
+
 model Phoneme {
-  id               Int               @id @default(autoincrement())
-  symbol           String            @unique
-  audioUrl         String
-  type             String
-  wordPhonemes     WordPhoneme[]
-  homeworkPhonemes HomeworkPhoneme[]
+  id           Int           @id @default(autoincrement())
+  symbol       String        @unique
+  audioUrl     String
+  type         String
+  wordPhonemes WordPhoneme[]
 
   @@map("phonemes")
 }
 
-model Student {
-  id        Int            @id @default(autoincrement())
-  name      String
-  email     String         @unique
-  classes   StudentClass[]
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-
-  @@map("students")
-}
-
-model Class {
-  id          Int             @id @default(autoincrement())
-  name        String
-  description String?
-  students    StudentClass[]
-  homeworks   ClassHomework[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-
-  @@map("classes")
-}
-
-model StudentClass {
-  id        Int      @id @default(autoincrement())
-  studentId Int
-  classId   Int
-  joinedAt  DateTime @default(now())
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, classId])
-  @@map("student_classes")
-}
-
-model Homework {
-  id          Int               @id @default(autoincrement())
-  title       String
-  description String?
-  phonemes    HomeworkPhoneme[]
-  classes     ClassHomework[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  @@map("homeworks")
-}
-
-model HomeworkPhoneme {
-  id         Int      @id @default(autoincrement())
-  homeworkId Int
-  phonemeId  Int
-  orderIndex Int
-  homework   Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
-  phoneme    Phoneme  @relation(fields: [phonemeId], references: [id], onDelete: Cascade)
-
-  @@unique([homeworkId, orderIndex])
-  @@map("homework_phonemes")
-}
-
-model ClassHomework {
-  id         Int       @id @default(autoincrement())
-  classId    Int
-  homeworkId Int
-  dueDate    DateTime?
-  assignedAt DateTime  @default(now())
-  class      Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
-  homework   Homework  @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
-
-  @@unique([classId, homeworkId])
-  @@map("class_homeworks")
-}
-
 model Word {
-  id            Int            @id @default(autoincrement())
-  text          String         @unique
+  id            Int                  @id @default(autoincrement())
+  text          String               @unique
   audioUrl      String
-  difficulty    Int            @default(1)
+  difficulty    Int                  @default(1)
   wordPhonemes  WordPhoneme[]
+  homeworkWords HomeworkWord[]
+  wordResults   HomeworkWordResult[]
 
   @@map("words")
 }
 
 model WordPhoneme {
-  id          Int     @id @default(autoincrement())
-  wordId      Int
-  phonemeId   Int
-  orderIndex  Int
-  word        Word    @relation(fields: [wordId], references: [id], onDelete: Cascade)
-  phoneme     Phoneme @relation(fields: [phonemeId], references: [id], onDelete: Cascade)
+  id         Int     @id @default(autoincrement())
+  wordId     Int
+  phonemeId  Int
+  orderIndex Int
+  word       Word    @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  phoneme    Phoneme @relation(fields: [phonemeId], references: [id], onDelete: Cascade)
 
   @@unique([wordId, orderIndex])
   @@map("word_phonemes")
+}
+
+model Class {
+  id        Int         @id @default(autoincrement())
+  name      String
+  code      String      @unique
+  startDate DateTime
+  endDate   DateTime
+  status    ClassStatus @default(PENDING)
+  students  Student[]
+  homeworks Homework[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("classes")
+}
+
+model Student {
+  id          Int               @id @default(autoincrement())
+  fullname    String
+  sex         Sex
+  dateOfBirth DateTime
+  classId     Int?
+  class       Class?            @relation(fields: [classId], references: [id])
+  parents     ParentInfo[]
+  sessions    HomeworkSession[]
+  user        User?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("students")
+}
+
+model ParentInfo {
+  id          Int        @id @default(autoincrement())
+  name        String
+  phoneNumber String
+  type        ParentType
+  studentId   Int
+  student     Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("parent_infos")
+}
+
+model Homework {
+  id             Int               @id @default(autoincrement())
+  dayAssigned    DateTime
+  closedDatetime DateTime
+  timeInSeconds  Int
+  classId        Int
+  class          Class             @relation(fields: [classId], references: [id])
+  words          HomeworkWord[]
+  sessions       HomeworkSession[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@map("homeworks")
+}
+
+model HomeworkWord {
+  id         Int      @id @default(autoincrement())
+  homeworkId Int
+  wordId     Int
+  orderIndex Int
+  homework   Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  word       Word     @relation(fields: [wordId], references: [id])
+
+  @@unique([homeworkId, orderIndex])
+  @@map("homework_words")
+}
+
+model HomeworkSession {
+  id          Int                  @id @default(autoincrement())
+  studentId   Int
+  homeworkId  Int
+  videoUrl    String?
+  score       Float?
+  completedAt DateTime?
+  startedAt   DateTime             @default(now())
+  student     Student              @relation(fields: [studentId], references: [id])
+  homework    Homework             @relation(fields: [homeworkId], references: [id])
+  wordResults HomeworkWordResult[]
+
+  @@map("homework_sessions")
+}
+
+model HomeworkWordResult {
+  id              Int             @id @default(autoincrement())
+  sessionId       Int
+  wordId          Int
+  transcribedText String?
+  score           Float
+  session         HomeworkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  word            Word            @relation(fields: [wordId], references: [id])
+
+  @@unique([sessionId, wordId])
+  @@map("homework_word_results")
+}
+
+enum UserRole {
+  TEACHER
+  STUDENT
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      UserRole
+  studentId Int?     @unique
+  student   Student? @relation(fields: [studentId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("users")
 }

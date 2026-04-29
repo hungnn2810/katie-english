@@ -5,6 +5,13 @@ import { PrismaService } from '../prisma/prisma.service';
 export class WordRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  findAll() {
+    return this.prisma.word.findMany({
+      orderBy: { text: 'asc' },
+      select: { id: true, text: true, difficulty: true },
+    });
+  }
+
   async findRandomByDifficulty(difficulty: number) {
     const words = await this.prisma.word.findMany({
       where: { difficulty },

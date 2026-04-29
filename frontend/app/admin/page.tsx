@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
 const sections = [
-  { href: '/admin/classes', label: 'Classes', desc: 'Manage classes and assign students/homework' },
-  { href: '/admin/students', label: 'Students', desc: 'Manage student accounts' },
-  { href: '/admin/homework', label: 'Homework', desc: 'Create homework with phoneme lists' },
+  { href: '/admin/classes', label: 'Classes', desc: 'Manage class schedules and status' },
+  { href: '/admin/students', label: 'Students', desc: 'Manage students and parent contacts' },
+  { href: '/admin/homework', label: 'Homework', desc: 'Assign word lists to classes' },
 ];
 
 export default function AdminPage() {
@@ -13,11 +13,8 @@ export default function AdminPage() {
       <p className="text-gray-500 mb-8">Manage classes, students, and homework.</p>
       <div className="grid gap-4">
         {sections.map((s) => (
-          <Link
-            key={s.href}
-            href={s.href}
-            className="block p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow transition"
-          >
+          <Link key={s.href} href={s.href}
+            className="block p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow transition">
             <div className="font-semibold text-lg text-blue-600">{s.label}</div>
             <div className="text-gray-500 text-sm mt-1">{s.desc}</div>
           </Link>

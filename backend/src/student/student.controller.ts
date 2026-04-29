@@ -1,33 +1,16 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, Query } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto, UpdateStudentDto } from './student.dto';
 
 @Controller('students')
 export class StudentController {
-  constructor(private readonly studentService: StudentService) {}
+  constructor(private readonly service: StudentService) {}
 
-  @Get()
-  findAll() {
-    return this.studentService.findAll();
+  @Get() findAll(@Query('classId') classId?: string) {
+    return classId ? this.service.findByClass(Number(classId)) : this.service.findAll();
   }
-
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.studentService.findById(id);
-  }
-
-  @Post()
-  create(@Body() dto: CreateStudentDto) {
-    return this.studentService.create(dto);
-  }
-
-  @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStudentDto) {
-    return this.studentService.update(id, dto);
-  }
-
-  @Delete(':id')
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.studentService.delete(id);
-  }
+  @Get(':id') findOne(@Param('id', ParseIntPipe) id: number) { return this.service.findById(id); }
+  @Post() create(@Body() dto: CreateStudentDto) { return this.service.create(dto); }
+  @Put(':id') update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStudentDto) { return this.service.update(id, dto); }
+  @Delete(':id') delete(@Param('id', ParseIntPipe) id: number) { return this.service.delete(id); }
 }

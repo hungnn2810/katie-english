@@ -5,6 +5,10 @@ import { WordRepository } from './word.repository';
 export class WordService {
   constructor(private readonly wordRepository: WordRepository) {}
 
+  findAll() {
+    return this.wordRepository.findAll();
+  }
+
   async getRandomWord(level: number) {
     const word = await this.wordRepository.findRandomByDifficulty(level);
     if (!word) throw new NotFoundException(`No words found for level ${level}`);

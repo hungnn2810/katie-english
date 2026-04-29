@@ -1,11 +1,15 @@
 export class CreateHomeworkDto {
-  title: string;
-  description?: string;
-  phonemeIds: number[];
+  dayAssigned: string;
+  closedDatetime: string;
+  timeInSeconds: number;
+  classId: number;
+  wordIds: number[];
 }
 
 export class UpdateHomeworkDto {
-  title?: string;
-  description?: string;
-  phonemeIds?: number[];
+  dayAssigned?: string;
+  closedDatetime?: string;
+  timeInSeconds?: number;
+  classId?: number;
+  wordIds?: number[];
 }

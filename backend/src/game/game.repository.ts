@@ -1,0 +1,61 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+@Injectable()
+export class GameRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  getAvailableHomework(studentId: number) {
+    return this.prisma.student.findUnique({
+      where: { id: studentId },
+      include: {
+        class: {
+          include: {
+            homeworks: {
+              where: { closedDatetime: { gte: new Date() } },
+              include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  createSession(studentId: number, homeworkId: number) {
+    return this.prisma.homeworkSession.create({
+      data: { studentId, homeworkId },
+      include: {
+        homework: {
+          include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } },
+        },
+      },
+    });
+  }
+
+  getSession(id: number) {
+    return this.prisma.homeworkSession.findUnique({
+      where: { id },
+      include: {
+        homework: { include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } } },
+        student: true,
+        wordResults: { include: { word: true } },
+      },
+    });
+  }
+
+  saveWordResult(sessionId: number, wordId: number, transcribedText: string, score: number) {
+    return this.prisma.homeworkWordResult.upsert({
+      where: { sessionId_wordId: { sessionId, wordId } },
+      update: { transcribedText, score },
+      create: { sessionId, wordId, transcribedText, score },
+    });
+  }
+
+  completeSession(id: number, videoUrl: string | null, score: number) {
+    return this.prisma.homeworkSession.update({
+      where: { id },
+      data: { videoUrl, score, completedAt: new Date() },
+      include: { wordResults: { include: { word: true } } },
+    });
+  }
+}

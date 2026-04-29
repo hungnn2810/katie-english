@@ -9,7 +9,11 @@
       "Bash(docker start *)",
       "Bash(docker exec *)",
       "Bash(DATABASE_URL=\"postgresql://postgres:Pass1234!@localhost:5432/phonics\" npx prisma migrate dev --name add_class_student_homework --skip-seed)",
-      "Bash(docker run *)"
+      "Bash(docker run *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\)[0]; print\\('Status:', d['State']['Status']\\); print\\('Networks:', list\\(d['NetworkSettings']['Networks'].keys\\(\\)\\)\\); print\\('IPAddress:', d['NetworkSettings']['IPAddress']\\)\")",
+      "Bash(docker cp *)",
+      "Bash(npx tsc *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\('dependencies',{}\\), **d.get\\('devDependencies',{}\\)}, indent=2\\)\\)\")"
     ]
   },
   "enableAllProjectMcpServers": true,
