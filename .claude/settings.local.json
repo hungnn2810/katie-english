@@ -4,7 +4,12 @@
       "Bash(npx prisma *)",
       "Bash(docker-compose ps *)",
       "Bash(nc -z localhost 5432)",
-      "Bash(docker-compose up *)"
+      "Bash(docker-compose up *)",
+      "Bash(docker network *)",
+      "Bash(docker start *)",
+      "Bash(docker exec *)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:Pass1234!@localhost:5432/phonics\" npx prisma migrate dev --name add_class_student_homework --skip-seed)",
+      "Bash(docker run *)"
     ]
   },
   "enableAllProjectMcpServers": true,
