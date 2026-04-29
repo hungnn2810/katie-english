@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Phoneme {
+  id               Int               @id @default(autoincrement())
+  symbol           String            @unique
+  audioUrl         String
+  type             String
+  wordPhonemes     WordPhoneme[]
+  homeworkPhonemes HomeworkPhoneme[]
+
+  @@map("phonemes")
+}
+
+model Student {
+  id        Int            @id @default(autoincrement())
+  name      String
+  email     String         @unique
+  classes   StudentClass[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("students")
+}
+
+model Class {
+  id          Int             @id @default(autoincrement())
+  name        String
+  description String?
+  students    StudentClass[]
+  homeworks   ClassHomework[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@map("classes")
+}
+
+model StudentClass {
+  id        Int      @id @default(autoincrement())
+  studentId Int
+  classId   Int
+  joinedAt  DateTime @default(now())
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, classId])
+  @@map("student_classes")
+}
+
+model Homework {
+  id          Int               @id @default(autoincrement())
+  title       String
+  description String?
+  phonemes    HomeworkPhoneme[]
+  classes     ClassHomework[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("homeworks")
+}
+
+model HomeworkPhoneme {
+  id         Int      @id @default(autoincrement())
+  homeworkId Int
+  phonemeId  Int
+  orderIndex Int
+  homework   Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  phoneme    Phoneme  @relation(fields: [phonemeId], references: [id], onDelete: Cascade)
+
+  @@unique([homeworkId, orderIndex])
+  @@map("homework_phonemes")
+}
+
+model ClassHomework {
+  id         Int       @id @default(autoincrement())
+  classId    Int
+  homeworkId Int
+  dueDate    DateTime?
+  assignedAt DateTime  @default(now())
+  class      Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  homework   Homework  @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, homeworkId])
+  @@map("class_homeworks")
+}
+
+model Word {
+  id            Int            @id @default(autoincrement())
+  text          String         @unique
+  audioUrl      String
+  difficulty    Int            @default(1)
+  wordPhonemes  WordPhoneme[]
+
+  @@map("words")
+}
+
+model WordPhoneme {
+  id          Int     @id @default(autoincrement())
+  wordId      Int
+  phonemeId   Int
+  orderIndex  Int
+  word        Word    @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  phoneme     Phoneme @relation(fields: [phonemeId], references: [id], onDelete: Cascade)
+
+  @@unique([wordId, orderIndex])
+  @@map("word_phonemes")
+}

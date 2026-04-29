@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx prisma *)",
+      "Bash(docker-compose ps *)",
+      "Bash(nc -z localhost 5432)",
+      "Bash(docker-compose up *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "code-review-graph"
+  ]
+}
