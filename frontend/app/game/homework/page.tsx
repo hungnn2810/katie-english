@@ -4,15 +4,7 @@ import { useRouter } from 'next/navigation';
 import AuthGate from '@/components/AuthGate';
 import { getAvailableHomework, startSession, HomeworkItem } from '@/lib/admin-api';
 import { AuthUser, clearAuth } from '@/lib/auth';
-
-const CARD_GRADIENTS = [
-  { from: '#667eea', to: '#764ba2' },
-  { from: '#f093fb', to: '#f5576c' },
-  { from: '#4facfe', to: '#00f2fe' },
-  { from: '#43e97b', to: '#38f9d7' },
-  { from: '#fa709a', to: '#fee140' },
-  { from: '#a18cd1', to: '#fbc2eb' },
-];
+import { cardGradients, gradients } from '@/lib/colors';
 
 function PageContent({ user }: { user: AuthUser }) {
   const router = useRouter();
@@ -42,25 +34,25 @@ function PageContent({ user }: { user: AuthUser }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4f46e5 100%)', minWidth: 1024 }}>
+    <div className="min-h-screen" style={{ background: gradients.gameBg, minWidth: 1024 }}>
       {/* Header */}
       <header className="px-10 py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-            <span className="text-indigo-700 font-black text-lg">K</span>
+            <span className="text-primary font-black text-lg">K</span>
           </div>
           <span className="text-white text-xl font-bold">Katie English</span>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #f093fb, #f5576c)' }}>
-              {user.email[0].toUpperCase()}
+              style={{ background: gradients.pinkHighlight }}>
+              {user.upn[0].toUpperCase()}
             </div>
-            <span className="text-indigo-200 text-sm">{user.email}</span>
+            <span className="text-white/70 text-sm">{user.upn}</span>
           </div>
           <button onClick={() => { clearAuth(); router.push('/login'); }}
-            className="text-indigo-300 hover:text-white text-sm transition-colors">
+            className="text-white/60 hover:text-white text-sm transition-colors">
             Sign out
           </button>
         </div>
@@ -70,12 +62,12 @@ function PageContent({ user }: { user: AuthUser }) {
       <main className="px-10 py-6">
         <div className="mb-8">
           <h1 className="text-4xl font-black text-white mb-2">My Homework</h1>
-          <p className="text-indigo-300">Choose an assignment to start practicing</p>
+          <p className="text-white/70">Choose an assignment to start practicing</p>
         </div>
 
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-indigo-300 border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-white/70 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
@@ -83,38 +75,47 @@ function PageContent({ user }: { user: AuthUser }) {
           <div className="bg-white bg-opacity-10 rounded-2xl p-8 text-center max-w-md mx-auto">
             <div className="text-5xl mb-4">🎓</div>
             <h2 className="text-white font-bold text-xl mb-2">Account not linked</h2>
-            <p className="text-indigo-300 text-sm">Your account hasn't been linked to a student profile yet. Please ask your teacher.</p>
+            <p className="text-white/70 text-sm">Your account hasn&apos;t been linked to a student profile yet. Please ask your teacher.</p>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-500 bg-opacity-20 border border-red-400 rounded-2xl px-6 py-4 text-red-200 text-sm mb-6">{error}</div>
+          <div className="bg-highlight/20 border border-highlight/60 rounded-2xl px-6 py-4 text-white/90 text-sm mb-6">{error}</div>
         )}
 
         {!loading && user.studentId && homework.length === 0 && !error && (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">📚</div>
-            <p className="text-indigo-200 text-lg font-semibold">No homework right now!</p>
-            <p className="text-indigo-400 text-sm mt-1">Check back later when your teacher assigns something.</p>
+            <p className="text-white/80 text-lg font-semibold">No homework right now!</p>
+            <p className="text-white/60 text-sm mt-1">Check back later when your teacher assigns something.</p>
           </div>
         )}
 
         <div className="grid grid-cols-3 gap-6">
           {homework.map((h, i) => {
-            const g = CARD_GRADIENTS[i % CARD_GRADIENTS.length];
+            const g = cardGradients[i % cardGradients.length];
             const wordList = h.words.map((w) => w.word.text);
             const dueDate = new Date(h.closedDatetime);
             const daysLeft = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
+            const completedSession = h.sessions?.find((s) => s.completedAt);
+            const isCompleted = !!completedSession;
             return (
-              <div key={h.id} className="rounded-2xl overflow-hidden shadow-xl hover:scale-105 transition-transform cursor-pointer"
-                onClick={() => handleStart(h.id)}
+              <div key={h.id}
+                className={`rounded-2xl overflow-hidden shadow-xl transition-transform ${isCompleted ? 'opacity-75 cursor-default' : 'hover:scale-105 cursor-pointer'}`}
+                onClick={() => !isCompleted && handleStart(h.id)}
                 style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="text-4xl">📝</div>
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${daysLeft <= 1 ? 'bg-red-500 text-white' : 'bg-white bg-opacity-20 text-white'}`}>
-                      {daysLeft <= 0 ? 'Due today' : daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
-                    </span>
+                    <div className="text-4xl">{isCompleted ? '✅' : '📝'}</div>
+                    {isCompleted ? (
+                      <span className="text-xs font-bold px-3 py-1 rounded-full bg-brand-green text-white">
+                        Completed · {completedSession.score ?? 0}%
+                      </span>
+                    ) : (
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${daysLeft <= 1 ? 'bg-highlight text-white' : 'bg-white bg-opacity-20 text-white'}`}>
+                        {daysLeft <= 0 ? 'Due today' : daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
+                      </span>
+                    )}
                   </div>
 
                   <div className="mb-4">
@@ -131,11 +132,17 @@ function PageContent({ user }: { user: AuthUser }) {
 
                   <div className="flex items-center justify-between">
                     <div className="text-white text-opacity-80 text-xs">{h.timeInSeconds}s per word</div>
-                    <button
-                      disabled={starting === h.id}
-                      className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold text-sm px-5 py-2 rounded-xl transition-all disabled:opacity-60">
-                      {starting === h.id ? 'Starting...' : 'Start →'}
-                    </button>
+                    {isCompleted ? (
+                      <span className="bg-brand-green/30 text-white font-bold text-sm px-5 py-2 rounded-xl">
+                        Done ✓
+                      </span>
+                    ) : (
+                      <button
+                        disabled={starting === h.id}
+                        className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold text-sm px-5 py-2 rounded-xl transition-all disabled:opacity-60">
+                        {starting === h.id ? 'Starting...' : 'Start →'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

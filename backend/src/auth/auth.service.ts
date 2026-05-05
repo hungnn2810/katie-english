@@ -29,7 +29,19 @@ export class AuthService {
     if (existing) throw new ConflictException('UPN already registered');
     const hashed = await bcrypt.hash(dto.password, 10);
     await this.prisma.user.create({
-      data: { upn: dto.upn, password: hashed, role: UserRole.STUDENT, approved: false },
+      data: {
+        upn: dto.upn,
+        password: hashed,
+        role: UserRole.STUDENT,
+        approved: false,
+        registrationData: {
+          fullname: dto.fullname,
+          sex: dto.sex,
+          dateOfBirth: dto.dateOfBirth,
+          classId: dto.classId ?? null,
+          parents: dto.parents,
+        },
+      },
     });
     return { pending: true };
   }
@@ -37,7 +49,7 @@ export class AuthService {
   async listPendingStudents() {
     return this.prisma.user.findMany({
       where: { role: UserRole.STUDENT, approved: false },
-      select: { id: true, upn: true, createdAt: true, studentId: true },
+      select: { id: true, upn: true, createdAt: true, registrationData: true },
       orderBy: { createdAt: 'asc' },
     });
   }
@@ -50,17 +62,29 @@ export class AuthService {
     let studentId = dto.studentId;
 
     if (!studentId) {
-      if (!dto.fullname || !dto.sex || !dto.dateOfBirth) {
-        throw new BadRequestException('Provide studentId or student info (fullname, sex, dateOfBirth)');
+      const reg = (user.registrationData ?? {}) as {
+        fullname?: string; sex?: string; dateOfBirth?: string; classId?: number | null;
+        parents?: { name: string; phoneNumber: string; type: string }[];
+      };
+      const fullname = dto.fullname ?? reg.fullname;
+      const sex = dto.sex ?? reg.sex;
+      const dateOfBirth = dto.dateOfBirth ?? reg.dateOfBirth;
+
+      if (!fullname || !sex || !dateOfBirth) {
+        throw new BadRequestException('Student info missing: provide fullname, sex, dateOfBirth');
       }
+
+      const parents = dto.parents ?? reg.parents ?? [];
+      const classId = dto.classId !== undefined ? dto.classId : (reg.classId ?? null);
+
       const student = await this.prisma.student.create({
         data: {
-          fullname: dto.fullname,
-          sex: dto.sex as Sex,
-          dateOfBirth: new Date(dto.dateOfBirth),
-          classId: dto.classId ?? null,
-          parents: dto.parents ? {
-            create: dto.parents.map((p) => ({
+          fullname,
+          sex: sex as Sex,
+          dateOfBirth: new Date(dateOfBirth),
+          classId: classId ?? null,
+          parents: parents.length > 0 ? {
+            create: parents.map((p) => ({
               name: p.name, phoneNumber: p.phoneNumber, type: p.type as ParentType,
             })),
           } : undefined,
@@ -71,7 +95,7 @@ export class AuthService {
 
     await this.prisma.user.update({
       where: { id: dto.userId },
-      data: { approved: true, studentId },
+      data: { approved: true, studentId, registrationData: undefined },
     });
     return { approved: true, studentId };
   }

@@ -13,11 +13,24 @@ export class GameRepository {
           include: {
             homeworks: {
               where: { closedDatetime: { gte: new Date() } },
-              include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } },
+              include: {
+                words: { orderBy: { orderIndex: 'asc' }, include: { word: true } },
+                sessions: {
+                  where: { studentId },
+                  orderBy: { startedAt: 'desc' },
+                  take: 1,
+                },
+              },
             },
           },
         },
       },
+    });
+  }
+
+  findCompletedSession(studentId: number, homeworkId: number) {
+    return this.prisma.homeworkSession.findFirst({
+      where: { studentId, homeworkId, completedAt: { not: null } },
     });
   }
 
@@ -56,6 +69,21 @@ export class GameRepository {
       where: { id },
       data: { videoUrl, score, completedAt: new Date() },
       include: { wordResults: { include: { word: true } } },
+    });
+  }
+
+  listSessions(homeworkId?: number, studentId?: number) {
+    return this.prisma.homeworkSession.findMany({
+      where: {
+        ...(homeworkId ? { homeworkId } : {}),
+        ...(studentId ? { studentId } : {}),
+      },
+      orderBy: { startedAt: 'desc' },
+      include: {
+        student: true,
+        homework: { include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } } },
+        wordResults: { orderBy: { id: 'asc' }, include: { word: true } },
+      },
     });
   }
 }

@@ -25,7 +25,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
   if (user === undefined) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ minWidth: 1280 }}>
-      <div className="w-8 h-8 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
   if (!user) return null;

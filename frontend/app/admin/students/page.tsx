@@ -6,8 +6,27 @@ import { getStudents, createStudent, deleteStudent, getClasses, Student, ClassIt
 
 const emptyParent = { name: '', phoneNumber: '', type: 'FATHER' as const };
 const emptyForm = (): CreateStudentInput => ({
-  fullname: '', sex: 'MALE', dateOfBirth: '', classId: undefined, parents: [{ ...emptyParent }],
+  fullname: '', sex: 'MALE', dateOfBirth: '', classId: undefined, parents: [{ ...emptyParent }], upn: '', password: '',
 });
+
+type ApprovalForm = {
+  fullname: string;
+  sex: 'MALE' | 'FEMALE';
+  dateOfBirth: string;
+  classId?: number;
+  parents: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
+};
+
+function buildApprovalForm(p: PendingStudent): ApprovalForm {
+  const reg = p.registrationData;
+  return {
+    fullname: reg?.fullname ?? '',
+    sex: reg?.sex ?? 'MALE',
+    dateOfBirth: reg?.dateOfBirth ? reg.dateOfBirth.slice(0, 10) : '',
+    classId: reg?.classId ?? undefined,
+    parents: reg?.parents?.length ? reg.parents : [{ ...emptyParent }],
+  };
+}
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -17,13 +36,20 @@ export default function StudentsPage() {
   const [pending, setPending] = useState<PendingStudent[]>([]);
   const [pendingError, setPendingError] = useState('');
   const [pendingLoading, setPendingLoading] = useState(false);
+  const [approvalForms, setApprovalForms] = useState<Record<number, ApprovalForm>>({});
+  const [approvingId, setApprovingId] = useState<number | null>(null);
 
   const load = () => getStudents().then(setStudents).catch(() => {});
   const loadPending = () => {
     setPendingLoading(true);
     setPendingError('');
     return getPendingStudents()
-      .then(setPending)
+      .then((list) => {
+        setPending(list);
+        const forms: Record<number, ApprovalForm> = {};
+        list.forEach((p) => { forms[p.id] = buildApprovalForm(p); });
+        setApprovalForms(forms);
+      })
       .catch((err: unknown) => setPendingError(err instanceof Error ? err.message : 'Failed to load pending students'))
       .finally(() => setPendingLoading(false));
   };
@@ -34,6 +60,49 @@ export default function StudentsPage() {
   }
   function addParent() { setForm((f) => ({ ...f, parents: [...f.parents, { ...emptyParent }] })); }
   function removeParent(i: number) { setForm((f) => ({ ...f, parents: f.parents.filter((_, x) => x !== i) })); }
+
+  function setApprovalField(userId: number, k: keyof ApprovalForm, v: ApprovalForm[keyof ApprovalForm]) {
+    setApprovalForms((prev) => ({ ...prev, [userId]: { ...prev[userId], [k]: v } }));
+  }
+  function setApprovalParent(userId: number, i: number, k: string, v: string) {
+    setApprovalForms((prev) => {
+      const parents = [...prev[userId].parents];
+      parents[i] = { ...parents[i], [k]: v };
+      return { ...prev, [userId]: { ...prev[userId], parents } };
+    });
+  }
+  function addApprovalParent(userId: number) {
+    setApprovalForms((prev) => ({
+      ...prev, [userId]: { ...prev[userId], parents: [...prev[userId].parents, { ...emptyParent }] },
+    }));
+  }
+  function removeApprovalParent(userId: number, i: number) {
+    setApprovalForms((prev) => ({
+      ...prev, [userId]: { ...prev[userId], parents: prev[userId].parents.filter((_, x) => x !== i) },
+    }));
+  }
+
+  async function handleApprove(userId: number) {
+    setApprovingId(userId);
+    setPendingError('');
+    try {
+      const f = approvalForms[userId];
+      await approveStudent({
+        userId,
+        fullname: f.fullname,
+        sex: f.sex,
+        dateOfBirth: f.dateOfBirth,
+        classId: f.classId,
+        parents: f.parents,
+      });
+      loadPending();
+      load();
+    } catch (err: unknown) {
+      setPendingError(err instanceof Error ? err.message : 'Failed to approve');
+    } finally {
+      setApprovingId(null);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setError('');
@@ -52,39 +121,99 @@ export default function StudentsPage() {
             <Link href="/admin" className="text-sm text-gray-400 hover:text-gray-600">← Admin</Link>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 space-y-3">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">Pending Approvals</h2>
-              <button onClick={() => loadPending()} className="text-sm text-gray-400 hover:text-gray-600">
-                Refresh
-              </button>
+              <button onClick={() => loadPending()} className="text-sm text-gray-400 hover:text-gray-600">Refresh</button>
             </div>
             {pendingLoading && <p className="text-gray-400 text-sm">Loading pending accounts...</p>}
             {pendingError && <p className="text-red-500 text-sm">{pendingError}</p>}
             {!pendingLoading && pending.length === 0 && !pendingError && (
               <p className="text-gray-400 text-sm">No pending students.</p>
             )}
-            {pending.map((p) => (
-              <div key={p.id} className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-                <div>
-                  <div className="font-medium text-gray-800">{p.email}</div>
-                  <div className="text-xs text-gray-400">Requested: {new Date(p.createdAt).toLocaleString()}</div>
+            {pending.map((p) => {
+              const af = approvalForms[p.id];
+              if (!af) return null;
+              return (
+                <div key={p.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-800">{p.upn}</div>
+                      <div className="text-xs text-gray-400">Requested: {new Date(p.createdAt).toLocaleString()}</div>
+                    </div>
+                    <button
+                      onClick={() => handleApprove(p.id)}
+                      disabled={approvingId === p.id}
+                      className="text-sm font-semibold text-green-600 hover:text-green-700 disabled:opacity-50"
+                    >
+                      {approvingId === p.id ? 'Approving…' : 'Approve'}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      className="border rounded-lg px-3 py-2 text-sm col-span-2"
+                      placeholder="Full name"
+                      value={af.fullname}
+                      onChange={(e) => setApprovalField(p.id, 'fullname', e.target.value)}
+                    />
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-400">Sex</label>
+                      <select
+                        className="border rounded-lg px-3 py-2 text-sm"
+                        value={af.sex}
+                        onChange={(e) => setApprovalField(p.id, 'sex', e.target.value as 'MALE' | 'FEMALE')}
+                      >
+                        <option value="MALE">Male</option>
+                        <option value="FEMALE">Female</option>
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-400">Date of birth</label>
+                      <input
+                        type="date"
+                        className="border rounded-lg px-3 py-2 text-sm"
+                        value={af.dateOfBirth}
+                        onChange={(e) => setApprovalField(p.id, 'dateOfBirth', e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1 col-span-2">
+                      <label className="text-xs text-gray-400">Class (optional)</label>
+                      <select
+                        className="border rounded-lg px-3 py-2 text-sm"
+                        value={af.classId ?? ''}
+                        onChange={(e) => setApprovalField(p.id, 'classId', e.target.value ? Number(e.target.value) : undefined)}
+                      >
+                        <option value="">No class</option>
+                        {classes.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-medium text-gray-600">Parents</p>
+                      <button type="button" onClick={() => addApprovalParent(p.id)} className="text-xs text-blue-500 hover:underline">+ Add</button>
+                    </div>
+                    {af.parents.map((par, i) => (
+                      <div key={i} className="grid grid-cols-3 gap-2 mb-2">
+                        <input className="border rounded-lg px-3 py-2 text-sm" placeholder="Parent name" value={par.name} onChange={(e) => setApprovalParent(p.id, i, 'name', e.target.value)} />
+                        <input className="border rounded-lg px-3 py-2 text-sm" placeholder="Phone" value={par.phoneNumber} onChange={(e) => setApprovalParent(p.id, i, 'phoneNumber', e.target.value)} />
+                        <div className="flex gap-1">
+                          <select className="border rounded-lg px-3 py-2 text-sm flex-1" value={par.type} onChange={(e) => setApprovalParent(p.id, i, 'type', e.target.value)}>
+                            <option value="FATHER">Father</option>
+                            <option value="MOTHER">Mother</option>
+                          </select>
+                          {af.parents.length > 1 && (
+                            <button type="button" onClick={() => removeApprovalParent(p.id, i)} className="text-red-400 px-2">×</button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <button
-                  onClick={async () => {
-                    try {
-                      await approveStudent(p.id);
-                      loadPending();
-                    } catch (err: unknown) {
-                      setPendingError(err instanceof Error ? err.message : 'Failed to approve');
-                    }
-                  }}
-                  className="text-sm font-semibold text-green-600 hover:text-green-700"
-                >
-                  Approve
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-xl p-5 mb-6 space-y-3">

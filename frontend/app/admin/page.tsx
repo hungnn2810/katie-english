@@ -18,8 +18,8 @@ export default function AdminPage() {
           <div className="grid gap-4">
             {sections.map((s) => (
               <Link key={s.href} href={s.href}
-                className="block p-6 bg-white border border-gray-200 rounded-xl hover:border-blue-400 hover:shadow transition">
-                <div className="font-semibold text-lg text-blue-600">{s.label}</div>
+                className="block p-6 bg-white border border-gray-200 rounded-xl hover:border-primary hover:shadow transition">
+                <div className="font-semibold text-lg text-primary">{s.label}</div>
                 <div className="text-gray-500 text-sm mt-1">{s.desc}</div>
               </Link>
             ))}

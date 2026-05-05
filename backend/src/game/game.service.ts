@@ -17,12 +17,15 @@ function levenshtein(a: string, b: string): number {
 }
 
 function calcScore(transcribed: string, target: string): number {
-  const a = transcribed.toLowerCase().trim();
   const b = target.toLowerCase().trim();
-  if (a === b) return 100;
-  const dist = levenshtein(a, b);
-  const maxLen = Math.max(a.length, b.length);
-  return Math.max(0, Math.round((1 - dist / maxLen) * 100));
+  if (!b) return 0;
+  const words = transcribed.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return 0;
+  // Exact word match wins immediately
+  if (words.includes(b)) return 100;
+  // Find closest individual word to avoid penalizing extra words in transcript
+  const bestDist = words.reduce((min, w) => Math.min(min, levenshtein(w, b)), Infinity);
+  return Math.max(0, Math.round((1 - bestDist / b.length) * 100));
 }
 
 @Injectable()
@@ -38,7 +41,9 @@ export class GameService {
     return student.class?.homeworks ?? [];
   }
 
-  startSession(dto: StartSessionDto) {
+  async startSession(dto: StartSessionDto) {
+    const existing = await this.repo.findCompletedSession(dto.studentId, dto.homeworkId);
+    if (existing) throw new BadRequestException('Homework already completed');
     return this.repo.createSession(dto.studentId, dto.homeworkId);
   }
 
@@ -58,6 +63,22 @@ export class GameService {
 
     const score = calcScore(dto.transcribedText ?? '', word.word.text);
     return this.repo.saveWordResult(sessionId, dto.wordId, dto.transcribedText, score);
+  }
+
+  listSessions(homeworkId?: number, studentId?: number) {
+    return this.repo.listSessions(homeworkId, studentId);
+  }
+
+  streamRecording(videoUrl: string) {
+    // Support legacy full URLs (http://host/bucket/key) and new bare keys
+    let key = videoUrl;
+    if (videoUrl.startsWith('http')) {
+      const bucket = process.env.MINIO_BUCKET ?? 'phonics-audio';
+      const marker = `/${bucket}/`;
+      const idx = videoUrl.indexOf(marker);
+      key = idx >= 0 ? videoUrl.slice(idx + marker.length) : videoUrl.split('/').slice(-1)[0];
+    }
+    return this.storage.getObject(key);
   }
 
   async completeSession(sessionId: number, videoBuffer?: Buffer, mimeType?: string) {

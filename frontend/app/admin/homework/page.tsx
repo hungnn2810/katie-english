@@ -73,7 +73,7 @@ export default function HomeworkPage() {
                 {words.map((w) => (
                   <button key={w.id} type="button" onClick={() => toggleWord(w.id)}
                     className={`px-3 py-1 rounded-lg text-sm border transition ${
-                      form.wordIds.includes(w.id) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                      form.wordIds.includes(w.id) ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-300 hover:border-primary'
                     }`}>
                     {w.text}
                   </button>
@@ -83,14 +83,14 @@ export default function HomeworkPage() {
             </div>
 
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Create Homework</button>
+            <button className="bg-primary text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#3B8AEA]">Create Homework</button>
           </form>
 
           <div className="space-y-2">
             {list.length === 0 && <p className="text-gray-400 text-sm">No homework yet.</p>}
             {list.map((h) => (
-              <div key={h.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-5 py-3">
-                <div>
+              <div key={h.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-5 py-3 hover:border-primary/60 hover:shadow-sm transition">
+                <Link href={`/admin/homework/${h.id}`} className="flex-1 min-w-0">
                   <div className="font-medium text-gray-800">
                     {h.class?.name ?? `Class #${h.classId}`} · {new Date(h.dayAssigned).toLocaleDateString()}
                   </div>
@@ -98,8 +98,8 @@ export default function HomeworkPage() {
                     Words: {h.words.map((w) => w.word.text).join(', ')} · {h.timeInSeconds}s per word
                   </div>
                   <div className="text-xs text-gray-300">Closes: {new Date(h.closedDatetime).toLocaleString()}</div>
-                </div>
-                <button onClick={async () => { if (confirm('Delete?')) { await deleteHomework(h.id); load(); } }} className="text-red-400 hover:text-red-600 text-sm">Delete</button>
+                </Link>
+                <button onClick={async () => { if (confirm('Delete?')) { await deleteHomework(h.id); load(); } }} className="text-red-400 hover:text-red-600 text-sm ml-4 shrink-0">Delete</button>
               </div>
             ))}
           </div>

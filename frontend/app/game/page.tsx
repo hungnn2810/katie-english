@@ -76,7 +76,7 @@ export default function GamePage() {
       {() => (
         <main className="max-w-2xl mx-auto px-4 py-10">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-blue-600">Phonics Blending</h1>
+            <h1 className="text-3xl font-bold text-primary">Phonics Blending</h1>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">Level</span>
               {[1, 2, 3].map((l) => (
@@ -84,7 +84,7 @@ export default function GamePage() {
                   key={l}
                   onClick={() => { setLevel(l); loadWord(l); }}
                   className={`w-8 h-8 rounded-full text-sm font-bold transition-colors ${
-                    level === l ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    level === l ? 'bg-primary text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
                 >
                   {l}

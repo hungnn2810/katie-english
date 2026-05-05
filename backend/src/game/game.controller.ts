@@ -1,8 +1,9 @@
 import {
   Controller, Get, Post, Param, Body, ParseIntPipe,
-  UseInterceptors, UploadedFile, UseGuards,
+  UseInterceptors, UploadedFile, UseGuards, Res, NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { GameService } from './game.service';
 import { StartSessionDto, SaveWordResultDto } from './game.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -42,5 +43,19 @@ export class GameController {
     @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.service.completeSession(id, file?.buffer, file?.mimetype);
+  }
+
+  @Get('session/:id/recording')
+  async streamRecording(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const session = await this.service.getSession(id);
+    if (!session.videoUrl) throw new NotFoundException('No recording for this session');
+    const stream = await this.service.streamRecording(session.videoUrl);
+    const ext = session.videoUrl.endsWith('.webm') ? 'webm' : 'mp4';
+    res.setHeader('Content-Type', `video/${ext}`);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    stream.pipe(res);
   }
 }

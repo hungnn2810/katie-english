@@ -14,16 +14,32 @@ async function req<T>(path: string, options?: RequestInit): Promise<T> {
 // Approvals
 export interface PendingStudent {
   id: number;
-  email: string;
+  upn: string;
   createdAt: string;
-  studentId?: number | null;
+  registrationData?: {
+    fullname: string;
+    sex: 'MALE' | 'FEMALE';
+    dateOfBirth: string;
+    classId?: number | null;
+    parents: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
+  } | null;
+}
+
+export interface ApproveStudentInput {
+  userId: number;
+  studentId?: number;
+  fullname?: string;
+  sex?: 'MALE' | 'FEMALE';
+  dateOfBirth?: string;
+  classId?: number;
+  parents?: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
 }
 
 export const getPendingStudents = () => req<PendingStudent[]>('/auth/pending-students');
-export const approveStudent = (userId: number) =>
-  req<{ approved: true }>('/auth/approve-student', {
+export const approveStudent = (data: ApproveStudentInput) =>
+  req<{ approved: true; studentId: number }>('/auth/approve-student', {
     method: 'POST',
-    body: JSON.stringify({ userId }),
+    body: JSON.stringify(data),
   });
 
 // Classes
@@ -63,6 +79,7 @@ export const getWords = () =>
   req<{ id: number; text: string; difficulty: number }[]>('/phonics/words');
 
 // Game
+export const getSession = (id: number) => req<GameSession>(`/game/session/${id}`);
 export const getAvailableHomework = (studentId: number) =>
   req<HomeworkItem[]>(`/game/homework/${studentId}`);
 export const startSession = (studentId: number, homeworkId: number) =>
@@ -121,6 +138,8 @@ export interface CreateStudentInput {
   dateOfBirth: string;
   classId?: number;
   parents: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
+  upn: string;
+  password: string;
 }
 
 export interface Student {
@@ -151,6 +170,7 @@ export interface HomeworkItem {
   class?: ClassItem;
   words: { orderIndex: number; word: { id: number; text: string } }[];
   createdAt: string;
+  sessions?: GameSession[];
 }
 
 export interface HomeworkDetail extends HomeworkItem {

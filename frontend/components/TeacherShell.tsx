@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { clearAuth, AuthUser } from '@/lib/auth';
+import { gradients } from '@/lib/colors';
 
 const nav = [
   { href: '/teacher', label: 'Dashboard', icon: '🏠' },
@@ -24,19 +25,19 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
   function logout() { clearAuth(); router.push('/login'); }
 
   return (
-    <div className="flex h-screen bg-gray-100" style={{ minWidth: 1280 }}>
+    <div className="flex h-screen bg-background" style={{ minWidth: 1280 }}>
       {/* Sidebar */}
       <aside className="w-60 flex-shrink-0 flex flex-col"
-        style={{ background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 100%)' }}>
+        style={{ background: gradients.sidebar }}>
         {/* Logo */}
-        <div className="px-6 py-6 border-b border-indigo-700">
+        <div className="px-6 py-6 border-b border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-yellow-400 rounded-xl flex items-center justify-center">
-              <span className="text-indigo-900 font-black text-base">K</span>
+            <div className="w-9 h-9 bg-accent rounded-xl flex items-center justify-center">
+              <span className="text-gray-900 font-black text-base">K</span>
             </div>
             <div>
               <div className="text-white font-bold text-base leading-tight">Katie English</div>
-              <div className="text-indigo-300 text-xs">Teacher Portal</div>
+              <div className="text-gray-300 text-xs">Teacher Portal</div>
             </div>
           </div>
         </div>
@@ -49,8 +50,8 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
               <Link key={item.href} href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                   active
-                    ? 'bg-indigo-500 bg-opacity-80 text-white shadow-lg'
-                    : 'text-indigo-200 hover:bg-indigo-700 hover:bg-opacity-50 hover:text-white'
+                    ? 'bg-primary/80 text-white shadow-lg'
+                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
                 }`}>
                 <span className="text-base">{item.icon}</span>
                 {item.label}
@@ -60,19 +61,19 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
         </nav>
 
         {/* User */}
-        <div className="px-4 py-4 border-t border-indigo-700">
+        <div className="px-4 py-4 border-t border-gray-700">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>
-              {user.email[0].toUpperCase()}
+              style={{ background: gradients.primaryPurple }}>
+              {user.upn[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-white text-sm font-medium truncate">{user.email}</div>
-              <div className="text-indigo-300 text-xs">Teacher</div>
+              <div className="text-white text-sm font-medium truncate">{user.upn}</div>
+              <div className="text-gray-300 text-xs">Teacher</div>
             </div>
           </div>
           <button onClick={logout}
-            className="w-full text-left text-indigo-300 hover:text-white text-xs px-2 py-1 rounded-lg hover:bg-indigo-700 transition-colors">
+            className="w-full text-left text-gray-300 hover:text-white text-xs px-2 py-1 rounded-lg hover:bg-gray-700 transition-colors">
             Sign out
           </button>
         </div>
@@ -81,10 +82,10 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="bg-white border-b border-gray-200 px-8 py-5 flex items-center justify-between flex-shrink-0">
+        <header className="bg-white border-b border-border px-8 py-5 flex items-center justify-between flex-shrink-0">
           <div>
-            <h1 className="text-2xl font-black text-gray-800">{title}</h1>
-            {subtitle && <p className="text-gray-400 text-sm mt-0.5">{subtitle}</p>}
+            <h1 className="text-2xl font-black text-textPrimary">{title}</h1>
+            {subtitle && <p className="text-textSecondary text-sm mt-0.5">{subtitle}</p>}
           </div>
         </header>
 

@@ -23,6 +23,14 @@ export class StorageService implements OnModuleInit {
     await this.client.putObject(this.bucket, key, buffer, buffer.length, {
       'Content-Type': contentType,
     });
-    return `${process.env.MINIO_PUBLIC_URL ?? 'http://localhost:9000/phonics-audio'}/${key}`;
+    return key;
+  }
+
+  getObject(key: string) {
+    return this.client.getObject(this.bucket, key);
+  }
+
+  async getObjectMeta(key: string) {
+    return this.client.statObject(this.bucket, key);
   }
 }

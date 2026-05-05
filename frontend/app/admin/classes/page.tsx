@@ -66,7 +66,7 @@ export default function ClassesPage() {
                 <option value="INPROGRESS">In Progress</option>
                 <option value="ENDED">Ended</option>
               </select>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+              <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#3B8AEA]">
                 {editing ? 'Update' : 'Add Class'}
               </button>
               {editing && <button type="button" onClick={() => { setEditing(null); setForm(empty); }} className="text-gray-400 text-sm hover:text-gray-600">Cancel</button>}
@@ -90,7 +90,7 @@ export default function ClassesPage() {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => startEdit(c)} className="text-blue-400 hover:text-blue-600 text-sm">Edit</button>
+                  <button onClick={() => startEdit(c)} className="text-primary/60 hover:text-primary text-sm">Edit</button>
                   <button onClick={async () => { if (confirm('Delete?')) { await deleteClass(c.id); load(); } }} className="text-red-400 hover:text-red-600 text-sm">Delete</button>
                 </div>
               </div>

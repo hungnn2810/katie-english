@@ -2,12 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getClasses, getStudents, getHomeworkList } from '@/lib/admin-api';
-
-const statColors = [
-  { from: '#667eea', to: '#764ba2' },
-  { from: '#f093fb', to: '#f5576c' },
-  { from: '#4facfe', to: '#00f2fe' },
-];
+import { cardGradients, colors } from '@/lib/colors';
 
 export default function TeacherDashboard() {
   const [stats, setStats] = useState({ classes: 0, students: 0, homework: 0 });
@@ -19,9 +14,15 @@ export default function TeacherDashboard() {
   }, []);
 
   const cards = [
-    { label: 'Classes', value: stats.classes, icon: '🏫', href: '/teacher/classes', ...statColors[0] },
-    { label: 'Students', value: stats.students, icon: '👦', href: '/teacher/students', ...statColors[1] },
-    { label: 'Homework', value: stats.homework, icon: '📚', href: '/teacher/homework', ...statColors[2] },
+    { label: 'Classes', value: stats.classes, icon: '🏫', href: '/teacher/classes', ...cardGradients[0] },
+    { label: 'Students', value: stats.students, icon: '👦', href: '/teacher/students', ...cardGradients[1] },
+    { label: 'Homework', value: stats.homework, icon: '📚', href: '/teacher/homework', ...cardGradients[2] },
+  ];
+
+  const actions = [
+    { href: '/teacher/classes', label: 'Manage Classes', desc: 'Create and schedule classes', icon: '🏫', color: colors.primary },
+    { href: '/teacher/students', label: 'Manage Students', desc: 'Add students and parent contacts', icon: '👦', color: colors.highlight },
+    { href: '/teacher/homework', label: 'Assign Homework', desc: 'Create word-list homework for classes', icon: '📚', color: colors.secondary },
   ];
 
   return (
@@ -38,19 +39,15 @@ export default function TeacherDashboard() {
         ))}
       </div>
       <div className="grid grid-cols-3 gap-6">
-        {[
-          { href: '/teacher/classes', label: 'Manage Classes', desc: 'Create and schedule classes', icon: '🏫', color: '#667eea' },
-          { href: '/teacher/students', label: 'Manage Students', desc: 'Add students and parent contacts', icon: '👦', color: '#f5576c' },
-          { href: '/teacher/homework', label: 'Assign Homework', desc: 'Create word-list homework for classes', icon: '📚', color: '#00f2fe' },
-        ].map((a) => (
+        {actions.map((a) => (
           <Link key={a.href} href={a.href}
             className="bg-white rounded-2xl p-6 border-2 border-transparent hover:shadow-lg transition-all">
             <div className="w-12 h-12 rounded-xl mb-4 flex items-center justify-center text-2xl"
               style={{ background: `${a.color}22` }}>
               {a.icon}
             </div>
-            <div className="font-bold text-gray-800 mb-1">{a.label}</div>
-            <div className="text-gray-400 text-sm">{a.desc}</div>
+            <div className="font-bold text-textPrimary mb-1">{a.label}</div>
+            <div className="text-textSecondary text-sm">{a.desc}</div>
           </Link>
         ))}
       </div>

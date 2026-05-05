@@ -45,11 +45,21 @@ export async function login(upn: string, password: string) {
   return data.user as AuthUser;
 }
 
-export async function register(upn: string, password: string): Promise<{ pending: true }> {
+export interface RegisterInput {
+  upn: string;
+  password: string;
+  fullname: string;
+  sex: 'MALE' | 'FEMALE';
+  dateOfBirth: string;
+  classId?: number;
+  parents: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
+}
+
+export async function register(data: RegisterInput): Promise<{ pending: true }> {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ upn, password }),
+    body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
   return { pending: true };

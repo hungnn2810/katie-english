@@ -13,7 +13,14 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\)[0]; print\\('Status:', d['State']['Status']\\); print\\('Networks:', list\\(d['NetworkSettings']['Networks'].keys\\(\\)\\)\\); print\\('IPAddress:', d['NetworkSettings']['IPAddress']\\)\")",
       "Bash(docker cp *)",
       "Bash(npx tsc *)",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\('dependencies',{}\\), **d.get\\('devDependencies',{}\\)}, indent=2\\)\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\('dependencies',{}\\), **d.get\\('devDependencies',{}\\)}, indent=2\\)\\)\")",
+      "mcp__code-review-graph__semantic_search_nodes_tool",
+      "mcp__code-review-graph__get_architecture_overview_tool",
+      "Bash(grep -rn --include=\"*.tsx\" --include=\"*.ts\" \"#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|rgb\\(\\\\|hsl\\(\" /Users/hung/Documents/katie-english/frontend/app /Users/hung/Documents/katie-english/frontend/components)",
+      "Bash(grep -rn --include=\"*.tsx\" \"#[0-9a-fA-F]\\\\{3,6\\\\}\\\\|bg-blue-\\\\|bg-indigo-\\\\|text-indigo-\\\\|border-indigo-\\\\|text-blue-\\\\|border-blue-\" /Users/hung/Documents/katie-english/frontend/app/admin /Users/hung/Documents/katie-english/frontend/components)",
+      "mcp__code-review-graph__query_graph_tool",
+      "Bash(grep -rn --include=\"*.tsx\" \"#[0-9a-fA-F]\\\\{3,6\\\\}\" /Users/hung/Documents/katie-english/frontend/app /Users/hung/Documents/katie-english/frontend/components)",
+      "Bash(echo \"EXIT:$?\")"
     ]
   },
   "enableAllProjectMcpServers": true,
