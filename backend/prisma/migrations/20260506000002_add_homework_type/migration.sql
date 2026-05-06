@@ -1,0 +1,4 @@
+CREATE TYPE "HomeworkType" AS ENUM ('PHONICS', 'READING', 'SPELLING', 'VOCABULARY');
+
+ALTER TABLE "homeworks" ADD COLUMN "type" "HomeworkType" NOT NULL DEFAULT 'PHONICS';
+ALTER TABLE "homeworks" ADD COLUMN "phonicsItems" TEXT[] NOT NULL DEFAULT '{}';

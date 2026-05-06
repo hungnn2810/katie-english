@@ -16,9 +16,8 @@ export class GameRepository {
               include: {
                 words: { orderBy: { orderIndex: 'asc' }, include: { word: true } },
                 sessions: {
-                  where: { studentId },
-                  orderBy: { startedAt: 'desc' },
-                  take: 1,
+                  where: { studentId, completedAt: { not: null } },
+                  orderBy: { score: 'desc' },
                 },
               },
             },
@@ -49,7 +48,20 @@ export class GameRepository {
     return this.prisma.homeworkSession.findUnique({
       where: { id },
       include: {
-        homework: { include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } } },
+        homework: {
+          include: {
+            words: {
+              orderBy: { orderIndex: 'asc' },
+              include: {
+                word: {
+                  include: {
+                    wordPhonemes: { orderBy: { orderIndex: 'asc' }, include: { phoneme: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
         student: true,
         wordResults: { include: { word: true } },
       },

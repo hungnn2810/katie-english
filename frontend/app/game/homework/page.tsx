@@ -97,19 +97,21 @@ function PageContent({ user }: { user: AuthUser }) {
             const wordList = h.words.map((w) => w.word.text);
             const dueDate = new Date(h.closedDatetime);
             const daysLeft = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
-            const completedSession = h.sessions?.find((s) => s.completedAt);
-            const isCompleted = !!completedSession;
+            const completedSessions = h.sessions?.filter((s) => s.completedAt) ?? [];
+            const bestScore = completedSessions.length > 0
+              ? Math.max(...completedSessions.map((s) => s.score ?? 0))
+              : null;
             return (
               <div key={h.id}
-                className={`rounded-2xl overflow-hidden shadow-xl transition-transform ${isCompleted ? 'opacity-75 cursor-default' : 'hover:scale-105 cursor-pointer'}`}
-                onClick={() => !isCompleted && handleStart(h.id)}
+                className="rounded-2xl overflow-hidden shadow-xl transition-transform hover:scale-105 cursor-pointer"
+                onClick={() => handleStart(h.id)}
                 style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="text-4xl">{isCompleted ? '✅' : '📝'}</div>
-                    {isCompleted ? (
+                    <div className="text-4xl">{bestScore !== null ? '✅' : '📝'}</div>
+                    {bestScore !== null ? (
                       <span className="text-xs font-bold px-3 py-1 rounded-full bg-brand-green text-white">
-                        Completed · {completedSession.score ?? 0}%
+                        Best: {bestScore}%
                       </span>
                     ) : (
                       <span className={`text-xs font-bold px-3 py-1 rounded-full ${daysLeft <= 1 ? 'bg-highlight text-white' : 'bg-white bg-opacity-20 text-white'}`}>
@@ -132,17 +134,11 @@ function PageContent({ user }: { user: AuthUser }) {
 
                   <div className="flex items-center justify-between">
                     <div className="text-white text-opacity-80 text-xs">{h.timeInSeconds}s per word</div>
-                    {isCompleted ? (
-                      <span className="bg-brand-green/30 text-white font-bold text-sm px-5 py-2 rounded-xl">
-                        Done ✓
-                      </span>
-                    ) : (
-                      <button
-                        disabled={starting === h.id}
-                        className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold text-sm px-5 py-2 rounded-xl transition-all disabled:opacity-60">
-                        {starting === h.id ? 'Starting...' : 'Start →'}
-                      </button>
-                    )}
+                    <button
+                      disabled={starting === h.id}
+                      className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold text-sm px-5 py-2 rounded-xl transition-all disabled:opacity-60">
+                      {starting === h.id ? 'Starting...' : bestScore !== null ? 'Try Again →' : 'Start →'}
+                    </button>
                   </div>
                 </div>
               </div>

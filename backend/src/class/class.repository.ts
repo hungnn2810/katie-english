@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateClassDto, UpdateClassDto } from './class.dto';
-import { ClassStatus } from '@prisma/client';
+import { ClassStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ClassRepository {
@@ -32,6 +32,7 @@ export class ClassRepository {
         startDate: new Date(dto.startDate),
         endDate: new Date(dto.endDate),
         status: (dto.status as ClassStatus) ?? 'PENDING',
+        scheduleSlots: (dto.scheduleSlots ?? []) as unknown as Prisma.InputJsonValue,
       },
     });
   }
@@ -45,6 +46,7 @@ export class ClassRepository {
         ...(dto.startDate && { startDate: new Date(dto.startDate) }),
         ...(dto.endDate && { endDate: new Date(dto.endDate) }),
         ...(dto.status && { status: dto.status as ClassStatus }),
+        ...(dto.scheduleSlots !== undefined && { scheduleSlots: dto.scheduleSlots as unknown as Prisma.InputJsonValue }),
       },
     });
   }

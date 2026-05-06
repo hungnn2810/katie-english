@@ -31,6 +31,19 @@ services:
       timeout: 5s
       retries: 5
 
+  bfa:
+    build:
+      context: ./bfa-service
+      dockerfile: Dockerfile
+    ports:
+      - '3002:8000'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
   backend:
     build:
       context: ./backend
@@ -46,12 +59,15 @@ services:
       PORT: 3001
       TEACHER_EMAIL: teacher@example.com
       TEACHER_PASSWORD: Pass1234!
+      BFA_URL: http://bfa:8000
     ports:
       - '3001:3001'
     depends_on:
       postgres:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      bfa:
         condition: service_healthy
 
   frontend:

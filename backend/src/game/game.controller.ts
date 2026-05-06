@@ -29,15 +29,19 @@ export class GameController {
   }
 
   @Post('session/:id/word-result')
+  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 10 * 1024 * 1024 } }))
   saveWordResult(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: SaveWordResultDto,
+    @Body('wordId') wordId: string,
+    @Body('transcribedText') transcribedText: string,
+    @UploadedFile() audio?: Express.Multer.File,
   ) {
-    return this.service.saveWordResult(id, dto);
+    const dto: SaveWordResultDto = { wordId: Number(wordId), transcribedText };
+    return this.service.saveWordResult(id, dto, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/complete')
-  @UseInterceptors(FileInterceptor('recording'))
+  @UseInterceptors(FileInterceptor('recording', { limits: { fileSize: 200 * 1024 * 1024 } }))
   completeSession(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile() file?: Express.Multer.File,

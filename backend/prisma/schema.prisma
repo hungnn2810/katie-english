@@ -13,6 +13,13 @@ enum ClassStatus {
   ENDED
 }
 
+enum HomeworkType {
+  PHONICS
+  READING
+  SPELLING
+  VOCABULARY
+}
+
 enum Sex {
   MALE
   FEMALE
@@ -58,16 +65,17 @@ model WordPhoneme {
 }
 
 model Class {
-  id        Int         @id @default(autoincrement())
-  name      String
-  code      String      @unique
-  startDate DateTime
-  endDate   DateTime
-  status    ClassStatus @default(PENDING)
-  students  Student[]
-  homeworks Homework[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id           Int         @id @default(autoincrement())
+  name         String
+  code         String      @unique
+  startDate    DateTime
+  endDate      DateTime
+  status       ClassStatus @default(PENDING)
+  scheduleSlots Json     @default("[]")
+  students     Student[]
+  homeworks    Homework[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   @@map("classes")
 }
@@ -101,10 +109,12 @@ model ParentInfo {
 
 model Homework {
   id             Int               @id @default(autoincrement())
+  type           HomeworkType      @default(PHONICS)
   dayAssigned    DateTime
   closedDatetime DateTime
   timeInSeconds  Int
   classId        Int
+  phonicsItems   String[]          @default([])
   class          Class             @relation(fields: [classId], references: [id])
   words          HomeworkWord[]
   sessions       HomeworkSession[]

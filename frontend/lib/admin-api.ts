@@ -87,11 +87,25 @@ export const startSession = (studentId: number, homeworkId: number) =>
     method: 'POST',
     body: JSON.stringify({ studentId, homeworkId }),
   });
-export const saveWordResult = (sessionId: number, wordId: number, transcribedText: string) =>
-  req<WordResult>(`/game/session/${sessionId}/word-result`, {
+export async function saveWordResult(
+  sessionId: number,
+  wordId: number,
+  transcribedText: string,
+  audio?: Blob,
+): Promise<WordResult> {
+  const form = new FormData();
+  form.append('wordId', String(wordId));
+  form.append('transcribedText', transcribedText);
+  if (audio && audio.size > 0) form.append('audio', audio, 'audio.webm');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const res = await fetch(`${API_URL}/game/session/${sessionId}/word-result`, {
     method: 'POST',
-    body: JSON.stringify({ wordId, transcribedText }),
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
   });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
 export async function completeSession(sessionId: number, videoBlob?: Blob) {
   const form = new FormData();
   if (videoBlob) form.append('recording', videoBlob, 'recording.webm');
@@ -108,12 +122,18 @@ export async function completeSession(sessionId: number, videoBlob?: Blob) {
 // Types
 export type ClassStatus = 'PENDING' | 'INPROGRESS' | 'ENDED';
 
+export interface ScheduleSlot {
+  day: string;
+  time: string;
+}
+
 export interface CreateClassInput {
   name: string;
   code: string;
   startDate: string;
   endDate: string;
   status?: ClassStatus;
+  scheduleSlots?: ScheduleSlot[];
 }
 
 export interface ClassItem {
@@ -123,6 +143,7 @@ export interface ClassItem {
   startDate: string;
   endDate: string;
   status: ClassStatus;
+  scheduleSlots: ScheduleSlot[];
   createdAt: string;
   _count?: { students: number; homeworks: number };
 }
@@ -153,7 +174,10 @@ export interface Student {
   createdAt: string;
 }
 
+export type HomeworkType = 'PHONICS' | 'READING' | 'SPELLING' | 'VOCABULARY';
+
 export interface CreateHomeworkInput {
+  type: HomeworkType;
   dayAssigned: string;
   closedDatetime: string;
   timeInSeconds: number;
@@ -163,6 +187,7 @@ export interface CreateHomeworkInput {
 
 export interface HomeworkItem {
   id: number;
+  type: HomeworkType;
   dayAssigned: string;
   closedDatetime: string;
   timeInSeconds: number;
@@ -190,6 +215,32 @@ export interface GameSession {
   wordResults?: WordResult[];
 }
 
+export interface PhonemeAlignment {
+  symbol: string;
+  ipa: string;
+  start: number;
+  end: number;
+  duration: number;
+}
+
+export interface PhonemeOp {
+  status: 'correct' | 'substituted' | 'missing' | 'extra' | 'error';
+  expected: string | null;
+  aligned: string | null;
+  start?: number;
+  end?: number;
+  duration?: number;
+  message?: string;
+}
+
+export interface BfaResult {
+  success: boolean;
+  phonemes: PhonemeAlignment[];
+  score: number;
+  feedback: PhonemeOp[];
+  word: string;
+}
+
 export interface WordResult {
   id: number;
   sessionId: number;
@@ -197,4 +248,5 @@ export interface WordResult {
   transcribedText?: string;
   score: number;
   word?: { id: number; text: string };
+  bfa?: BfaResult | null;
 }

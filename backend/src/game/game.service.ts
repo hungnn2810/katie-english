@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
+import { BfaService } from '../bfa/bfa.service';
+import { BfaAlignResult } from '../bfa/bfa.dto';
 import { StartSessionDto, SaveWordResultDto } from './game.dto';
 
 function levenshtein(a: string, b: string): number {
@@ -21,18 +23,22 @@ function calcScore(transcribed: string, target: string): number {
   if (!b) return 0;
   const words = transcribed.toLowerCase().trim().split(/\s+/).filter(Boolean);
   if (words.length === 0) return 0;
-  // Exact word match wins immediately
   if (words.includes(b)) return 100;
-  // Find closest individual word to avoid penalizing extra words in transcript
-  const bestDist = words.reduce((min, w) => Math.min(min, levenshtein(w, b)), Infinity);
-  return Math.max(0, Math.round((1 - bestDist / b.length) * 100));
+  const bestSim = words.reduce((max, w) => {
+    const sim = 1 - levenshtein(w, b) / Math.max(w.length, b.length);
+    return Math.max(max, sim);
+  }, 0);
+  return Math.max(0, Math.round(bestSim * 100));
 }
 
 @Injectable()
 export class GameService {
+  private readonly logger = new Logger(GameService.name);
+
   constructor(
     private readonly repo: GameRepository,
     private readonly storage: StorageService,
+    private readonly bfa: BfaService,
   ) {}
 
   async getAvailableHomework(studentId: number) {
@@ -42,8 +48,6 @@ export class GameService {
   }
 
   async startSession(dto: StartSessionDto) {
-    const existing = await this.repo.findCompletedSession(dto.studentId, dto.homeworkId);
-    if (existing) throw new BadRequestException('Homework already completed');
     return this.repo.createSession(dto.studentId, dto.homeworkId);
   }
 
@@ -53,16 +57,64 @@ export class GameService {
     return session;
   }
 
-  async saveWordResult(sessionId: number, dto: SaveWordResultDto) {
+  async saveWordResult(
+    sessionId: number,
+    dto: SaveWordResultDto,
+    audioBuffer?: Buffer,
+    mimeType?: string,
+  ) {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
     if (session.completedAt) throw new BadRequestException('Session already completed');
 
-    const word = session.homework.words.find((w) => w.wordId === dto.wordId);
-    if (!word) throw new BadRequestException(`Word ${dto.wordId} not in homework`);
+    const wordEntry = session.homework.words.find((w) => w.wordId === dto.wordId);
+    if (!wordEntry) throw new BadRequestException(`Word ${dto.wordId} not in homework`);
 
-    const score = calcScore(dto.transcribedText ?? '', word.word.text);
-    return this.repo.saveWordResult(sessionId, dto.wordId, dto.transcribedText, score);
+    let score: number;
+    let bfaResult: BfaAlignResult | null = null;
+
+    this.logger.log(
+      `[session=${sessionId}] word="${wordEntry.word.text}" transcribed="${dto.transcribedText ?? ''}" audio=${audioBuffer ? `${audioBuffer.length}B ${mimeType}` : 'none'}`,
+    );
+
+    if (audioBuffer && audioBuffer.length > 0) {
+      const expectedPhonemes = wordEntry.word.wordPhonemes
+        .map((wp) => wp.phoneme.symbol);
+
+      this.logger.log(`[session=${sessionId}] expected phonemes: [${expectedPhonemes.join(', ')}]`);
+
+      try {
+        bfaResult = await this.bfa.align(
+          audioBuffer,
+          mimeType ?? 'audio/webm',
+          wordEntry.word.text,
+          expectedPhonemes,
+        );
+
+        this.logger.log(
+          `[session=${sessionId}] BFA result: success=${bfaResult.success} score=${bfaResult.score} aligned=[${bfaResult.phonemes.map((p) => p.ipa).join(', ')}]`,
+        );
+
+        if (bfaResult.success) {
+          score = bfaResult.score;
+        } else {
+          this.logger.warn(`[session=${sessionId}] BFA alignment failed for "${wordEntry.word.text}", falling back to Levenshtein`);
+          score = calcScore(dto.transcribedText ?? '', wordEntry.word.text);
+        }
+      } catch (err) {
+        this.logger.warn(`[session=${sessionId}] BFA service error for "${wordEntry.word.text}", falling back to Levenshtein: ${(err as Error).message}`);
+        score = calcScore(dto.transcribedText ?? '', wordEntry.word.text);
+      }
+    } else {
+      this.logger.log(`[session=${sessionId}] no audio — Levenshtein only`);
+      score = calcScore(dto.transcribedText ?? '', wordEntry.word.text);
+    }
+
+    this.logger.log(`[session=${sessionId}] final score=${score} for word="${wordEntry.word.text}"`);
+
+
+    const result = await this.repo.saveWordResult(sessionId, dto.wordId, dto.transcribedText, score);
+    return { ...result, bfa: bfaResult };
   }
 
   listSessions(homeworkId?: number, studentId?: number) {
@@ -70,7 +122,6 @@ export class GameService {
   }
 
   streamRecording(videoUrl: string) {
-    // Support legacy full URLs (http://host/bucket/key) and new bare keys
     let key = videoUrl;
     if (videoUrl.startsWith('http')) {
       const bucket = process.env.MINIO_BUCKET ?? 'phonics-audio';
@@ -93,8 +144,9 @@ export class GameService {
     }
 
     const results = session.wordResults;
-    const avgScore = results.length
-      ? results.reduce((s, r) => s + r.score, 0) / results.length
+    const totalWords = session.homework.words.length;
+    const avgScore = totalWords > 0
+      ? results.reduce((s, r) => s + r.score, 0) / totalWords
       : 0;
 
     return this.repo.completeSession(sessionId, videoUrl, Math.round(avgScore));

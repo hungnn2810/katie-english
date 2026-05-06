@@ -1,12 +1,25 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getHomeworkList, createHomework, deleteHomework, getClasses, getWords, HomeworkItem, ClassItem, CreateHomeworkInput } from '@/lib/admin-api';
+import { getHomeworkList, createHomework, updateHomework, deleteHomework, getClasses, getWords, HomeworkItem, ClassItem, CreateHomeworkInput, HomeworkType } from '@/lib/admin-api';
 import { cardGradients, gradients, colors } from '@/lib/colors';
 
+const HOMEWORK_TYPES: { value: HomeworkType; label: string }[] = [
+  { value: 'PHONICS', label: 'Phonics' },
+  { value: 'READING', label: 'Reading' },
+  { value: 'SPELLING', label: 'Spelling' },
+  { value: 'VOCABULARY', label: 'Vocabulary' },
+];
+
 const emptyForm = (): CreateHomeworkInput => ({
-  dayAssigned: '', closedDatetime: '', timeInSeconds: 30, classId: 0, wordIds: [],
+  type: 'PHONICS', dayAssigned: '', closedDatetime: '', timeInSeconds: 30, classId: 0, wordIds: [],
 });
+
+function toLocalDatetimeValue(iso: string) {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 export default function HomeworkPage() {
   const [list, setList] = useState<HomeworkItem[]>([]);
@@ -14,6 +27,7 @@ export default function HomeworkPage() {
   const [words, setWords] = useState<{ id: number; text: string; difficulty: number }[]>([]);
   const [form, setForm] = useState(emptyForm());
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState('');
 
   const load = () => getHomeworkList().then(setList).catch(() => {});
@@ -26,31 +40,73 @@ export default function HomeworkPage() {
     }));
   }
 
+  function startEdit(h: HomeworkItem) {
+    setEditingId(h.id);
+    setForm({
+      type: h.type,
+      dayAssigned: new Date(h.dayAssigned).toISOString().slice(0, 10),
+      closedDatetime: toLocalDatetimeValue(h.closedDatetime),
+      timeInSeconds: h.timeInSeconds,
+      classId: h.classId,
+      wordIds: h.words.map((w) => w.word.id),
+    });
+    setShowForm(true);
+    setError('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelForm() {
+    setShowForm(false);
+    setEditingId(null);
+    setForm(emptyForm());
+    setError('');
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setError('');
     if (!form.classId) { setError('Select a class'); return; }
     if (form.wordIds.length === 0) { setError('Select at least one word'); return; }
     try {
-      await createHomework(form);
-      setForm(emptyForm()); setShowForm(false); load();
+      if (editingId !== null) {
+        await updateHomework(editingId, form);
+      } else {
+        await createHomework(form);
+      }
+      cancelForm(); load();
     } catch (err: unknown) { setError(err instanceof Error ? err.message : 'Error'); }
   }
 
   return (
     <>
       <div className="flex justify-end mb-6">
-        <button onClick={() => { setShowForm(!showForm); setForm(emptyForm()); }}
+        <button onClick={() => { if (showForm && editingId === null) { cancelForm(); } else { cancelForm(); setShowForm(true); } }}
           className="px-5 py-2.5 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg transition-all"
           style={{ background: gradients.primarySecondary }}>
-          {showForm ? 'Cancel' : '+ New Homework'}
+          {showForm && editingId === null ? 'Cancel' : '+ New Homework'}
         </button>
       </div>
 
       {showForm && (
         <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-border">
-          <h3 className="font-bold text-textPrimary mb-4">Create Homework</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-textPrimary">
+              {editingId !== null ? `Edit Homework #${editingId}` : 'Create Homework'}
+            </h3>
+            {editingId !== null && (
+              <button type="button" onClick={cancelForm} className="text-xs text-textSecondary hover:text-textPrimary">
+                Cancel
+              </button>
+            )}
+          </div>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-textSecondary mb-1 uppercase tracking-wide">Type</label>
+                <select className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as HomeworkType }))} required>
+                  {HOMEWORK_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
               <div>
                 <label className="block text-xs font-semibold text-textSecondary mb-1 uppercase tracking-wide">Class</label>
                 <select className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
@@ -101,7 +157,7 @@ export default function HomeworkPage() {
             <button type="submit"
               className="px-6 py-2.5 rounded-xl text-white font-semibold text-sm"
               style={{ background: gradients.primarySecondary }}>
-              Create Homework
+              {editingId !== null ? 'Update Homework' : 'Create Homework'}
             </button>
           </form>
         </div>
@@ -116,7 +172,7 @@ export default function HomeworkPage() {
           const wordList = h.words.map((w) => w.word.text);
           const isClosed = new Date(h.closedDatetime) < new Date();
           return (
-            <div key={h.id} className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden hover:shadow-md transition-shadow">
+            <div key={h.id} className={`bg-white rounded-2xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow ${editingId === h.id ? 'border-primary' : 'border-border'}`}>
               <div className="h-2" style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }} />
               <Link href={`/teacher/homework/${h.id}`} className="block p-5 pb-3">
                 <div className="flex items-start justify-between mb-3">
@@ -124,9 +180,14 @@ export default function HomeworkPage() {
                     <div className="font-bold text-textPrimary">{h.class?.name ?? `Class #${h.classId}`}</div>
                     <div className="text-xs text-textSecondary mt-0.5">{new Date(h.dayAssigned).toLocaleDateString()}</div>
                   </div>
-                  <span className={`text-xs font-bold px-2 py-1 rounded-lg ${isClosed ? 'bg-gray-100 text-textSecondary' : 'bg-brand-green/15 text-brand-green'}`}>
-                    {isClosed ? 'Closed' : 'Open'}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`text-xs font-bold px-2 py-1 rounded-lg ${isClosed ? 'bg-gray-100 text-textSecondary' : 'bg-brand-green/15 text-brand-green'}`}>
+                      {isClosed ? 'Closed' : 'Open'}
+                    </span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-lg bg-primary/10 text-primary capitalize">
+                      {h.type.charAt(0) + h.type.slice(1).toLowerCase()}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-1 mb-3">
@@ -145,7 +206,11 @@ export default function HomeworkPage() {
                   {h.timeInSeconds}s per word · Closes {new Date(h.closedDatetime).toLocaleString()}
                 </div>
               </Link>
-              <div className="px-5 pb-4 pt-3 border-t border-border">
+              <div className="px-5 pb-4 pt-3 border-t border-border flex items-center gap-4">
+                <button onClick={() => startEdit(h)}
+                  className="text-xs text-primary hover:text-primary/70 font-semibold">
+                  Edit
+                </button>
                 <button onClick={async () => { if (confirm('Delete this homework?')) { await deleteHomework(h.id); load(); } }}
                   className="text-xs text-highlight hover:text-red-600 font-semibold">
                   Delete

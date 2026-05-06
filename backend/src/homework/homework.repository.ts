@@ -39,6 +39,7 @@ export class HomeworkRepository {
   async create(dto: CreateHomeworkDto) {
     return this.prisma.homework.create({
       data: {
+        type: dto.type,
         dayAssigned: new Date(dto.dayAssigned),
         closedDatetime: new Date(dto.closedDatetime),
         timeInSeconds: dto.timeInSeconds,
@@ -61,6 +62,7 @@ export class HomeworkRepository {
     return this.prisma.homework.update({
       where: { id },
       data: {
+        ...(dto.type !== undefined && { type: dto.type }),
         ...(dto.dayAssigned && { dayAssigned: new Date(dto.dayAssigned) }),
         ...(dto.closedDatetime && { closedDatetime: new Date(dto.closedDatetime) }),
         ...(dto.timeInSeconds !== undefined && { timeInSeconds: dto.timeInSeconds }),

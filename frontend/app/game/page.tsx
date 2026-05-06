@@ -18,6 +18,7 @@ export default function GamePage() {
   const [error, setError] = useState('');
 
   const loadWord = useCallback(async (lvl: number) => {
+    console.log('Loading word for level', lvl);
     setState('loading');
     setSelected([]);
     setResult(null);

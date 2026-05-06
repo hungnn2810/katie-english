@@ -9,12 +9,14 @@ import { ClassModule } from './class/class.module';
 import { HomeworkModule } from './homework/homework.module';
 import { GameModule } from './game/game.module';
 import { AuthModule } from './auth/auth.module';
+import { BfaModule } from './bfa/bfa.module';
 
 @Module({
   imports: [
     PrismaModule,
     StorageModule,
     AuthModule,
+    BfaModule,
     PhonemeModule,
     WordModule,
     QuizModule,
