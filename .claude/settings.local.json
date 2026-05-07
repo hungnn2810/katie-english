@@ -36,7 +36,22 @@
       "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
       "WebFetch(domain:www.readnaturally.com)",
       "Bash(node *)",
-      "Bash(kill 34197)"
+      "Bash(kill 34197)",
+      "Bash(xargs ls -la)",
+      "Read(//Users/hung/Desktop/**)",
+      "Bash(curl *)",
+      "Bash(docker compose *)",
+      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration.spec.ts --no-coverage --verbose)",
+      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration.spec.ts --no-coverage)",
+      "Bash(tee /tmp/bfa-test.out)",
+      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration --no-coverage --verbose)",
+      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration --no-coverage --verbose --testTimeout=60000)",
+      "Bash(python3 -m json.tool)",
+      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration --no-coverage)",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"jest\")",
+      "Bash(pkill -f \"node.*game.scoring\")",
+      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration --no-coverage --forceExit)"
     ]
   },
   "enableAllProjectMcpServers": true,

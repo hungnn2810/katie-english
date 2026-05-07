@@ -1,6 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+const homeworkPartsInclude = {
+  parts: {
+    orderBy: { orderIndex: 'asc' as const },
+    include: {
+      words: {
+        orderBy: { orderIndex: 'asc' as const },
+        include: {
+          word: {
+            include: {
+              wordPhonemes: { orderBy: { orderIndex: 'asc' as const }, include: { phoneme: true } },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+const homeworkPartsSimpleInclude = {
+  parts: {
+    orderBy: { orderIndex: 'asc' as const },
+    include: { words: { orderBy: { orderIndex: 'asc' as const }, include: { word: true } } },
+  },
+};
+
 @Injectable()
 export class GameRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -14,7 +39,7 @@ export class GameRepository {
             homeworks: {
               where: { closedDatetime: { gte: new Date() } },
               include: {
-                words: { orderBy: { orderIndex: 'asc' }, include: { word: true } },
+                ...homeworkPartsSimpleInclude,
                 sessions: {
                   where: { studentId, completedAt: { not: null } },
                   orderBy: { score: 'desc' },
@@ -36,11 +61,7 @@ export class GameRepository {
   createSession(studentId: number, homeworkId: number) {
     return this.prisma.homeworkSession.create({
       data: { studentId, homeworkId },
-      include: {
-        homework: {
-          include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } },
-        },
-      },
+      include: { homework: { include: homeworkPartsSimpleInclude } },
     });
   }
 
@@ -48,20 +69,7 @@ export class GameRepository {
     return this.prisma.homeworkSession.findUnique({
       where: { id },
       include: {
-        homework: {
-          include: {
-            words: {
-              orderBy: { orderIndex: 'asc' },
-              include: {
-                word: {
-                  include: {
-                    wordPhonemes: { orderBy: { orderIndex: 'asc' }, include: { phoneme: true } },
-                  },
-                },
-              },
-            },
-          },
-        },
+        homework: { include: homeworkPartsInclude },
         student: true,
         wordResults: { include: { word: true } },
       },
@@ -93,7 +101,7 @@ export class GameRepository {
       orderBy: { startedAt: 'desc' },
       include: {
         student: true,
-        homework: { include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } } },
+        homework: { include: homeworkPartsSimpleInclude },
         wordResults: { orderBy: { id: 'asc' }, include: { word: true } },
       },
     });

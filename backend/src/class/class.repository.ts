@@ -19,7 +19,7 @@ export class ClassRepository {
       where: { id },
       include: {
         students: true,
-        homeworks: { include: { words: { include: { word: true } } } },
+        homeworks: { include: { parts: { include: { words: { include: { word: true } } } } } },
       },
     });
   }

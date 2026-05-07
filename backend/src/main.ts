@@ -20,7 +20,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'warn', 'error', 'debug', 'verbose'],
   });
-  app.enableCors({ origin: '*' });
+  app.enableCors({ origin: '*' }); 
   await ensureTeacherUser(app.get(PrismaService));
   await app.listen(process.env.PORT ?? 3001);
   console.log(`Backend running on port ${process.env.PORT ?? 3001}`);

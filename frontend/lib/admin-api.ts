@@ -2,12 +2,22 @@ import { authHeaders } from './auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
+async function parseApiError(res: Response): Promise<never> {
+  const text = await res.text();
+  let message = text;
+  try {
+    const json = JSON.parse(text);
+    message = Array.isArray(json.message) ? json.message.join(', ') : (json.message ?? text);
+  } catch { /* not JSON */ }
+  throw new Error(message || 'An error occurred. Please try again.');
+}
+
 async function req<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     headers: { ...authHeaders(), ...(options?.headers ?? {}) },
     ...options,
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) return parseApiError(res);
   return res.json();
 }
 
@@ -40,6 +50,20 @@ export const approveStudent = (data: ApproveStudentInput) =>
   req<{ approved: true; studentId: number }>('/auth/approve-student', {
     method: 'POST',
     body: JSON.stringify(data),
+  });
+
+export interface PasswordResetRequest {
+  id: number;
+  upn: string;
+  createdAt: string;
+  student: { fullname: string } | null;
+}
+
+export const getPasswordResetRequests = () => req<PasswordResetRequest[]>('/auth/password-reset-requests');
+export const resetStudentPassword = (userId: number, newPassword: string) =>
+  req<{ success: true }>('/auth/reset-student-password', {
+    method: 'POST',
+    body: JSON.stringify({ userId, newPassword }),
   });
 
 // Classes
@@ -103,7 +127,7 @@ export async function saveWordResult(
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: form,
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) return parseApiError(res);
   return res.json();
 }
 export async function completeSession(sessionId: number, videoBlob?: Blob) {
@@ -115,7 +139,7 @@ export async function completeSession(sessionId: number, videoBlob?: Blob) {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: form,
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) return parseApiError(res);
   return res.json() as Promise<GameSession>;
 }
 
@@ -174,26 +198,36 @@ export interface Student {
   createdAt: string;
 }
 
-export type HomeworkType = 'PHONICS' | 'READING' | 'SPELLING' | 'VOCABULARY';
+export type HomeworkType = 'PHONICS' | 'READING' | 'SPELLING' | 'VOCABULARY' | 'SPEAKING';
+
+export interface CreateHomeworkPartInput {
+  type: HomeworkType;
+  wordIds?: number[];
+  phonicsItems?: string[];
+}
 
 export interface CreateHomeworkInput {
-  type: HomeworkType;
   dayAssigned: string;
   closedDatetime: string;
-  timeInSeconds: number;
   classId: number;
-  wordIds: number[];
+  parts: CreateHomeworkPartInput[];
+}
+
+export interface HomeworkPart {
+  id: number;
+  type: HomeworkType;
+  orderIndex: number;
+  phonicsItems: string[];
+  words: { orderIndex: number; word: { id: number; text: string } }[];
 }
 
 export interface HomeworkItem {
   id: number;
-  type: HomeworkType;
   dayAssigned: string;
   closedDatetime: string;
-  timeInSeconds: number;
   classId: number;
   class?: ClassItem;
-  words: { orderIndex: number; word: { id: number; text: string } }[];
+  parts: HomeworkPart[];
   createdAt: string;
   sessions?: GameSession[];
 }

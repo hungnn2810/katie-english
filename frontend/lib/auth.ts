@@ -1,5 +1,15 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
+async function parseApiError(res: Response): Promise<never> {
+  const text = await res.text();
+  let message = text;
+  try {
+    const json = JSON.parse(text);
+    message = Array.isArray(json.message) ? json.message.join(', ') : (json.message ?? text);
+  } catch { /* not JSON */ }
+  throw new Error(message || 'An error occurred. Please try again.');
+}
+
 export interface AuthUser {
   id: number;
   upn: string;
@@ -39,7 +49,7 @@ export async function login(upn: string, password: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ upn, password }),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) return parseApiError(res);
   const data = await res.json();
   setAuth(data.token, data.user);
   return data.user as AuthUser;
@@ -61,6 +71,24 @@ export async function register(data: RegisterInput): Promise<{ pending: true }> 
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) return parseApiError(res);
   return { pending: true };
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const res = await fetch(`${API_URL}/auth/change-password`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  if (!res.ok) return parseApiError(res);
+}
+
+export async function forgotPassword(upn: string): Promise<void> {
+  const res = await fetch(`${API_URL}/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ upn }),
+  });
+  if (!res.ok) return parseApiError(res);
 }

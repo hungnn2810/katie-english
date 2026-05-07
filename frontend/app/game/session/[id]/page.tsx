@@ -89,8 +89,8 @@ export default function SessionPage() {
   useEffect(() => {
     fetchSession(sessionId).then((session) => {
       const hw = session.homework!;
-      setTimeInSeconds(hw.timeInSeconds);
-      setWords(hw.words!.map((w) => ({
+      const allWords = hw.parts.flatMap((p) => p.words);
+      setWords(allWords.map((w) => ({
         wordId: w.word.id, text: w.word.text, transcribed: '', score: 0, state: 'waiting' as WordState,
       })));
       requestCamera();

@@ -1,19 +1,21 @@
-export type HomeworkType = 'PHONICS' | 'READING' | 'SPELLING' | 'VOCABULARY';
+export type HomeworkType = 'PHONICS' | 'READING' | 'SPELLING' | 'VOCABULARY' | 'SPEAKING';
+
+export class CreateHomeworkPartDto {
+  type: HomeworkType;
+  wordIds?: number[];
+  phonicsItems?: string[];
+}
 
 export class CreateHomeworkDto {
-  type: HomeworkType;
   dayAssigned: string;
   closedDatetime: string;
-  timeInSeconds: number;
   classId: number;
-  wordIds: number[];
+  parts: CreateHomeworkPartDto[];
 }
 
 export class UpdateHomeworkDto {
-  type?: HomeworkType;
   dayAssigned?: string;
   closedDatetime?: string;
-  timeInSeconds?: number;
   classId?: number;
-  wordIds?: number[];
+  parts?: CreateHomeworkPartDto[];
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGate from '@/components/AuthGate';
 import { getAvailableHomework, startSession, HomeworkItem } from '@/lib/admin-api';
-import { AuthUser, clearAuth } from '@/lib/auth';
+import { AuthUser, clearAuth, changePassword } from '@/lib/auth';
 import { cardGradients, gradients } from '@/lib/colors';
 
 function PageContent({ user }: { user: AuthUser }) {
@@ -12,6 +12,25 @@ function PageContent({ user }: { user: AuthUser }) {
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [showPwModal, setShowPwModal] = useState(false);
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPwError(''); setPwSuccess(false); setPwLoading(true);
+    try {
+      await changePassword(currentPw, newPw);
+      setPwSuccess(true);
+      setCurrentPw(''); setNewPw('');
+      setTimeout(() => { setShowPwModal(false); setPwSuccess(false); }, 2000);
+    } catch (err: unknown) {
+      setPwError(err instanceof Error ? err.message : 'Failed to change password');
+    } finally { setPwLoading(false); }
+  }
 
   useEffect(() => {
     if (!user.studentId) { setLoading(false); return; }
@@ -35,6 +54,48 @@ function PageContent({ user }: { user: AuthUser }) {
 
   return (
     <div className="min-h-screen" style={{ background: gradients.gameBg, minWidth: 1024 }}>
+      {/* Change password modal */}
+      {showPwModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-slide-up">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-bold text-textPrimary text-base">Change Password</h3>
+              <button onClick={() => { setShowPwModal(false); setPwError(''); setPwSuccess(false); setCurrentPw(''); setNewPw(''); }}
+                className="text-textSecondary hover:text-textPrimary transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            {pwSuccess ? (
+              <div className="text-center py-4">
+                <div className="text-4xl mb-3">✅</div>
+                <div className="font-bold text-textPrimary">Password updated!</div>
+              </div>
+            ) : (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-textSecondary mb-1.5">Current Password</label>
+                  <input type="password" className="input-base" placeholder="••••••••" value={currentPw}
+                    onChange={(e) => setCurrentPw(e.target.value)} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-textSecondary mb-1.5">New Password</label>
+                  <input type="password" className="input-base" placeholder="Min 6 characters" value={newPw}
+                    onChange={(e) => setNewPw(e.target.value)} required minLength={6} />
+                </div>
+                {pwError && <div className="text-highlight text-sm bg-highlight/10 border border-highlight/20 px-3 py-2 rounded-xl">{pwError}</div>}
+                <button type="submit" disabled={pwLoading}
+                  className="btn-primary w-full py-2.5 disabled:opacity-60"
+                  style={{ background: gradients.pinkHighlight }}>
+                  {pwLoading ? 'Updating...' : 'Update Password'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="px-10 py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -51,6 +112,10 @@ function PageContent({ user }: { user: AuthUser }) {
             </div>
             <span className="text-white/70 text-sm">{user.upn}</span>
           </div>
+          <button onClick={() => setShowPwModal(true)}
+            className="text-white/60 hover:text-white text-sm transition-colors">
+            Change password
+          </button>
           <button onClick={() => { clearAuth(); router.push('/login'); }}
             className="text-white/60 hover:text-white text-sm transition-colors">
             Sign out
@@ -94,7 +159,7 @@ function PageContent({ user }: { user: AuthUser }) {
         <div className="grid grid-cols-3 gap-6">
           {homework.map((h, i) => {
             const g = cardGradients[i % cardGradients.length];
-            const wordList = h.words.map((w) => w.word.text);
+            const wordList = h.parts.flatMap((p) => p.words.map((w) => w.word.text));
             const dueDate = new Date(h.closedDatetime);
             const daysLeft = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
             const completedSessions = h.sessions?.filter((s) => s.completedAt) ?? [];
@@ -133,8 +198,7 @@ function PageContent({ user }: { user: AuthUser }) {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="text-white text-opacity-80 text-xs">{h.timeInSeconds}s per word</div>
-                    <button
+<button
                       disabled={starting === h.id}
                       className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold text-sm px-5 py-2 rounded-xl transition-all disabled:opacity-60">
                       {starting === h.id ? 'Starting...' : bestScore !== null ? 'Try Again →' : 'Start →'}

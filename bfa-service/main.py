@@ -14,18 +14,27 @@ app = FastAPI()
 
 IPA_TO_SIMPLIFIED: dict[str, str] = {
     # 3-char sequences (checked first)
-    "juː": "yoo",
-    # 2-char sequences
+    # 2-char sequences — diphthongs
     "tʃ": "ch",
     "dʒ": "j",
-    "eɪ": "e",
-    "aɪ": "i",
+    "eɪ": "e",   # long a (American)
+    "aɪ": "i",   # long i
     "ɔɪ": "oi",
     "aʊ": "ou",
-    "oʊ": "o",
-    "ju": "yoo",
+    "oʊ": "o",   # long o (American)
+    "əʊ": "o",   # long o (British espeak)
     "uː": "oo",
     "iː": "i",
+    # r-colored vowels (aligner outputs these as 2-char units)
+    "ɑɹ": "ar",
+    "ɔɹ": "or",
+    "ɛɹ": "er",
+    "ɪɹ": "er",
+    "ʊɹ": "er",
+    "ɜɹ": "er",
+    "ɝɹ": "er",
+    "aɹ": "ar",
+    "oɹ": "or",
     # Single chars
     "k": "c",
     "c": "c",
@@ -41,6 +50,9 @@ IPA_TO_SIMPLIFIED: dict[str, str] = {
     "h": "h",
     "l": "l",
     "r": "r",
+    "ɹ": "r",   # rhotic approximant (aligner uses ɹ not r)
+    "ɾ": "t",   # alveolar flap (American English "t" between vowels)
+    "ɚ": "er",  # r-colored schwa (American English unstressed "er")
     "m": "m",
     "n": "n",
     "w": "w",
@@ -55,6 +67,8 @@ IPA_TO_SIMPLIFIED: dict[str, str] = {
     "ʌ": "a",
     "ə": "a",
     "ɛ": "e",
+    "ɜ": "er",  # open-mid central (her)
+    "ɝ": "er",  # r-colored mid central (American her)
     "ɪ": "i",
     "ɨ": "i",
     "i": "i",
@@ -80,8 +94,10 @@ def normalize_ipa(label: str) -> str:
 
 def espeak_phonemes(word: str) -> List[str]:
     try:
+        preset = os.getenv("BFA_PRESET", "en-us")
+        espeak_voice = "en-us" if "en-us" in preset else preset
         out = subprocess.run(
-            ["espeak-ng", "--ipa", "-q", word],
+            ["espeak-ng", "-v", espeak_voice, "--ipa", "-q", word],
             capture_output=True, text=True, timeout=5,
         ).stdout.strip()
         # strip stress, length, syllable boundary markers
@@ -190,8 +206,17 @@ async def align(
         with open(raw_path, "wb") as f:
             f.write(await audio.read())
 
+        # Normalize to 16kHz mono WAV — handles m4a, webm, opus, mp4, etc.
+        wav_path = work_dir / "input.wav"
+        conv = subprocess.run(
+            ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-y", str(wav_path)],
+            capture_output=True,
+        )
+        if conv.returncode != 0:
+            return error_payload(word, f"Audio conversion failed: {conv.stderr.decode()[:200]}")
+
         aligner = get_aligner()
-        audio_data = aligner.load_audio(str(raw_path))
+        audio_data = aligner.load_audio(str(wav_path))
         result = aligner.process_sentence(word, audio_data)
 
         segments = result.get("segments") if isinstance(result, dict) else None
@@ -202,14 +227,17 @@ async def align(
         if not phoneme_ts:
             return error_payload(word, "No phoneme timestamps produced")
 
+        SILENCE_LABELS = {"-", "SIL", "sil", "sp", "spn", "<eps>", ""}
         aligned_phonemes: List[dict] = []
         for entry in phoneme_ts:
             if not isinstance(entry, dict):
                 continue
             label = str(entry.get("ipa_label") or entry.get("phoneme_label") or "").strip()
-            if not label:
+            if not label or label in SILENCE_LABELS:
                 continue
             symbol = normalize_ipa(label)
+            if not symbol or symbol in SILENCE_LABELS:
+                continue
             start_ms = float(entry.get("start_ms", 0.0))
             end_ms = float(entry.get("end_ms", 0.0))
             aligned_phonemes.append({

@@ -18,6 +18,7 @@ enum HomeworkType {
   READING
   SPELLING
   VOCABULARY
+  SPEAKING
 }
 
 enum Sex {
@@ -45,9 +46,9 @@ model Word {
   text          String               @unique
   audioUrl      String
   difficulty    Int                  @default(1)
-  wordPhonemes  WordPhoneme[]
-  homeworkWords HomeworkWord[]
-  wordResults   HomeworkWordResult[]
+  wordPhonemes      WordPhoneme[]
+  homeworkPartWords HomeworkPartWord[]
+  wordResults       HomeworkWordResult[]
 
   @@map("words")
 }
@@ -109,14 +110,11 @@ model ParentInfo {
 
 model Homework {
   id             Int               @id @default(autoincrement())
-  type           HomeworkType      @default(PHONICS)
   dayAssigned    DateTime
   closedDatetime DateTime
-  timeInSeconds  Int
   classId        Int
-  phonicsItems   String[]          @default([])
   class          Class             @relation(fields: [classId], references: [id])
-  words          HomeworkWord[]
+  parts          HomeworkPart[]
   sessions       HomeworkSession[]
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
@@ -124,16 +122,29 @@ model Homework {
   @@map("homeworks")
 }
 
-model HomeworkWord {
-  id         Int      @id @default(autoincrement())
-  homeworkId Int
-  wordId     Int
-  orderIndex Int
-  homework   Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
-  word       Word     @relation(fields: [wordId], references: [id])
+model HomeworkPart {
+  id           Int                @id @default(autoincrement())
+  homeworkId   Int
+  type         HomeworkType
+  orderIndex   Int
+  phonicsItems String[]           @default([])
+  homework     Homework           @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  words        HomeworkPartWord[]
 
   @@unique([homeworkId, orderIndex])
-  @@map("homework_words")
+  @@map("homework_parts")
+}
+
+model HomeworkPartWord {
+  id         Int          @id @default(autoincrement())
+  partId     Int
+  wordId     Int
+  orderIndex Int
+  part       HomeworkPart @relation(fields: [partId], references: [id], onDelete: Cascade)
+  word       Word         @relation(fields: [wordId], references: [id])
+
+  @@unique([partId, orderIndex])
+  @@map("homework_part_words")
 }
 
 model HomeworkSession {
@@ -170,15 +181,16 @@ enum UserRole {
 }
 
 model User {
-  id               Int      @id @default(autoincrement())
-  upn              String   @unique
-  password         String
-  role             UserRole
-  approved         Boolean  @default(false)
-  studentId        Int?     @unique
-  student          Student? @relation(fields: [studentId], references: [id])
-  registrationData Json?
-  createdAt        DateTime @default(now())
+  id                      Int      @id @default(autoincrement())
+  upn                     String   @unique
+  password                String
+  role                    UserRole
+  approved                Boolean  @default(false)
+  studentId               Int?     @unique
+  student                 Student? @relation(fields: [studentId], references: [id])
+  registrationData        Json?
+  passwordResetRequested  Boolean  @default(false)
+  createdAt               DateTime @default(now())
 
   @@map("users")
 }

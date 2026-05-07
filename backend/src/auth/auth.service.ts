@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenService } from './jwt.service';
-import { LoginDto, RegisterDto, ApproveStudentDto } from './auth.dto';
+import { LoginDto, RegisterDto, ApproveStudentDto, ChangePasswordDto, ForgotPasswordDto, ResetStudentPasswordDto } from './auth.dto';
 import * as bcrypt from 'bcryptjs';
 import { UserRole, Sex, ParentType } from '@prisma/client';
 
@@ -105,5 +105,51 @@ export class AuthService {
       where: { id: userId },
       select: { id: true, upn: true, role: true, studentId: true, approved: true },
     });
+  }
+
+  async changePassword(userId: number, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    const valid = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!valid) throw new UnauthorizedException('Current password is incorrect');
+    if (dto.newPassword.length < 6) throw new BadRequestException('New password must be at least 6 characters');
+    const hashed = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({ where: { id: userId }, data: { password: hashed } });
+    return { success: true };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { upn: dto.upn } });
+    if (!user || user.role !== UserRole.STUDENT) {
+      // Return same response regardless — don't leak whether UPN exists
+      return { requested: true };
+    }
+    if (!user.approved) throw new ForbiddenException('Account not yet approved');
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordResetRequested: true },
+    });
+    return { requested: true };
+  }
+
+  async listPasswordResetRequests() {
+    return this.prisma.user.findMany({
+      where: { role: UserRole.STUDENT, approved: true, passwordResetRequested: true },
+      select: { id: true, upn: true, createdAt: true, student: { select: { fullname: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async resetStudentPassword(dto: ResetStudentPasswordDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: dto.userId } });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.role !== UserRole.STUDENT) throw new ForbiddenException('Can only reset student passwords');
+    if (dto.newPassword.length < 6) throw new BadRequestException('Password must be at least 6 characters');
+    const hashed = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: dto.userId },
+      data: { password: hashed, passwordResetRequested: false },
+    });
+    return { success: true };
   }
 }

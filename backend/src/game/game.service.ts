@@ -4,32 +4,7 @@ import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { BfaAlignResult } from '../bfa/bfa.dto';
 import { StartSessionDto, SaveWordResultDto } from './game.dto';
-
-function levenshtein(a: string, b: string): number {
-  const m = a.length, n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
-    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)),
-  );
-  for (let i = 1; i <= m; i++)
-    for (let j = 1; j <= n; j++)
-      dp[i][j] = a[i - 1] === b[j - 1]
-        ? dp[i - 1][j - 1]
-        : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
-  return dp[m][n];
-}
-
-function calcScore(transcribed: string, target: string): number {
-  const b = target.toLowerCase().trim();
-  if (!b) return 0;
-  const words = transcribed.toLowerCase().trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return 0;
-  if (words.includes(b)) return 100;
-  const bestSim = words.reduce((max, w) => {
-    const sim = 1 - levenshtein(w, b) / Math.max(w.length, b.length);
-    return Math.max(max, sim);
-  }, 0);
-  return Math.max(0, Math.round(bestSim * 100));
-}
+import { calcScore } from './game.scoring';
 
 @Injectable()
 export class GameService {
@@ -67,7 +42,8 @@ export class GameService {
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
     if (session.completedAt) throw new BadRequestException('Session already completed');
 
-    const wordEntry = session.homework.words.find((w) => w.wordId === dto.wordId);
+    const allWords = session.homework.parts.flatMap((p) => p.words);
+    const wordEntry = allWords.find((w) => w.wordId === dto.wordId);
     if (!wordEntry) throw new BadRequestException(`Word ${dto.wordId} not in homework`);
 
     let score: number;
@@ -144,7 +120,7 @@ export class GameService {
     }
 
     const results = session.wordResults;
-    const totalWords = session.homework.words.length;
+    const totalWords = session.homework.parts.flatMap((p) => p.words).length;
     const avgScore = totalWords > 0
       ? results.reduce((s, r) => s + r.score, 0) / totalWords
       : 0;

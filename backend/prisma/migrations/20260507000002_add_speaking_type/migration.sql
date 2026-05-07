@@ -1,0 +1,1 @@
+ALTER TYPE "HomeworkType" ADD VALUE 'SPEAKING';

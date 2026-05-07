@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getHomework, HomeworkDetail } from '@/lib/admin-api';
+import { gradients } from '@/lib/colors';
 
 function scoreColor(score: number) {
   if (score >= 80) return 'text-brand-green';
@@ -13,6 +14,7 @@ function scoreColor(score: number) {
 export default function TeacherHomeworkDetailPage() {
   const { id } = useParams<{ id: string }>();
   const hwId = Number(id);
+  const router = useRouter();
   const [hw, setHw] = useState<HomeworkDetail | null>(null);
 
   useEffect(() => { getHomework(hwId).then(setHw).catch(() => {}); }, [hwId]);
@@ -23,20 +25,37 @@ export default function TeacherHomeworkDetailPage() {
 
   return (
     <div className="max-w-2xl">
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/teacher/homework" className="text-sm text-textSecondary hover:text-textPrimary">← Homework</Link>
-        <span className="text-border">/</span>
-        <span className="text-sm text-textPrimary font-medium">Student Results</span>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Link href="/teacher/homework" className="text-sm text-textSecondary hover:text-textPrimary">← Homework</Link>
+          <span className="text-border">/</span>
+          <span className="text-sm text-textPrimary font-medium">Student Results</span>
+        </div>
+        <button
+          onClick={() => router.push(`/teacher/homework/${hwId}/try`)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
+          style={{ background: gradients.primaryPurple }}
+        >
+          <span>👁️</span> Try Homework
+        </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-border shadow-sm p-5 mb-6 text-sm text-textSecondary flex flex-wrap gap-x-5 gap-y-1">
-        {hw.class && <span className="font-semibold text-primary">{hw.class.name}</span>}
-        <span>Assigned: {new Date(hw.dayAssigned).toLocaleDateString()}</span>
-        <span>Closes: {new Date(hw.closedDatetime).toLocaleString()}</span>
-        <span>{hw.timeInSeconds}s / word</span>
-        <span className="w-full text-xs text-textSecondary">
-          Words: {hw.words.map((w) => w.word.text).join(', ')}
-        </span>
+      <div className="bg-white rounded-2xl border border-border shadow-sm p-5 mb-6 text-sm text-textSecondary space-y-2">
+        <div className="flex flex-wrap gap-x-5 gap-y-1">
+          {hw.class && <span className="font-semibold text-primary">{hw.class.name}</span>}
+          <span>Assigned: {new Date(hw.dayAssigned).toLocaleDateString()}</span>
+          <span>Closes: {new Date(hw.closedDatetime).toLocaleString()}</span>
+        </div>
+        {hw.parts.map((p, i) => (
+          <div key={p.id} className="text-xs">
+            <span className="font-semibold text-textPrimary capitalize mr-2">
+              Part {i + 1} — {p.type.charAt(0) + p.type.slice(1).toLowerCase()}:
+            </span>
+            {p.type === 'PHONICS'
+              ? (p.phonicsItems ?? []).join(', ') || '—'
+              : p.words.map((w) => w.word.text).join(', ') || '—'}
+          </div>
+        ))}
       </div>
 
       <h2 className="text-base font-bold text-textPrimary mb-3">

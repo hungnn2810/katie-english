@@ -2,6 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateHomeworkDto, UpdateHomeworkDto } from './homework.dto';
 
+const partInclude = {
+  parts: {
+    orderBy: { orderIndex: 'asc' as const },
+    include: { words: { orderBy: { orderIndex: 'asc' as const }, include: { word: true } } },
+  },
+};
+
 @Injectable()
 export class HomeworkRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -11,7 +18,7 @@ export class HomeworkRepository {
       orderBy: { dayAssigned: 'desc' },
       include: {
         class: true,
-        words: { orderBy: { orderIndex: 'asc' }, include: { word: true } },
+        ...partInclude,
         _count: { select: { sessions: true } },
       },
     });
@@ -22,7 +29,7 @@ export class HomeworkRepository {
       where: { id },
       include: {
         class: true,
-        words: { orderBy: { orderIndex: 'asc' }, include: { word: true } },
+        ...partInclude,
         sessions: { include: { student: true, wordResults: { include: { word: true } } } },
       },
     });
@@ -32,43 +39,57 @@ export class HomeworkRepository {
     return this.prisma.homework.findMany({
       where: { classId },
       orderBy: { dayAssigned: 'desc' },
-      include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } },
+      include: partInclude,
     });
   }
 
   async create(dto: CreateHomeworkDto) {
     return this.prisma.homework.create({
       data: {
-        type: dto.type,
         dayAssigned: new Date(dto.dayAssigned),
         closedDatetime: new Date(dto.closedDatetime),
-        timeInSeconds: dto.timeInSeconds,
         classId: dto.classId,
-        words: {
-          create: dto.wordIds.map((wordId, i) => ({ wordId, orderIndex: i })),
+        parts: {
+          create: dto.parts.map((p, i) => ({
+            type: p.type,
+            orderIndex: i,
+            phonicsItems: p.type === 'PHONICS' ? (p.phonicsItems ?? []) : [],
+            ...(p.type !== 'PHONICS' && p.wordIds?.length
+              ? { words: { create: p.wordIds.map((wordId, j) => ({ wordId, orderIndex: j })) } }
+              : {}),
+          })),
         },
       },
-      include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } },
+      include: { ...partInclude },
     });
   }
 
   async update(id: number, dto: UpdateHomeworkDto) {
-    if (dto.wordIds !== undefined) {
-      await this.prisma.homeworkWord.deleteMany({ where: { homeworkId: id } });
-      await this.prisma.homeworkWord.createMany({
-        data: dto.wordIds.map((wordId, i) => ({ homeworkId: id, wordId, orderIndex: i })),
-      });
+    if (dto.parts !== undefined) {
+      await this.prisma.homeworkPart.deleteMany({ where: { homeworkId: id } });
+      for (let i = 0; i < dto.parts.length; i++) {
+        const p = dto.parts[i];
+        await this.prisma.homeworkPart.create({
+          data: {
+            homeworkId: id,
+            type: p.type,
+            orderIndex: i,
+            phonicsItems: p.type === 'PHONICS' ? (p.phonicsItems ?? []) : [],
+            ...(p.type !== 'PHONICS' && p.wordIds?.length
+              ? { words: { create: p.wordIds.map((wordId, j) => ({ wordId, orderIndex: j })) } }
+              : {}),
+          },
+        });
+      }
     }
     return this.prisma.homework.update({
       where: { id },
       data: {
-        ...(dto.type !== undefined && { type: dto.type }),
         ...(dto.dayAssigned && { dayAssigned: new Date(dto.dayAssigned) }),
         ...(dto.closedDatetime && { closedDatetime: new Date(dto.closedDatetime) }),
-        ...(dto.timeInSeconds !== undefined && { timeInSeconds: dto.timeInSeconds }),
         ...(dto.classId !== undefined && { classId: dto.classId }),
       },
-      include: { words: { orderBy: { orderIndex: 'asc' }, include: { word: true } } },
+      include: { ...partInclude },
     });
   }
 
