@@ -3,8 +3,8 @@ import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { BfaAlignResult } from '../bfa/bfa.dto';
-import { StartSessionDto, SaveWordResultDto } from './game.dto';
-import { calcScore } from './game.scoring';
+import { StartSessionDto, SavePhonicsResultDto } from './game.dto';
+import { calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 
 @Injectable()
 export class GameService {
@@ -16,14 +16,14 @@ export class GameService {
     private readonly bfa: BfaService,
   ) {}
 
-  async getAvailableHomework(studentId: number) {
-    const student = await this.repo.getAvailableHomework(studentId);
+  async getAvailableAssignments(studentId: number) {
+    const student = await this.repo.getAvailableAssignments(studentId);
     if (!student) throw new NotFoundException(`Student ${studentId} not found`);
-    return student.class?.homeworks ?? [];
+    return (student.class?.assignments ?? []).map((ac) => ac.assignment);
   }
 
   async startSession(dto: StartSessionDto) {
-    return this.repo.createSession(dto.studentId, dto.homeworkId);
+    return this.repo.createSession(dto.studentId, dto.assignmentId);
   }
 
   async getSession(id: number) {
@@ -32,9 +32,37 @@ export class GameService {
     return session;
   }
 
-  async saveWordResult(
+  async saveSpeakingResult(sessionId: number, audioBuffer?: Buffer, mimeType?: string) {
+    const session = await this.repo.getSession(sessionId);
+    if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
+    if (session.completedAt) throw new BadRequestException('Session already completed');
+
+    const hw = session.assignment.homework;
+    if (hw.type !== 'SPEAKING') throw new BadRequestException('Homework is not a SPEAKING type');
+    if (!hw.speakingText) throw new BadRequestException('Homework has no speaking text');
+
+    let transcribedText = '';
+    if (audioBuffer && audioBuffer.length > 0) {
+      try {
+        const result = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
+        transcribedText = result.text;
+        this.logger.log(`[session=${sessionId}] WhisperX speaking transcription: "${transcribedText}"`);
+      } catch (err) {
+        this.logger.warn(`[session=${sessionId}] WhisperX transcribe error: ${(err as Error).message}`);
+      }
+    }
+
+    const { score, matchedWords, totalWords } = hw.speakingMode === 'FREE_SPEAK'
+      ? calcFreeSpeak(transcribedText, hw.speakingText)
+      : calcSpeakingScore(transcribedText, hw.speakingText);
+    this.logger.log(`[session=${sessionId}] speaking score=${score} matched=${matchedWords}/${totalWords} mode=${hw.speakingMode ?? 'SCRIPT_MATCH'}`);
+
+    return this.repo.saveSpeakingResult(sessionId, transcribedText, score, matchedWords, totalWords);
+  }
+
+  async savePhonicsResult(
     sessionId: number,
-    dto: SaveWordResultDto,
+    dto: SavePhonicsResultDto,
     audioBuffer?: Buffer,
     mimeType?: string,
   ) {
@@ -42,59 +70,51 @@ export class GameService {
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
     if (session.completedAt) throw new BadRequestException('Session already completed');
 
-    const allWords = session.homework.parts.flatMap((p) => p.words);
-    const wordEntry = allWords.find((w) => w.wordId === dto.wordId);
-    if (!wordEntry) throw new BadRequestException(`Word ${dto.wordId} not in homework`);
+    const hw = session.assignment.homework;
+    if (hw.type !== 'PHONICS') throw new BadRequestException('Homework is not a PHONICS type');
 
-    let score: number;
+    // Find the word text from parts
+    let wordText = '';
+    for (const part of hw.parts) {
+      const found = part.words.find((w) => w.id === dto.wordId);
+      if (found) { wordText = found.text; break; }
+    }
+    if (!wordText) throw new BadRequestException(`Word ${dto.wordId} not found in homework`);
+
+    let score = 0;
     let bfaResult: BfaAlignResult | null = null;
+    let transcribedText = dto.transcribedText ?? '';
 
     this.logger.log(
-      `[session=${sessionId}] word="${wordEntry.word.text}" transcribed="${dto.transcribedText ?? ''}" audio=${audioBuffer ? `${audioBuffer.length}B ${mimeType}` : 'none'}`,
+      `[session=${sessionId}] phonics word="${wordText}" audio=${audioBuffer ? `${audioBuffer.length}B ${mimeType}` : 'none'}`,
     );
 
     if (audioBuffer && audioBuffer.length > 0) {
-      const expectedPhonemes = wordEntry.word.wordPhonemes
-        .map((wp) => wp.phoneme.symbol);
-
-      this.logger.log(`[session=${sessionId}] expected phonemes: [${expectedPhonemes.join(', ')}]`);
-
+      // WhisperX: transcription for display
       try {
-        bfaResult = await this.bfa.align(
-          audioBuffer,
-          mimeType ?? 'audio/webm',
-          wordEntry.word.text,
-          expectedPhonemes,
-        );
-
-        this.logger.log(
-          `[session=${sessionId}] BFA result: success=${bfaResult.success} score=${bfaResult.score} aligned=[${bfaResult.phonemes.map((p) => p.ipa).join(', ')}]`,
-        );
-
-        if (bfaResult.success) {
-          score = bfaResult.score;
-        } else {
-          this.logger.warn(`[session=${sessionId}] BFA alignment failed for "${wordEntry.word.text}", falling back to Levenshtein`);
-          score = calcScore(dto.transcribedText ?? '', wordEntry.word.text);
-        }
+        const whisperResult = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
+        transcribedText = whisperResult.text;
+        this.logger.log(`[session=${sessionId}] WhisperX phonics: "${transcribedText}"`);
       } catch (err) {
-        this.logger.warn(`[session=${sessionId}] BFA service error for "${wordEntry.word.text}", falling back to Levenshtein: ${(err as Error).message}`);
-        score = calcScore(dto.transcribedText ?? '', wordEntry.word.text);
+        this.logger.warn(`[session=${sessionId}] WhisperX error for "${wordText}": ${(err as Error).message}`);
       }
-    } else {
-      this.logger.log(`[session=${sessionId}] no audio — Levenshtein only`);
-      score = calcScore(dto.transcribedText ?? '', wordEntry.word.text);
+
+      // BFA: phoneme-level alignment and scoring
+      try {
+        bfaResult = await this.bfa.align(audioBuffer, mimeType ?? 'audio/webm', wordText, []);
+        this.logger.log(`[session=${sessionId}] BFA phonics: success=${bfaResult.success} score=${bfaResult.score}`);
+        score = bfaResult.success ? bfaResult.score : 0;
+      } catch (err) {
+        this.logger.warn(`[session=${sessionId}] BFA error for "${wordText}": ${(err as Error).message}`);
+      }
     }
 
-    this.logger.log(`[session=${sessionId}] final score=${score} for word="${wordEntry.word.text}"`);
-
-
-    const result = await this.repo.saveWordResult(sessionId, dto.wordId, dto.transcribedText, score);
+    const result = await this.repo.savePhonicsResult(sessionId, dto.wordId, transcribedText, score);
     return { ...result, bfa: bfaResult };
   }
 
-  listSessions(homeworkId?: number, studentId?: number) {
-    return this.repo.listSessions(homeworkId, studentId);
+  listSessions(assignmentId?: number, studentId?: number) {
+    return this.repo.listSessions(assignmentId, studentId);
   }
 
   streamRecording(videoUrl: string) {
@@ -112,18 +132,27 @@ export class GameService {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
 
+    const hw = session.assignment.homework;
+
     let videoUrl: string | null = null;
     if (videoBuffer && videoBuffer.length > 0) {
       const ext = mimeType?.includes('webm') ? 'webm' : 'mp4';
-      const key = `sessions/${sessionId}/recording.${ext}`;
+      const key = hw.type === 'SPEAKING'
+        ? `speaking/${sessionId}/recording.${ext}`
+        : `sessions/${sessionId}/recording.${ext}`;
       videoUrl = await this.storage.upload(key, videoBuffer, mimeType ?? 'video/webm');
     }
+    let avgScore = 0;
 
-    const results = session.wordResults;
-    const totalWords = session.homework.parts.flatMap((p) => p.words).length;
-    const avgScore = totalWords > 0
-      ? results.reduce((s, r) => s + r.score, 0) / totalWords
-      : 0;
+    if (hw.type === 'SPEAKING') {
+      const sr = session.speakingResults[0];
+      avgScore = sr ? sr.score : 0;
+    } else {
+      const phonicsResults = session.phonicsResults ?? [];
+      const totalWords = hw.parts.reduce((s: number, p: { words: unknown[] }) => s + p.words.length, 0);
+      const scoreSum = phonicsResults.reduce((s: number, r: { score: number }) => s + r.score, 0);
+      avgScore = totalWords > 0 ? scoreSum / totalWords : 0;
+    }
 
     return this.repo.completeSession(sessionId, videoUrl, Math.round(avgScore));
   }

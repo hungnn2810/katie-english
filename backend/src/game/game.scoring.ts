@@ -11,10 +11,17 @@ export function levenshtein(a: string, b: string): number {
   return dp[m][n];
 }
 
+function tokenize(text: string): string[] {
+  return text.toLowerCase().trim()
+    .replace(/[^\p{L}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
 export function calcScore(transcribed: string, target: string): number {
   const b = target.toLowerCase().trim();
   if (!b) return 0;
-  const words = transcribed.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  const words = tokenize(transcribed);
   if (words.length === 0) return 0;
   if (words.includes(b)) return 100;
   const bestSim = words.reduce((max, w) => {
@@ -22,4 +29,53 @@ export function calcScore(transcribed: string, target: string): number {
     return Math.max(max, sim);
   }, 0);
   return Math.max(0, Math.round(bestSim * 100));
+}
+
+export function calcSpeakingScore(
+  transcribed: string,
+  expected: string,
+): { score: number; matchedWords: number; totalWords: number } {
+  const expectedWords = tokenize(expected);
+  const remaining = tokenize(transcribed);
+
+  if (expectedWords.length === 0) return { score: 0, matchedWords: 0, totalWords: 0 };
+  if (remaining.length === 0) return { score: 0, matchedWords: 0, totalWords: expectedWords.length };
+
+  let matched = 0;
+  for (const exp of expectedWords) {
+    let bestIdx = -1;
+    let bestSim = 0;
+    for (let i = 0; i < remaining.length; i++) {
+      const sim = 1 - levenshtein(remaining[i], exp) / Math.max(remaining[i].length, exp.length);
+      if (sim > bestSim) { bestSim = sim; bestIdx = i; }
+    }
+    if (bestSim >= 0.7) {
+      matched++;
+      remaining.splice(bestIdx, 1);
+    }
+  }
+
+  return {
+    score: Math.round((matched / expectedWords.length) * 100),
+    matchedWords: matched,
+    totalWords: expectedWords.length,
+  };
+}
+
+export function calcFreeSpeak(
+  transcript: string,
+  keywords: string,
+): { score: number; matchedWords: number; totalWords: number } {
+  const kws = keywords
+    .split(',')
+    .map((k) => k.toLowerCase().trim())
+    .filter(Boolean);
+  if (kws.length === 0) return { score: 0, matchedWords: 0, totalWords: 0 };
+  const text = transcript.toLowerCase();
+  const matched = kws.filter((kw) => text.includes(kw)).length;
+  return {
+    score: Math.round((matched / kws.length) * 100),
+    matchedWords: matched,
+    totalWords: kws.length,
+  };
 }

@@ -3,19 +3,29 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import AuthGate from '@/components/AuthGate';
 import { authHeaders } from '@/lib/auth';
-import { saveWordResult, completeSession, GameSession, BfaResult } from '@/lib/admin-api';
+import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, BfaResult, SpeakingMode } from '@/lib/admin-api';
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
 
-type WordState = 'waiting' | 'recording' | 'done';
-type PageState = 'loading' | 'cam-check' | 'cam-denied' | 'ready' | 'playing' | 'uploading' | 'results' | 'error';
+type ItemKind = 'speaking' | 'phonics';
+type ItemState = 'waiting' | 'recording' | 'done';
+type PageState = 'loading' | 'cam-check' | 'cam-denied' | 'ready' | 'playing' | 'uploading' | 'results' | 'error' | 'upload';
 
-interface WordEntry {
-  wordId: number;
+interface SessionItem {
+  kind: ItemKind;
   text: string;
+  wordId?: number;
+  highlight?: string;
+  imageUrl?: string;
+  pictureUrl?: string;
   transcribed: string;
   score: number;
-  state: WordState;
+  state: ItemState;
   bfa?: BfaResult | null;
+}
+
+function itemTime(kind: ItemKind) {
+  if (kind === 'speaking') return 60;
+  return 15;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -63,13 +73,21 @@ export default function SessionPage() {
   const router = useRouter();
 
   const [pageState, setPageState] = useState<PageState>('loading');
-  const [words, setWords] = useState<WordEntry[]>([]);
+  const [items, setItems] = useState<SessionItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [totalTime, setTotalTime] = useState(30);
   const [transcript, setTranscript] = useState('');
   const [results, setResults] = useState<GameSession | null>(null);
-  const [timeInSeconds, setTimeInSeconds] = useState(30);
   const [saveError, setSaveError] = useState(false);
+
+  // Speaking file-upload state
+  const [speakHw, setSpeakHw] = useState<{
+    speakingMode: SpeakingMode | null;
+    speakingText: string | null;
+    speakingPictureUrl: string | null;
+  } | null>(null);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -81,18 +99,37 @@ export default function SessionPage() {
   const recognitionRef = useRef<any>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const finalTextRef = useRef('');
-  const wordsRef = useRef<WordEntry[]>([]);
+  const itemsRef = useRef<SessionItem[]>([]);
   const processingRef = useRef(false);
+  const audioBlobsRef = useRef<(Blob | null)[]>([]);
 
-  useEffect(() => { wordsRef.current = words; }, [words]);
+  useEffect(() => { itemsRef.current = items; }, [items]);
 
   useEffect(() => {
     fetchSession(sessionId).then((session) => {
-      const hw = session.homework!;
-      const allWords = hw.parts.flatMap((p) => p.words);
-      setWords(allWords.map((w) => ({
-        wordId: w.word.id, text: w.word.text, transcribed: '', score: 0, state: 'waiting' as WordState,
-      })));
+      const hw = session.assignment!.homework!;
+
+      if (hw.type === 'SPEAKING') {
+        setSpeakHw({
+          speakingMode: (hw.speakingMode as SpeakingMode | null) ?? null,
+          speakingText: hw.speakingText ?? null,
+          speakingPictureUrl: hw.speakingPictureUrl ?? null,
+        });
+        setPageState('upload');
+        return;
+      }
+
+      const built: SessionItem[] = (hw.parts ?? []).flatMap((part) =>
+        part.words.map((word): SessionItem => ({
+          kind: 'phonics',
+          text: word.text,
+          wordId: word.id,
+          highlight: word.highlight ?? part.name,
+          imageUrl: word.imageUrl ?? undefined,
+          transcribed: '', score: 0, state: 'waiting',
+        }))
+      );
+      setItems(built);
       requestCamera();
     }).catch(() => setPageState('error'));
   }, [sessionId]);
@@ -115,11 +152,13 @@ export default function SessionPage() {
 
   function startWordRecording(stream: MediaStream) {
     audioChunksRef.current = [];
-    const audioStream = new MediaStream(stream.getAudioTracks());
+    const tracks = stream.getAudioTracks();
+    if (tracks.length === 0) return;
+    const audioStream = new MediaStream(tracks);
     const mimeType = pickAudioMimeType();
     const recorder = new MediaRecorder(audioStream, mimeType ? { mimeType } : undefined);
     recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
-    recorder.start(200);
+    recorder.start(100);
     audioRecorderRef.current = recorder;
   }
 
@@ -127,12 +166,20 @@ export default function SessionPage() {
     return new Promise((resolve) => {
       const recorder = audioRecorderRef.current;
       if (!recorder || recorder.state === 'inactive') { resolve(null); return; }
+      audioRecorderRef.current = null;
+      const chunks = [...audioChunksRef.current];
+      const guard = setTimeout(() => {
+        resolve(chunks.length > 0 ? new Blob(chunks, { type: chunks[0].type || 'audio/webm' }) : null);
+      }, 2000);
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
       recorder.onstop = () => {
-        const chunks = audioChunksRef.current;
+        clearTimeout(guard);
         resolve(chunks.length > 0 ? new Blob(chunks, { type: chunks[0].type || 'audio/webm' }) : null);
       };
-      recorder.stop();
-      audioRecorderRef.current = null;
+      try { recorder.stop(); } catch (e) {
+        clearTimeout(guard);
+        resolve(chunks.length > 0 ? new Blob(chunks, { type: chunks[0].type || 'audio/webm' }) : null);
+      }
     });
   }
 
@@ -149,10 +196,7 @@ export default function SessionPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
     const SpeechRec = w.SpeechRecognition ?? w.webkitSpeechRecognition;
-    if (!SpeechRec) {
-      console.warn('[speech] SpeechRecognition not supported in this browser — transcribedText will be empty');
-      return;
-    }
+    if (!SpeechRec) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rec: any = new SpeechRec();
     rec.lang = 'en-US';
@@ -162,75 +206,63 @@ export default function SessionPage() {
     rec.onresult = (e: any) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const text = Array.from(e.results as any[]).map((r: any) => r[0].transcript).join(' ').trim();
-      console.log('[speech] result:', text);
       onUpdate(text);
     };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rec.onerror = (e: any) => {
-      console.error('[speech] error:', e.error, e.message ?? '');
-    };
-    rec.onend = () => {
-      if (recognitionRef.current === rec) {
-        try { rec.start(); } catch {}
-      }
-    };
+    rec.onerror = (e: any) => { console.error('[speech] error:', e.error); };
+    rec.onend = () => { if (recognitionRef.current === rec) { try { rec.start(); } catch {} } };
     rec.start();
     recognitionRef.current = rec;
   }
 
-  const processWord = useCallback(async (index: number, detected: string) => {
+  const processItem = useCallback(async (index: number, detected: string) => {
     if (processingRef.current) return;
     processingRef.current = true;
     stopTimer();
     stopSpeech();
-    const word = wordsRef.current[index];
-    setWords((prev) => prev.map((w, i) => i === index ? { ...w, state: 'done', transcribed: detected } : w));
 
-    const audioBlob = await stopWordRecording();
+    const item = itemsRef.current[index];
+    if (!item) { processingRef.current = false; return; }
 
-    console.log(`[submit] word="${word.text}" detected="${detected}" audioSize=${audioBlob?.size ?? 0}B`);
+    const updatedItems = itemsRef.current.map((w, i) => i === index ? { ...w, state: 'done' as const, transcribed: detected } : w);
+    itemsRef.current = updatedItems;
+    setItems(updatedItems);
 
-    let score = 0;
-    let bfa: BfaResult | null = null;
     try {
-      const r = await saveWordResult(sessionId, word.wordId, detected, audioBlob ?? undefined);
-      score = r.score;
-      bfa = r.bfa ?? null;
-      console.log(`[result] word="${word.text}" score=${score} bfa_success=${bfa?.success ?? 'n/a'} bfa_score=${bfa?.score ?? 'n/a'} aligned=${bfa?.phonemes.map(p => p.ipa).join(',') ?? 'n/a'}`);
-    } catch (err) {
-      console.error(`[error] word="${word.text}"`, err);
+      const audioBlob = await stopWordRecording();
+      audioBlobsRef.current[index] = audioBlob;
+    } catch {
+      audioBlobsRef.current[index] = null;
     }
 
-    setWords((prev) => prev.map((w, i) => i === index ? { ...w, score, bfa } : w));
-    const next = index + 1;
     processingRef.current = false;
-    if (next < wordsRef.current.length) {
+    const next = index + 1;
+    if (next < itemsRef.current.length) {
       setCurrentIndex(next);
-      playWord(next);
+      playItem(next);
     } else {
+      await stopRecordingTracks();
       await finishSession();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, stopTimer, stopSpeech]);
 
-  function playWord(index: number) {
+  function playItem(index: number) {
+    const item = itemsRef.current[index];
+    if (!item) return;
+    const t = itemTime(item.kind);
     setTranscript('');
     finalTextRef.current = '';
-    setTimeLeft(timeInSeconds);
-    setWords((prev) => prev.map((w, i) => i === index ? { ...w, state: 'recording' } : w));
-
+    setTotalTime(t);
+    setTimeLeft(t);
+    setItems((prev) => prev.map((w, i) => i === index ? { ...w, state: 'recording' } : w));
     if (streamRef.current) startWordRecording(streamRef.current);
-
-    startSpeech((text) => {
-      finalTextRef.current = text;
-      setTranscript(text);
-    });
-
-    let t = timeInSeconds;
+    startSpeech((text) => { finalTextRef.current = text; setTranscript(text); });
+    let remaining = t;
     timerRef.current = setInterval(() => {
-      t -= 1;
-      setTimeLeft(t);
-      if (t <= 0) processWord(index, finalTextRef.current);
+      remaining -= 1;
+      setTimeLeft(remaining);
+      if (remaining <= 0) processItem(index, finalTextRef.current);
     }, 1000);
   }
 
@@ -240,36 +272,59 @@ export default function SessionPage() {
     }
     setPageState('playing');
     setCurrentIndex(0);
-    playWord(0);
+    playItem(0);
   }
 
-  async function handleSubmitWord() {
+  async function handleSubmitItem() {
     stopTimer();
     stopSpeech();
-    await processWord(currentIndex, finalTextRef.current);
+    await processItem(currentIndex, finalTextRef.current);
+  }
+
+  async function stopRecordingTracks() {
+    stopTimer();
+    stopSpeech();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) videoRef.current.srcObject = null;
+    await stopWordRecording();
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      await Promise.race([
+        new Promise<void>((resolve) => {
+          try {
+            mediaRecorderRef.current!.onstop = () => resolve();
+            mediaRecorderRef.current!.stop();
+          } catch { resolve(); }
+        }),
+        new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+      ]);
+    }
   }
 
   async function finishSession() {
     setPageState('uploading');
-    stopTimer();
-    stopSpeech();
-    await stopWordRecording();
+    const currentItems = itemsRef.current;
+    const scored = [...currentItems];
 
-    try {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        await Promise.race([
-          new Promise<void>((resolve) => {
-            mediaRecorderRef.current!.onstop = () => resolve();
-            mediaRecorderRef.current!.stop();
-          }),
-          new Promise<void>((resolve) => setTimeout(resolve, 2000)),
-        ]);
+    for (let i = 0; i < currentItems.length; i++) {
+      const item = currentItems[i];
+      const audioBlob = audioBlobsRef.current[i] ?? undefined;
+      try {
+        if (item.kind === 'speaking') {
+          const r = await saveSpeakingResult(sessionId, audioBlob ?? undefined);
+          scored[i] = { ...scored[i], score: r.score };
+        } else if (item.kind === 'phonics') {
+          const r = await savePhonicsResult(sessionId, item.wordId!, audioBlob);
+          scored[i] = { ...scored[i], score: r.score, bfa: r.bfa ?? null };
+        }
+      } catch (err) {
+        console.error(`[score] item="${item.text}"`, err);
       }
-    } finally {
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-      if (videoRef.current) videoRef.current.srcObject = null;
     }
+
+    setItems(scored);
 
     const blob = chunksRef.current.length > 0
       ? new Blob(chunksRef.current, { type: chunksRef.current[0].type || 'video/webm' })
@@ -278,7 +333,28 @@ export default function SessionPage() {
       const session = await completeSession(sessionId, blob);
       setResults(session);
     } catch (err) {
-      console.error('[finishSession] failed to save session:', err);
+      console.error('[finishSession] failed:', err);
+      setSaveError(true);
+    }
+    setPageState('results');
+  }
+
+  async function handleSpeakingUpload() {
+    setPageState('uploading');
+    try {
+      const r = await saveSpeakingResult(sessionId, uploadFile ?? undefined);
+      const session = await completeSession(sessionId, uploadFile ?? undefined);
+      setResults(session);
+      setItems([{
+        kind: 'speaking',
+        text: speakHw?.speakingText ?? '',
+        pictureUrl: speakHw?.speakingPictureUrl ?? undefined,
+        transcribed: r.transcribedText ?? '',
+        score: r.score,
+        state: 'done',
+      }]);
+    } catch (err) {
+      console.error('[speakUpload] failed:', err);
       setSaveError(true);
     }
     setPageState('results');
@@ -293,13 +369,79 @@ export default function SessionPage() {
     if (videoRef.current) videoRef.current.srcObject = null;
   }, [stopTimer, stopSpeech]);
 
-  // ── Loading / error / uploading screens ──────────────────────────────────
+  if (pageState === 'upload' && speakHw) {
+    const isFreespeak = speakHw.speakingMode === 'FREE_SPEAK';
+    return (
+      <AuthGate requiredRole="STUDENT">
+        {() => (
+          <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10 gap-6" style={{ background: gradients.gameBg }}>
+            <button onClick={() => router.push('/game/homework')} className="self-start text-white/60 hover:text-white text-sm">← Back</button>
+
+            <div className="w-full max-w-sm flex flex-col items-center gap-6">
+              <div className="text-center">
+                <div className="text-4xl mb-3">{isFreespeak ? '🖼️' : '🎤'}</div>
+                <h2 className="text-white text-2xl font-black mb-1">
+                  {isFreespeak ? 'Free Speak' : 'Script Match'}
+                </h2>
+                <p className="text-white/60 text-sm">Record on your device, then upload here</p>
+              </div>
+
+              {isFreespeak && speakHw.speakingPictureUrl && (
+                <div className="rounded-2xl overflow-hidden border-4 border-white/20 max-w-xs w-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={speakHw.speakingPictureUrl} alt="Speaking prompt" className="w-full object-contain" />
+                </div>
+              )}
+
+              {!isFreespeak && speakHw.speakingText && (
+                <div className="bg-white/10 rounded-2xl px-6 py-5 w-full text-center">
+                  <p className="text-white text-xl font-bold leading-relaxed">{speakHw.speakingText}</p>
+                </div>
+              )}
+
+              {isFreespeak && speakHw.speakingText && (
+                <div className="bg-white/10 rounded-xl px-4 py-3 w-full">
+                  <p className="text-white/60 text-xs font-semibold uppercase tracking-wide mb-1">Talk about:</p>
+                  <p className="text-white/80 text-sm">{speakHw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</p>
+                </div>
+              )}
+
+              <div className="w-full">
+                <label className="flex flex-col items-center gap-3 w-full cursor-pointer rounded-2xl border-2 border-dashed border-white/30 py-8 px-4 hover:border-white/60 transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <span className="text-3xl">{uploadFile ? '✅' : '📁'}</span>
+                  {uploadFile ? (
+                    <div className="text-center">
+                      <p className="text-white font-semibold text-sm">{uploadFile.name}</p>
+                      <p className="text-white/50 text-xs mt-0.5">{(uploadFile.size / 1024 / 1024).toFixed(1)} MB</p>
+                    </div>
+                  ) : (
+                    <p className="text-white/70 text-sm font-medium text-center">Tap to select your recording</p>
+                  )}
+                  <input type="file" accept="video/*,audio/*" className="hidden"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)} />
+                </label>
+              </div>
+
+              <button
+                onClick={handleSpeakingUpload}
+                disabled={!uploadFile}
+                className="w-full py-4 rounded-2xl text-white font-black text-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
+                style={{ background: gradients.primaryPurple }}>
+                Submit Recording
+              </button>
+            </div>
+          </div>
+        )}
+      </AuthGate>
+    );
+  }
+
   if (pageState === 'loading' || pageState === 'cam-check') {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4"
-            style={{ background: gradients.gameBg }}>
+          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
             <div className="w-12 h-12 border-4 border-white/70 border-t-transparent rounded-full animate-spin" />
             <p className="text-white/70 text-sm">{pageState === 'cam-check' ? 'Requesting camera access…' : 'Loading…'}</p>
           </div>
@@ -312,21 +454,16 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-8"
-            style={{ background: gradients.gameBg }}>
+          <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-8" style={{ background: gradients.gameBg }}>
             <div className="text-6xl">📷</div>
             <div className="text-center">
               <h2 className="text-white text-2xl font-black mb-2">Camera Required</h2>
-              <p className="text-white/70 text-sm max-w-sm">Camera and microphone access is required to record your homework session. Please allow access in your browser settings and reload.</p>
+              <p className="text-white/70 text-sm max-w-sm">Camera and microphone access is required. Please allow access and reload.</p>
             </div>
-            <button onClick={requestCamera}
-              className="px-6 py-3 rounded-xl text-white font-bold"
-              style={{ background: gradients.pinkHighlight }}>
+            <button onClick={requestCamera} className="px-6 py-3 rounded-xl text-white font-bold" style={{ background: gradients.pinkHighlight }}>
               Try Again
             </button>
-            <button onClick={() => router.push('/game/homework')} className="text-white/60 text-sm hover:text-white">
-              ← Back to Homework
-            </button>
+            <button onClick={() => router.push('/game/homework')} className="text-white/60 text-sm hover:text-white">← Back to Homework</button>
           </div>
         )}
       </AuthGate>
@@ -337,8 +474,7 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4"
-            style={{ background: gradients.gameBg }}>
+          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
             <p className="text-highlight text-lg font-bold">Session not found.</p>
             <button onClick={() => router.push('/game/homework')} className="text-white/60 text-sm hover:text-white">← Back</button>
           </div>
@@ -351,19 +487,19 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4"
-            style={{ background: gradients.gameBg }}>
+          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
             <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-            <p className="text-accent font-semibold">Saving your recording…</p>
+            <p className="text-accent font-semibold">Scoring and saving…</p>
           </div>
         )}
       </AuthGate>
     );
   }
 
-  // ── Results ───────────────────────────────────────────────────────────────
   if (pageState === 'results') {
-    const finalScore = results?.score ?? Math.round(words.reduce((s, w) => s + w.score, 0) / (words.length || 1));
+    const finalScore = results?.score ?? (items.length > 0
+      ? Math.round(items.reduce((s, w) => s + w.score, 0) / items.length)
+      : 0);
     const scoreColor = scoreHexColor(finalScore);
     return (
       <AuthGate requiredRole="STUDENT">
@@ -373,41 +509,61 @@ export default function SessionPage() {
               <div className="text-center mb-10">
                 <div className="text-6xl mb-4">🎉</div>
                 <h1 className="text-white text-3xl font-black mb-2">Homework Complete!</h1>
-                <div className="text-7xl font-black mt-4" style={{ color: scoreColor }}>{finalScore}%</div>
+                {items.length > 0 && (
+                  <div className="text-7xl font-black mt-4" style={{ color: scoreColor }}>{finalScore}%</div>
+                )}
                 {saveError
-                  ? <p className="text-red-400 mt-1 text-sm">Recording could not be saved — check your connection</p>
+                  ? <p className="text-red-400 mt-1 text-sm">Recording could not be saved</p>
                   : <p className="text-white/70 mt-1 text-sm">Your recording has been saved</p>
                 }
               </div>
 
               <div className="space-y-3 mb-8">
-                {words.map((w) => (
-                  <div key={w.wordId} className="bg-white bg-opacity-10 rounded-2xl px-5 py-4">
-                    <div className="flex items-center justify-between">
+                {items.map((item, idx) => (
+                  <div key={idx} className="bg-white bg-opacity-10 rounded-2xl px-5 py-4">
+                    {item.kind === 'phonics' ? (
                       <div>
-                        <div className="text-white font-bold text-lg">{w.text}</div>
-                        <div className="text-white/70 text-sm mt-0.5">
-                          You said: <span className="text-white italic">&quot;{w.transcribed || '—'}&quot;</span>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-white/60 text-xs font-semibold uppercase mb-1">🔤 Phonics</div>
+                            <div className="text-white font-bold text-lg">{item.text}</div>
+                            <div className="text-white/70 text-sm mt-0.5">
+                              You said: <span className="text-white italic">"{item.transcribed || '—'}"</span>
+                            </div>
+                          </div>
+                          <div className="text-2xl font-black tabular-nums" style={{ color: scoreHexColor(item.score) }}>
+                            {item.score}%
+                          </div>
                         </div>
+                        {item.bfa?.success && item.bfa.feedback.length > 0 && (
+                          <div className="flex gap-1 mt-2 flex-wrap">
+                            {item.bfa.feedback.map((op, i) => (
+                              <span key={i} className="text-xs px-2 py-0.5 rounded font-mono font-bold"
+                                style={{
+                                  background: op.status === 'correct' ? '#22c55e22' : '#ef444422',
+                                  color: op.status === 'correct' ? '#22c55e' : '#ef4444',
+                                }}>
+                                {op.expected ?? op.aligned}
+                                {op.status === 'substituted' && ` → ${op.aligned}`}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-2xl font-black tabular-nums"
-                        style={{ color: scoreHexColor(w.score) }}>
-                        {w.score}%
-                      </div>
-                    </div>
-                    {w.bfa?.success && w.bfa.feedback.length > 0 && (
-                      <div className="flex gap-1 mt-2 flex-wrap">
-                        {w.bfa.feedback.map((op, i) => (
-                          <span key={i}
-                            className="text-xs px-2 py-0.5 rounded font-mono font-bold"
-                            style={{
-                              background: op.status === 'correct' ? '#22c55e22' : '#ef444422',
-                              color: op.status === 'correct' ? '#22c55e' : '#ef4444',
-                            }}>
-                            {op.expected ?? op.aligned}
-                            {op.status === 'substituted' && ` → ${op.aligned}`}
-                          </span>
-                        ))}
+                    ) : (
+                      <div>
+                        <div className="text-white/60 text-xs font-semibold uppercase mb-2">🎤 Speaking</div>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="text-white font-medium text-sm mb-1">{item.text}</div>
+                            <div className="text-white/70 text-sm">
+                              You said: <span className="text-white italic">"{item.transcribed || '—'}"</span>
+                            </div>
+                          </div>
+                          <div className="text-2xl font-black tabular-nums shrink-0" style={{ color: scoreHexColor(item.score) }}>
+                            {item.score}%
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -417,7 +573,7 @@ export default function SessionPage() {
               <button onClick={() => router.push('/game/homework')}
                 className="w-full py-4 rounded-2xl text-white font-black text-lg"
                 style={{ background: gradients.primaryPurple }}>
-                Back to Homework
+                Finish
               </button>
             </div>
           </div>
@@ -426,40 +582,29 @@ export default function SessionPage() {
     );
   }
 
-  // ── Ready / Playing ───────────────────────────────────────────────────────
-  const current = pageState === 'playing' ? words[currentIndex] : null;
-  const doneCount = words.filter((w) => w.state === 'done').length;
+  const current = pageState === 'playing' ? items[currentIndex] : null;
+  const doneCount = items.filter((w) => w.state === 'done').length;
 
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <div className="h-screen flex flex-col overflow-hidden"
-          style={{ background: gradients.gameBgAlt, minWidth: 1024 }}>
-
-          {/* Top bar */}
+        <div className="h-screen flex flex-col overflow-hidden" style={{ background: gradients.gameBgAlt, minWidth: 1024 }}>
           <div className="flex items-center justify-between px-8 py-4 flex-shrink-0">
-            <button onClick={() => router.push('/game/homework')} className="text-white/60 hover:text-white text-sm transition-colors">
-              ← Back
-            </button>
+            <button onClick={() => router.push('/game/homework')} className="text-white/60 hover:text-white text-sm transition-colors">← Back</button>
             <div className="flex items-center gap-3">
-              {words.map((w, i) => (
-                <div key={w.wordId} className="h-2 w-8 rounded-full transition-all"
+              {items.map((item, i) => (
+                <div key={i} className="h-2 w-8 rounded-full transition-all"
                   style={{
-                    background: w.state === 'done'
-                      ? scoreHexColor(w.score)
-                      : i === currentIndex && pageState === 'playing' ? '#A78BFA' : '#ffffff20'
+                    background: item.state === 'done' ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#A78BFA' : '#ffffff20',
                   }} />
               ))}
             </div>
             <div className="text-white/70 text-sm font-semibold">
-              {pageState === 'playing' ? `${doneCount + 1} / ${words.length}` : `${words.length} words`}
+              {pageState === 'playing' ? `${doneCount + 1} / ${items.length}` : `${items.length} item${items.length !== 1 ? 's' : ''}`}
             </div>
           </div>
 
-          {/* Main content */}
           <div className="flex-1 flex gap-6 px-8 pb-8 min-h-0">
-
-            {/* Left: camera */}
             <div className="w-2/5 flex-shrink-0 flex flex-col">
               <div className="relative flex-1 bg-black rounded-3xl overflow-hidden">
                 <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
@@ -477,18 +622,19 @@ export default function SessionPage() {
               </div>
             </div>
 
-            {/* Right: word + controls */}
-            <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto">
               {pageState === 'ready' && (
                 <div className="text-center">
                   <div className="text-6xl mb-6">🎓</div>
                   <h2 className="text-white text-3xl font-black mb-3">Ready?</h2>
-                  <p className="text-white/70 mb-2">{words.length} word{words.length !== 1 ? 's' : ''} · {timeInSeconds}s each</p>
-                  <p className="text-white/60 text-sm mb-10">Say each word clearly when it appears</p>
+                  <p className="text-white/60 text-sm mb-10">Say each item clearly when it appears</p>
                   <div className="flex flex-wrap gap-2 justify-center mb-10">
-                    {words.map((w) => (
-                      <span key={w.wordId} className="bg-white bg-opacity-10 text-white/80 text-sm px-3 py-1.5 rounded-lg font-semibold">
-                        {w.text}
+                    {items.map((item, i) => (
+                      <span key={i} className="bg-white bg-opacity-10 text-white/80 text-sm px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5">
+                        <span className="text-xs opacity-60">{item.kind === 'speaking' ? '🎤' : '🔤'}</span>
+                        {item.kind === 'speaking'
+                          ? `${item.text.slice(0, 24)}${item.text.length > 24 ? '…' : ''}`
+                          : item.text}
                       </span>
                     ))}
                   </div>
@@ -503,36 +649,52 @@ export default function SessionPage() {
               {pageState === 'playing' && current && (
                 <div className="text-center w-full">
                   <div className="flex justify-center mb-6">
-                    <CircleTimer seconds={timeLeft} total={timeInSeconds} />
+                    <CircleTimer seconds={timeLeft} total={totalTime} />
                   </div>
 
-                  <div className="text-7xl font-black text-white mb-4 tracking-widest" style={{ textShadow: '0 0 40px rgba(167,139,250,0.6)' }}>
-                    {current.text}
-                  </div>
+                  {current.kind === 'speaking' ? (
+                    <>
+                      <div className="text-white/60 text-sm font-semibold uppercase tracking-wide mb-3">🎤 Read aloud</div>
+                      {current.pictureUrl && (
+                        <div className="mb-4 rounded-2xl overflow-hidden max-h-48 max-w-xs mx-auto">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={current.pictureUrl} alt="Speaking prompt" className="w-full h-full object-contain" />
+                        </div>
+                      )}
+                      <div className="text-2xl font-bold text-white mb-4 leading-relaxed max-w-lg mx-auto"
+                        style={{ textShadow: '0 0 20px rgba(255,155,210,0.4)' }}>
+                        {current.text}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-white/60 text-sm font-semibold uppercase tracking-wide mb-3">🔤 Say this sound</div>
+                      <div className="text-7xl font-black text-white mb-4 tracking-widest"
+                        style={{ textShadow: '0 0 40px rgba(167,139,250,0.6)' }}>
+                        {current.text}
+                      </div>
+                    </>
+                  )}
 
                   <div className="min-h-12 mb-8">
-                    {transcript ? (
-                      <p className="text-white/80 text-2xl italic font-medium">"{transcript}"</p>
-                    ) : (
-                      <p className="text-white/40 text-lg animate-pulse">Listening…</p>
-                    )}
+                    {transcript
+                      ? <p className="text-white/80 text-2xl italic font-medium">"{transcript}"</p>
+                      : <p className="text-white/40 text-lg animate-pulse">Listening…</p>
+                    }
                   </div>
 
-                  <button onClick={handleSubmitWord}
+                  <button onClick={handleSubmitItem}
                     className="px-8 py-3 rounded-2xl text-white font-bold text-lg hover:scale-105 transition-transform"
                     style={{ background: gradients.greenSecondary }}>
-                    Next Word →
+                    Next →
                   </button>
 
                   {doneCount > 0 && (
                     <div className="flex gap-2 justify-center mt-8 flex-wrap">
-                      {words.filter((w) => w.state === 'done').map((w) => (
-                        <span key={w.wordId} className="text-xs px-3 py-1 rounded-full font-bold"
-                          style={{
-                            background: `${scoreHexColor(w.score)}22`,
-                            color: scoreHexColor(w.score),
-                          }}>
-                          {w.text} {w.score}%
+                      {items.filter((w) => w.state === 'done').map((item, i) => (
+                        <span key={i} className="text-xs px-3 py-1 rounded-full font-bold"
+                          style={{ background: '#ffffff15', color: '#ffffffcc' }}>
+                          {item.kind === 'phonics' ? `🔤 ${item.text}` : '🎤'}
                         </span>
                       ))}
                     </div>

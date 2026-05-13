@@ -87,42 +87,44 @@ export const updateStudent = (id: number, data: Partial<CreateStudentInput>) =>
 export const deleteStudent = (id: number) =>
   req<Student>(`/students/${id}`, { method: 'DELETE' });
 
-// Homework
-export const getHomeworkList = (classId?: number) =>
-  req<HomeworkItem[]>(classId ? `/homework?classId=${classId}` : '/homework');
+// Homework templates
+export const getHomeworkList = () => req<HomeworkItem[]>('/homework');
 export const getHomework = (id: number) => req<HomeworkDetail>(`/homework/${id}`);
 export const createHomework = (data: CreateHomeworkInput) =>
-  req<HomeworkDetail>('/homework', { method: 'POST', body: JSON.stringify(data) });
-export const updateHomework = (id: number, data: Partial<CreateHomeworkInput>) =>
-  req<HomeworkDetail>(`/homework/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  req<HomeworkItem>('/homework', { method: 'POST', body: JSON.stringify(data) });
+export const updateHomework = (id: number, data: UpdateHomeworkInput) =>
+  req<HomeworkItem>(`/homework/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteHomework = (id: number) =>
   req<HomeworkItem>(`/homework/${id}`, { method: 'DELETE' });
 
-// Words (for homework builder)
-export const getWords = () =>
-  req<{ id: number; text: string; difficulty: number }[]>('/phonics/words');
+// Assignments
+export const createAssignment = (data: CreateAssignmentInput) =>
+  req<AssignmentItem>('/homework/assignment', { method: 'POST', body: JSON.stringify(data) });
+export const updateAssignment = (id: number, data: UpdateAssignmentInput) =>
+  req<AssignmentItem>(`/homework/assignment/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteAssignment = (id: number) =>
+  req<AssignmentItem>(`/homework/assignment/${id}`, { method: 'DELETE' });
 
 // Game
 export const getSession = (id: number) => req<GameSession>(`/game/session/${id}`);
 export const getAvailableHomework = (studentId: number) =>
-  req<HomeworkItem[]>(`/game/homework/${studentId}`);
-export const startSession = (studentId: number, homeworkId: number) =>
+  req<AssignmentItem[]>(`/game/homework/${studentId}`);
+export const startSession = (studentId: number, assignmentId: number) =>
   req<GameSession>('/game/session/start', {
     method: 'POST',
-    body: JSON.stringify({ studentId, homeworkId }),
+    body: JSON.stringify({ studentId, assignmentId }),
   });
-export async function saveWordResult(
+
+export async function savePhonicsResult(
   sessionId: number,
   wordId: number,
-  transcribedText: string,
   audio?: Blob,
-): Promise<WordResult> {
+): Promise<PhonicsItemResult> {
   const form = new FormData();
   form.append('wordId', String(wordId));
-  form.append('transcribedText', transcribedText);
   if (audio && audio.size > 0) form.append('audio', audio, 'audio.webm');
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const res = await fetch(`${API_URL}/game/session/${sessionId}/word-result`, {
+  const res = await fetch(`${API_URL}/game/session/${sessionId}/phonics-result`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: form,
@@ -130,9 +132,46 @@ export async function saveWordResult(
   if (!res.ok) return parseApiError(res);
   return res.json();
 }
+
+export async function saveSpeakingResult(
+  sessionId: number,
+  audio?: Blob,
+): Promise<SpeakingResult> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const form = new FormData();
+  if (audio && audio.size > 0) {
+    const filename = (audio as File).name ?? 'audio.webm';
+    form.append('audio', audio, filename);
+  }
+  const res = await fetch(`${API_URL}/game/session/${sessionId}/speaking-result`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) return parseApiError(res);
+  return res.json();
+}
+
+export async function uploadSpeakingImage(file: File): Promise<string> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_URL}/homework/image`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) return parseApiError(res);
+  const { key } = await res.json() as { key: string };
+  return `${API_URL}/homework/image/${key}`;
+}
+
 export async function completeSession(sessionId: number, videoBlob?: Blob) {
   const form = new FormData();
-  if (videoBlob) form.append('recording', videoBlob, 'recording.webm');
+  if (videoBlob) {
+    const filename = (videoBlob as File).name ?? 'recording.webm';
+    form.append('recording', videoBlob, filename);
+  }
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const res = await fetch(`${API_URL}/game/session/${sessionId}/complete`, {
     method: 'POST',
@@ -169,12 +208,11 @@ export interface ClassItem {
   status: ClassStatus;
   scheduleSlots: ScheduleSlot[];
   createdAt: string;
-  _count?: { students: number; homeworks: number };
+  _count?: { students: number };
 }
 
 export interface ClassDetail extends ClassItem {
   students: Student[];
-  homeworks: HomeworkItem[];
 }
 
 export interface CreateStudentInput {
@@ -198,55 +236,120 @@ export interface Student {
   createdAt: string;
 }
 
-export type HomeworkType = 'PHONICS' | 'READING' | 'SPELLING' | 'VOCABULARY' | 'SPEAKING';
+export type HomeworkType = 'PHONICS' | 'SPEAKING';
+export type SpeakingMode = 'FREE_SPEAK' | 'SCRIPT_MATCH';
 
-export interface CreateHomeworkPartInput {
-  type: HomeworkType;
-  wordIds?: number[];
-  phonicsItems?: string[];
+export interface CreateWordInput {
+  text: string;
+  highlight?: string;
+  imageUrl?: string;
+}
+
+export interface CreatePartInput {
+  name: string;
+  words: CreateWordInput[];
 }
 
 export interface CreateHomeworkInput {
-  dayAssigned: string;
-  closedDatetime: string;
+  type: HomeworkType;
+  speakingMode?: SpeakingMode;
+  name?: string;
+  parts?: CreatePartInput[];
+  speakingPictureUrl?: string;
+  speakingText?: string;
+}
+
+export interface UpdateHomeworkInput {
+  speakingMode?: SpeakingMode;
+  name?: string;
+  parts?: CreatePartInput[];
+  speakingPictureUrl?: string;
+  speakingText?: string;
+}
+
+export interface CreateAssignmentInput {
+  homeworkId: number;
+  classIds: number[];
+  endDate: string;
+}
+
+export interface UpdateAssignmentInput {
+  classIds?: number[];
+  endDate?: string;
+}
+
+export interface AssignmentClass {
+  id: number;
+  assignmentId: number;
   classId: number;
-  parts: CreateHomeworkPartInput[];
+  class: ClassItem;
+}
+
+export interface AssignmentItem {
+  id: number;
+  homeworkId: number;
+  endDate: string;
+  homework: HomeworkItem;
+  classes: AssignmentClass[];
+  sessions?: GameSession[];
+  _count?: { sessions: number };
+  createdAt: string;
+}
+
+export interface HomeworkWord {
+  id: number;
+  partId: number;
+  text: string;
+  highlight?: string | null;
+  imageUrl?: string | null;
+  order: number;
 }
 
 export interface HomeworkPart {
   id: number;
-  type: HomeworkType;
-  orderIndex: number;
-  phonicsItems: string[];
-  words: { orderIndex: number; word: { id: number; text: string } }[];
+  homeworkId: number;
+  name: string;
+  order: number;
+  words: HomeworkWord[];
 }
 
 export interface HomeworkItem {
   id: number;
-  dayAssigned: string;
-  closedDatetime: string;
-  classId: number;
-  class?: ClassItem;
+  type: HomeworkType;
+  speakingMode?: SpeakingMode | null;
+  name?: string | null;
   parts: HomeworkPart[];
+  speakingPictureUrl?: string | null;
+  speakingText?: string | null;
+  assignments: AssignmentItem[];
   createdAt: string;
-  sessions?: GameSession[];
 }
 
 export interface HomeworkDetail extends HomeworkItem {
-  sessions: GameSession[];
+  assignments: (AssignmentItem & { sessions: GameSession[] })[];
+}
+
+export interface SpeakingResult {
+  id: number;
+  sessionId: number;
+  transcribedText?: string;
+  score: number;
+  matchedWords: number;
+  totalWords: number;
 }
 
 export interface GameSession {
   id: number;
   studentId: number;
-  homeworkId: number;
+  assignmentId: number;
   videoUrl?: string;
   score?: number;
   completedAt?: string;
   startedAt: string;
-  homework?: HomeworkItem;
+  assignment?: AssignmentItem;
   student?: Student;
-  wordResults?: WordResult[];
+  speakingResults?: SpeakingResult[];
+  phonicsResults?: PhonicsItemResult[];
 }
 
 export interface PhonemeAlignment {
@@ -275,12 +378,12 @@ export interface BfaResult {
   word: string;
 }
 
-export interface WordResult {
+export interface PhonicsItemResult {
   id: number;
   sessionId: number;
   wordId: number;
+  word: HomeworkWord;
   transcribedText?: string;
   score: number;
-  word?: { id: number; text: string };
   bfa?: BfaResult | null;
 }
