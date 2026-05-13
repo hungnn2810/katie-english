@@ -70,32 +70,32 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SPEAK-01 | — | Pending |
-| SPEAK-02 | — | Pending |
-| SPEAK-03 | — | Pending |
-| SPEAK-04 | — | Pending |
-| SPEAK-05 | — | Pending |
-| SPEAK-06 | — | Pending |
-| SPEAK-07 | — | Pending |
-| READ-01 | — | Pending |
-| READ-02 | — | Pending |
-| READ-03 | — | Pending |
-| READ-04 | — | Pending |
-| READ-05 | — | Pending |
-| READ-06 | — | Pending |
-| READ-07 | — | Pending |
-| TEACH-01 | — | Pending |
-| TEACH-02 | — | Pending |
-| TEACH-03 | — | Pending |
-| TEACH-04 | — | Pending |
-| TEACH-05 | — | Pending |
-| STUDENT-01 | — | Pending |
-| STUDENT-02 | — | Pending |
+| SPEAK-01 | Phase 1 | Pending |
+| SPEAK-02 | Phase 1 | Pending |
+| SPEAK-03 | Phase 1 | Pending |
+| SPEAK-04 | Phase 1 | Pending |
+| SPEAK-05 | Phase 1 | Pending |
+| SPEAK-06 | Phase 1 | Pending |
+| SPEAK-07 | Phase 1 | Pending |
+| READ-01 | Phase 2 | Pending |
+| READ-02 | Phase 2 | Pending |
+| READ-03 | Phase 2 | Pending |
+| READ-04 | Phase 2 | Pending |
+| READ-05 | Phase 2 | Pending |
+| READ-06 | Phase 2 | Pending |
+| READ-07 | Phase 3 | Pending |
+| TEACH-01 | Phase 3 | Pending |
+| TEACH-02 | Phase 3 | Pending |
+| TEACH-03 | Phase 3 | Pending |
+| TEACH-04 | Phase 3 | Pending |
+| TEACH-05 | Phase 3 | Pending |
+| STUDENT-01 | Phase 4 | Pending |
+| STUDENT-02 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 21 total
-- Mapped to phases: 0 (updated during roadmap creation)
-- Unmapped: 21 ⚠️
+- Mapped to phases: 21
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-13*
