@@ -10,7 +10,7 @@
 
 | # | Phase | Goal | Requirements | Criteria |
 |---|-------|------|--------------|----------|
-| 1 | Speaking Homework | Student records, AI scores, teacher reviews | SPEAK-01–07 | 3 |
+| 1 | Speaking Homework | 1/1 | Complete    | 2026-05-13 |
 | 2 | Reading Homework | Student matches + fills blanks, score stored | READ-01–06 | 4 |
 | 3 | Teacher Dashboard | Unified creation, assignment, results review | READ-07, TEACH-01–05 | 4 |
 | 4 | Student UX Polish | Tablet-first UI, ordered homework list | STUDENT-01–02 | 3 |
