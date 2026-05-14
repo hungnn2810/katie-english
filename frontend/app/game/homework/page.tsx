@@ -2,13 +2,18 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGate from '@/components/AuthGate';
-import { getAvailableHomework, startSession, HomeworkItem } from '@/lib/admin-api';
+import { getAvailableHomework, startSession, AssignmentItem, HomeworkType } from '@/lib/admin-api';
 import { AuthUser, clearAuth, changePassword } from '@/lib/auth';
 import { cardGradients, gradients } from '@/lib/colors';
 
+const TYPE_META: Record<HomeworkType, { label: string; emoji: string }> = {
+  PHONICS:  { label: 'Phonics',  emoji: '🔤' },
+  SPEAKING: { label: 'Speaking', emoji: '🎤' },
+};
+
 function PageContent({ user }: { user: AuthUser }) {
   const router = useRouter();
-  const [homework, setHomework] = useState<HomeworkItem[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState<number | null>(null);
   const [error, setError] = useState('');
@@ -35,16 +40,16 @@ function PageContent({ user }: { user: AuthUser }) {
   useEffect(() => {
     if (!user.studentId) { setLoading(false); return; }
     getAvailableHomework(user.studentId)
-      .then(setHomework)
+      .then((data) => setAssignments([...data].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())))
       .catch(() => setError('Failed to load homework'))
       .finally(() => setLoading(false));
   }, [user.studentId]);
 
-  async function handleStart(homeworkId: number) {
+  async function handleStart(assignmentId: number) {
     if (!user.studentId) return;
-    setStarting(homeworkId); setError('');
+    setStarting(assignmentId); setError('');
     try {
-      const session = await startSession(user.studentId, homeworkId);
+      const session = await startSession(user.studentId, assignmentId);
       router.push(`/game/session/${session.id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to start');
@@ -54,7 +59,6 @@ function PageContent({ user }: { user: AuthUser }) {
 
   return (
     <div className="min-h-screen" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-      {/* Change password modal */}
       {showPwModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-slide-up">
@@ -96,7 +100,6 @@ function PageContent({ user }: { user: AuthUser }) {
         </div>
       )}
 
-      {/* Header */}
       <header className="px-10 py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
@@ -112,18 +115,15 @@ function PageContent({ user }: { user: AuthUser }) {
             </div>
             <span className="text-white/70 text-sm">{user.upn}</span>
           </div>
-          <button onClick={() => setShowPwModal(true)}
-            className="text-white/60 hover:text-white text-sm transition-colors">
+          <button onClick={() => setShowPwModal(true)} className="text-white/60 hover:text-white text-sm transition-colors">
             Change password
           </button>
-          <button onClick={() => { clearAuth(); router.push('/login'); }}
-            className="text-white/60 hover:text-white text-sm transition-colors">
+          <button onClick={() => { clearAuth(); router.push('/login'); }} className="text-white/60 hover:text-white text-sm transition-colors">
             Sign out
           </button>
         </div>
       </header>
 
-      {/* Main */}
       <main className="px-10 py-6">
         <div className="mb-8">
           <h1 className="text-4xl font-black text-white mb-2">My Homework</h1>
@@ -148,7 +148,7 @@ function PageContent({ user }: { user: AuthUser }) {
           <div className="bg-highlight/20 border border-highlight/60 rounded-2xl px-6 py-4 text-white/90 text-sm mb-6">{error}</div>
         )}
 
-        {!loading && user.studentId && homework.length === 0 && !error && (
+        {!loading && user.studentId && assignments.length === 0 && !error && (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">📚</div>
             <p className="text-white/80 text-lg font-semibold">No homework right now!</p>
@@ -157,19 +157,21 @@ function PageContent({ user }: { user: AuthUser }) {
         )}
 
         <div className="grid grid-cols-3 gap-6">
-          {homework.map((h, i) => {
+          {assignments.map((a, i) => {
             const g = cardGradients[i % cardGradients.length];
-            const wordList = h.parts.flatMap((p) => p.words.map((w) => w.word.text));
-            const dueDate = new Date(h.closedDatetime);
+            const hw = a.homework;
+            const meta = TYPE_META[hw.type];
+            const dueDate = new Date(a.endDate);
             const daysLeft = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
-            const completedSessions = h.sessions?.filter((s) => s.completedAt) ?? [];
+            const completedSessions = (a.sessions ?? []).filter((s) => s.completedAt);
             const bestScore = completedSessions.length > 0
               ? Math.max(...completedSessions.map((s) => s.score ?? 0))
               : null;
+
             return (
-              <div key={h.id}
+              <div key={a.id}
                 className="rounded-2xl overflow-hidden shadow-xl transition-transform hover:scale-105 cursor-pointer"
-                onClick={() => handleStart(h.id)}
+                onClick={() => handleStart(a.id)}
                 style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -180,28 +182,37 @@ function PageContent({ user }: { user: AuthUser }) {
                       </span>
                     ) : (
                       <span className={`text-xs font-bold px-3 py-1 rounded-full ${daysLeft <= 1 ? 'bg-highlight text-white' : 'bg-white bg-opacity-20 text-white'}`}>
-                        {daysLeft <= 0 ? 'Due today' : daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
+                        {daysLeft < 0 ? 'Overdue' : daysLeft === 0 ? 'Due today' : daysLeft === 1 ? '1 day left' : `${daysLeft} days left`}
                       </span>
                     )}
                   </div>
 
                   <div className="mb-4">
-                    <div className="text-white font-bold text-sm mb-2 opacity-80">WORDS TO PRACTICE</div>
+                    <div className="text-white font-bold text-xs mb-2 opacity-80 uppercase tracking-wide">
+                      {meta.emoji} {meta.label}
+                    </div>
                     <div className="flex flex-wrap gap-1">
-                      {wordList.slice(0, 5).map((w) => (
-                        <span key={w} className="bg-white bg-opacity-20 text-white text-sm px-3 py-1 rounded-lg font-semibold">{w}</span>
+                      {hw.type === 'PHONICS' && (hw.parts ?? []).slice(0, 4).map((part) => (
+                        <span key={part.id} className="bg-white bg-opacity-20 text-white text-sm px-3 py-1 rounded-lg font-semibold">
+                          {part.name} ({part.words.length})
+                        </span>
                       ))}
-                      {wordList.length > 5 && (
-                        <span className="bg-white bg-opacity-10 text-white text-sm px-3 py-1 rounded-lg">+{wordList.length - 5}</span>
+                      {hw.type === 'PHONICS' && (hw.parts ?? []).length > 4 && (
+                        <span className="bg-white bg-opacity-10 text-white text-sm px-3 py-1 rounded-lg">+{hw.parts.length - 4}</span>
+                      )}
+                      {hw.type === 'SPEAKING' && hw.speakingText && (
+                        <span className="bg-white bg-opacity-20 text-white text-sm px-3 py-1 rounded-lg font-semibold truncate max-w-[200px]">
+                          {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? '…' : ''}
+                        </span>
                       )}
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
-<button
-                      disabled={starting === h.id}
+                    <button
+                      disabled={starting === a.id}
                       className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold text-sm px-5 py-2 rounded-xl transition-all disabled:opacity-60">
-                      {starting === h.id ? 'Starting...' : bestScore !== null ? 'Try Again →' : 'Start →'}
+                      {starting === a.id ? 'Starting...' : bestScore !== null ? 'Try Again →' : 'Start →'}
                     </button>
                   </div>
                 </div>
