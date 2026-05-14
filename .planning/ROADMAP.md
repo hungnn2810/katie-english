@@ -93,7 +93,7 @@
 > **Phase-context note (2026-05-14, per 04-CONTEXT.md D-01):** Student device target was revised during the discuss-phase to **laptop/PC only**. STUDENT-02 is satisfied by retaining the existing `minWidth: 1024` constraint on the game screens; no tablet/phone or touch-target work is performed in this phase. The original goal text above is preserved for historical traceability; the implementation contract is in `.planning/phases/04-student-ux-polish/04-CONTEXT.md`.
 
 **Plans:**
-- [ ] 04-01-PLAN.md — Sort student homework list by endDate ascending and add Overdue badge variant
+- [x] 04-01-PLAN.md — Sort student homework list by endDate ascending and add Overdue badge variant
 
 **Success Criteria:**
 1. Homework list orders assignments by ascending due date; overdue items visually distinct.
