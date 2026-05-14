@@ -1,7 +1,8 @@
 ---
 phase: 4
 slug: student-ux-polish
-status: draft
+status: approved
+reviewed_at: 2026-05-14
 shadcn_initialized: false
 preset: none
 created: 2026-05-14
@@ -55,12 +56,14 @@ Exceptions: none — this phase introduces no new spacing values.
 
 All sizes are pre-existing in the component. No new type styles introduced.
 
+Two weights only: 900 (font-black) reserved for the page heading; 700 (font-bold) used for
+all other text roles. Body/subheading weight consolidated from font-semibold (600) to
+font-bold (700) to satisfy the 2-weight maximum.
+
 | Role | Size | Weight | Line Height | Tailwind Class | Source |
 |------|------|--------|-------------|----------------|--------|
 | Page heading | 36px (text-4xl) | 900 (font-black) | 1.2 | `text-4xl font-black` | page.tsx line 129 |
-| Card label (type) | 12px (text-xs) | 700 (font-bold) | 1.2 | `text-xs font-bold` | page.tsx line 191 |
-| Badge | 12px (text-xs) | 700 (font-bold) | 1.0 (single line) | `text-xs font-bold` | page.tsx line 184 |
-| Body / subheading | 16px (text-sm/base) | 600 (font-semibold) | 1.5 | `text-sm font-semibold` | page.tsx line 152 |
+| Card label / Badge / Body / subheading | 12–16px (text-xs/sm/base) | 700 (font-bold) | 1.0–1.5 | `text-xs font-bold`, `text-sm font-bold` | page.tsx lines 152, 184, 191 |
 
 ---
 
@@ -166,11 +169,11 @@ No third-party component registries. All components are bespoke inline JSX.
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: FLAG (non-blocking — no focal point declaration; hierarchy recoverable from heading weight + badge colors)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-05-14
