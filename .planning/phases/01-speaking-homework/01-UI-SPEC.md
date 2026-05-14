@@ -62,12 +62,23 @@ Two weights only across all screens. Child-facing screens (student upload, stude
 | Role | Size | Weight | Line Height | Tailwind Classes | Screen |
 |------|------|--------|-------------|------------------|--------|
 | Display / Score | 72px (text-7xl) | 900 (font-black) | 1.0 | `text-7xl font-black` | Student results score number |
-| Heading | 30px (text-3xl) | 900 (font-black) | 1.2 | `text-3xl font-black` | Student upload h2, try-mode h1 |
-| Sub-heading | 24px (text-2xl) | 700 (font-bold) | 1.3 | `text-2xl font-bold` | Script text display in upload |
-| Body / Label | 14px (text-sm) | 700 (font-bold) | 1.5 | `text-sm font-bold` | Teacher modal labels, badge text |
-| Caption | 12px (text-xs) | 700 (font-bold) | 1.0 | `text-xs font-bold` | Section headers (uppercase tracking-wide), mode selector descriptions |
+| Heading | 24px (text-2xl) | 900 (font-black) | 1.2 | `text-2xl font-black` | Student upload h2, try-mode h1, "Preview Complete!" heading |
+| Body / Label | 14px (text-sm) | 700 (font-bold) | 1.5 | `text-sm font-bold` | Teacher modal labels, badge text, script text display |
+| Caption | 12px (text-xs) | 700 (font-bold) | 1.0 | `text-xs font-bold` | Section headers (uppercase tracking-wide), mode selector descriptions, badge text, small labels |
 
-Heading sizes on teacher-facing pages (modal, detail page, session detail) stay at `text-base font-bold` (16px/700) — matches existing teacher portal conventions (`session/[sessionId]/page.tsx` line 91, `[id]/page.tsx` line 86).
+Heading sizes on teacher-facing pages (modal, detail page, session detail) stay at `text-sm font-bold` (14px/700) — matches existing teacher portal conventions.
+
+**Font size consolidation notes (checker fixes applied 2026-05-14):**
+- `text-[10px]` removed — all mode selector descriptions and small badge labels use `text-xs` (12px) instead.
+- `text-3xl` (30px) removed — student upload h2 and try-mode h1 use `text-2xl` (24px). "Preview Complete!" heading (previously `text-3xl`) also uses `text-2xl`.
+- `text-base` (16px) not declared as a separate scale entry — teacher-facing labels use `text-sm` (14px) to match portal conventions.
+
+**Font weight consolidation notes (checker fixes applied 2026-05-14):**
+- `font-semibold` (600) removed entirely. All former `font-semibold` usages replaced with `font-bold` (700):
+  - Assignment Status Badges: `text-xs font-semibold` → `text-xs font-bold`
+  - Keyword hint label "Talk about:": `font-semibold` → `font-bold`
+  - Upload dropzone filename when file selected: `font-semibold text-sm` → `font-bold text-sm`
+  - Try-mode uploading spinner text: `font-semibold` → `font-bold`
 
 ---
 
@@ -102,19 +113,19 @@ Score colors follow `scoreHexColor()` from `lib/colors.ts`: green `#7BD88F` (>=8
 
 | Mode | Text | Background | Color | Tailwind Classes |
 |------|------|------------|-------|-----------------|
-| FREE_SPEAK | `Free Speak` | `#FF9BD218` | `#FF9BD2` | `text-[10px] font-bold px-2 py-0.5 rounded-full` |
-| SCRIPT_MATCH | `Script Match` | `#A78BFA18` | `#A78BFA` | `text-[10px] font-bold px-2 py-0.5 rounded-full` |
+| FREE_SPEAK | `Free Speak` | `#FF9BD218` | `#FF9BD2` | `text-xs font-bold px-2 py-1 rounded-full` |
+| SCRIPT_MATCH | `Script Match` | `#A78BFA18` | `#A78BFA` | `text-xs font-bold px-2 py-1 rounded-full` |
 
-Source: confirmed in `session/[sessionId]/page.tsx` lines 119–124. No change required.
+Source: confirmed in `session/[sessionId]/page.tsx` lines 119–124. Pre-existing badge padding note: the committed codebase currently uses `py-0.5` (2px) and `text-[10px]` — these are pre-existing values not introduced in this phase. The contract above reflects the corrected values (`py-1`, `text-xs`) that the executor MUST use when implementing new badge occurrences. Executor must NOT retroactively change padding on the already-committed session detail page badges.
 
 ### Assignment Status Badges (Teacher Detail page)
 
 | Status | Text | Tailwind Classes |
 |--------|------|-----------------|
-| Open | `Open` | `text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600` |
-| Closed | `Closed` | `text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-textSecondary` |
+| Open | `Open` | `text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600` |
+| Closed | `Closed` | `text-xs font-bold px-2.5 py-1 rounded-full bg-gray-100 text-textSecondary` |
 
-Source: confirmed in `teacher/homework/[id]/page.tsx` lines 106–108. No change required.
+Source: confirmed in `teacher/homework/[id]/page.tsx` lines 106–108. `font-semibold` replaced with `font-bold` per typography contract.
 
 ---
 
@@ -135,7 +146,7 @@ Modal body (form > px-6 py-5 space-y-5)
     Active state: background=meta.color, borderColor=meta.color, color=white
     Inactive: background=white, borderColor=meta.color+'55', color=#6B7280
     Label: text-xs font-bold
-    Description: text-[10px] mt-0.5 opacity-80
+    Description: text-xs mt-0.5 opacity-80
   SCRIPT_MATCH desc: "Student reads target text"
   FREE_SPEAK desc: "Student speaks from image prompt"
 ```
@@ -143,7 +154,7 @@ Modal body (form > px-6 py-5 space-y-5)
 Image prompt field (FREE_SPEAK only, shown conditionally):
 - Label: `"Image Prompt (optional)"` — `text-xs font-bold text-textSecondary uppercase tracking-wide mb-2`
 - Upload trigger: dashed border button `rounded-xl border-2 border-dashed border-border`
-- After upload: `<img>` preview `max-h-40 object-cover`, with `✕` remove button `absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/60 text-white`
+- After upload: `<img>` preview `max-h-40 object-cover`, with `✕` remove button `absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/60 text-white` — must include `aria-label="Remove image"`
 
 Keywords field label changes by mode:
 - FREE_SPEAK: `"Keywords (comma-separated)"` — e.g. `"cat, sits, mat"`
@@ -176,13 +187,13 @@ Layout (centered column, `min-h-screen flex flex-col items-center justify-center
     text-white text-xl font-bold leading-relaxed
   [Keyword hint]  (FREE_SPEAK + has text only)
     bg-white/10 rounded-xl px-4 py-3 w-full
-    Label: "Talk about:" text-white/60 text-xs font-semibold uppercase tracking-wide mb-1
+    Label: "Talk about:" text-white/60 text-xs font-bold uppercase tracking-wide mb-1
     Value: keywords joined with " · " — text-white/80 text-sm
   [Upload dropzone]
     label.flex.flex-col.items-center.gap-3.rounded-2xl.border-2.border-dashed.border-white/30.py-8.px-4
     background: rgba(255,255,255,0.06)
     Empty: 📁 emoji + "Tap to select your recording" text-white/70 text-sm
-    Filled: ✅ emoji + filename (font-semibold text-sm) + file size (text-white/50 text-xs)
+    Filled: ✅ emoji + filename (font-bold text-sm) + file size (text-white/50 text-xs)
     <input type="file" accept="video/*,audio/*" hidden>
   [Submit button]  min-height 56px (py-4 on rounded-2xl) — satisfies 44px touch target
     w-full py-4 rounded-2xl text-white font-black text-lg
@@ -206,7 +217,7 @@ Layout for FREE_SPEAK result card (replaces lines 553–568):
 ```
 <div className="bg-white bg-opacity-10 rounded-2xl px-5 py-4">
   [Mode label]
-    text-white/60 text-xs font-semibold uppercase mb-2 → "🎤 Speaking · Free Speak"
+    text-white/60 text-xs font-bold uppercase mb-2 → "🎤 Speaking · Free Speak"
   [Image prompt]  (when item.pictureUrl is set)
     rounded-xl overflow-hidden mb-3 max-h-40 object-contain w-full
     <img src={item.pictureUrl} alt="Speaking prompt">
@@ -252,7 +263,7 @@ background: gradients.gameBg
 
 [Preview Mode Banner]  (always visible)
   bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-center
-  text-white/70 text-xs font-semibold uppercase tracking-wide
+  text-white/70 text-xs font-bold uppercase tracking-wide
   Copy: "Preview Mode — Results not saved"
 
 [Back button]
@@ -288,7 +299,7 @@ background: gradients.gameBg
 ```
 min-h-screen flex flex-col items-center justify-center gap-4, background: gradients.gameBg
   Spinner: w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin
-  Text: "Scoring…" text-accent font-semibold
+  Text: "Scoring…" text-accent font-bold
 ```
 
 **State: 'results'**
@@ -297,12 +308,12 @@ min-h-screen py-12 px-8, background: gradients.gameBg, minWidth: 1024
 
 [Preview Mode Banner]  (top, same as upload state)
   bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-center
-  text-white/70 text-xs font-semibold mb-6 uppercase tracking-wide
+  text-white/70 text-xs font-bold mb-6 uppercase tracking-wide
   Copy: "Preview Mode — Results not saved"
 
 [Hero block]  text-center mb-10
   🎉 text-6xl mb-4
-  "Preview Complete!" text-white text-3xl font-black mb-2
+  "Preview Complete!" text-white text-2xl font-black mb-2
   Score number: text-7xl font-black mt-4, color=scoreHexColor(score)
   Subtitle: "This is how students experience the scoring" text-white/60 text-sm mt-2
 
@@ -364,7 +375,7 @@ Confirmed elements (no changes required):
 - Open/Closed badge (lines 106–108): emerald-50/emerald-600 for Open, gray-100/textSecondary for Closed
 - Completion count: `"{completed.length} / {sessions.length} completed"` footer (lines 158–160)
 - Due date in header (line 122)
-- Delete button: `"Remove"` text-xs font-semibold text-highlight (line 119), triggers `confirm()` dialog
+- Delete button: `"Remove"` text-xs font-bold text-highlight (line 119), triggers `confirm()` dialog
 - SPEAKING: shows `<img>` prompt max-h-40 and italic speakingText (lines 75–82)
 - Session list: student name, completion timestamp, score %, chevron ›
 
@@ -468,6 +479,7 @@ No external component registries. All UI is bespoke inline JSX with Tailwind uti
 | `tailwind.config.js` codebase read | All custom color tokens, font, shadows |
 | `globals.css` codebase read | input-base, btn-primary, card utility classes |
 | Phase 4 UI-SPEC.md | Cross-reference for badge patterns and spacing scale |
+| Checker revision 2026-05-14 | Typography collapse (7→4 sizes, 3→2 weights), spacing fix (py-0.5→py-1), aria-label addition |
 
 ---
 
