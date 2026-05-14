@@ -470,22 +470,25 @@ No new auth surfaces. All new endpoints (`/game/homework/:id/try-speak`) must us
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Try-mode endpoint: which module?**
    - What we know: `GameController` is the natural home; requires `HomeworkService` or `HomeworkRepository` injected into `GameService`.
    - What's unclear: whether `GameModule` already imports `HomeworkService` or needs to add it.
    - Recommendation: check `game.module.ts` during implementation; if not imported, inject `PrismaService` directly in `GameService` for a single `findUnique` call.
+   - RESOLVED: `GameModule` imports `PrismaModule` — `GameService` injects `PrismaService` directly for a single `findUnique` call. No `HomeworkService` import needed. See 01-05-PLAN.md T-01.
 
 2. **Stale migration DB state**
    - What we know: 5 folders are untracked (not committed to git). CONTEXT.md says delete them.
    - What's unclear: whether developer's local DB has them applied.
    - Recommendation: plan task includes `npx prisma migrate status` check step before deletion.
+   - RESOLVED: 01-03-PLAN.md T-02 includes `npx prisma migrate status` check before deletion. If any stale migration shows as applied, task instructs executor to stop and manually resolve DB state.
 
 3. **`bfa.dto.ts` `WhisperXResult.words` field**
    - What we know: `WhisperXResult` currently has `words: WhisperXWord[]` (required). After D-20, BFA returns only `{text: string}`.
    - What's unclear: whether any frontend code reads `.words` from the transcribe result.
    - Recommendation: make `words` optional (`words?: WhisperXWord[]`) rather than deleting — safer migration. Frontend inspection shows `admin-api.ts` has no `WhisperXResult` type exposed to frontend (BFA is backend-only), so change is safe.
+   - RESOLVED: 01-02-PLAN.md T-02 changes `words: WhisperXWord[]` to `words?: WhisperXWord[]` in `bfa.dto.ts`. Confirmed: no frontend code reads `.words`; all callers in `game.service.ts` use `.text` only.
 
 ---
 
