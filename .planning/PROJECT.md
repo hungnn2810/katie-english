@@ -20,6 +20,7 @@ A student can receive a homework assignment, complete it on a tablet, and get an
 - ✓ Student phonics game session (play words, record pronunciation) — existing
 - ✓ BFA pronunciation scoring (WhisperX transcription + phoneme alignment) — existing
 - ✓ Audio/video/image storage via MinIO — existing
+- ✓ Student homework list: sorted by endDate ascending, overdue badge (red "Overdue"), laptop/PC scope — Validated in Phase 04
 
 ### Active
 
@@ -75,4 +76,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-13 after initialization*
+*Last updated: 2026-05-14 — Phase 04 complete. All 21 v1 requirements implemented.*
