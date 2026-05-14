@@ -16,6 +16,18 @@ export interface PhonemeOp {
   message?: string;
 }
 
+export interface WhisperXWord {
+  word: string;
+  start: number;
+  end: number;
+  score: number;
+}
+
+export interface WhisperXResult {
+  text: string;
+  words: WhisperXWord[];
+}
+
 export interface BfaAlignResult {
   success: boolean;
   phonemes: PhonemeAlignment[];

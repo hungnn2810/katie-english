@@ -51,7 +51,21 @@
       "Bash(kill %1)",
       "Bash(pkill -f \"jest\")",
       "Bash(pkill -f \"node.*game.scoring\")",
-      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration --no-coverage --forceExit)"
+      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration --no-coverage --forceExit)",
+      "Bash(BFA_URL=http://localhost:3002 npx jest game.scoring.integration --no-coverage --forceExit --verbose)",
+      "Bash(BFA_URL=http://localhost:3002 npx jest --no-coverage --forceExit)",
+      "mcp__code-review-graph__get_review_context_tool",
+      "Bash(gsd-sdk query *)",
+      "Skill(gsd-verify-work)",
+      "mcp__code-review-graph__detect_changes_tool",
+      "Skill(gsd-phase)",
+      "Skill(gsd-plan-phase)",
+      "Skill(gsd-execute-phase)",
+      "Skill(gsd-ui-phase)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Skill(gsd-code-review)",
+      "Skill(gsd-discuss-phase)"
     ]
   },
   "enableAllProjectMcpServers": true,

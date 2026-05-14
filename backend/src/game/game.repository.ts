@@ -1,48 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
-const homeworkPartsInclude = {
+const homeworkInclude = {
   parts: {
-    orderBy: { orderIndex: 'asc' as const },
-    include: {
-      words: {
-        orderBy: { orderIndex: 'asc' as const },
-        include: {
-          word: {
-            include: {
-              wordPhonemes: { orderBy: { orderIndex: 'asc' as const }, include: { phoneme: true } },
-            },
-          },
-        },
-      },
-    },
+    include: { words: { orderBy: { order: 'asc' as const } } },
+    orderBy: { order: 'asc' as const },
   },
 };
 
-const homeworkPartsSimpleInclude = {
-  parts: {
-    orderBy: { orderIndex: 'asc' as const },
-    include: { words: { orderBy: { orderIndex: 'asc' as const }, include: { word: true } } },
+const sessionInclude = {
+  assignment: {
+    include: {
+      homework: { include: homeworkInclude },
+      classes: { include: { class: true } },
+    },
   },
+  student: true,
+  speakingResults: true,
+  phonicsResults: { include: { word: true } },
 };
 
 @Injectable()
 export class GameRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  getAvailableHomework(studentId: number) {
+  getAvailableAssignments(studentId: number) {
     return this.prisma.student.findUnique({
       where: { id: studentId },
       include: {
         class: {
           include: {
-            homeworks: {
-              where: { closedDatetime: { gte: new Date() } },
+            assignments: {
+              where: { assignment: { endDate: { gte: new Date() } } },
               include: {
-                ...homeworkPartsSimpleInclude,
-                sessions: {
-                  where: { studentId, completedAt: { not: null } },
-                  orderBy: { score: 'desc' },
+                assignment: {
+                  include: {
+                    homework: { include: homeworkInclude },
+                    classes: { include: { class: true } },
+                    sessions: {
+                      where: { studentId, completedAt: { not: null } },
+                      orderBy: { score: 'desc' },
+                    },
+                  },
                 },
               },
             },
@@ -52,35 +51,34 @@ export class GameRepository {
     });
   }
 
-  findCompletedSession(studentId: number, homeworkId: number) {
-    return this.prisma.homeworkSession.findFirst({
-      where: { studentId, homeworkId, completedAt: { not: null } },
-    });
-  }
-
-  createSession(studentId: number, homeworkId: number) {
+  createSession(studentId: number, assignmentId: number) {
     return this.prisma.homeworkSession.create({
-      data: { studentId, homeworkId },
-      include: { homework: { include: homeworkPartsSimpleInclude } },
+      data: { studentId, assignmentId },
+      include: { assignment: { include: { homework: { include: homeworkInclude } } } },
     });
   }
 
   getSession(id: number) {
     return this.prisma.homeworkSession.findUnique({
       where: { id },
-      include: {
-        homework: { include: homeworkPartsInclude },
-        student: true,
-        wordResults: { include: { word: true } },
-      },
+      include: sessionInclude,
     });
   }
 
-  saveWordResult(sessionId: number, wordId: number, transcribedText: string, score: number) {
-    return this.prisma.homeworkWordResult.upsert({
+  saveSpeakingResult(sessionId: number, transcribedText: string, score: number, matchedWords: number, totalWords: number) {
+    return this.prisma.speakingResult.upsert({
+      where: { sessionId },
+      update: { transcribedText, score, matchedWords, totalWords },
+      create: { sessionId, transcribedText, score, matchedWords, totalWords },
+    });
+  }
+
+  savePhonicsResult(sessionId: number, wordId: number, transcribedText: string, score: number) {
+    return this.prisma.phonicsItemResult.upsert({
       where: { sessionId_wordId: { sessionId, wordId } },
       update: { transcribedText, score },
       create: { sessionId, wordId, transcribedText, score },
+      include: { word: true },
     });
   }
 
@@ -88,21 +86,23 @@ export class GameRepository {
     return this.prisma.homeworkSession.update({
       where: { id },
       data: { videoUrl, score, completedAt: new Date() },
-      include: { wordResults: { include: { word: true } } },
+      include: {
+        speakingResults: true,
+        phonicsResults: { include: { word: true } },
+      },
     });
   }
 
-  listSessions(homeworkId?: number, studentId?: number) {
+  listSessions(assignmentId?: number, studentId?: number) {
     return this.prisma.homeworkSession.findMany({
       where: {
-        ...(homeworkId ? { homeworkId } : {}),
+        ...(assignmentId ? { assignmentId } : {}),
         ...(studentId ? { studentId } : {}),
       },
       orderBy: { startedAt: 'desc' },
       include: {
         student: true,
-        homework: { include: homeworkPartsSimpleInclude },
-        wordResults: { orderBy: { id: 'asc' }, include: { word: true } },
+        assignment: { include: { homework: { include: homeworkInclude } } },
       },
     });
   }

@@ -1,13 +1,13 @@
 export class StartSessionDto {
   studentId: number;
-  homeworkId: number;
+  assignmentId: number;
 }
 
-export class SaveWordResultDto {
+export class SavePhonicsResultDto {
   wordId: number;
-  transcribedText: string;
+  transcribedText?: string;
 }
 
 export class CompleteSessionDto {
-  // no body needed — score calculated from word results
+  // score calculated from results
 }

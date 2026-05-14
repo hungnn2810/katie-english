@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import FormData = require('form-data');
-import { BfaAlignResult } from './bfa.dto';
+import { BfaAlignResult, WhisperXResult } from './bfa.dto';
 
 @Injectable()
 export class BfaService {
@@ -24,6 +24,19 @@ export class BfaService {
       `${this.baseUrl}/align`,
       form,
       { headers: form.getHeaders(), timeout: 60_000 },
+    );
+    return response.data;
+  }
+
+  async transcribe(audioBuffer: Buffer, mimeType: string): Promise<WhisperXResult> {
+    const form = new FormData();
+    const ext = mimeType.includes('webm') ? 'webm' : mimeType.includes('mp4') ? 'mp4' : 'wav';
+    form.append('audio', audioBuffer, { filename: `audio.${ext}`, contentType: mimeType });
+
+    const response = await axios.post<WhisperXResult>(
+      `${this.baseUrl}/transcribe`,
+      form,
+      { headers: form.getHeaders(), timeout: 120_000 },
     );
     return response.data;
   }

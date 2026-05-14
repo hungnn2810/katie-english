@@ -5,7 +5,18 @@ import { getClasses, getStudents, getHomeworkList, ClassItem, ScheduleSlot } fro
 import { cardGradients, colors } from '@/lib/colors';
 
 const DAY_ORDER = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-const DAY_LABELS: Record<string, string> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' };
+
+function formatRelativeTime(date: Date): string {
+  const now = new Date().getTime();
+  const diffMs = date.getTime() - now;
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 60) return `in ${Math.max(mins, 1)} min`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `in ${hours} hour${hours > 1 ? 's' : ''}`;
+  const days = Math.round(hours / 24);
+  if (days === 1) return 'tomorrow';
+  return `in ${days} days`;
+}
 
 function getNextOccurrence(slots: ScheduleSlot[]): Date | null {
   if (!slots.length) return null;
@@ -30,21 +41,32 @@ function getNextOccurrence(slots: ScheduleSlot[]): Date | null {
 export default function TeacherDashboard() {
   const [stats, setStats] = useState({ classes: 0, students: 0, homework: 0 });
   const [upcomingClasses, setUpcomingClasses] = useState<(ClassItem & { nextAt: Date })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  async function loadDashboard() {
+    setLoading(true);
+    setError('');
+    try {
+      const [c, s, h] = await Promise.all([getClasses(), getStudents(), getHomeworkList()]);
+      setStats({ classes: c.length, students: s.length, homework: h.length });
+      const withNext = c
+        .filter((cls) => cls.status !== 'ENDED')
+        .flatMap((cls) => {
+          const nextAt = getNextOccurrence(Array.isArray(cls.scheduleSlots) ? cls.scheduleSlots : []);
+          return nextAt ? [{ ...cls, nextAt }] : [];
+        })
+        .sort((a, b) => a.nextAt.getTime() - b.nextAt.getTime());
+      setUpcomingClasses(withNext);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    Promise.all([getClasses(), getStudents(), getHomeworkList()])
-      .then(([c, s, h]) => {
-        setStats({ classes: c.length, students: s.length, homework: h.length });
-        const withNext = c
-          .filter((cls) => cls.status !== 'ENDED')
-          .flatMap((cls) => {
-            const nextAt = getNextOccurrence(Array.isArray(cls.scheduleSlots) ? cls.scheduleSlots : []);
-            return nextAt ? [{ ...cls, nextAt }] : [];
-          })
-          .sort((a, b) => a.nextAt.getTime() - b.nextAt.getTime());
-        setUpcomingClasses(withNext);
-      })
-      .catch(() => {});
+    loadDashboard();
   }, []);
 
   const cards = [
@@ -59,10 +81,49 @@ export default function TeacherDashboard() {
     { href: '/teacher/homework', label: 'Assign Homework', desc: 'Create word-list homework for classes', icon: '📚', color: colors.secondary, bg: '#F0FDF9' },
   ];
 
+  const nextClass = upcomingClasses[0];
+  const todayCount = upcomingClasses.filter((c) => c.nextAt.toDateString() === new Date().toDateString()).length;
+
   return (
     <div className="animate-fade-in">
+      <div className="mb-5 bg-white rounded-2xl border border-border shadow-card px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-textSecondary mb-1">Overview</p>
+          {loading ? (
+            <div className="h-5 w-56 bg-slate-100 rounded animate-pulse" />
+          ) : nextClass ? (
+            <p className="text-sm font-semibold text-textPrimary">
+              Next class: <span style={{ color: colors.primary }}>{nextClass.name}</span> {formatRelativeTime(nextClass.nextAt)}
+            </p>
+          ) : (
+            <p className="text-sm font-semibold text-textPrimary">No scheduled class yet</p>
+          )}
+          {!loading && <p className="text-xs text-textSecondary mt-1">{todayCount} class{todayCount !== 1 ? 'es' : ''} scheduled today</p>}
+        </div>
+        <button
+          onClick={loadDashboard}
+          className="self-start sm:self-auto px-3.5 py-2 rounded-xl text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+          style={{ background: colors.primary }}
+        >
+          Refresh data
+        </button>
+      </div>
+
+      {error && (
+        <div className="mb-5 rounded-xl border border-highlight/25 bg-highlight/8 px-4 py-3 flex items-center justify-between gap-3">
+          <div className="text-sm text-highlight">{error}</div>
+          <button
+            onClick={loadDashboard}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
+            style={{ background: colors.highlight }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-5 mb-7">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-7">
         {cards.map((c) => (
           <Link
             key={c.label}
@@ -78,14 +139,14 @@ export default function TeacherDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
             </div>
-            <div className="text-3xl font-black mb-1 tracking-tight">{c.value}</div>
+            <div className="text-3xl font-black mb-1 tracking-tight">{loading ? '—' : c.value}</div>
             <div className="text-white/75 text-sm font-medium">{c.label}</div>
           </Link>
         ))}
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-3 gap-5 mb-7">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-7">
         {actions.map((a) => (
           <Link
             key={a.href}
@@ -104,36 +165,6 @@ export default function TeacherDashboard() {
         ))}
       </div>
 
-      {/* Upcoming classes */}
-      {upcomingClasses.length > 0 && (
-        <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden">
-          <div className="px-6 py-4 border-b border-border">
-            <h2 className="font-semibold text-textPrimary text-[15px]">Upcoming Classes</h2>
-          </div>
-          <div className="divide-y divide-border/60">
-            {upcomingClasses.map((c) => {
-              const isToday = c.nextAt.toDateString() === new Date().toDateString();
-              const dayLabel = isToday ? 'Today' : DAY_LABELS[DAY_ORDER[c.nextAt.getDay()]];
-              const timeLabel = c.nextAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-              return (
-                <div key={c.id} className="flex items-center justify-between px-6 py-3.5 hover:bg-background/60 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base" style={{ background: '#EFF6FF' }}>🏫</div>
-                    <div>
-                      <div className="font-semibold text-sm text-textPrimary">{c.name}</div>
-                      <div className="text-xs text-textSecondary font-mono mt-0.5">{c.code}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold" style={{ color: isToday ? colors.primary : colors.textPrimary }}>{dayLabel}</div>
-                    <div className="text-xs text-textSecondary mt-0.5">{timeLabel}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

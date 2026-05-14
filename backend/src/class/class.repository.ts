@@ -10,7 +10,7 @@ export class ClassRepository {
   findAll() {
     return this.prisma.class.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { students: true, homeworks: true } } },
+      include: { _count: { select: { students: true } } },
     });
   }
 
@@ -19,7 +19,7 @@ export class ClassRepository {
       where: { id },
       include: {
         students: true,
-        homeworks: { include: { parts: { include: { words: { include: { word: true } } } } } },
+        assignments: { include: { assignment: { include: { homework: true } } } },
       },
     });
   }

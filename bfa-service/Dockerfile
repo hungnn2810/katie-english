@@ -4,7 +4,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ffmpeg espeak-ng \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir bournemouth-forced-aligner fastapi uvicorn python-multipart
+RUN pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir whisperx bournemouth-forced-aligner fastapi uvicorn python-multipart
 
 WORKDIR /app
 COPY main.py .

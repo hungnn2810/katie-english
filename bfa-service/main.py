@@ -5,16 +5,16 @@ import subprocess
 import tempfile
 from functools import lru_cache
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
+import whisperx
 from bournemouth_aligner import PhonemeTimestampAligner
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 app = FastAPI()
 
 IPA_TO_SIMPLIFIED: dict[str, str] = {
-    # 3-char sequences (checked first)
-    # 2-char sequences — diphthongs
+    # 2-char sequences — diphthongs and affricates
     "tʃ": "ch",
     "dʒ": "j",
     "eɪ": "e",   # long a (American)
@@ -35,40 +35,46 @@ IPA_TO_SIMPLIFIED: dict[str, str] = {
     "ɝɹ": "er",
     "aɹ": "ar",
     "oɹ": "or",
-    # Single chars
+    # Single chars — stops
     "k": "c",
     "c": "c",
+    "ɡ": "g",   # IPA script-g (U+0261) — aligner/espeak always emit this, not ASCII g
+    "g": "g",   # ASCII g fallback
     "t": "t",
     "d": "d",
-    "g": "g",
     "p": "p",
     "b": "b",
+    # Single chars — fricatives/affricates
     "s": "s",
     "z": "z",
     "f": "f",
     "v": "v",
     "h": "h",
-    "l": "l",
-    "r": "r",
-    "ɹ": "r",   # rhotic approximant (aligner uses ɹ not r)
-    "ɾ": "t",   # alveolar flap (American English "t" between vowels)
-    "ɚ": "er",  # r-colored schwa (American English unstressed "er")
-    "m": "m",
-    "n": "n",
-    "w": "w",
-    "j": "y",
-    "ŋ": "ng",
     "ʃ": "sh",
     "ʒ": "zh",
     "θ": "th",
     "ð": "th",
-    "ɑ": "a",
+    # Single chars — nasals/liquids/glides
+    "l": "l",
+    "r": "r",
+    "ɹ": "r",   # rhotic approximant (aligner uses ɹ not r)
+    "ɾ": "t",   # alveolar flap (American English "t" between vowels)
+    "m": "m",
+    "n": "n",
+    "ŋ": "ng",
+    "w": "w",
+    "j": "y",
+    # Single chars — r-colored vowels
+    "ɚ": "er",  # r-colored schwa (American English unstressed "er")
+    "ɜ": "er",  # open-mid central (her)
+    "ɝ": "er",  # r-colored mid central (American her)
+    # Single chars — vowels
     "æ": "a",
     "ʌ": "a",
     "ə": "a",
+    "ɐ": "a",   # near-open central (en-us unstressed syllables)
+    "ɑ": "a",
     "ɛ": "e",
-    "ɜ": "er",  # open-mid central (her)
-    "ɝ": "er",  # r-colored mid central (American her)
     "ɪ": "i",
     "ɨ": "i",
     "i": "i",
@@ -96,10 +102,13 @@ def espeak_phonemes(word: str) -> List[str]:
     try:
         preset = os.getenv("BFA_PRESET", "en-us")
         espeak_voice = "en-us" if "en-us" in preset else preset
-        out = subprocess.run(
+        proc = subprocess.run(
             ["espeak-ng", "-v", espeak_voice, "--ipa", "-q", word],
             capture_output=True, text=True, timeout=5,
-        ).stdout.strip()
+        )
+        if proc.returncode != 0:
+            return []
+        out = proc.stdout.strip()
         # strip stress, length, syllable boundary markers
         for ch in "ˈˌːˑ. ":
             out = out.replace(ch, "")
@@ -173,6 +182,54 @@ def error_payload(word: str, message: str) -> dict:
     }
 
 
+def has_sufficient_energy(wav_path: Path, threshold_db: float = -45.0) -> bool:
+    """Return True if audio has speech-level energy (not silence/noise)."""
+    proc = subprocess.run(
+        [
+            "ffmpeg", "-i", str(wav_path),
+            "-af", "volumedetect",
+            "-vn", "-sn", "-dn",
+            "-f", "null", "/dev/null",
+        ],
+        capture_output=True, text=True, timeout=10,
+    )
+    for line in proc.stderr.splitlines():
+        if "mean_volume" in line:
+            try:
+                db = float(line.split(":")[-1].strip().replace(" dB", ""))
+                return db > threshold_db
+            except ValueError:
+                pass
+    return False
+
+
+_whisperx_model = None
+_whisperx_align_model = None
+_whisperx_metadata = None
+
+_WHISPERX_MODEL_SIZE = os.getenv("WHISPERX_MODEL", "small")
+_WHISPERX_DEVICE = "cpu"
+_WHISPERX_COMPUTE_TYPE = "int8"
+
+
+def get_whisperx_model():
+    global _whisperx_model
+    if _whisperx_model is None:
+        _whisperx_model = whisperx.load_model(
+            _WHISPERX_MODEL_SIZE, _WHISPERX_DEVICE, compute_type=_WHISPERX_COMPUTE_TYPE
+        )
+    return _whisperx_model
+
+
+def get_whisperx_align_model():
+    global _whisperx_align_model, _whisperx_metadata
+    if _whisperx_align_model is None:
+        _whisperx_align_model, _whisperx_metadata = whisperx.load_align_model(
+            language_code="en", device=_WHISPERX_DEVICE
+        )
+    return _whisperx_align_model, _whisperx_metadata
+
+
 @lru_cache
 def get_aligner() -> PhonemeTimestampAligner:
     preset = os.getenv("BFA_PRESET", "en-us")
@@ -211,9 +268,13 @@ async def align(
         conv = subprocess.run(
             ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-y", str(wav_path)],
             capture_output=True,
+            timeout=30,
         )
         if conv.returncode != 0:
             return error_payload(word, f"Audio conversion failed: {conv.stderr.decode()[:200]}")
+
+        if not has_sufficient_energy(wav_path):
+            return error_payload(word, "No speech detected in audio")
 
         aligner = get_aligner()
         audio_data = aligner.load_audio(str(wav_path))
@@ -274,6 +335,53 @@ async def align(
             "word": word,
             "espeak_fallback": espeak_fallback,
         }
+    finally:
+        shutil.rmtree(work_dir, ignore_errors=True)
+
+
+@app.post("/transcribe")
+async def transcribe(audio: UploadFile = File(...)):
+    work_dir = Path(tempfile.mkdtemp(prefix="whisperx_"))
+    try:
+        suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+        raw_path = work_dir / f"input{suffix}"
+        with open(raw_path, "wb") as f:
+            f.write(await audio.read())
+
+        wav_path = work_dir / "input.wav"
+        conv = subprocess.run(
+            ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-y", str(wav_path)],
+            capture_output=True,
+            timeout=30,
+        )
+        if conv.returncode != 0:
+            raise HTTPException(status_code=400, detail=f"Audio conversion failed: {conv.stderr.decode()[:200]}")
+
+        if not has_sufficient_energy(wav_path):
+            return {"text": "", "words": []}
+
+        model = get_whisperx_model()
+        audio_data = whisperx.load_audio(str(wav_path))
+        result = model.transcribe(audio_data, batch_size=16, language="en")
+
+        model_a, metadata = get_whisperx_align_model()
+        result = whisperx.align(result["segments"], model_a, metadata, audio_data, _WHISPERX_DEVICE)
+
+        words = []
+        for segment in result.get("segments", []):
+            for w in segment.get("words", []):
+                word_text = str(w.get("word", "")).strip()
+                if not word_text:
+                    continue
+                words.append({
+                    "word": word_text,
+                    "start": round(float(w.get("start", 0.0)), 3),
+                    "end": round(float(w.get("end", 0.0)), 3),
+                    "score": round(float(w.get("score", 0.0)), 3),
+                })
+
+        text = " ".join(s.get("text", "").strip() for s in result.get("segments", []))
+        return {"text": text.strip(), "words": words}
     finally:
         shutil.rmtree(work_dir, ignore_errors=True)
 

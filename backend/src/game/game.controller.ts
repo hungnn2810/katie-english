@@ -5,7 +5,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { GameService } from './game.service';
-import { StartSessionDto, SaveWordResultDto } from './game.dto';
+import { StartSessionDto, SavePhonicsResultDto } from './game.dto';
 import { AuthGuard } from '../auth/auth.guard';
 
 @UseGuards(AuthGuard)
@@ -15,7 +15,7 @@ export class GameController {
 
   @Get('homework/:studentId')
   getHomework(@Param('studentId', ParseIntPipe) studentId: number) {
-    return this.service.getAvailableHomework(studentId);
+    return this.service.getAvailableAssignments(studentId);
   }
 
   @Post('session/start')
@@ -28,16 +28,25 @@ export class GameController {
     return this.service.getSession(id);
   }
 
-  @Post('session/:id/word-result')
+  @Post('session/:id/phonics-result')
   @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 10 * 1024 * 1024 } }))
-  saveWordResult(
+  savePhonicsResult(
     @Param('id', ParseIntPipe) id: number,
     @Body('wordId') wordId: string,
     @Body('transcribedText') transcribedText: string,
     @UploadedFile() audio?: Express.Multer.File,
   ) {
-    const dto: SaveWordResultDto = { wordId: Number(wordId), transcribedText };
-    return this.service.saveWordResult(id, dto, audio?.buffer, audio?.mimetype);
+    const dto: SavePhonicsResultDto = { wordId: Number(wordId), transcribedText };
+    return this.service.savePhonicsResult(id, dto, audio?.buffer, audio?.mimetype);
+  }
+
+  @Post('session/:id/speaking-result')
+  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 100 * 1024 * 1024 } }))
+  saveSpeakingResult(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() audio?: Express.Multer.File,
+  ) {
+    return this.service.saveSpeakingResult(id, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/complete')

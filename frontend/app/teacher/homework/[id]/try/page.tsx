@@ -98,11 +98,13 @@ export default function TeacherTryHomeworkPage() {
 
   useEffect(() => {
     getHomework(hwId).then((h) => {
-      const list = h.parts.flatMap((p) =>
-        p.type === 'PHONICS'
-          ? (p.phonicsItems ?? []).map((text) => ({ text, transcribed: '', score: 0, state: 'waiting' as ItemState }))
-          : p.words.map((w) => ({ text: w.word.text, transcribed: '', score: 0, state: 'waiting' as ItemState }))
-      );
+      const list: ItemEntry[] = h.type === 'PHONICS'
+        ? (h.parts ?? []).flatMap((part) =>
+            part.words.map((word) => ({ text: word.text, transcribed: '', score: 0, state: 'waiting' as ItemState }))
+          )
+        : h.speakingText
+          ? [{ text: h.speakingText, transcribed: '', score: 0, state: 'waiting' as ItemState }]
+          : [];
       setItems(list);
       requestCamera();
     }).catch(() => setPageState('error'));
@@ -133,11 +135,7 @@ export default function TeacherTryHomeworkPage() {
       const text = Array.from(e.results as any[]).map((r: any) => r[0].transcript).join(' ').trim();
       onUpdate(text);
     };
-    rec.onend = () => {
-      if (recognitionRef.current === rec) {
-        try { rec.start(); } catch {}
-      }
-    };
+    rec.onend = () => { if (recognitionRef.current === rec) { try { rec.start(); } catch {} } };
     rec.start();
     recognitionRef.current = rec;
   }
@@ -169,12 +167,7 @@ export default function TeacherTryHomeworkPage() {
     finalTextRef.current = '';
     setTimeLeft(timeInSeconds);
     setItems((prev) => prev.map((w, i) => i === index ? { ...w, state: 'recording' } : w));
-
-    startSpeech((text) => {
-      finalTextRef.current = text;
-      setTranscript(text);
-    });
-
+    startSpeech((text) => { finalTextRef.current = text; setTranscript(text); });
     let t = timeInSeconds;
     timerRef.current = setInterval(() => {
       t -= 1;
@@ -183,17 +176,8 @@ export default function TeacherTryHomeworkPage() {
     }, 1000);
   }
 
-  function handleStart() {
-    setPageState('playing');
-    setCurrentIndex(0);
-    playItem(0);
-  }
-
-  function handleSubmitItem() {
-    stopTimer();
-    stopSpeech();
-    processItem(currentIndex, finalTextRef.current);
-  }
+  function handleStart() { setPageState('playing'); setCurrentIndex(0); playItem(0); }
+  function handleSubmitItem() { stopTimer(); stopSpeech(); processItem(currentIndex, finalTextRef.current); }
 
   useEffect(() => {
     if (pageState !== 'results') return;
@@ -232,14 +216,12 @@ export default function TeacherTryHomeworkPage() {
             <div className="text-6xl">📷</div>
             <div className="text-center">
               <h2 className="text-white text-2xl font-black mb-2">Camera Required</h2>
-              <p className="text-white/70 text-sm max-w-sm">Camera and microphone access is required to preview the homework experience. Please allow access in your browser settings and retry.</p>
+              <p className="text-white/70 text-sm max-w-sm">Camera and microphone access is required to preview. Please allow access and retry.</p>
             </div>
             <button onClick={requestCamera} className="px-6 py-3 rounded-xl text-white font-bold" style={{ background: gradients.pinkHighlight }}>
               Try Again
             </button>
-            <button onClick={() => router.push(`/teacher/homework/${hwId}`)} className="text-white/60 text-sm hover:text-white">
-              ← Back to Homework
-            </button>
+            <button onClick={() => router.push(`/teacher/homework/${hwId}`)} className="text-white/60 text-sm hover:text-white">← Back</button>
           </div>
         )}
       </AuthGate>
@@ -269,14 +251,12 @@ export default function TeacherTryHomeworkPage() {
               <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-center text-white/70 text-xs font-semibold mb-6 tracking-wide uppercase">
                 Preview Mode — Results not saved
               </div>
-
               <div className="text-center mb-10">
                 <div className="text-6xl mb-4">🎉</div>
                 <h1 className="text-white text-3xl font-black mb-2">Preview Complete!</h1>
                 <div className="text-7xl font-black mt-4" style={{ color: scoreHexColor(finalScore) }}>{finalScore}%</div>
                 <p className="text-white/60 text-sm mt-2">This is how students experience the scoring</p>
               </div>
-
               <div className="space-y-3 mb-8">
                 {items.map((w, i) => (
                   <div key={i} className="bg-white bg-opacity-10 rounded-2xl px-5 py-4">
@@ -284,7 +264,7 @@ export default function TeacherTryHomeworkPage() {
                       <div>
                         <div className="text-white font-bold text-lg">{w.text}</div>
                         <div className="text-white/70 text-sm mt-0.5">
-                          You said: <span className="text-white italic">&quot;{w.transcribed || '—'}&quot;</span>
+                          You said: <span className="text-white italic">"{w.transcribed || '—'}"</span>
                         </div>
                       </div>
                       <div className="text-2xl font-black tabular-nums" style={{ color: scoreHexColor(w.score) }}>
@@ -294,7 +274,6 @@ export default function TeacherTryHomeworkPage() {
                   </div>
                 ))}
               </div>
-
               <div className="flex gap-3">
                 <button onClick={() => router.push(`/teacher/homework/${hwId}/try`)}
                   className="flex-1 py-4 rounded-2xl text-white font-bold text-base"
@@ -322,19 +301,13 @@ export default function TeacherTryHomeworkPage() {
       {() => (
         <div className="h-screen flex flex-col overflow-hidden" style={{ background: gradients.gameBgAlt, minWidth: 1024 }}>
           <div className="flex items-center justify-between px-8 py-4 flex-shrink-0">
-            <button onClick={() => router.push(`/teacher/homework/${hwId}`)} className="text-white/60 hover:text-white text-sm transition-colors">
-              ← Back
-            </button>
-            <div className="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-white/60 text-xs font-semibold tracking-wide uppercase">
-              Preview Mode
-            </div>
+            <button onClick={() => router.push(`/teacher/homework/${hwId}`)} className="text-white/60 hover:text-white text-sm transition-colors">← Back</button>
+            <div className="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-white/60 text-xs font-semibold tracking-wide uppercase">Preview Mode</div>
             <div className="flex items-center gap-3">
               {items.map((w, i) => (
                 <div key={i} className="h-2 w-8 rounded-full transition-all"
                   style={{
-                    background: w.state === 'done'
-                      ? scoreHexColor(w.score)
-                      : i === currentIndex && pageState === 'playing' ? '#A78BFA' : '#ffffff20',
+                    background: w.state === 'done' ? scoreHexColor(w.score) : i === currentIndex && pageState === 'playing' ? '#A78BFA' : '#ffffff20',
                   }} />
               ))}
             </div>
@@ -387,25 +360,20 @@ export default function TeacherTryHomeworkPage() {
                   <div className="flex justify-center mb-6">
                     <CircleTimer seconds={timeLeft} total={timeInSeconds} />
                   </div>
-
                   <div className="text-7xl font-black text-white mb-4 tracking-widest" style={{ textShadow: '0 0 40px rgba(167,139,250,0.6)' }}>
                     {current.text}
                   </div>
-
                   <div className="min-h-12 mb-8">
-                    {transcript ? (
-                      <p className="text-white/80 text-2xl italic font-medium">&quot;{transcript}&quot;</p>
-                    ) : (
-                      <p className="text-white/40 text-lg animate-pulse">Listening…</p>
-                    )}
+                    {transcript
+                      ? <p className="text-white/80 text-2xl italic font-medium">"{transcript}"</p>
+                      : <p className="text-white/40 text-lg animate-pulse">Listening…</p>
+                    }
                   </div>
-
                   <button onClick={handleSubmitItem}
                     className="px-8 py-3 rounded-2xl text-white font-bold text-lg hover:scale-105 transition-transform"
                     style={{ background: gradients.greenSecondary }}>
                     Next →
                   </button>
-
                   {doneCount > 0 && (
                     <div className="flex gap-2 justify-center mt-8 flex-wrap">
                       {items.filter((w) => w.state === 'done').map((w, i) => (
