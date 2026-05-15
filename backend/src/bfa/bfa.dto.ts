@@ -25,7 +25,7 @@ export interface WhisperXWord {
 
 export interface WhisperXResult {
   text: string;
-  words: WhisperXWord[];
+  words?: WhisperXWord[];
 }
 
 export interface BfaAlignResult {

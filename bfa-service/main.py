@@ -236,8 +236,6 @@ def has_sufficient_energy(wav_path: Path, threshold_db: float = -45.0) -> bool:
 
 
 _whisperx_model = None
-_whisperx_align_model = None
-_whisperx_metadata = None
 
 _WHISPERX_MODEL_SIZE = os.getenv("WHISPERX_MODEL", "small")
 _WHISPERX_DEVICE = "cpu"
@@ -303,15 +301,6 @@ def get_whisperx_model():
             _WHISPERX_MODEL_SIZE, _WHISPERX_DEVICE, compute_type=_WHISPERX_COMPUTE_TYPE
         )
     return _whisperx_model
-
-
-def get_whisperx_align_model():
-    global _whisperx_align_model, _whisperx_metadata
-    if _whisperx_align_model is None:
-        _whisperx_align_model, _whisperx_metadata = whisperx.load_align_model(
-            language_code="en", device=_WHISPERX_DEVICE
-        )
-    return _whisperx_align_model, _whisperx_metadata
 
 
 @lru_cache
@@ -478,7 +467,7 @@ def _transcribe_sync(raw_bytes: bytes, suffix: str):
 
         wav_path = work_dir / "input.wav"
         conv = subprocess.run(
-            ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-y", str(wav_path)],
+            ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-t", "300", "-y", str(wav_path)],
             capture_output=True,
             timeout=FFMPEG_TIMEOUT,
         )
@@ -486,30 +475,14 @@ def _transcribe_sync(raw_bytes: bytes, suffix: str):
             raise HTTPException(status_code=400, detail=f"Audio conversion failed: {conv.stderr.decode()[:200]}")
 
         if not has_sufficient_energy(wav_path):
-            return {"text": "", "words": []}
+            return {"text": ""}
 
         model = get_whisperx_model()
         audio_data = whisperx.load_audio(str(wav_path))
         result = model.transcribe(audio_data, batch_size=16, language="en")
 
-        model_a, metadata = get_whisperx_align_model()
-        result = whisperx.align(result["segments"], model_a, metadata, audio_data, _WHISPERX_DEVICE)
-
-        words = []
-        for segment in result.get("segments", []):
-            for w in segment.get("words", []):
-                word_text = str(w.get("word", "")).strip()
-                if not word_text:
-                    continue
-                words.append({
-                    "word": word_text,
-                    "start": round(float(w.get("start", 0.0)), 3),
-                    "end": round(float(w.get("end", 0.0)), 3),
-                    "score": round(float(w.get("score", 0.0)), 3),
-                })
-
         text = " ".join(s.get("text", "").strip() for s in result.get("segments", []))
-        return {"text": text.strip(), "words": words}
+        return {"text": text.strip()}
     finally:
         shutil.rmtree(work_dir, ignore_errors=True)
 
@@ -520,7 +493,6 @@ def health():
         "status": "ok",
         "models_loaded": {
             "whisperx": _whisperx_model is not None,
-            "whisperx_align": _whisperx_align_model is not None,
         },
         "dependencies": {
             "ffmpeg": shutil.which("ffmpeg") is not None,
