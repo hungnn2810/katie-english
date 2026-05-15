@@ -65,11 +65,9 @@ Strict 2-weight, 4-size scale — matches Phase 1 contract exactly.
 | Role | Size | Weight | Line Height | Tailwind Classes | Screen |
 |------|------|--------|-------------|------------------|--------|
 | Display / Score | 72px (text-7xl) | 900 (font-black) | 1.0 | `text-7xl font-black` | Result screen score number |
-| Heading | 24px (text-2xl) | 900 (font-black) | 1.2 | `text-2xl font-black` | Game page section headings, result screen "Homework Complete!" |
+| Heading | 24px (text-2xl) | 900 (font-black) | 1.2 | `text-2xl font-black` | Game page section headings, result screen "Homework Complete!", fill-blank sentence display |
 | Body / Label | 14px (text-sm) | 700 (font-bold) | 1.5 | `text-sm font-bold` | Teacher creation form labels, activity card titles, activity index, word labels |
 | Caption | 12px (text-xs) | 700 (font-bold) | 1.0 | `text-xs font-bold` | Section header labels (uppercase tracking-wide), badge text, count indicators |
-
-Fill-in-blank sentence display exception: sentence text renders at `text-xl font-bold` (20px/700) to ensure readability for young students. This is a one-off student-facing exception — the creation page input for the same sentence uses `text-sm font-bold`.
 
 Activity index label ("Activity 1 of 3") uses `text-xs font-bold` uppercase — consistent with session progress indicators in the existing game page.
 
@@ -222,11 +220,11 @@ Page container: animate-fade-in, max-w-3xl mx-auto px-8 py-8
 
 [Add activity row]  mt-4 flex gap-3
   "Add Matching Activity" button
-    flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border-2 border-dashed
+    flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 border-dashed
     border-secondary text-secondary hover:bg-secondary/10
     icon: + emoji or inline SVG
   "Add Fill-in-blank Activity" button
-    flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border-2 border-dashed
+    flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 border-dashed
     border-accent text-amber-600 hover:bg-accent/10
 ```
 
@@ -268,8 +266,9 @@ card (bg-white rounded-2xl border border-border shadow-card) overflow-hidden
   grid grid-cols-3 gap-3 mb-4
   Each pair card: bg-background rounded-xl border border-border p-3
     [Image thumbnail]  w-20 h-20 (80px) rounded-lg object-cover mb-2 mx-auto
-    [Word label input]  input-base text-sm py-1.5, placeholder="Word label"
+    [Word label input]  input-base text-sm py-2, placeholder="Word label"
     [Remove pair button]  ✕ text-xs text-highlight hover:text-red-600 block text-center mt-1
+      aria-label="Remove pair"
 
 [Add more images button]  (when pairs > 0 and < 6)
   text-xs font-bold text-secondary hover:underline
@@ -297,9 +296,10 @@ card (bg-white rounded-2xl border border-border shadow-card) overflow-hidden
             [Correct radio]  w-4 h-4 accent-primary rounded-full (native radio styled)
               value=choiceIndex, name=`blank-{blankId}-correct`
               aria-label="Mark as correct answer"
-            [Choice word input]  input-base flex-1 py-1.5
+            [Choice word input]  input-base flex-1 py-2
               placeholder="Word option"
             [Remove choice button]  ✕ text-highlight text-sm hover:text-red-600
+              aria-label="Remove choice"
         [Add choice button]  mt-2 text-xs font-bold text-primary hover:underline
           → "+ Add choice"
       [Remove item button]  text-xs font-bold text-highlight hover:text-red-600 mt-2 → "Remove sentence"
@@ -406,10 +406,10 @@ Activity content area (max-w-xl mx-auto w-full):
 
 [Sentence display]  text-center mb-8
   Sentence with blank replaced by styled box:
-    Text before blank: text-white text-xl font-bold
+    Text before blank: text-white text-2xl font-black
     Blank box: inline-block w-24 h-8 rounded-lg border-2 border-white/40 bg-white/10
-               align-middle mx-1 (represents the ___) 
-    Text after blank: text-white text-xl font-bold
+               align-middle mx-1 (represents the ___)
+    Text after blank: text-white text-2xl font-black
   Line-height: 2.0 (to accommodate inline blank box)
 
 [Word choice buttons]  flex flex-wrap gap-3 justify-center
@@ -509,9 +509,9 @@ style={{ background: gradients.gameBg, minWidth: 1024 }}
 | Action | Trigger | Confirmation | Copy |
 |--------|---------|--------------|------|
 | Remove activity | `Remove` button in activity card header | No confirmation — activity removal on creation page (not yet saved); data is local state only | (immediate removal, no dialog) |
-| Remove pair | `✕` button on pair card | No confirmation — pair is local state | (immediate removal) |
+| Remove pair | `✕` button on pair card (`aria-label="Remove pair"`) | No confirmation — pair is local state | (immediate removal) |
 | Remove sentence | `Remove sentence` link | No confirmation — blank is local state | (immediate removal) |
-| Remove choice | `✕` button on choice row | No confirmation — choice is local state | (immediate removal) |
+| Remove choice | `✕` button on choice row (`aria-label="Remove choice"`) | No confirmation — choice is local state | (immediate removal) |
 
 No server-side destructive actions in Phase 2 creation flow (teacher edits before saving; delete of saved homework is out of scope — Phase 3).
 
@@ -572,6 +572,7 @@ Teacher creation page: inside teacher layout which provides sidebar + scrollable
 | `game/homework/page.tsx` codebase read | TYPE_META pattern, handleStart routing, card pattern |
 | `01-UI-SPEC.md` (Phase 1) | Typography scale (4 sizes, 2 weights), spacing tokens, badge patterns, animation patterns |
 | Claude's Discretion areas | Activity index label: show. Celebration: white opacity fade. Error empty activities: show descriptive copy. Shake animation: 400ms. |
+| UI checker revision 2026-05-15 | Removed 5th font size (text-xl 20px); replaced py-2.5/py-1.5 with py-2; added aria-labels to icon-only remove buttons |
 
 ---
 
