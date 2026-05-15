@@ -73,7 +73,9 @@
       "Bash(git -C /Users/hung/Documents/katie-english/.claude/worktrees/agent-ab3652061f0cb426e diff --cached --name-only)",
       "Bash(git -C /Users/hung/Documents/katie-english/.claude/worktrees/agent-ab3652061f0cb426e status --short backend/src/homework/image.controller.ts frontend/app/teacher/homework/[id]/page.tsx backend/src/game/game.controller.ts backend/src/game/game.dto.ts backend/src/game/game.repository.ts backend/src/game/game.service.spec.ts backend/src/class/class.repository.ts frontend/app/teacher/page.tsx frontend/app/teacher/homework/[id]/try/page.tsx)",
       "Bash(git *)",
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Bash(npx --no-install tsc --noEmit)",
+      "Bash(npm list *)"
     ]
   },
   "enableAllProjectMcpServers": true,
