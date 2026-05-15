@@ -1,17 +1,22 @@
 import {
   Controller, Get, Post, Param, Body, ParseIntPipe,
   UseInterceptors, UploadedFile, UseGuards, Res, NotFoundException,
+  HttpCode,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { GameService } from './game.service';
 import { StartSessionDto, SavePhonicsResultDto } from './game.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { GameJobsService } from './game.jobs.service';
 
 @UseGuards(AuthGuard)
 @Controller('game')
 export class GameController {
-  constructor(private readonly service: GameService) {}
+  constructor(
+    private readonly service: GameService,
+    private readonly jobs: GameJobsService,
+  ) {}
 
   @Get('homework/:studentId')
   getHomework(@Param('studentId', ParseIntPipe) studentId: number) {
@@ -29,6 +34,7 @@ export class GameController {
   }
 
   @Post('session/:id/phonics-result')
+  @HttpCode(202)
   @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 10 * 1024 * 1024 } }))
   savePhonicsResult(
     @Param('id', ParseIntPipe) id: number,
@@ -37,16 +43,22 @@ export class GameController {
     @UploadedFile() audio?: Express.Multer.File,
   ) {
     const dto: SavePhonicsResultDto = { wordId: Number(wordId), transcribedText };
-    return this.service.savePhonicsResult(id, dto, audio?.buffer, audio?.mimetype);
+    return this.jobs.enqueuePhonicsResult(id, dto, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/speaking-result')
+  @HttpCode(202)
   @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 100 * 1024 * 1024 } }))
   saveSpeakingResult(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile() audio?: Express.Multer.File,
   ) {
-    return this.service.saveSpeakingResult(id, audio?.buffer, audio?.mimetype);
+    return this.jobs.enqueueSpeakingResult(id, audio?.buffer, audio?.mimetype);
+  }
+
+  @Get('job/:jobId')
+  getJobStatus(@Param('jobId') jobId: string) {
+    return this.jobs.getJobStatus(jobId);
   }
 
   @Post('session/:id/complete')

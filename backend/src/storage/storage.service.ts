@@ -30,7 +30,21 @@ export class StorageService implements OnModuleInit {
     return this.client.getObject(this.bucket, key);
   }
 
+  async getObjectBuffer(key: string): Promise<Buffer> {
+    const stream = await this.client.getObject(this.bucket, key);
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      stream.on('error', (err) => reject(err));
+    });
+  }
+
   async getObjectMeta(key: string) {
     return this.client.statObject(this.bucket, key);
+  }
+
+  async removeObject(key: string) {
+    await this.client.removeObject(this.bucket, key);
   }
 }

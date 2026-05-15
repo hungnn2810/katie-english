@@ -35,6 +35,9 @@ services:
     build:
       context: ./bfa-service
       dockerfile: Dockerfile
+    environment:
+      BFA_WORKERS: '1'
+      BFA_CONCURRENCY: '1'
     ports:
       - '3002:8000'
     healthcheck:
@@ -60,6 +63,8 @@ services:
       TEACHER_EMAIL: teacher@example.com
       TEACHER_PASSWORD: Pass1234!
       BFA_URL: http://bfa:8000
+      REDIS_URL: redis://redis:6379
+      BFA_QUEUE_CONCURRENCY: '1'
     ports:
       - '3001:3001'
     depends_on:
@@ -69,6 +74,8 @@ services:
         condition: service_healthy
       bfa:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   frontend:
     build:
@@ -81,6 +88,63 @@ services:
     depends_on:
       - backend
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - '9090:9090'
+    depends_on:
+      - bfa
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: 'true'
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - '3003:3000'
+    depends_on:
+      - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    command:
+      - '--housekeeping_interval=10s'
+      - '--docker_only=true'
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - '8080:8080'
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - /:/host:ro,rslave
+    ports:
+      - '9100:9100'
+
 volumes:
   postgres_data:
   minio_data:
+  prometheus_data:
+  grafana_data:

@@ -52,10 +52,11 @@ export class GameService {
       }
     }
 
-    const { score, matchedWords, totalWords } = hw.speakingMode === 'FREE_SPEAK'
+    const speakingMode = (hw as { speakingMode?: 'FREE_SPEAK' | 'SCRIPT_MATCH' }).speakingMode;
+    const { score, matchedWords, totalWords } = speakingMode === 'FREE_SPEAK'
       ? calcFreeSpeak(transcribedText, hw.speakingText)
       : calcSpeakingScore(transcribedText, hw.speakingText);
-    this.logger.log(`[session=${sessionId}] speaking score=${score} matched=${matchedWords}/${totalWords} mode=${hw.speakingMode ?? 'SCRIPT_MATCH'}`);
+    this.logger.log(`[session=${sessionId}] speaking score=${score} matched=${matchedWords}/${totalWords} mode=${speakingMode ?? 'SCRIPT_MATCH'}`);
 
     return this.repo.saveSpeakingResult(sessionId, transcribedText, score, matchedWords, totalWords);
   }

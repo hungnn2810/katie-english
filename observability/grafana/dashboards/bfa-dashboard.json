@@ -1,0 +1,169 @@
+{
+  "uid": "bfa-overview",
+  "title": "BFA Service",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Requests per second",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PROMETHEUS"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(bfa_request_total[1m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "P95 Latency (s)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PROMETHEUS"
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(bfa_request_latency_seconds_bucket[5m])) by (le))"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "BFA CPU (cores)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PROMETHEUS"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{container_label_com_docker_compose_service=\"bfa\"}[1m]))"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "BFA Memory (bytes)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PROMETHEUS"
+      },
+      "targets": [
+        {
+          "expr": "container_memory_working_set_bytes{container_label_com_docker_compose_service=\"bfa\"}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "BFA Disk Usage (bytes)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PROMETHEUS"
+      },
+      "targets": [
+        {
+          "expr": "container_fs_usage_bytes{container_label_com_docker_compose_service=\"bfa\"}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Host CPU Usage (%)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PROMETHEUS"
+      },
+      "targets": [
+        {
+          "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Host Memory Used (bytes)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PROMETHEUS"
+      },
+      "targets": [
+        {
+          "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Host Disk Used (bytes)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PROMETHEUS"
+      },
+      "targets": [
+        {
+          "expr": "node_filesystem_size_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\"} - node_filesystem_avail_bytes{mountpoint=\"/\",fstype!~\"tmpfs|overlay\"}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      }
+    }
+  ]
+}

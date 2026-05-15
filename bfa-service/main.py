@@ -1,17 +1,49 @@
+import asyncio
 import json
+import logging
 import os
 import shutil
 import subprocess
 import tempfile
+import time
+import uuid
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional
 
 import whisperx
 from bournemouth_aligner import PhonemeTimestampAligner
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse, Response
+from prometheus_client import Counter, Histogram, generate_latest
 
 app = FastAPI()
+
+logger = logging.getLogger("bfa_service")
+_handler = logging.StreamHandler()
+_handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(_handler)
+logger.setLevel(logging.INFO)
+
+MAX_UPLOAD_BYTES = int(os.getenv("BFA_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
+MAX_EXPECTED_PHONEMES = int(os.getenv("BFA_MAX_EXPECTED_PHONEMES", "200"))
+FFMPEG_TIMEOUT = int(os.getenv("BFA_FFMPEG_TIMEOUT", "30"))
+VOLUMEDETECT_TIMEOUT = int(os.getenv("BFA_VOLUME_TIMEOUT", "10"))
+ESPEAK_TIMEOUT = int(os.getenv("BFA_ESPEAK_TIMEOUT", "5"))
+BFA_CONCURRENCY = int(os.getenv("BFA_CONCURRENCY", "1"))
+
+REQUEST_SEMAPHORE = asyncio.Semaphore(BFA_CONCURRENCY)
+
+REQUEST_COUNT = Counter(
+    "bfa_request_total",
+    "Total requests",
+    ["endpoint", "method", "status"],
+)
+REQUEST_LATENCY = Histogram(
+    "bfa_request_latency_seconds",
+    "Request latency in seconds",
+    ["endpoint", "method"],
+)
 
 IPA_TO_SIMPLIFIED: dict[str, str] = {
     # 2-char sequences — diphthongs and affricates
@@ -104,7 +136,7 @@ def espeak_phonemes(word: str) -> List[str]:
         espeak_voice = "en-us" if "en-us" in preset else preset
         proc = subprocess.run(
             ["espeak-ng", "-v", espeak_voice, "--ipa", "-q", word],
-            capture_output=True, text=True, timeout=5,
+            capture_output=True, text=True, timeout=ESPEAK_TIMEOUT,
         )
         if proc.returncode != 0:
             return []
@@ -191,7 +223,7 @@ def has_sufficient_energy(wav_path: Path, threshold_db: float = -45.0) -> bool:
             "-vn", "-sn", "-dn",
             "-f", "null", "/dev/null",
         ],
-        capture_output=True, text=True, timeout=10,
+        capture_output=True, text=True, timeout=VOLUMEDETECT_TIMEOUT,
     )
     for line in proc.stderr.splitlines():
         if "mean_volume" in line:
@@ -210,6 +242,58 @@ _whisperx_metadata = None
 _WHISPERX_MODEL_SIZE = os.getenv("WHISPERX_MODEL", "small")
 _WHISPERX_DEVICE = "cpu"
 _WHISPERX_COMPUTE_TYPE = "int8"
+
+
+@app.middleware("http")
+async def request_context_middleware(request: Request, call_next):
+    request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
+    request.state.request_id = request_id
+    start_time = time.time()
+    response = None
+    status_code = 500
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        return response
+    finally:
+        duration = time.time() - start_time
+        endpoint = request.url.path
+        method = request.method
+        REQUEST_COUNT.labels(endpoint=endpoint, method=method, status=str(status_code)).inc()
+        REQUEST_LATENCY.labels(endpoint=endpoint, method=method).observe(duration)
+        logger.info(
+            json.dumps(
+                {
+                    "event": "request",
+                    "request_id": request_id,
+                    "method": method,
+                    "path": endpoint,
+                    "status": status_code,
+                    "duration_ms": round(duration * 1000, 2),
+                }
+            )
+        )
+        if response is not None:
+            response.headers["x-request-id"] = request_id
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    request_id = getattr(request.state, "request_id", None)
+    logger.exception(
+        json.dumps(
+            {
+                "event": "error",
+                "request_id": request_id,
+                "path": request.url.path,
+                "message": str(exc),
+            }
+        )
+    )
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error", "request_id": request_id},
+    )
 
 
 def get_whisperx_model():
@@ -242,6 +326,15 @@ async def align(
     word: str = Form(...),
     expected_phonemes: str = Form(...),
 ):
+    async with REQUEST_SEMAPHORE:
+        return await _align_impl(audio, word, expected_phonemes)
+
+
+async def _align_impl(
+    audio: UploadFile,
+    word: str,
+    expected_phonemes: str,
+):
     try:
         expected: List[str] = json.loads(expected_phonemes)
     except json.JSONDecodeError as exc:
@@ -250,6 +343,29 @@ async def align(
     if not isinstance(expected, list):
         raise HTTPException(status_code=400, detail="expected_phonemes must be a JSON array")
 
+    if len(expected) > MAX_EXPECTED_PHONEMES:
+        raise HTTPException(status_code=413, detail="expected_phonemes is too large")
+
+    suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+    raw_bytes = await audio.read()
+    if len(raw_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Audio file too large")
+
+    return await asyncio.to_thread(
+        _align_sync,
+        raw_bytes,
+        suffix,
+        word,
+        expected,
+    )
+
+
+def _align_sync(
+    raw_bytes: bytes,
+    suffix: str,
+    word: str,
+    expected: List[str],
+):
     # Fall back to espeak-ng when no phoneme data in DB
     espeak_fallback = False
     if not expected:
@@ -258,17 +374,16 @@ async def align(
 
     work_dir = Path(tempfile.mkdtemp(prefix="bfa_"))
     try:
-        suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
         raw_path = work_dir / f"input{suffix}"
         with open(raw_path, "wb") as f:
-            f.write(await audio.read())
+            f.write(raw_bytes)
 
         # Normalize to 16kHz mono WAV — handles m4a, webm, opus, mp4, etc.
         wav_path = work_dir / "input.wav"
         conv = subprocess.run(
             ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-y", str(wav_path)],
             capture_output=True,
-            timeout=30,
+            timeout=FFMPEG_TIMEOUT,
         )
         if conv.returncode != 0:
             return error_payload(word, f"Audio conversion failed: {conv.stderr.decode()[:200]}")
@@ -288,16 +403,16 @@ async def align(
         if not phoneme_ts:
             return error_payload(word, "No phoneme timestamps produced")
 
-        SILENCE_LABELS = {"-", "SIL", "sil", "sp", "spn", "<eps>", ""}
+        silence_labels = {"-", "SIL", "sil", "sp", "spn", "<eps>", ""}
         aligned_phonemes: List[dict] = []
         for entry in phoneme_ts:
             if not isinstance(entry, dict):
                 continue
             label = str(entry.get("ipa_label") or entry.get("phoneme_label") or "").strip()
-            if not label or label in SILENCE_LABELS:
+            if not label or label in silence_labels:
                 continue
             symbol = normalize_ipa(label)
-            if not symbol or symbol in SILENCE_LABELS:
+            if not symbol or symbol in silence_labels:
                 continue
             start_ms = float(entry.get("start_ms", 0.0))
             end_ms = float(entry.get("end_ms", 0.0))
@@ -341,18 +456,31 @@ async def align(
 
 @app.post("/transcribe")
 async def transcribe(audio: UploadFile = File(...)):
+    async with REQUEST_SEMAPHORE:
+        return await _transcribe_impl(audio)
+
+
+async def _transcribe_impl(audio: UploadFile):
+    suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+    raw_bytes = await audio.read()
+    if len(raw_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Audio file too large")
+
+    return await asyncio.to_thread(_transcribe_sync, raw_bytes, suffix)
+
+
+def _transcribe_sync(raw_bytes: bytes, suffix: str):
     work_dir = Path(tempfile.mkdtemp(prefix="whisperx_"))
     try:
-        suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
         raw_path = work_dir / f"input{suffix}"
         with open(raw_path, "wb") as f:
-            f.write(await audio.read())
+            f.write(raw_bytes)
 
         wav_path = work_dir / "input.wav"
         conv = subprocess.run(
             ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-y", str(wav_path)],
             capture_output=True,
-            timeout=30,
+            timeout=FFMPEG_TIMEOUT,
         )
         if conv.returncode != 0:
             raise HTTPException(status_code=400, detail=f"Audio conversion failed: {conv.stderr.decode()[:200]}")
@@ -388,4 +516,19 @@ async def transcribe(audio: UploadFile = File(...)):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "models_loaded": {
+            "whisperx": _whisperx_model is not None,
+            "whisperx_align": _whisperx_align_model is not None,
+        },
+        "dependencies": {
+            "ffmpeg": shutil.which("ffmpeg") is not None,
+            "espeak_ng": shutil.which("espeak-ng") is not None,
+        },
+    }
+
+
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type="text/plain; version=0.0.4")
