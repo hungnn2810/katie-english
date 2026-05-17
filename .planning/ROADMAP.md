@@ -57,6 +57,13 @@
 3. Student completes fill-in-blank by selecting from choices — all gaps filled before submission allowed.
 4. Score calculated and stored on submission; student sees result screen.
 
+**Plans:**
+- [x] 02-01-PLAN.md — Backend data spine: Prisma schema + migration + DTOs + repositories + service scoring + REST endpoint (Wave 1)
+- [x] 02-02-PLAN.md — Frontend API contract: types + saveReadingResult + student routing + teacher entry points (Wave 1)
+- [ ] 02-03-PLAN.md — Teacher creation page: image-word matching + fill-in-blank + sequence reorder via @dnd-kit (Wave 2)
+- [ ] 02-04-PLAN.md — Student reading game: matching click-to-pair + fill-in-blank + scoring + result screen (Wave 2)
+- [ ] 02-05-PLAN.md — Human verification checkpoint (Wave 3)
+
 ---
 
 ### Phase 3: Teacher Dashboard

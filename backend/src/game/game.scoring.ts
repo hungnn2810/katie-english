@@ -72,7 +72,10 @@ export function calcFreeSpeak(
     .filter(Boolean);
   if (kws.length === 0) return { score: 0, matchedWords: 0, totalWords: 0 };
   const text = transcript.toLowerCase();
-  const matched = kws.filter((kw) => text.includes(kw)).length;
+  const matched = kws.filter((kw) => {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(?<![\\p{L}])${escaped}(?![\\p{L}])`, 'u').test(text);
+  }).length;
   return {
     score: Math.round((matched / kws.length) * 100),
     matchedWords: matched,

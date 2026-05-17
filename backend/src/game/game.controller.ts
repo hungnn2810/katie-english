@@ -1,13 +1,13 @@
 import {
   Controller, Get, Post, Param, Body, ParseIntPipe,
   UseInterceptors, UploadedFile, UseGuards, Res, NotFoundException,
-  HttpCode,
+  HttpCode, Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { GameService } from './game.service';
 import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto } from './game.dto';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard, TeacherGuard } from '../auth/auth.guard';
 import { GameJobsService } from './game.jobs.service';
 
 @UseGuards(AuthGuard)
@@ -76,6 +76,18 @@ export class GameController {
     @UploadedFile() file?: Express.Multer.File,
   ) {
     return this.service.completeSession(id, file?.buffer, file?.mimetype);
+  }
+
+  @Get('sessions')
+  @UseGuards(TeacherGuard)
+  listSessions(
+    @Query('assignmentId') assignmentId?: string,
+    @Query('studentId') studentId?: string,
+  ) {
+    return this.service.listSessions(
+      assignmentId ? Number(assignmentId) : undefined,
+      studentId ? Number(studentId) : undefined,
+    );
   }
 
   @Get('session/:id/recording')

@@ -105,6 +105,14 @@ export const updateAssignment = (id: number, data: UpdateAssignmentInput) =>
 export const deleteAssignment = (id: number) =>
   req<AssignmentItem>(`/homework/assignment/${id}`, { method: 'DELETE' });
 
+// Sessions (teacher view)
+export const getSessionResults = (assignmentId?: number, studentId?: number) => {
+  const params = new URLSearchParams();
+  if (assignmentId) params.set('assignmentId', String(assignmentId));
+  if (studentId) params.set('studentId', String(studentId));
+  return req<GameSession[]>(`/game/sessions?${params}`);
+};
+
 // Game
 export const getSession = (id: number) => req<GameSession>(`/game/session/${id}`);
 export const getAvailableHomework = (studentId: number) =>
@@ -438,7 +446,7 @@ export interface PhonemeAlignment {
 }
 
 export interface PhonemeOp {
-  status: 'correct' | 'substituted' | 'missing' | 'extra' | 'error';
+  status: 'correct' | 'similar' | 'substituted' | 'missing' | 'extra' | 'error';
   expected: string | null;
   aligned: string | null;
   start?: number;

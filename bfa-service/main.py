@@ -57,6 +57,8 @@ IPA_TO_SIMPLIFIED: dict[str, str] = {
     "əʊ": "o",   # long o (British espeak)
     "uː": "oo",
     "iː": "i",
+    # additional affricates / approximants
+    "ɫ": "l",    # velarized/dark l
     # r-colored vowels (aligner outputs these as 2-char units)
     "ɑɹ": "ar",
     "ɔɹ": "or",
@@ -130,6 +132,7 @@ def normalize_ipa(label: str) -> str:
     return IPA_TO_SIMPLIFIED.get(normalized, normalized)
 
 
+@lru_cache(maxsize=512)
 def espeak_phonemes(word: str) -> List[str]:
     try:
         preset = os.getenv("BFA_PRESET", "en-us")
@@ -165,32 +168,68 @@ def espeak_phonemes(word: str) -> List[str]:
         return []
 
 
+# Phoneme pairs that are acoustically similar — substitution costs 0.5, yielding "similar" feedback.
+# Prioritises confusion pairs common for Vietnamese learners (l/r, th/t, th/d, v/b).
+_SIMILAR_PAIRS: frozenset = frozenset({
+    frozenset({"p", "b"}),
+    frozenset({"t", "d"}),
+    frozenset({"k", "g"}),
+    frozenset({"f", "v"}),
+    frozenset({"s", "z"}),
+    frozenset({"sh", "zh"}),
+    frozenset({"ch", "j"}),
+    frozenset({"m", "n"}),
+    frozenset({"n", "ng"}),
+    frozenset({"l", "r"}),
+    frozenset({"th", "d"}),
+    frozenset({"th", "t"}),
+    frozenset({"v", "b"}),
+    frozenset({"i", "e"}),
+    frozenset({"a", "e"}),
+    frozenset({"oo", "o"}),
+    frozenset({"er", "a"}),
+    frozenset({"ar", "a"}),
+    frozenset({"or", "o"}),
+})
+
+
+def _phoneme_cost(a: str, b: str) -> float:
+    if a == b:
+        return 0.0
+    if frozenset({a, b}) in _SIMILAR_PAIRS:
+        return 0.5
+    return 1.0
+
+
 def score_alignment(expected: List[str], aligned: List[str]) -> tuple[int, List[dict]]:
     m, n = len(expected), len(aligned)
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    dp = [[0.0] * (n + 1) for _ in range(m + 1)]
     for i in range(m + 1):
-        dp[i][0] = i
+        dp[i][0] = float(i)
     for j in range(n + 1):
-        dp[0][j] = j
+        dp[0][j] = float(j)
     for i in range(1, m + 1):
         for j in range(1, n + 1):
-            if expected[i - 1] == aligned[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1]
-            else:
-                dp[i][j] = 1 + min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1])
+            cost = _phoneme_cost(expected[i - 1], aligned[j - 1])
+            dp[i][j] = min(
+                dp[i - 1][j - 1] + cost,  # match / substitute
+                dp[i - 1][j] + 1.0,       # missing
+                dp[i][j - 1] + 1.0,       # extra
+            )
 
     ops: list[dict] = []
     i, j = m, n
+    EPS = 1e-9
     while i > 0 or j > 0:
-        if i > 0 and j > 0 and expected[i - 1] == aligned[j - 1]:
-            ops.append({"status": "correct", "expected": expected[i - 1], "aligned": aligned[j - 1]})
-            i -= 1
-            j -= 1
-        elif i > 0 and j > 0 and dp[i][j] == dp[i - 1][j - 1] + 1:
-            ops.append({"status": "substituted", "expected": expected[i - 1], "aligned": aligned[j - 1]})
-            i -= 1
-            j -= 1
-        elif i > 0 and dp[i][j] == dp[i - 1][j] + 1:
+        if i > 0 and j > 0:
+            cost = _phoneme_cost(expected[i - 1], aligned[j - 1])
+            if abs(dp[i][j] - (dp[i - 1][j - 1] + cost)) < EPS:
+                status = "correct" if cost == 0.0 else ("similar" if cost < 1.0 else "substituted")
+                ops.append({"status": status, "expected": expected[i - 1], "aligned": aligned[j - 1]})
+                i -= 1
+                j -= 1
+                continue
+        if i > 0 and (j == 0 or abs(dp[i][j] - (dp[i - 1][j] + 1.0)) < EPS):
             ops.append({"status": "missing", "expected": expected[i - 1], "aligned": None})
             i -= 1
         else:
@@ -199,8 +238,8 @@ def score_alignment(expected: List[str], aligned: List[str]) -> tuple[int, List[
     ops.reverse()
 
     distance = dp[m][n]
-    denom = max(m, n, 1)
-    score = max(0, round((1 - distance / denom) * 100))
+    denom = float(max(m, n, 1))
+    score = max(0, round((1.0 - distance / denom) * 100))
     return score, ops
 
 
@@ -214,7 +253,7 @@ def error_payload(word: str, message: str) -> dict:
     }
 
 
-def has_sufficient_energy(wav_path: Path, threshold_db: float = -45.0) -> bool:
+def has_sufficient_energy(wav_path: Path, threshold_db: float = -50.0) -> bool:
     """Return True if audio has speech-level energy (not silence/noise)."""
     proc = subprocess.run(
         [

@@ -75,7 +75,10 @@
       "Bash(git *)",
       "Bash(npm view *)",
       "Bash(npx --no-install tsc --noEmit)",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(python3 -c \"import ast; ast.parse\\(open\\('bfa-service/main.py'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(rm -f __TRACKED_VAR__/.claude/cache/gsd-update-check.json)",
+      "Bash(rm -f __TRACKED_VAR__/.cache/gsd/gsd-update-check.json)"
     ]
   },
   "enableAllProjectMcpServers": true,

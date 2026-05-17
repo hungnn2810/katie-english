@@ -10,6 +10,7 @@ const nav = [
   { href: '/teacher/classes', label: 'Classes', icon: '🏫' },
   { href: '/teacher/students', label: 'Students', icon: '👦' },
   { href: '/teacher/homework', label: 'Homework', icon: '📚' },
+  { href: '/teacher/sessions', label: 'Sessions', icon: '🎬' },
 ];
 
 interface Props {

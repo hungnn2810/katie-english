@@ -7,7 +7,7 @@ export interface PhonemeAlignment {
 }
 
 export interface PhonemeOp {
-  status: 'correct' | 'substituted' | 'missing' | 'extra' | 'error';
+  status: 'correct' | 'similar' | 'substituted' | 'missing' | 'extra' | 'error';
   expected: string | null;
   aligned: string | null;
   start?: number;
