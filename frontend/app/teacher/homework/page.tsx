@@ -12,6 +12,7 @@ import { cardGradients, gradients, colors } from '@/lib/colors';
 const TYPE_META: Record<HomeworkType, { label: string; emoji: string; color: string; bg: string }> = {
   PHONICS:  { label: 'Phonics',  emoji: '🔤', color: '#A78BFA', bg: '#A78BFA18' },
   SPEAKING: { label: 'Speaking', emoji: '🎤', color: '#FF9BD2', bg: '#FF9BD218' },
+  READING:  { label: 'Reading',  emoji: '📖', color: '#6ED6C1', bg: '#6ED6C118' },
 };
 
 // ── Homework form modal ───────────────────────────────────────────────────────
@@ -533,6 +534,7 @@ export default function HomeworkPage() {
 
   function openCreate() { setEditingId(null); setForm(emptyForm()); setShowModal(true); }
   function openEdit(h: HomeworkItem) {
+    if (h.type === 'READING') return; /* editing deferred to Phase 3 */
     setEditingId(h.id);
     setForm({
       type: h.type,
@@ -564,6 +566,7 @@ export default function HomeworkPage() {
             { key: 'ALL', label: 'All' },
             { key: 'PHONICS', label: '🔤 Phonics' },
             { key: 'SPEAKING', label: '🎤 Speaking' },
+            { key: 'READING', label: '📖 Reading' },
           ] as const).map((t) => (
             <button key={t.key} onClick={() => setTypeFilter(t.key)}
               className="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all"
@@ -575,6 +578,14 @@ export default function HomeworkPage() {
           ))}
         </div>
         <div className="flex-1" />
+        <Link href="/teacher/homework/create/reading"
+          className="btn-primary flex items-center gap-2 shrink-0"
+          style={{ background: gradients.greenSecondary }}>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          New Reading
+        </Link>
         <button onClick={openCreate} className="btn-primary flex items-center gap-2 shrink-0"
           style={{ background: gradients.primarySecondary }}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -664,6 +675,18 @@ export default function HomeworkPage() {
                     <p className="text-sm text-textSecondary line-clamp-2 italic">
                       {h.speakingText || <span className="text-textSecondary/60">No text set</span>}
                     </p>
+                  )}
+                  {h.type === 'READING' && (
+                    <div className="space-y-1">
+                      {h.name && (<p className="text-xs font-bold" style={{ color: meta.color }}>{h.name}</p>)}
+                      {(h.readingActivities ?? []).length === 0 ? (
+                        <span className="text-xs text-textSecondary/60 italic">No activities yet</span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-lg font-bold" style={{ background: meta.bg, color: meta.color }}>
+                          {(h.readingActivities ?? []).length} activit{(h.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
 
