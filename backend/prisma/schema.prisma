@@ -20,8 +20,8 @@ enum HomeworkType {
 }
 
 enum ReadingActivityType {
-  MATCHING
-  FILL_IN_BLANK
+  MATCH
+  FILL_BLANK
 }
 
 enum SpeakingMode {
@@ -180,18 +180,18 @@ model HomeworkAssignmentClass {
 }
 
 model HomeworkSession {
-  id                     Int                     @id @default(autoincrement())
-  studentId              Int
-  assignmentId           Int
-  videoUrl               String?
-  score                  Float?
-  completedAt            DateTime?
-  startedAt              DateTime                @default(now())
-  student                Student                 @relation(fields: [studentId], references: [id])
-  assignment             HomeworkAssignment      @relation(fields: [assignmentId], references: [id])
-  speakingResults        SpeakingResult[]
-  phonicsResults         PhonicsItemResult[]
-  readingActivityResults ReadingActivityResult[]
+  id              Int                 @id @default(autoincrement())
+  studentId       Int
+  assignmentId    Int
+  videoUrl        String?
+  score           Float?
+  completedAt     DateTime?
+  startedAt       DateTime            @default(now())
+  student         Student             @relation(fields: [studentId], references: [id])
+  assignment      HomeworkAssignment  @relation(fields: [assignmentId], references: [id])
+  speakingResults SpeakingResult[]
+  phonicsResults  PhonicsItemResult[]
+  readingResult   ReadingResult?
 
   @@map("homework_sessions")
 }
@@ -221,6 +221,64 @@ model PhonicsItemResult {
   @@map("phonics_item_results")
 }
 
+model ReadingActivity {
+  id         Int                 @id @default(autoincrement())
+  homeworkId Int
+  type       ReadingActivityType
+  order      Int
+  homework   Homework            @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  matchPairs MatchPair[]
+  fillBlanks FillBlank[]
+
+  @@unique([homeworkId, order])
+  @@map("reading_activities")
+}
+
+model MatchPair {
+  id         Int             @id @default(autoincrement())
+  activityId Int
+  imageUrl   String
+  word       String
+  order      Int
+  activity   ReadingActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, order])
+  @@map("match_pairs")
+}
+
+model FillBlank {
+  id         Int               @id @default(autoincrement())
+  activityId Int
+  sentence   String
+  order      Int
+  activity   ReadingActivity   @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  choices    FillBlankChoice[]
+
+  @@unique([activityId, order])
+  @@map("fill_blanks")
+}
+
+model FillBlankChoice {
+  id        Int       @id @default(autoincrement())
+  blankId   Int
+  word      String
+  isCorrect Boolean
+  blank     FillBlank @relation(fields: [blankId], references: [id], onDelete: Cascade)
+
+  @@map("fill_blank_choices")
+}
+
+model ReadingResult {
+  id           Int             @id @default(autoincrement())
+  sessionId    Int             @unique
+  totalItems   Int
+  correctItems Int
+  score        Float
+  session      HomeworkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("reading_results")
+}
+
 enum UserRole {
   TEACHER
   STUDENT
@@ -241,92 +299,3 @@ model User {
   @@map("users")
 }
 
-model ReadingActivity {
-  id              Int                     @id @default(autoincrement())
-  homeworkId      Int
-  type            ReadingActivityType
-  order           Int
-  homework        Homework                @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
-  matchingPairs   MatchingPair[]
-  fillInBlank     FillInBlankActivity?
-  activityResults ReadingActivityResult[]
-
-  @@unique([homeworkId, order])
-  @@map("reading_activities")
-}
-
-model MatchingPair {
-  id          Int                  @id @default(autoincrement())
-  activityId  Int
-  imageUrl    String
-  word        String
-  order       Int
-  activity    ReadingActivity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  itemResults MatchingItemResult[]
-
-  @@unique([activityId, order])
-  @@map("matching_pairs")
-}
-
-model FillInBlankActivity {
-  id               Int                @id @default(autoincrement())
-  activityId       Int                @unique
-  sentenceSegments Json
-  activity         ReadingActivity    @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  blanks           FillInBlankBlank[]
-
-  @@map("fill_in_blank_activities")
-}
-
-model FillInBlankBlank {
-  id          Int                     @id @default(autoincrement())
-  activityId  Int
-  blankIndex  Int
-  correctWord String
-  distractors Json
-  fillInBlank FillInBlankActivity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  itemResults FillInBlankItemResult[]
-
-  @@unique([activityId, blankIndex])
-  @@map("fill_in_blank_blanks")
-}
-
-model ReadingActivityResult {
-  id                 Int                     @id @default(autoincrement())
-  sessionId          Int
-  activityId         Int
-  score              Float
-  session            HomeworkSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  activity           ReadingActivity         @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  matchingResults    MatchingItemResult[]
-  fillInBlankResults FillInBlankItemResult[]
-
-  @@unique([sessionId, activityId])
-  @@map("reading_activity_results")
-}
-
-model MatchingItemResult {
-  id                Int                   @id @default(autoincrement())
-  activityResultId  Int
-  pairId            Int
-  studentChosenWord String
-  isCorrect         Boolean
-  activityResult    ReadingActivityResult @relation(fields: [activityResultId], references: [id], onDelete: Cascade)
-  pair              MatchingPair          @relation(fields: [pairId], references: [id], onDelete: Cascade)
-
-  @@unique([activityResultId, pairId])
-  @@map("matching_item_results")
-}
-
-model FillInBlankItemResult {
-  id                Int                   @id @default(autoincrement())
-  activityResultId  Int
-  blankId           Int
-  studentChosenWord String
-  isCorrect         Boolean
-  activityResult    ReadingActivityResult @relation(fields: [activityResultId], references: [id], onDelete: Cascade)
-  blank             FillInBlankBlank      @relation(fields: [blankId], references: [id], onDelete: Cascade)
-
-  @@unique([activityResultId, blankId])
-  @@map("fill_in_blank_item_results")
-}

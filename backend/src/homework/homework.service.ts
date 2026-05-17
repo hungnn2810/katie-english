@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { HomeworkRepository } from './homework.repository';
 import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto } from './homework.dto';
 
@@ -14,7 +14,10 @@ export class HomeworkService {
     return hw;
   }
 
-  create(dto: CreateHomeworkDto) { return this.repo.create(dto); }
+  create(dto: CreateHomeworkDto) {
+    if (dto.type === 'READING') this.validateReadingDto(dto);
+    return this.repo.create(dto);
+  }
 
   async update(id: number, dto: UpdateHomeworkDto) {
     await this.findById(id);
@@ -42,5 +45,27 @@ export class HomeworkService {
   async deleteAssignment(id: number) {
     await this.findAssignmentById(id);
     return this.repo.deleteAssignment(id);
+  }
+
+  private validateReadingDto(dto: CreateHomeworkDto): void {
+    for (const act of (dto.readingActivities ?? [])) {
+      if (act.type === 'MATCH') {
+        const pairCount = act.pairs?.length ?? 0;
+        if (pairCount < 2 || pairCount > 6) {
+          throw new BadRequestException('Matching activity must have 2 to 6 pairs');
+        }
+      } else if (act.type === 'FILL_BLANK') {
+        for (const item of (act.items ?? [])) {
+          const choiceCount = item.choices?.length ?? 0;
+          if (choiceCount < 2) {
+            throw new BadRequestException('Each fill-blank item must have at least 2 choices');
+          }
+          const correctCount = item.choices.filter((c) => c.isCorrect).length;
+          if (correctCount !== 1) {
+            throw new BadRequestException('Each fill-blank item must have exactly one isCorrect=true choice');
+          }
+        }
+      }
+    }
   }
 }

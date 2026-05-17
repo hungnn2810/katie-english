@@ -11,3 +11,8 @@ export class SavePhonicsResultDto {
 export class CompleteSessionDto {
   // score calculated from results
 }
+
+export class SaveReadingResultDto {
+  correctItems: number;
+  totalItems: number;
+}

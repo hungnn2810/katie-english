@@ -6,7 +6,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { GameService } from './game.service';
-import { StartSessionDto, SavePhonicsResultDto } from './game.dto';
+import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto } from './game.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { GameJobsService } from './game.jobs.service';
 
@@ -54,6 +54,14 @@ export class GameController {
     @UploadedFile() audio?: Express.Multer.File,
   ) {
     return this.jobs.enqueueSpeakingResult(id, audio?.buffer, audio?.mimetype);
+  }
+
+  @Post('session/:id/reading-result')
+  saveReadingResult(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: SaveReadingResultDto,
+  ) {
+    return this.service.saveReadingResult(id, dto);
   }
 
   @Get('job/:jobId')
