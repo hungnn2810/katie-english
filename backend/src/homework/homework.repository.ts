@@ -9,6 +9,19 @@ const partsInclude = {
   },
 };
 
+const readingActivitiesInclude = {
+  readingActivities: {
+    include: {
+      matchPairs: { orderBy: { order: 'asc' as const } },
+      fillBlanks: {
+        include: { choices: true },
+        orderBy: { order: 'asc' as const },
+      },
+    },
+    orderBy: { order: 'asc' as const },
+  },
+};
+
 const assignmentInclude = {
   classes: { include: { class: true } },
   _count: { select: { sessions: true } },
@@ -41,6 +54,7 @@ export class HomeworkRepository {
       orderBy: { createdAt: 'desc' },
       include: {
         ...partsInclude,
+        ...readingActivitiesInclude,
         assignments: { include: assignmentInclude },
       },
     });
@@ -51,6 +65,7 @@ export class HomeworkRepository {
       where: { id },
       include: {
         ...partsInclude,
+        ...readingActivitiesInclude,
         assignments: {
           include: {
             classes: { include: { class: true } },
@@ -66,6 +81,7 @@ export class HomeworkRepository {
   }
 
   create(dto: CreateHomeworkDto) {
+    if (dto.type === 'READING') return this.createReading(dto);
     return this.prisma.homework.create({
       data: {
         type: dto.type,
@@ -75,7 +91,42 @@ export class HomeworkRepository {
         speakingText: dto.type === 'SPEAKING' ? (dto.speakingText ?? null) : null,
         parts: dto.type === 'PHONICS' ? buildPartsCreate(dto.parts) : undefined,
       },
-      include: { ...partsInclude, assignments: { include: assignmentInclude } },
+      include: { ...partsInclude, ...readingActivitiesInclude, assignments: { include: assignmentInclude } },
+    });
+  }
+
+  async createReading(dto: CreateHomeworkDto) {
+    return this.prisma.$transaction(async (tx) => {
+      const hw = await tx.homework.create({
+        data: { type: 'READING', name: dto.name ?? null },
+      });
+      for (const [actIdx, act] of (dto.readingActivities ?? []).entries()) {
+        const activity = await tx.readingActivity.create({
+          data: { homeworkId: hw.id, type: act.type, order: actIdx },
+        });
+        if (act.type === 'MATCH') {
+          await tx.matchPair.createMany({
+            data: (act.pairs ?? []).map((p, i) => ({
+              activityId: activity.id, imageUrl: p.imageUrl, word: p.word, order: i,
+            })),
+          });
+        } else {
+          for (const [blankIdx, item] of (act.items ?? []).entries()) {
+            const blank = await tx.fillBlank.create({
+              data: { activityId: activity.id, sentence: item.sentence, order: blankIdx },
+            });
+            await tx.fillBlankChoice.createMany({
+              data: item.choices.map((c) => ({
+                blankId: blank.id, word: c.word, isCorrect: c.isCorrect,
+              })),
+            });
+          }
+        }
+      }
+      return tx.homework.findUnique({
+        where: { id: hw.id },
+        include: { ...partsInclude, ...readingActivitiesInclude, assignments: { include: assignmentInclude } },
+      });
     });
   }
 
@@ -92,7 +143,7 @@ export class HomeworkRepository {
         ...(dto.speakingText !== undefined && { speakingText: dto.speakingText }),
         ...(dto.parts !== undefined && { parts: buildPartsCreate(dto.parts) }),
       },
-      include: { ...partsInclude, assignments: { include: assignmentInclude } },
+      include: { ...partsInclude, ...readingActivitiesInclude, assignments: { include: assignmentInclude } },
     });
   }
 
@@ -107,7 +158,7 @@ export class HomeworkRepository {
         endDate: new Date(dto.endDate),
         classes: { create: dto.classIds.map((classId) => ({ classId })) },
       },
-      include: { classes: { include: { class: true } }, homework: { include: partsInclude } },
+      include: { classes: { include: { class: true } }, homework: { include: { ...partsInclude, ...readingActivitiesInclude } } },
     });
   }
 
@@ -115,7 +166,7 @@ export class HomeworkRepository {
     return this.prisma.homeworkAssignment.findUnique({
       where: { id },
       include: {
-        homework: { include: partsInclude },
+        homework: { include: { ...partsInclude, ...readingActivitiesInclude } },
         classes: { include: { class: true } },
         sessions: { include: { student: true }, orderBy: { startedAt: 'desc' } },
       },
@@ -132,7 +183,7 @@ export class HomeworkRepository {
     return this.prisma.homeworkAssignment.update({
       where: { id },
       data: { ...(dto.endDate && { endDate: new Date(dto.endDate) }) },
-      include: { classes: { include: { class: true } }, homework: { include: partsInclude } },
+      include: { classes: { include: { class: true } }, homework: { include: { ...partsInclude, ...readingActivitiesInclude } } },
     });
   }
 

@@ -16,6 +16,12 @@ enum ClassStatus {
 enum HomeworkType {
   PHONICS
   SPEAKING
+  READING
+}
+
+enum ReadingActivityType {
+  MATCH
+  FILL_BLANK
 }
 
 enum SpeakingMode {
@@ -117,6 +123,7 @@ model Homework {
   speakingText       String?
   parts              HomeworkPart[]
   assignments        HomeworkAssignment[]
+  readingActivities  ReadingActivity[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -184,6 +191,7 @@ model HomeworkSession {
   assignment      HomeworkAssignment  @relation(fields: [assignmentId], references: [id])
   speakingResults SpeakingResult[]
   phonicsResults  PhonicsItemResult[]
+  readingResult   ReadingResult?
 
   @@map("homework_sessions")
 }
@@ -211,6 +219,64 @@ model PhonicsItemResult {
 
   @@unique([sessionId, wordId])
   @@map("phonics_item_results")
+}
+
+model ReadingActivity {
+  id         Int                 @id @default(autoincrement())
+  homeworkId Int
+  type       ReadingActivityType
+  order      Int
+  homework   Homework            @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  matchPairs MatchPair[]
+  fillBlanks FillBlank[]
+
+  @@unique([homeworkId, order])
+  @@map("reading_activities")
+}
+
+model MatchPair {
+  id         Int             @id @default(autoincrement())
+  activityId Int
+  imageUrl   String
+  word       String
+  order      Int
+  activity   ReadingActivity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, order])
+  @@map("match_pairs")
+}
+
+model FillBlank {
+  id         Int               @id @default(autoincrement())
+  activityId Int
+  sentence   String
+  order      Int
+  activity   ReadingActivity   @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  choices    FillBlankChoice[]
+
+  @@unique([activityId, order])
+  @@map("fill_blanks")
+}
+
+model FillBlankChoice {
+  id        Int       @id @default(autoincrement())
+  blankId   Int
+  word      String
+  isCorrect Boolean
+  blank     FillBlank @relation(fields: [blankId], references: [id], onDelete: Cascade)
+
+  @@map("fill_blank_choices")
+}
+
+model ReadingResult {
+  id           Int             @id @default(autoincrement())
+  sessionId    Int             @unique
+  totalItems   Int
+  correctItems Int
+  score        Float
+  session      HomeworkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("reading_results")
 }
 
 enum UserRole {
