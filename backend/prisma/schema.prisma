@@ -16,6 +16,12 @@ enum ClassStatus {
 enum HomeworkType {
   PHONICS
   SPEAKING
+  READING
+}
+
+enum ReadingActivityType {
+  MATCHING
+  FILL_IN_BLANK
 }
 
 enum SpeakingMode {
@@ -117,6 +123,7 @@ model Homework {
   speakingText       String?
   parts              HomeworkPart[]
   assignments        HomeworkAssignment[]
+  readingActivities  ReadingActivity[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -173,17 +180,18 @@ model HomeworkAssignmentClass {
 }
 
 model HomeworkSession {
-  id              Int                 @id @default(autoincrement())
-  studentId       Int
-  assignmentId    Int
-  videoUrl        String?
-  score           Float?
-  completedAt     DateTime?
-  startedAt       DateTime            @default(now())
-  student         Student             @relation(fields: [studentId], references: [id])
-  assignment      HomeworkAssignment  @relation(fields: [assignmentId], references: [id])
-  speakingResults SpeakingResult[]
-  phonicsResults  PhonicsItemResult[]
+  id                     Int                     @id @default(autoincrement())
+  studentId              Int
+  assignmentId           Int
+  videoUrl               String?
+  score                  Float?
+  completedAt            DateTime?
+  startedAt              DateTime                @default(now())
+  student                Student                 @relation(fields: [studentId], references: [id])
+  assignment             HomeworkAssignment      @relation(fields: [assignmentId], references: [id])
+  speakingResults        SpeakingResult[]
+  phonicsResults         PhonicsItemResult[]
+  readingActivityResults ReadingActivityResult[]
 
   @@map("homework_sessions")
 }
@@ -231,4 +239,94 @@ model User {
   createdAt              DateTime @default(now())
 
   @@map("users")
+}
+
+model ReadingActivity {
+  id              Int                     @id @default(autoincrement())
+  homeworkId      Int
+  type            ReadingActivityType
+  order           Int
+  homework        Homework                @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  matchingPairs   MatchingPair[]
+  fillInBlank     FillInBlankActivity?
+  activityResults ReadingActivityResult[]
+
+  @@unique([homeworkId, order])
+  @@map("reading_activities")
+}
+
+model MatchingPair {
+  id          Int                  @id @default(autoincrement())
+  activityId  Int
+  imageUrl    String
+  word        String
+  order       Int
+  activity    ReadingActivity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  itemResults MatchingItemResult[]
+
+  @@unique([activityId, order])
+  @@map("matching_pairs")
+}
+
+model FillInBlankActivity {
+  id               Int                @id @default(autoincrement())
+  activityId       Int                @unique
+  sentenceSegments Json
+  activity         ReadingActivity    @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  blanks           FillInBlankBlank[]
+
+  @@map("fill_in_blank_activities")
+}
+
+model FillInBlankBlank {
+  id          Int                     @id @default(autoincrement())
+  activityId  Int
+  blankIndex  Int
+  correctWord String
+  distractors Json
+  fillInBlank FillInBlankActivity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  itemResults FillInBlankItemResult[]
+
+  @@unique([activityId, blankIndex])
+  @@map("fill_in_blank_blanks")
+}
+
+model ReadingActivityResult {
+  id                 Int                     @id @default(autoincrement())
+  sessionId          Int
+  activityId         Int
+  score              Float
+  session            HomeworkSession         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  activity           ReadingActivity         @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  matchingResults    MatchingItemResult[]
+  fillInBlankResults FillInBlankItemResult[]
+
+  @@unique([sessionId, activityId])
+  @@map("reading_activity_results")
+}
+
+model MatchingItemResult {
+  id                Int                   @id @default(autoincrement())
+  activityResultId  Int
+  pairId            Int
+  studentChosenWord String
+  isCorrect         Boolean
+  activityResult    ReadingActivityResult @relation(fields: [activityResultId], references: [id], onDelete: Cascade)
+  pair              MatchingPair          @relation(fields: [pairId], references: [id], onDelete: Cascade)
+
+  @@unique([activityResultId, pairId])
+  @@map("matching_item_results")
+}
+
+model FillInBlankItemResult {
+  id                Int                   @id @default(autoincrement())
+  activityResultId  Int
+  blankId           Int
+  studentChosenWord String
+  isCorrect         Boolean
+  activityResult    ReadingActivityResult @relation(fields: [activityResultId], references: [id], onDelete: Cascade)
+  blank             FillInBlankBlank      @relation(fields: [blankId], references: [id], onDelete: Cascade)
+
+  @@unique([activityResultId, blankId])
+  @@map("fill_in_blank_item_results")
 }
