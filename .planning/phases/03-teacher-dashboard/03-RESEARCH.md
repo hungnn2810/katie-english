@@ -603,17 +603,19 @@ Also: `HomeworkSession` must gain `readingActivityResults ReadingActivityResult[
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Reading Try page interaction model (D-05)**
    - What we know: Try page is "scored, not saved to DB"; existing try page simulates phonics/speaking with speech recognition + camera.
    - What's unclear: Should the reading try page be fully interactive (clickable matching pairs, fill-in-blank word selection) or a simpler visual walkthrough?
    - Recommendation: Implement as fully interactive (same game logic as student side) but client-side only — no API calls. This gives teachers the most accurate preview of the student experience.
+   - **RESOLVED:** Fully interactive client-side preview, no API calls. Teacher sees live matching + fill-in-blank UI scored locally. Implemented in Plan 06 Task 3 (`ReadingPreview` component on `/teacher/homework/[id]/try/page.tsx`).
 
 2. **Non-submitted student list source (D-14)**
    - What we know: D-14 says homework detail page should show "list of students who haven't submitted."
    - What's unclear: The current detail page loads `hw.assignments[].sessions[]`. Students who have NOT submitted are those enrolled in assignment classes but without a session. The query must join class enrollment.
    - Recommendation: Either (a) fetch class enrollment separately via `getClass(classId)` on the detail page, or (b) extend `findById` in `homework.repository.ts` to include class students. Option (b) is a single query; option (a) adds N+1 fetches. Use option (b).
+   - **RESOLVED:** Option (b) — extend `findById` in `homework.repository.ts` to include `class: { include: { students: true } }` alongside the existing class include. Frontend derives non-submitted list by filtering enrolled students against `assignment.sessions[].studentId`. Implemented in Plan 02 Task 1.
 
 ---
 

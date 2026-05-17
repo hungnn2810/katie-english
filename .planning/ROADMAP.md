@@ -63,6 +63,7 @@
 
 **Goal:** Teacher can create any homework type from a single flow, assign to classes, and drill into per-student results including recording playback.
 **Mode:** mvp
+**Plans:** 7 plans
 
 **Requirements:**
 - READ-07: Teacher can view reading session score breakdown per activity
@@ -77,6 +78,15 @@
 2. Teacher assigns a homework to two classes simultaneously with a single action.
 3. Homework list page shows submission count (e.g., "5/12 submitted") for each assignment.
 4. Teacher opens a student's attempt and sees per-item score breakdown; for speaking/phonics, audio/video playback is available inline.
+
+**Plans:**
+- [ ] 03-01-PLAN.md — Schema foundation: extend Prisma + push DB + sync HomeworkType across DTO/admin-api + backend reading stubs (Wave 1)
+- [ ] 03-02-PLAN.md — Submission count slice + TEACH-02 regression: assignmentInclude student count, X/Y pill on list+detail, non-submitted list, AssignModal multi-class verification (Wave 2)
+- [ ] 03-03-PLAN.md — TypePickerModal entry point + Reading creation page skeleton + READING filter tab (Wave 3)
+- [ ] 03-04-PLAN.md — Reading CRUD backend + matching-activity creation slice (image upload reuse, create+save end-to-end) (Wave 4)
+- [ ] 03-05-PLAN.md — @dnd-kit install + FillInBlank editor (tokenizer + chip toggle + distractors) + drag-and-drop activity reorder (Wave 5)
+- [ ] 03-06-PLAN.md — Edit mode route + Try/Preview button + interactive client-side READING preview branch in try page (Wave 6)
+- [ ] 03-07-PLAN.md — completeSession READING branch + sessionInclude reading results + session detail page Reading section (collapsible activity cards, per-item rows) (Wave 7)
 
 ---
 
@@ -132,4 +142,4 @@
 
 ---
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-05-14 — Phase 4 plans created*
+*Last updated: 2026-05-17 — Phase 3 plans finalized (7 plans, Plan 07 added for reading session results; Plan 02 requirements updated to include TEACH-02)*
