@@ -683,17 +683,17 @@ This section documents the exact current state of each file that needs modificat
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Phase 1 migration cleanup status**
+1. **Phase 1 migration cleanup status** — RESOLVED in Plan 02-01 Task 1 Step 2
    - What we know: Phase 1 RESEARCH.md (D-24) called for deleting stale migration folders 20260507000003 through 20260509000001.
    - What's unclear: `ls backend/prisma/migrations/` shows those folders are still present (20260507000003, 20260507000004, 20260507000005, 20260508000001, 20260509000001). It is unknown if `prisma migrate status` shows drift.
-   - Recommendation: Wave 0 of Phase 2 plan should include a task to check `prisma migrate status` and handle any drift before running the Phase 2 migration.
+   - Resolution: Plan 02-01 Task 1 Step 2 includes a `prisma migrate status` check with `migrate resolve --applied` instructions for handling any drift before running the Phase 2 migration.
 
-2. **`HomeworkSession.readingResults` relation — single vs array**
+2. **`HomeworkSession.readingResults` relation — single vs array** — RESOLVED in Plan 02-01 Task 1 Step 1
    - What we know: `ReadingResult` has `sessionId @unique` — one per session.
    - What's unclear: Whether to expose as `readingResults ReadingResult[]` (Prisma default) or rely on `readingResult ReadingResult?` (Prisma `@relation` one-to-one).
-   - Recommendation: Use `readingResult ReadingResult?` (one-to-one relation, which Prisma supports via `@unique` on the FK side) for cleaner service code — avoids `.readingResults[0]` pattern.
+   - Resolution: Use `readingResult ReadingResult?` (one-to-one relation) as recommended — Plan 02-01 Task 1 Step 1 uses this form, avoiding the `.readingResults[0]` pattern.
 
 ---
 

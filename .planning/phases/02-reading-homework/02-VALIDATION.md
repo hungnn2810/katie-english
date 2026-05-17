@@ -2,8 +2,8 @@
 phase: 02
 slug: reading-homework
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-05-14
 ---
 

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-15T02:25:44.034Z"
+last_updated: "2026-05-17T14:08:14.111Z"
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 5
+  total_plans: 16
   completed_plans: 1
-  percent: 20
+  percent: 6
 ---
 
 # Project State: Katie English
@@ -41,4 +41,4 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 ---
 *State initialized: 2026-05-13*
 
-**Planned Phase:** 01 (speaking-homework) — 4 plans — 2026-05-14T15:16:08.327Z
+**Planned Phase:** 02 (reading-homework) — 5 plans — 2026-05-17T14:08:14.033Z
