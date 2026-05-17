@@ -5,6 +5,7 @@ import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { calcScore, levenshtein, calcSpeakingScore } from './game.scoring';
+import { SaveReadingResultDto } from './game.dto';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,66 @@ const mockBfaSuccess = (score: number) => ({
 });
 
 const mockBfaFail = () => ({ success: false, score: 0, phonemes: [], feedback: [], word: 'sh' });
+
+const mockReadingSession = (overrides = {}) => ({
+  id: 1,
+  studentId: 1,
+  assignmentId: 1,
+  completedAt: null,
+  assignment: {
+    homework: {
+      type: 'READING',
+      parts: [],
+      speakingText: null,
+      speakingPictureUrl: null,
+      readingActivities: [
+        {
+          id: 1,
+          type: 'MATCH',
+          order: 0,
+          matchPairs: [
+            { id: 1, imageUrl: 'a.png', word: 'apple', order: 0 },
+            { id: 2, imageUrl: 'b.png', word: 'banana', order: 1 },
+            { id: 3, imageUrl: 'c.png', word: 'cat', order: 2 },
+          ],
+          fillBlanks: [],
+        },
+        {
+          id: 2,
+          type: 'FILL_BLANK',
+          order: 1,
+          matchPairs: [],
+          fillBlanks: [
+            {
+              id: 1,
+              sentence: 'The ___ is red',
+              order: 0,
+              choices: [
+                { id: 1, word: 'apple', isCorrect: true },
+                { id: 2, word: 'car', isCorrect: false },
+                { id: 3, word: 'sky', isCorrect: false },
+              ],
+            },
+            {
+              id: 2,
+              sentence: 'I have a ___',
+              order: 1,
+              choices: [
+                { id: 4, word: 'book', isCorrect: true },
+                { id: 5, word: 'jump', isCorrect: false },
+                { id: 6, word: 'run', isCorrect: false },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  speakingResults: [],
+  phonicsResults: [],
+  readingResult: null,
+  ...overrides,
+});
 
 // ── levenshtein ───────────────────────────────────────────────────────────────
 
@@ -252,5 +313,126 @@ describe('GameService.completeSession', () => {
   it('throws NotFoundException when session not found', async () => {
     repo.getSession.mockResolvedValue(null as any);
     await expect(service.completeSession(99)).rejects.toThrow(NotFoundException);
+  });
+});
+
+// ── GameService.saveReadingResult ─────────────────────────────────────────────
+
+describe('saveReadingResult', () => {
+  let service: GameService;
+  let repo: jest.Mocked<GameRepository>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        GameService,
+        {
+          provide: GameRepository,
+          useValue: {
+            getSession: jest.fn(), createSession: jest.fn(),
+            saveSpeakingResult: jest.fn(), savePhonicsResult: jest.fn(),
+            completeSession: jest.fn(), listSessions: jest.fn(),
+            getAvailableAssignments: jest.fn(),
+            saveReadingResult: jest.fn(),
+            getReadingResult: jest.fn(),
+          },
+        },
+        { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(GameService);
+    repo = module.get(GameRepository);
+    repo.saveReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 8, correctItems: 5, score: 63 } as any);
+  });
+
+  it('throws NotFoundException when session is missing', async () => {
+    repo.getSession.mockResolvedValue(null as any);
+    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 8 };
+    await expect(service.saveReadingResult(1, dto)).rejects.toThrow(NotFoundException);
+  });
+
+  it('throws BadRequestException when session already completed', async () => {
+    repo.getSession.mockResolvedValue(mockReadingSession({ completedAt: new Date() }) as any);
+    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 8 };
+    await expect(service.saveReadingResult(1, dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('throws BadRequestException when homework type is not READING', async () => {
+    repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
+    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 8 };
+    await expect(service.saveReadingResult(1, dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('throws BadRequestException when correctItems > totalItems', async () => {
+    repo.getSession.mockResolvedValue(mockReadingSession() as any);
+    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 3 };
+    await expect(service.saveReadingResult(1, dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('throws BadRequestException when values are negative', async () => {
+    repo.getSession.mockResolvedValue(mockReadingSession() as any);
+    const dto: SaveReadingResultDto = { correctItems: -1, totalItems: 5 };
+    await expect(service.saveReadingResult(1, dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('computes score = round(correctItems/totalItems*100) and calls repo.saveReadingResult with that score', async () => {
+    repo.getSession.mockResolvedValue(mockReadingSession() as any);
+    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 8 };
+    await service.saveReadingResult(1, dto);
+    expect(repo.saveReadingResult).toHaveBeenCalledWith(1, 8, 5, 63);
+  });
+
+  it('returns score=0 when totalItems is 0', async () => {
+    repo.getSession.mockResolvedValue(mockReadingSession() as any);
+    repo.saveReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 0, correctItems: 0, score: 0 } as any);
+    const dto: SaveReadingResultDto = { correctItems: 0, totalItems: 0 };
+    await service.saveReadingResult(1, dto);
+    expect(repo.saveReadingResult).toHaveBeenCalledWith(1, 0, 0, 0);
+  });
+});
+
+// ── GameService.completeSession READING ───────────────────────────────────────
+
+describe('completeSession READING', () => {
+  let service: GameService;
+  let repo: jest.Mocked<GameRepository>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        GameService,
+        {
+          provide: GameRepository,
+          useValue: {
+            getSession: jest.fn(), createSession: jest.fn(),
+            saveSpeakingResult: jest.fn(), savePhonicsResult: jest.fn(),
+            completeSession: jest.fn(), listSessions: jest.fn(),
+            getAvailableAssignments: jest.fn(),
+            saveReadingResult: jest.fn(),
+            getReadingResult: jest.fn(),
+          },
+        },
+        { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(GameService);
+    repo = module.get(GameRepository);
+    repo.completeSession.mockResolvedValue({} as any);
+  });
+
+  it('reads ReadingResult.score when present', async () => {
+    repo.getSession.mockResolvedValue(mockReadingSession() as any);
+    repo.getReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 8, correctItems: 6, score: 75 } as any);
+    await service.completeSession(1);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 75);
+  });
+
+  it('uses 0 when ReadingResult is missing', async () => {
+    repo.getSession.mockResolvedValue(mockReadingSession() as any);
+    repo.getReadingResult.mockResolvedValue(null as any);
+    await service.completeSession(1);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 0);
   });
 });
