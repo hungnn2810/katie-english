@@ -9,6 +9,7 @@ import { cardGradients, gradients } from '@/lib/colors';
 const TYPE_META: Record<HomeworkType, { label: string; emoji: string }> = {
   PHONICS:  { label: 'Phonics',  emoji: '🔤' },
   SPEAKING: { label: 'Speaking', emoji: '🎤' },
+  READING:  { label: 'Reading',  emoji: '📖' },
 };
 
 function PageContent({ user }: { user: AuthUser }) {
@@ -50,7 +51,12 @@ function PageContent({ user }: { user: AuthUser }) {
     setStarting(assignmentId); setError('');
     try {
       const session = await startSession(user.studentId, assignmentId);
-      router.push(`/game/session/${session.id}`);
+      const hwType = session.assignment?.homework?.type;
+      if (hwType === 'READING') {
+        router.push(`/game/reading/${session.id}`);
+      } else {
+        router.push(`/game/session/${session.id}`);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to start');
       setStarting(null);
@@ -203,6 +209,11 @@ function PageContent({ user }: { user: AuthUser }) {
                       {hw.type === 'SPEAKING' && hw.speakingText && (
                         <span className="bg-white bg-opacity-20 text-white text-sm px-3 py-1 rounded-lg font-semibold truncate max-w-[200px]">
                           {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? '…' : ''}
+                        </span>
+                      )}
+                      {hw.type === 'READING' && (
+                        <span className="bg-white bg-opacity-20 text-white text-sm px-3 py-1 rounded-lg font-semibold">
+                          📖 {(hw.readingActivities ?? []).length} activit{(hw.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}
                         </span>
                       )}
                     </div>

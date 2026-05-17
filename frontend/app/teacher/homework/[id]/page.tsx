@@ -8,6 +8,7 @@ import { gradients } from '@/lib/colors';
 const TYPE_META: Record<HomeworkType, { label: string; emoji: string; color: string }> = {
   PHONICS:  { label: 'Phonics',  emoji: '🔤', color: '#A78BFA' },
   SPEAKING: { label: 'Speaking', emoji: '🎤', color: '#FF9BD2' },
+  READING:  { label: 'Reading',  emoji: '📖', color: '#6ED6C1' },
 };
 
 function scoreColor(score: number) {
