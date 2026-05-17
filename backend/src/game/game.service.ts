@@ -3,7 +3,7 @@ import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { BfaAlignResult } from '../bfa/bfa.dto';
-import { StartSessionDto, SavePhonicsResultDto } from './game.dto';
+import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto } from './game.dto';
 import { calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 
 @Injectable()
@@ -114,6 +114,26 @@ export class GameService {
     return { ...result, bfa: bfaResult };
   }
 
+  async saveReadingResult(sessionId: number, dto: SaveReadingResultDto) {
+    const session = await this.repo.getSession(sessionId);
+    if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
+    if (session.completedAt) throw new BadRequestException('Session already completed');
+
+    const hw = session.assignment.homework;
+    if (hw.type !== 'READING') throw new BadRequestException('Homework is not a READING type');
+
+    if (dto.correctItems < 0 || dto.totalItems < 0) {
+      throw new BadRequestException('correctItems and totalItems must be non-negative');
+    }
+    if (dto.correctItems > dto.totalItems) {
+      throw new BadRequestException('correctItems cannot exceed totalItems');
+    }
+
+    const score = dto.totalItems > 0 ? Math.round((dto.correctItems / dto.totalItems) * 100) : 0;
+    this.logger.log(`[session=${sessionId}] reading score=${score} correct=${dto.correctItems}/${dto.totalItems}`);
+    return this.repo.saveReadingResult(sessionId, dto.totalItems, dto.correctItems, score);
+  }
+
   listSessions(assignmentId?: number, studentId?: number) {
     return this.repo.listSessions(assignmentId, studentId);
   }
@@ -148,6 +168,9 @@ export class GameService {
     if (hw.type === 'SPEAKING') {
       const sr = session.speakingResults[0];
       avgScore = sr ? sr.score : 0;
+    } else if (hw.type === 'READING') {
+      const rr = await this.repo.getReadingResult(sessionId);
+      avgScore = rr ? rr.score : 0;
     } else {
       const phonicsResults = session.phonicsResults ?? [];
       const totalWords = hw.parts.reduce((s: number, p: { words: unknown[] }) => s + p.words.length, 0);

@@ -1,11 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+const readingActivitiesInclude = {
+  readingActivities: {
+    include: {
+      matchPairs: { orderBy: { order: 'asc' as const } },
+      fillBlanks: {
+        include: { choices: true },
+        orderBy: { order: 'asc' as const },
+      },
+    },
+    orderBy: { order: 'asc' as const },
+  },
+};
+
 const homeworkInclude = {
   parts: {
     include: { words: { orderBy: { order: 'asc' as const } } },
     orderBy: { order: 'asc' as const },
   },
+  ...readingActivitiesInclude,
 };
 
 const sessionInclude = {
@@ -18,6 +32,7 @@ const sessionInclude = {
   student: true,
   speakingResults: true,
   phonicsResults: { include: { word: true } },
+  readingResult: true,
 };
 
 @Injectable()
@@ -91,6 +106,18 @@ export class GameRepository {
         phonicsResults: { include: { word: true } },
       },
     });
+  }
+
+  saveReadingResult(sessionId: number, totalItems: number, correctItems: number, score: number) {
+    return this.prisma.readingResult.upsert({
+      where: { sessionId },
+      update: { totalItems, correctItems, score },
+      create: { sessionId, totalItems, correctItems, score },
+    });
+  }
+
+  getReadingResult(sessionId: number) {
+    return this.prisma.readingResult.findUnique({ where: { sessionId } });
   }
 
   listSessions(assignmentId?: number, studentId?: number) {
