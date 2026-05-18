@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-18T04:00:00.000Z"
+last_updated: "2026-05-18T02:36:21.259Z"
 progress:
   total_phases: 4
   completed_phases: 1
@@ -48,6 +48,8 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - Shuffle-once-on-mount via useEffect[sessionId] stored in ActivityState (not useMemo)
 - Functional setState pattern in setTimeout closures for stale-closure safety
 - Combined Tasks 1+2 into single commit — both renderers built immediately
+- TypePickerModal placed inline in homework/page.tsx as standalone component (consistent with HomeworkModal pattern)
+- ReadingActivityDraft is the canonical draft type (alias for CreateReadingActivityInput + clientId) — Plans 04/05 must not redefine
 
 ## Session Log
 
