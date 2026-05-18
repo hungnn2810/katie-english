@@ -59,6 +59,49 @@ function buildPartsCreate(parts: CreateHomeworkDto['parts']) {
   };
 }
 
+function buildReadingActivitiesCreate(activities: CreateReadingHomeworkDto['activities'] | undefined) {
+  if (!activities || activities.length === 0) return undefined;
+  return {
+    create: activities.map((act, idx) => ({
+      type: act.type,
+      order: idx,
+      ...(act.type === 'MATCH'
+        ? {
+            matchPairs: {
+              create: (act.pairs ?? []).map((p, pIdx) => ({
+                imageUrl: p.imageUrl,
+                word: p.word,
+                order: pIdx,
+              })),
+            },
+          }
+        : {
+            // FILL_BLANK: reconstruct sentence from segments, build choices from blank segments
+            fillBlanks: {
+              create: (() => {
+                const segs = act.segments ?? [];
+                // Group segments into one FillBlank row per blank segment
+                // Build a single sentence string; choices come from blank segments
+                const sentence = segs.map((s) => (s.blank ? '___' : s.text)).join('');
+                const blankSegs = segs.filter((s) => s.blank);
+                if (blankSegs.length === 0) return [];
+                return [{
+                  sentence,
+                  order: 0,
+                  choices: {
+                    create: blankSegs.flatMap((s) => {
+                      const distractors = (s.distractors ?? []).map((w) => ({ word: w, isCorrect: false }));
+                      return [{ word: s.correctWord ?? s.text, isCorrect: true }, ...distractors];
+                    }),
+                  },
+                }];
+              })(),
+            },
+          }),
+    })),
+  };
+}
+
 @Injectable()
 export class HomeworkRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -205,20 +248,37 @@ export class HomeworkRepository {
     return this.prisma.homeworkAssignment.delete({ where: { id } });
   }
 
-  // ── Plan 03-01 reading stubs (real queries added in Plan 04) ──────────────
+  // ── Plan 03-04 reading — real Prisma implementations ─────────────────────
 
   findReadingById(id: number) {
     return this.prisma.homework.findUnique({
       where: { id },
-      include: { assignments: { include: assignmentInclude } },
+      include: { ...readingActivitiesInclude, assignments: { include: assignmentInclude } },
     });
   }
 
-  async createReadingHomework(_dto: CreateReadingHomeworkDto): Promise<{ id: number; placeholder: true }> {
-    return { id: -1, placeholder: true };
+  createReadingHomework(dto: CreateReadingHomeworkDto) {
+    return this.prisma.homework.create({
+      data: {
+        type: 'READING',
+        name: dto.name,
+        readingActivities: buildReadingActivitiesCreate(dto.activities),
+      },
+      include: { ...readingActivitiesInclude, assignments: { include: assignmentInclude } },
+    });
   }
 
-  async updateReadingHomework(_id: number, _dto: UpdateReadingHomeworkDto): Promise<{ id: number; placeholder: true }> {
-    return { id: _id, placeholder: true };
+  async updateReadingHomework(id: number, dto: UpdateReadingHomeworkDto) {
+    if (dto.activities !== undefined) {
+      await this.prisma.readingActivity.deleteMany({ where: { homeworkId: id } });
+    }
+    return this.prisma.homework.update({
+      where: { id },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name } : {}),
+        ...(dto.activities !== undefined ? { readingActivities: buildReadingActivitiesCreate(dto.activities) } : {}),
+      },
+      include: { ...readingActivitiesInclude, assignments: { include: assignmentInclude } },
+    });
   }
 }

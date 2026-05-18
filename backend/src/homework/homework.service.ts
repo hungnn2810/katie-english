@@ -47,7 +47,7 @@ export class HomeworkService {
     return this.repo.deleteAssignment(id);
   }
 
-  // ── Plan 03-01 reading stubs (real logic in Plan 04) ─────────────────────
+  // ── Plan 03-04 reading — real service logic ──────────────────────────────
 
   async findReadingById(id: number) {
     const hw = await this.repo.findReadingById(id);
@@ -56,12 +56,66 @@ export class HomeworkService {
   }
 
   createReadingHomework(dto: CreateReadingHomeworkDto) {
+    if (!dto.name?.trim()) {
+      throw new BadRequestException('Name is required');
+    }
+    if (!Array.isArray(dto.activities) || dto.activities.length === 0) {
+      throw new BadRequestException('At least one activity is required');
+    }
+    if (dto.activities.length > 50) {
+      throw new BadRequestException('Too many activities (max 50)');
+    }
+    this.validateReadingActivities(dto.activities);
     return this.repo.createReadingHomework(dto);
   }
 
   async updateReadingHomework(id: number, dto: UpdateReadingHomeworkDto) {
     await this.findReadingById(id);
+    if (dto.activities !== undefined) {
+      if (!Array.isArray(dto.activities) || dto.activities.length === 0) {
+        throw new BadRequestException('At least one activity is required');
+      }
+      if (dto.activities.length > 50) {
+        throw new BadRequestException('Too many activities (max 50)');
+      }
+      this.validateReadingActivities(dto.activities);
+    }
     return this.repo.updateReadingHomework(id, dto);
+  }
+
+  private validateReadingActivities(activities: import('./homework.dto').CreateReadingActivityDto[]): void {
+    for (const act of activities) {
+      if (act.type === 'MATCH') {
+        const pairCount = act.pairs?.length ?? 0;
+        if (pairCount < 2) {
+          throw new BadRequestException('Matching activities require at least 2 pairs');
+        }
+        if (pairCount > 30) {
+          throw new BadRequestException('Too many pairs (max 30)');
+        }
+      } else if (act.type === 'FILL_BLANK') {
+        const segs = act.segments ?? [];
+        if (segs.length === 0) {
+          throw new BadRequestException('Fill-in-blank activities require at least one segment');
+        }
+        if (segs.length > 200) {
+          throw new BadRequestException('Too many segments (max 200)');
+        }
+        const blankSegs = segs.filter((s) => s.blank);
+        if (blankSegs.length === 0) {
+          throw new BadRequestException('Fill-in-blank activities require at least one blank segment');
+        }
+        // Validate blankIndex contiguity (Pitfall 3)
+        const blankIndices = blankSegs
+          .map((s) => s.blankIndex ?? -1)
+          .filter((i) => i >= 0)
+          .sort((a, b) => a - b);
+        const isContiguous = blankIndices.every((v, i) => v === i);
+        if (blankIndices.length > 0 && !isContiguous) {
+          throw new BadRequestException('Fill-in-blank blankIndex values must be contiguous starting at 0');
+        }
+      }
+    }
   }
 
   private validateReadingDto(dto: CreateHomeworkDto): void {
