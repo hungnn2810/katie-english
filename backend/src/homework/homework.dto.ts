@@ -28,7 +28,7 @@ export class CreateFillBlankItemDto {
   choices: CreateFillBlankChoiceDto[];
 }
 
-export class CreateReadingActivityDto {
+export class CreateLegacyReadingActivityDto {
   type: ReadingActivityType;
   pairs?: CreateMatchPairDto[];
   items?: CreateFillBlankItemDto[];
@@ -41,7 +41,7 @@ export class CreateHomeworkDto {
   parts?: CreatePartDto[];
   speakingPictureUrl?: string;
   speakingText?: string;
-  readingActivities?: CreateReadingActivityDto[];
+  readingActivities?: CreateLegacyReadingActivityDto[];
 }
 
 export class UpdateHomeworkDto {
@@ -61,4 +61,35 @@ export class CreateAssignmentDto {
 export class UpdateAssignmentDto {
   classIds?: number[];
   endDate?: string;
+}
+
+// ── Plan 03-01 reading-specific DTOs ─────────────────────────────────────────
+
+export class SentenceSegmentDto {
+  text: string;
+  blank: boolean;
+  blankIndex?: number;
+  correctWord?: string;
+  distractors?: string[];
+}
+
+export class CreateReadingPairDto {
+  imageUrl: string;
+  word: string;
+}
+
+export class CreateReadingActivityDto {
+  type: ReadingActivityType;
+  pairs?: CreateReadingPairDto[];
+  segments?: SentenceSegmentDto[];
+}
+
+export class CreateReadingHomeworkDto {
+  name: string;
+  activities: CreateReadingActivityDto[];
+}
+
+export class UpdateReadingHomeworkDto {
+  name?: string;
+  activities?: CreateReadingActivityDto[];
 }

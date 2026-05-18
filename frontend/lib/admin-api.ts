@@ -365,7 +365,7 @@ export interface AssignmentClass {
   id: number;
   assignmentId: number;
   classId: number;
-  class: ClassItem;
+  class: ClassItem & { _count?: { students: number } };
 }
 
 export interface AssignmentItem {
@@ -413,6 +413,69 @@ export interface HomeworkDetail extends HomeworkItem {
   assignments: (AssignmentItem & { sessions: GameSession[] })[];
 }
 
+// ── Plan 03-01 reading result types ──────────────────────────────────────────
+
+export interface SentenceSegment {
+  text: string;
+  blank: boolean;
+  blankIndex?: number;
+  correctWord?: string;
+  distractors?: string[];
+}
+
+export interface ReadingMatchingPair {
+  id: number;
+  activityId: number;
+  imageUrl: string;
+  word: string;
+  order: number;
+}
+
+export interface FillInBlankBlank {
+  id: number;
+  activityId: number;
+  blankIndex: number;
+  correctWord: string;
+  distractors: string[];
+}
+
+export interface ReadingHomeworkDetail {
+  id: number;
+  name: string | null;
+  type: 'READING';
+  activities: ReadingActivity[];
+  assignments: AssignmentItem[];
+  createdAt: string;
+}
+
+export interface MatchingItemResult {
+  id: number;
+  activityResultId: number;
+  pairId: number;
+  studentChosenWord: string;
+  isCorrect: boolean;
+  pair?: ReadingMatchingPair;
+}
+
+export interface FillInBlankItemResult {
+  id: number;
+  activityResultId: number;
+  blankId: number;
+  studentChosenWord: string;
+  isCorrect: boolean;
+  blank?: FillInBlankBlank;
+}
+
+export interface ReadingActivityResult {
+  id: number;
+  sessionId: number;
+  activityId: number;
+  score: number;
+  activity?: ReadingActivity;
+  matchingResults?: MatchingItemResult[];
+  fillInBlankResults?: FillInBlankItemResult[];
+}
+
 export interface SpeakingResult {
   id: number;
   sessionId: number;
@@ -435,6 +498,7 @@ export interface GameSession {
   speakingResults?: SpeakingResult[];
   phonicsResults?: PhonicsItemResult[];
   readingResult?: ReadingResult;
+  readingActivityResults?: ReadingActivityResult[];
 }
 
 export interface PhonemeAlignment {
