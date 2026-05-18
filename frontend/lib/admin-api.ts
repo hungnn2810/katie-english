@@ -473,7 +473,7 @@ export interface ReadingHomeworkDetail {
   id: number;
   name: string | null;
   type: 'READING';
-  activities: ReadingActivity[];
+  readingActivities: ReadingActivity[];
   assignments: AssignmentItem[];
   createdAt: string;
 }
