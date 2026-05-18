@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { HomeworkService } from './homework.service';
-import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto } from './homework.dto';
+import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto } from './homework.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { StorageService } from '../storage/storage.service';
 
@@ -22,6 +22,11 @@ export class HomeworkController {
     await this.storage.upload(key, file.buffer, file.mimetype);
     return { key };
   }
+
+  // ── Reading-specific routes (must precede generic :id routes) ────────────
+  @Post('reading') createReading(@Body() dto: CreateReadingHomeworkDto) { return this.service.createReadingHomework(dto); }
+  @Get('reading/:id') findReading(@Param('id', ParseIntPipe) id: number) { return this.service.findReadingById(id); }
+  @Put('reading/:id') updateReading(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateReadingHomeworkDto) { return this.service.updateReadingHomework(id, dto); }
 
   @Get() findAll() { return this.service.findAll(); }
   @Get(':id') findOne(@Param('id', ParseIntPipe) id: number) { return this.service.findById(id); }

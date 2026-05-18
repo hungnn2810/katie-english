@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { HomeworkRepository } from './homework.repository';
-import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto } from './homework.dto';
+import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto } from './homework.dto';
 
 @Injectable()
 export class HomeworkService {
@@ -45,6 +45,23 @@ export class HomeworkService {
   async deleteAssignment(id: number) {
     await this.findAssignmentById(id);
     return this.repo.deleteAssignment(id);
+  }
+
+  // ── Plan 03-01 reading stubs (real logic in Plan 04) ─────────────────────
+
+  async findReadingById(id: number) {
+    const hw = await this.repo.findReadingById(id);
+    if (!hw) throw new NotFoundException(`Reading homework ${id} not found`);
+    return hw;
+  }
+
+  createReadingHomework(dto: CreateReadingHomeworkDto) {
+    return this.repo.createReadingHomework(dto);
+  }
+
+  async updateReadingHomework(id: number, dto: UpdateReadingHomeworkDto) {
+    await this.findReadingById(id);
+    return this.repo.updateReadingHomework(id, dto);
   }
 
   private validateReadingDto(dto: CreateHomeworkDto): void {

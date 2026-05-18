@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto } from './homework.dto';
+import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto } from './homework.dto';
 
 const partsInclude = {
   parts: {
@@ -189,5 +189,22 @@ export class HomeworkRepository {
 
   deleteAssignment(id: number) {
     return this.prisma.homeworkAssignment.delete({ where: { id } });
+  }
+
+  // ── Plan 03-01 reading stubs (real queries added in Plan 04) ──────────────
+
+  findReadingById(id: number) {
+    return this.prisma.homework.findUnique({
+      where: { id },
+      include: { assignments: { include: assignmentInclude } },
+    });
+  }
+
+  async createReadingHomework(_dto: CreateReadingHomeworkDto): Promise<{ id: number; placeholder: true }> {
+    return { id: -1, placeholder: true };
+  }
+
+  async updateReadingHomework(_id: number, _dto: UpdateReadingHomeworkDto): Promise<{ id: number; placeholder: true }> {
+    return { id: _id, placeholder: true };
   }
 }
