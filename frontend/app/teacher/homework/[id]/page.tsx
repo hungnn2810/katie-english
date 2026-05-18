@@ -99,6 +99,11 @@ export default function TeacherHomeworkDetailPage() {
             const classNames = a.classes.map((ac) => ac.class.name).join(', ');
             const sessions = a.sessions ?? [];
             const completed = sessions.filter((s) => s.completedAt);
+            const totalEnrolled = a.classes.reduce((sum, ac) => sum + (ac.class._count?.students ?? 0), 0);
+            const submittedStudentIds = new Set(sessions.map((s) => s.studentId));
+            const enrolledStudents = a.classes.flatMap((ac) => ac.class.students ?? []);
+            const dedupedEnrolled = Array.from(new Map(enrolledStudents.map((s) => [s.id, s])).values());
+            const notSubmitted = dedupedEnrolled.filter((s) => !submittedStudentIds.has(s.id));
 
             return (
               <div key={a.id} className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
@@ -106,6 +111,9 @@ export default function TeacherHomeworkDetailPage() {
                   <div className="flex items-center gap-3">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-textSecondary'}`}>
                       {isOpen ? 'Open' : 'Closed'}
+                    </span>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">
+                      {completed.length} / {totalEnrolled} submitted
                     </span>
                     <span className="text-sm font-semibold text-textPrimary">{classNames}</span>
                   </div>
@@ -159,6 +167,19 @@ export default function TeacherHomeworkDetailPage() {
                 {sessions.length > 0 && (
                   <div className="px-5 py-2 bg-background/50 border-t border-border text-xs text-textSecondary">
                     {completed.length} / {sessions.length} completed
+                  </div>
+                )}
+
+                {dedupedEnrolled.length > 0 && notSubmitted.length > 0 && (
+                  <div className="px-5 py-3 border-t border-border">
+                    <h4 className="text-xs font-semibold text-textSecondary mt-0 mb-1">
+                      Not submitted ({notSubmitted.length})
+                    </h4>
+                    <div className="divide-y divide-border">
+                      {notSubmitted.map((s) => (
+                        <div key={s.id} className="py-2 text-sm text-textPrimary">{s.fullname}</div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

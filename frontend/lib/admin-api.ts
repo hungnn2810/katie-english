@@ -365,7 +365,10 @@ export interface AssignmentClass {
   id: number;
   assignmentId: number;
   classId: number;
-  class: ClassItem & { _count?: { students: number } };
+  class: ClassItem & {
+    _count?: { students: number };
+    students?: { id: number; fullname: string }[];
+  };
 }
 
 export interface AssignmentItem {
