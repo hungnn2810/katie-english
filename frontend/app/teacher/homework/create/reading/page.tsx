@@ -3,16 +3,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  createHomework,
+  createReadingHomework,
   uploadSpeakingImage,
 } from '@/lib/admin-api';
 import type {
   CreateReadingActivityInput,
+  CreateReadingHomeworkInput,
   CreateMatchPairInput,
   CreateFillBlankItemInput,
   CreateFillBlankChoiceInput,
   ReadingActivityType,
-  CreateHomeworkInput,
 } from '@/lib/admin-api';
 import { gradients } from '@/lib/colors';
 import {
@@ -46,104 +46,106 @@ function MatchingActivityEditor({
   onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
   onUploadError: (msg: string) => void;
 }) {
-  const [uploading, setUploading] = useState(false);
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const pairs = activity.pairs ?? [];
 
-  function setPair(idx: number, patch: Partial<CreateMatchPairInput>) {
-    const next = pairs.map((p, i) => (i === idx ? { ...p, ...patch } : p));
-    onUpdate({ pairs: next });
+  function addPair() {
+    if (pairs.length >= 6) return;
+    onUpdate({ pairs: [...pairs, { imageUrl: '', word: '' }] });
   }
 
   function removePair(idx: number) {
     onUpdate({ pairs: pairs.filter((_, i) => i !== idx) });
   }
 
-  async function handleFiles(files: FileList | null) {
-    if (!files) return;
-    const remaining = 6 - pairs.length;
-    const toUpload = Array.from(files).slice(0, remaining);
-    if (toUpload.length === 0) return;
-    setUploading(true);
+  function updatePairWord(idx: number, word: string) {
+    onUpdate({ pairs: pairs.map((p, i) => (i === idx ? { ...p, word } : p)) });
+  }
+
+  async function uploadPairImage(idx: number, file: File) {
+    setUploadingIdx(idx);
     onUploadError('');
-    const newPairs: CreateMatchPairInput[] = [...pairs];
-    for (const file of toUpload) {
-      try {
-        const url = await uploadSpeakingImage(file);
-        const word = file.name.replace(/\.[^.]+$/, '');
-        newPairs.push({ imageUrl: url, word });
-      } catch (err: unknown) {
-        onUploadError(err instanceof Error ? err.message : 'Image upload failed');
-        break;
-      }
+    try {
+      const url = await uploadSpeakingImage(file);
+      onUpdate({ pairs: pairs.map((p, i) => (i === idx ? { ...p, imageUrl: url } : p)) });
+    } catch (err: unknown) {
+      onUploadError(err instanceof Error ? err.message : 'Image upload failed');
+    } finally {
+      setUploadingIdx(null);
     }
-    onUpdate({ pairs: newPairs });
-    setUploading(false);
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-bold text-textSecondary">{pairs.length} / 6 pairs</span>
-        {uploading && <span className="text-xs text-textSecondary">Uploading…</span>}
       </div>
 
       {pairs.length === 0 ? (
-        <label className="block rounded-xl border-2 border-dashed border-secondary/50 bg-secondary/5 py-8 flex flex-col items-center gap-2 cursor-pointer">
-          <span className="text-2xl">🖼️</span>
-          <span className="text-sm font-bold text-secondary">Click to upload images</span>
-          <span className="text-xs text-textSecondary">Each image becomes a matching pair</span>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            hidden
-            onChange={(e) => { handleFiles(e.target.files); e.currentTarget.value = ''; }}
-          />
-        </label>
+        <p className="text-xs text-textSecondary italic mb-3">No pairs yet — click &quot;+ Add pair&quot; to start.</p>
       ) : (
-        <>
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            {pairs.map((pair, i) => (
-              <div key={i} className="bg-background rounded-xl border border-border p-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {pairs.map((pair, i) => (
+            <div key={i} className="bg-background rounded-xl border border-border p-3">
+              {pair.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={pair.imageUrl}
                   alt={pair.word}
                   className="w-20 h-20 rounded-lg object-cover mb-2 mx-auto"
                 />
-                <input
-                  className="input-base text-sm py-2"
-                  placeholder="Word label"
-                  value={pair.word}
-                  onChange={(e) => setPair(i, { word: e.target.value })}
-                />
-                <button
-                  type="button"
-                  onClick={() => removePair(i)}
-                  aria-label="Remove pair"
-                  className="block text-center mt-1 text-xs text-highlight hover:text-red-600 w-full"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-          {pairs.length < 6 ? (
-            <label className="text-xs font-bold text-secondary hover:underline cursor-pointer">
-              + Add images
+              ) : (
+                <label className="flex flex-col items-center justify-center w-20 h-20 rounded-lg border-2 border-dashed border-secondary/40 bg-secondary/5 mb-2 mx-auto cursor-pointer hover:bg-secondary/10 relative">
+                  {uploadingIdx === i ? (
+                    <svg className="w-5 h-5 animate-spin text-secondary" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
+                      <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                  ) : (
+                    <span className="text-2xl">🖼️</span>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) uploadPairImage(i, e.target.files[0]);
+                      e.currentTarget.value = '';
+                    }}
+                  />
+                </label>
+              )}
               <input
-                type="file"
-                accept="image/*"
-                multiple
-                hidden
-                onChange={(e) => { handleFiles(e.target.files); e.currentTarget.value = ''; }}
+                className="input-base text-sm py-2"
+                placeholder="Word label"
+                value={pair.word}
+                onChange={(e) => updatePairWord(i, e.target.value)}
               />
-            </label>
-          ) : (
-            <span className="text-xs font-bold text-textSecondary opacity-60">Maximum 6 pairs reached</span>
-          )}
-        </>
+              <button
+                type="button"
+                onClick={() => removePair(i)}
+                aria-label="Remove pair"
+                className="block text-center mt-1 text-xs text-highlight hover:text-red-600 w-full"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
       )}
+
+      {pairs.length < 6 ? (
+        <button
+          type="button"
+          onClick={addPair}
+          className="text-sm font-bold text-secondary hover:underline"
+        >
+          + Add pair
+        </button>
+      ) : (
+        <span className="text-xs font-bold text-textSecondary opacity-60">Maximum 6 pairs reached</span>
+      )}
+
       {pairs.length === 1 && (
         <p className="text-xs text-highlight mt-2">Add at least 2 image-word pairs.</p>
       )}
@@ -460,15 +462,19 @@ export default function ReadingCreationPage() {
     setError('');
     setLoading(true);
 
-    const payload: CreateHomeworkInput = {
-      type: 'READING',
-      name: name.trim() || undefined,
-      readingActivities: activities.map(({ clientId: _clientId, ...rest }) => rest),
+    if (!name.trim()) {
+      setError('Homework name is required.');
+      return;
+    }
+
+    const payload: CreateReadingHomeworkInput = {
+      name: name.trim(),
+      activities: activities.map(({ clientId: _clientId, ...rest }) => rest),
     };
 
     try {
-      await createHomework(payload);
-      router.push('/teacher/homework');
+      await createReadingHomework(payload);
+      router.push('/teacher/homework');  // D-03: no AssignModal auto-open
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to save.');
     } finally {
