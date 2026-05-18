@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   getHomeworkList, createHomework, updateHomework, deleteHomework,
   getClasses, createAssignment, uploadSpeakingImage,
@@ -516,15 +517,73 @@ function AssignModal({
   );
 }
 
+// ── TypePickerModal ───────────────────────────────────────────────────────────
+
+function TypePickerModal({
+  onClose,
+  onPickInline,
+  onPickReading,
+}: {
+  onClose: () => void;
+  onPickInline: (type: 'PHONICS' | 'SPEAKING') => void;
+  onPickReading: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto"
+      style={{ background: 'rgba(15,12,41,0.55)', backdropFilter: 'blur(2px)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-slide-up mb-10">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+          <div>
+            <h2 className="text-lg font-black text-textPrimary">New Homework</h2>
+            <p className="text-xs text-textSecondary mt-0.5">Choose the type of homework to create.</p>
+          </div>
+          <button type="button" onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-textSecondary hover:text-textPrimary hover:bg-gray-100 transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="px-6 py-5">
+          <div className="grid grid-cols-3 gap-3">
+            {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
+              const m = TYPE_META[t];
+              return (
+                <button key={t} type="button"
+                  onClick={() => {
+                    if (t === 'READING') {
+                      onPickReading();
+                    } else {
+                      onPickInline(t as 'PHONICS' | 'SPEAKING');
+                      onClose();
+                    }
+                  }}
+                  className="flex flex-col items-center justify-center gap-2 py-5 rounded-xl text-sm font-bold border-2 transition-all hover:shadow-md hover:scale-105"
+                  style={{ background: 'white', color: m.color, borderColor: m.color + '55' }}>
+                  <span className="text-2xl">{m.emoji}</span>
+                  <span>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const emptyForm = (): CreateHomeworkInput => ({ type: 'PHONICS', speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingPictureUrl: '', speakingText: '' });
 
 export default function HomeworkPage() {
+  const router = useRouter();
   const [list, setList] = useState<HomeworkItem[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [form, setForm] = useState(emptyForm());
   const [showModal, setShowModal] = useState(false);
+  const [showTypePicker, setShowTypePicker] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assigningHw, setAssigningHw] = useState<HomeworkItem | null>(null);
   const [typeFilter, setTypeFilter] = useState<HomeworkType | 'ALL'>('ALL');
@@ -532,7 +591,7 @@ export default function HomeworkPage() {
   const load = () => getHomeworkList().then(setList).catch(() => {});
   useEffect(() => { load(); getClasses().then(setClasses); }, []);
 
-  function openCreate() { setEditingId(null); setForm(emptyForm()); setShowModal(true); }
+  function openCreate() { setShowTypePicker(true); }
   function openEdit(h: HomeworkItem) {
     if (h.type === 'READING') return; /* editing deferred to Phase 3 */
     setEditingId(h.id);
@@ -558,6 +617,13 @@ export default function HomeworkPage() {
     <div className="animate-fade-in">
       {showModal && <HomeworkModal editingId={editingId} form={form} setForm={setForm} onClose={closeModal} onSaved={load} />}
       {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={load} />}
+      {showTypePicker && (
+        <TypePickerModal
+          onClose={() => setShowTypePicker(false)}
+          onPickInline={(t) => { setForm({ ...emptyForm(), type: t }); setShowModal(true); }}
+          onPickReading={() => router.push('/teacher/homework/create/reading')}
+        />
+      )}
 
       {/* Toolbar */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
@@ -578,20 +644,13 @@ export default function HomeworkPage() {
           ))}
         </div>
         <div className="flex-1" />
-        <Link href="/teacher/homework/create/reading"
+        <button onClick={openCreate} aria-expanded={showTypePicker}
           className="btn-primary flex items-center gap-2 shrink-0"
-          style={{ background: gradients.greenSecondary }}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Reading
-        </Link>
-        <button onClick={openCreate} className="btn-primary flex items-center gap-2 shrink-0"
           style={{ background: gradients.primarySecondary }}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          New Homework
+          + Create
         </button>
       </div>
 
@@ -706,7 +765,7 @@ export default function HomeworkPage() {
                   className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors">
                   Assign
                 </button>
-                <button onClick={() => openEdit(h)}
+                <button onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
                   className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/8 transition-colors">
                   Edit
                 </button>
