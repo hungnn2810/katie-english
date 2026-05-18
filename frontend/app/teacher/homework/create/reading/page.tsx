@@ -33,7 +33,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type DraftActivity = CreateReadingActivityInput & { clientId: string };
+type ReadingActivityDraft = CreateReadingActivityInput & { clientId: string };
 
 // ── MatchingActivityEditor ────────────────────────────────────────────────────
 
@@ -42,8 +42,8 @@ function MatchingActivityEditor({
   onUpdate,
   onUploadError,
 }: {
-  activity: DraftActivity;
-  onUpdate: (patch: Partial<DraftActivity>) => void;
+  activity: ReadingActivityDraft;
+  onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
   onUploadError: (msg: string) => void;
 }) {
   const [uploading, setUploading] = useState(false);
@@ -157,8 +157,8 @@ function FillBlankActivityEditor({
   activity,
   onUpdate,
 }: {
-  activity: DraftActivity;
-  onUpdate: (patch: Partial<DraftActivity>) => void;
+  activity: ReadingActivityDraft;
+  onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
 }) {
   const items = activity.items ?? [];
 
@@ -308,9 +308,9 @@ function SortableActivityCard({
 }: {
   id: string;
   index: number;
-  activity: DraftActivity;
+  activity: ReadingActivityDraft;
   onRemove: () => void;
-  onUpdate: (patch: Partial<DraftActivity>) => void;
+  onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
   onUploadError: (msg: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } = useSortable({ id });
@@ -367,10 +367,10 @@ function SortableActivityCard({
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function CreateReadingHomeworkPage() {
+export default function ReadingCreationPage() {
   const router = useRouter();
   const [name, setName] = useState('');
-  const [activities, setActivities] = useState<DraftActivity[]>([]);
+  const [activities, setActivities] = useState<ReadingActivityDraft[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -397,7 +397,7 @@ export default function CreateReadingHomeworkPage() {
     setActivities((prev) => prev.filter((a) => a.clientId !== clientId));
   }
 
-  function updateActivity(clientId: string, patch: Partial<DraftActivity>) {
+  function updateActivity(clientId: string, patch: Partial<ReadingActivityDraft>) {
     setActivities((prev) =>
       prev.map((a) => (a.clientId === clientId ? { ...a, ...patch } : a))
     );
