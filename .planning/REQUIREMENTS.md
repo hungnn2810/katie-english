@@ -28,9 +28,12 @@
 ### Teacher Dashboard
 
 - [ ] **TEACH-01**: Teacher can create any homework type (phonics/speaking/reading) from a unified creation flow
-- [ ] **TEACH-02**: Teacher can assign homework to one or more classes with a due date
-- [ ] **TEACH-03**: Teacher can view homework list with submission counts and assignment status
-- [ ] **TEACH-04**: Teacher can see per-student session results for any homework assignment
+- [x] **TEACH-02
+**: Teacher can assign homework to one or more classes with a due date
+- [x] **TEACH-03
+**: Teacher can view homework list with submission counts and assignment status
+- [x] **TEACH-04
+**: Teacher can see per-student session results for any homework assignment
 - [ ] **TEACH-05**: Teacher can review individual student attempt (score breakdown + recording playback for audio types)
 
 ### Student UX
