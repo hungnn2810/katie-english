@@ -92,7 +92,7 @@
 - [ ] 03-03-PLAN.md — TypePickerModal entry point + Reading creation page skeleton + READING filter tab (Wave 3)
 - [ ] 03-04-PLAN.md — Reading CRUD backend + matching-activity creation slice (image upload reuse, create+save end-to-end) (Wave 4)
 - [ ] 03-05-PLAN.md — @dnd-kit install + FillInBlank editor (tokenizer + chip toggle + distractors) + drag-and-drop activity reorder (Wave 5)
-- [ ] 03-06-PLAN.md — Edit mode route + Try/Preview button + interactive client-side READING preview branch in try page (Wave 6)
+- [x] 03-06-PLAN.md — Edit mode route + Try/Preview button + interactive client-side READING preview branch in try page (Wave 6)
 - [ ] 03-07-PLAN.md — completeSession READING branch + sessionInclude reading results + session detail page Reading section (collapsible activity cards, per-item rows) (Wave 7)
 
 ---

@@ -86,7 +86,7 @@
 | READ-05 | Phase 2 | Pending |
 | READ-06 | Phase 2 | Pending |
 | READ-07 | Phase 3 | Pending |
-| TEACH-01 | Phase 3 | Pending |
+| TEACH-01 | Phase 3 | Complete |
 | TEACH-02 | Phase 3 | Pending |
 | TEACH-03 | Phase 3 | Pending |
 | TEACH-04 | Phase 3 | Pending |

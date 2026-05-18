@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-18T08:00:00.000Z"
+last_updated: "2026-05-18T03:45:00.000Z"
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 17
-  completed_plans: 11
-  percent: 65
+  completed_plans: 12
+  percent: 71
 ---
 
 # Project State: Katie English
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 ## Current Phase
 
-**Phase 3: Teacher Dashboard** — Wave 5 in progress (5/7 plans done)
+**Phase 3: Teacher Dashboard** — Wave 6 in progress (6/7 plans done)
 
 | Plan | Status |
 |------|--------|
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 | 03-03 Reading creation page scaffold | ✓ Complete |
 | 03-04 Reading create persistence | ✓ Complete |
 | 03-05 FillInBlank editor + DnD reorder | ✓ Complete |
-| 03-06 Edit reading homework | Pending |
+| 03-06 Edit reading homework | ✓ Complete |
 | 03-07 Human verification | Pending |
 
 ## Phase Progress
@@ -55,6 +55,9 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - clientId used as stable DnD id (equivalent to plan's draftId — same crypto.randomUUID strategy)
 - FillInBlankActivityEditor uses segments format (SentenceSegment[]) to match /homework/reading endpoint
 - tokenizeSentence splits on /\S+|\s+/g preserving whitespace tokens for layout fidelity
+- ReadingCreationPage extracted to _components/ as named export (Next.js cross-route import requirement)
+- ReadingHomeworkDetail.readingActivities (not activities) — matches Prisma field name (bug fixed Plan 06)
+- Try button hidden in create mode (no DB row yet) — intentional UX decision
 
 ## Session Log
 
@@ -63,6 +66,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-05-18**: Plan 02-03 complete. Teacher reading creation page live at /teacher/homework/create/reading. @dnd-kit installed. npm run build passing.
 - **2026-05-18**: Plan 02-04 complete. Student reading game page live at /game/reading/[id]. Full state machine, matching + fill-blank renderers, submission flow, results screen.
 - **2026-05-18**: Plan 03-05 complete. FillInBlankActivityEditor with chip-toggle/reindexBlanks/distractor inputs + DnD keyboard sensor + isDragging feedback. FILL_BLANK now serializes segments format to backend.
+- **2026-05-18**: Plan 03-06 complete. ReadingCreationPage extracted to _components/, edit mode + edit route live, READING branch in try page with interactive matching+fill-in-blank preview (no DB writes).
 
 ---
 *State updated: 2026-05-18*
