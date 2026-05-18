@@ -614,7 +614,11 @@ export default function HomeworkPage() {
           const g = cardGradients[i % cardGradients.length];
           const meta = TYPE_META[h.type];
           const activeAssignments = h.assignments.filter((a) => new Date(a.endDate) >= now);
-          const totalSessions = h.assignments.reduce((s, a) => s + (a._count?.sessions ?? 0), 0);
+          const completedSessions = h.assignments.reduce((s, a) => s + (a._count?.sessions ?? 0), 0);
+          const totalEnrolled = h.assignments.reduce(
+            (sum, a) => sum + a.classes.reduce((s, ac) => s + (ac.class._count?.students ?? 0), 0),
+            0,
+          );
 
           return (
             <div key={h.id} className="card overflow-hidden hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 flex flex-col">
@@ -690,10 +694,10 @@ export default function HomeworkPage() {
                   )}
                 </div>
 
-                {totalSessions > 0 && (
-                  <div className="text-xs text-textSecondary">
-                    {totalSessions} submission{totalSessions !== 1 ? 's' : ''} total
-                  </div>
+                {h.assignments.length > 0 && (
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${completedSessions > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-500'}`}>
+                    {completedSessions} / {totalEnrolled} submitted
+                  </span>
                 )}
               </Link>
 
