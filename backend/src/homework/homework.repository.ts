@@ -23,7 +23,21 @@ const readingActivitiesInclude = {
 };
 
 const assignmentInclude = {
-  classes: { include: { class: true } },
+  classes: { include: { class: { include: { _count: { select: { students: true } } } } } },
+  _count: { select: { sessions: true } },
+};
+
+const assignmentDetailInclude = {
+  classes: {
+    include: {
+      class: {
+        include: {
+          _count: { select: { students: true } },
+          students: { select: { id: true, fullname: true } },
+        },
+      },
+    },
+  },
   _count: { select: { sessions: true } },
 };
 
@@ -68,7 +82,7 @@ export class HomeworkRepository {
         ...readingActivitiesInclude,
         assignments: {
           include: {
-            classes: { include: { class: true } },
+            ...assignmentDetailInclude,
             sessions: {
               include: { student: true },
               orderBy: { startedAt: 'desc' },
