@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getSession, GameSession, SpeakingResult, PhonicsItemResult } from '@/lib/admin-api';
+import { getSession, GameSession, SpeakingResult, PhonicsItemResult, ReadingActivityResult, MatchingItemResult, FillInBlankItemResult, SentenceSegment } from '@/lib/admin-api';
 import { getToken } from '@/lib/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -18,6 +18,144 @@ function scoreHex(score: number) {
   if (score >= 50) return '#F59E0B';
   return '#EF4444';
 }
+
+// ── MatchingResultRow ─────────────────────────────────────────────────────────
+
+function MatchingResultRow({ r }: { r: MatchingItemResult }) {
+  return (
+    <div className="flex items-center gap-3 py-1.5">
+      {r.pair?.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={r.pair.imageUrl}
+          alt={r.pair.word}
+          className="w-10 h-10 rounded-lg object-cover border border-border"
+        />
+      )}
+      <div className="flex-1 text-sm text-textPrimary">
+        <span className="text-textSecondary">student chose</span>{' '}
+        <span className="font-semibold">"{r.studentChosenWord}"</span>
+      </div>
+      <span
+        className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+          r.isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+        }`}
+      >
+        {r.isCorrect ? '✓' : '✗'}
+      </span>
+    </div>
+  );
+}
+
+// ── FillInBlankResultRow ──────────────────────────────────────────────────────
+
+function FillInBlankResultRow({ r }: { r: FillInBlankItemResult }) {
+  // Render sentence text with the student's chosen word highlighted
+  const sentence = r.blank ? `[blank ${r.blank.blankIndex ?? '?'}]` : '—';
+  return (
+    <div className="py-1.5 text-sm">
+      <span className="text-textSecondary text-xs">{sentence} → </span>
+      <span
+        className={`font-semibold px-1 rounded ${
+          r.isCorrect ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+        }`}
+      >
+        {r.studentChosenWord}
+      </span>
+      <span
+        className={`ml-2 text-xs font-bold px-2 py-0.5 rounded-full ${
+          r.isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+        }`}
+      >
+        {r.isCorrect ? '✓' : '✗'}
+      </span>
+    </div>
+  );
+}
+
+// ── ActivityResultCard ────────────────────────────────────────────────────────
+
+function ActivityResultCard({ activityResult }: { activityResult: ReadingActivityResult }) {
+  const [expanded, setExpanded] = useState(false);
+  const pct = Math.round(activityResult.score);
+  const isMatching = activityResult.activity?.type === 'MATCH';
+  const label = isMatching ? 'Matching' : 'Fill in Blank';
+
+  // Build fill-in-blank segment rendering from SentenceSegment[]
+  const renderFillInBlankSegments = (segments: SentenceSegment[], results: FillInBlankItemResult[]) => {
+    const fillByBlankIdx = new Map<number, FillInBlankItemResult>();
+    for (const res of results) {
+      if (res.blank?.blankIndex != null) fillByBlankIdx.set(res.blank.blankIndex, res);
+    }
+    return segments.map((seg, idx) => {
+      if (!seg.blank) return <span key={idx}>{seg.text}</span>;
+      const result = fillByBlankIdx.get(seg.blankIndex!);
+      return (
+        <span
+          key={idx}
+          className={`font-semibold px-1 rounded ${
+            result?.isCorrect ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+          }`}
+        >
+          {result?.studentChosenWord ?? '___'}
+        </span>
+      );
+    });
+  };
+
+  return (
+    <div className="bg-white border border-border rounded-2xl shadow-sm">
+      <button
+        type="button"
+        onClick={() => setExpanded((e) => !e)}
+        className="w-full flex items-center justify-between px-5 py-3"
+      >
+        <span className="font-semibold text-sm text-textPrimary">{label}</span>
+        <div className="flex items-center gap-3">
+          <span
+            className={`font-bold text-sm ${scoreColor(pct)}`}
+            style={{ color: scoreHex(pct) }}
+          >
+            {pct}%
+          </span>
+          <span>{expanded ? '▾' : '▸'}</span>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="border-t border-border px-5 py-3">
+          {isMatching ? (
+            <div className="divide-y divide-border/50">
+              {(activityResult.matchingResults ?? []).map((r) => (
+                <MatchingResultRow key={r.id} r={r} />
+              ))}
+            </div>
+          ) : (
+            <div className="divide-y divide-border/50">
+              {(() => {
+                const segments = (activityResult.activity as { sentenceSegments?: SentenceSegment[] })
+                  ?.sentenceSegments;
+                const fillResults = activityResult.fillInBlankResults ?? [];
+                if (segments && segments.length > 0) {
+                  return (
+                    <p className="text-sm text-textPrimary leading-relaxed py-1.5">
+                      {renderFillInBlankSegments(segments, fillResults)}
+                    </p>
+                  );
+                }
+                return fillResults.map((r) => (
+                  <FillInBlankResultRow key={r.id} r={r} />
+                ));
+              })()}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function TeacherSessionDetailPage() {
   const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
@@ -44,6 +182,7 @@ export default function TeacherSessionDetailPage() {
 
   const speakingResults: SpeakingResult[] = session.speakingResults ?? [];
   const phonicsResults: PhonicsItemResult[] = session.phonicsResults ?? [];
+  const readingActivityResults: ReadingActivityResult[] = session.readingActivityResults ?? [];
 
   return (
     <div className="max-w-2xl">
@@ -161,7 +300,18 @@ export default function TeacherSessionDetailPage() {
         </div>
       )}
 
-      {phonicsResults.length === 0 && speakingResults.length === 0 && !session.videoUrl && (
+      {readingActivityResults.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-base font-bold text-textPrimary mb-3">Reading ({readingActivityResults.length})</h2>
+          <div className="space-y-2">
+            {readingActivityResults.map((ar) => (
+              <ActivityResultCard key={ar.id} activityResult={ar} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {phonicsResults.length === 0 && speakingResults.length === 0 && readingActivityResults.length === 0 && !session.videoUrl && (
         <p className="text-textSecondary text-sm">No results recorded yet.</p>
       )}
     </div>
