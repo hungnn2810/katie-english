@@ -112,6 +112,8 @@ const mockReadingSession = (overrides = {}) => ({
   speakingResults: [],
   phonicsResults: [],
   readingResult: null,
+  // readingActivityResults: per-activity result records not stored in DB (only aggregate ReadingResult)
+  readingActivityResults: [],
   ...overrides,
 });
 
@@ -389,6 +391,74 @@ describe('saveReadingResult', () => {
     const dto: SaveReadingResultDto = { correctItems: 0, totalItems: 0 };
     await service.saveReadingResult(1, dto);
     expect(repo.saveReadingResult).toHaveBeenCalledWith(1, 0, 0, 0);
+  });
+});
+
+// ── GameService.completeSession READING branch (D-18 score via ReadingResult) ─
+
+describe('completeSession READING branch', () => {
+  let service: GameService;
+  let repo: jest.Mocked<GameRepository>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        GameService,
+        {
+          provide: GameRepository,
+          useValue: {
+            getSession: jest.fn(), createSession: jest.fn(),
+            saveSpeakingResult: jest.fn(), savePhonicsResult: jest.fn(),
+            completeSession: jest.fn(), listSessions: jest.fn(),
+            getAvailableAssignments: jest.fn(),
+            saveReadingResult: jest.fn(),
+            getReadingResult: jest.fn(),
+          },
+        },
+        { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(GameService);
+    repo = module.get(GameRepository);
+    repo.completeSession.mockResolvedValue({} as any);
+  });
+
+  it('computes average across activity scores per D-18 (ReadingResult.score persisted by saveReadingResult)', async () => {
+    // Per D-18: the aggregate ReadingResult.score is persisted when the student submits
+    // answers (saveReadingResult computes correctItems/totalItems*100). completeSession
+    // reads this pre-computed score via getReadingResult and passes it to repo.completeSession.
+    // readingActivityResults: [] reflects the mock session shape (no per-activity DB records).
+    repo.getSession.mockResolvedValue(
+      mockReadingSession({ readingActivityResults: [] }) as any,
+    );
+    repo.getReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 3, correctItems: 3, score: 80 } as any);
+    await service.completeSession(1);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 80);
+  });
+
+  it('handles empty readingActivityResults (no division-by-zero) — score from ReadingResult', async () => {
+    repo.getSession.mockResolvedValue(
+      mockReadingSession({ readingActivityResults: [] }) as any,
+    );
+    repo.getReadingResult.mockResolvedValue(null as any);
+    await service.completeSession(1);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 0);
+  });
+
+  it('SPEAKING branch unchanged — additive guarantee', async () => {
+    repo.getSession.mockResolvedValue({ ...mockSpeakingSession(), speakingResults: [{ score: 90 }] } as any);
+    await service.completeSession(1);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 90);
+  });
+
+  it('PHONICS branch unchanged — additive guarantee', async () => {
+    repo.getSession.mockResolvedValue({
+      ...mockPhonicsSession(),
+      phonicsResults: [{ score: 60 }, { score: 80 }, { score: 100 }],
+    } as any);
+    await service.completeSession(1);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 80);
   });
 });
 

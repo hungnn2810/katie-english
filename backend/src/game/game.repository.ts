@@ -32,6 +32,10 @@ const sessionInclude = {
   student: true,
   speakingResults: true,
   phonicsResults: { include: { word: true } },
+  // NOTE: Per-activity result tracking (readingActivityResults with matchingResults/fillInBlankResults)
+  // was deferred — the DB schema stores only the aggregate ReadingResult (correctItems/totalItems/score).
+  // The homework's readingActivities structure is available via assignment.homework.readingActivities
+  // (included above through homeworkInclude → readingActivitiesInclude).
   readingResult: true,
 };
 
