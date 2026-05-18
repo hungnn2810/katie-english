@@ -319,6 +319,7 @@ export interface CreateReadingActivityInput {
   type: ReadingActivityType;
   pairs?: CreateMatchPairInput[];
   items?: CreateFillBlankItemInput[];
+  segments?: SentenceSegment[];
 }
 
 export interface CreateWordInput {

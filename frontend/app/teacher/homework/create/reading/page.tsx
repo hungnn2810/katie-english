@@ -10,15 +10,15 @@ import type {
   CreateReadingActivityInput,
   CreateReadingHomeworkInput,
   CreateMatchPairInput,
-  CreateFillBlankItemInput,
-  CreateFillBlankChoiceInput,
   ReadingActivityType,
+  SentenceSegment,
 } from '@/lib/admin-api';
 import { gradients } from '@/lib/colors';
 import {
   DndContext,
   closestCenter,
   PointerSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -26,6 +26,7 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext,
   arrayMove,
+  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -34,6 +35,29 @@ import { CSS } from '@dnd-kit/utilities';
 // ── Types ────────────────────────────────────────────────────────────────────
 
 type ReadingActivityDraft = CreateReadingActivityInput & { clientId: string };
+
+// ── Sentence tokenizer helpers (module-scope, no React deps) ─────────────────
+
+function tokenizeSentence(sentence: string): SentenceSegment[] {
+  const tokens = sentence.match(/\S+|\s+/g) ?? [];
+  return tokens.map((text) => ({ text, blank: false }));
+}
+
+function reindexBlanks(segments: SentenceSegment[]): SentenceSegment[] {
+  let idx = 0;
+  return segments.map((s) => (s.blank ? { ...s, blankIndex: idx++ } : s));
+}
+
+function toggleBlankAt(segments: SentenceSegment[], i: number): SentenceSegment[] {
+  const seg = segments[i];
+  if (!seg || seg.text.trim() === '') return segments; // skip whitespace tokens
+  const next = segments.map((s, j) => {
+    if (j !== i) return s;
+    if (s.blank) return { text: s.text, blank: false };
+    return { text: s.text, blank: true, correctWord: s.text, distractors: [] };
+  });
+  return reindexBlanks(next);
+}
 
 // ── MatchingActivityEditor ────────────────────────────────────────────────────
 
@@ -153,147 +177,136 @@ function MatchingActivityEditor({
   );
 }
 
-// ── FillBlankActivityEditor ───────────────────────────────────────────────────
+// ── FillInBlankActivityEditor ─────────────────────────────────────────────────
 
-function FillBlankActivityEditor({
+function FillInBlankActivityEditor({
   activity,
   onUpdate,
 }: {
   activity: ReadingActivityDraft;
   onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
 }) {
-  const items = activity.items ?? [];
+  const segments = activity.segments ?? [];
+  const sentenceText = segments.map((s) => s.text).join('');
+  const hasExistingBlanks = segments.some((s) => s.blank);
 
-  function addItem() {
-    onUpdate({
-      items: [
-        ...items,
-        {
-          sentence: '',
-          choices: [
-            { word: '', isCorrect: true },
-            { word: '', isCorrect: false },
-          ],
-        },
-      ],
-    });
+  function setSentence(sentence: string) {
+    onUpdate({ segments: tokenizeSentence(sentence) });
   }
 
-  function removeItem(idx: number) {
-    onUpdate({ items: items.filter((_, i) => i !== idx) });
+  function toggleSegmentBlank(segIdx: number) {
+    onUpdate({ segments: toggleBlankAt(segments, segIdx) });
   }
 
-  function setItem(idx: number, patch: Partial<CreateFillBlankItemInput>) {
-    onUpdate({ items: items.map((it, i) => (i === idx ? { ...it, ...patch } : it)) });
+  function updateDistractors(blankIndex: number, distractors: string[]) {
+    const next = segments.map((s) =>
+      s.blank && s.blankIndex === blankIndex ? { ...s, distractors } : s
+    );
+    onUpdate({ segments: next });
   }
 
-  function setChoice(itemIdx: number, choiceIdx: number, patch: Partial<CreateFillBlankChoiceInput>) {
-    const it = items[itemIdx];
-    setItem(itemIdx, {
-      choices: it.choices.map((c, j) => (j === choiceIdx ? { ...c, ...patch } : c)),
-    });
-  }
-
-  function markCorrect(itemIdx: number, choiceIdx: number) {
-    const it = items[itemIdx];
-    setItem(itemIdx, {
-      choices: it.choices.map((c, j) => ({ ...c, isCorrect: j === choiceIdx })),
-    });
-  }
-
-  function addChoice(itemIdx: number) {
-    const it = items[itemIdx];
-    setItem(itemIdx, { choices: [...it.choices, { word: '', isCorrect: false }] });
-  }
-
-  function removeChoice(itemIdx: number, choiceIdx: number) {
-    const it = items[itemIdx];
-    const next = it.choices.filter((_, j) => j !== choiceIdx);
-    if (next.length > 0 && !next.some((c) => c.isCorrect)) next[0].isCorrect = true;
-    setItem(itemIdx, { choices: next });
-  }
+  const blanks = segments
+    .filter((s) => s.blank)
+    .sort((a, b) => (a.blankIndex ?? 0) - (b.blankIndex ?? 0));
 
   return (
     <div>
-      {items.length === 0 && (
-        <p className="text-xs text-textSecondary italic mb-3">No sentences yet — click &quot;+ Add sentence&quot; to start.</p>
-      )}
-      <div className="space-y-4">
-        {items.map((item, i) => (
-          <div key={i} className="rounded-xl border border-border p-4 bg-background/50">
-            <div className="text-xs font-bold text-textSecondary mb-2">Sentence {i + 1}</div>
-            <textarea
-              rows={2}
-              className="input-base resize-none"
-              placeholder="Type the sentence, use ___ for the blank (e.g. The cat sat on the ___)"
-              value={item.sentence}
-              onChange={(e) => setItem(i, { sentence: e.target.value })}
-            />
-            {item.sentence.length > 0 && !item.sentence.includes('___') && (
-              <p className="text-xs text-highlight mt-1">Each sentence must contain ___ for the blank.</p>
-            )}
-
-            <div className="mt-3">
-              <div className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">Word choices</div>
-              {item.choices.map((c, j) => (
-                <div key={j} className="flex items-center gap-2 mb-2">
-                  <input
-                    type="radio"
-                    name={`correct-${i}`}
-                    aria-label="Mark as correct answer"
-                    checked={c.isCorrect}
-                    onChange={() => markCorrect(i, j)}
-                    className="w-4 h-4 accent-primary"
-                  />
-                  <input
-                    className="input-base flex-1 py-2"
-                    placeholder="Word option"
-                    value={c.word}
-                    onChange={(e) => setChoice(i, j, { word: e.target.value })}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeChoice(i, j)}
-                    aria-label="Remove choice"
-                    className="text-highlight text-sm hover:text-red-600"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={() => addChoice(i)}
-                className="mt-2 text-xs font-bold text-primary hover:underline"
-              >
-                + Add choice
-              </button>
-            </div>
-
-            {item.choices.length < 2 && (
-              <p className="text-xs text-highlight mt-2">Add at least 2 word choices.</p>
-            )}
-            {item.choices.length >= 2 && item.choices.filter((c) => c.isCorrect).length !== 1 && (
-              <p className="text-xs text-highlight mt-1">Mark one choice as correct.</p>
-            )}
-
-            <button
-              type="button"
-              onClick={() => removeItem(i)}
-              className="text-xs font-bold text-highlight hover:text-red-600 mt-2"
-            >
-              Remove sentence
-            </button>
-          </div>
-        ))}
+      {/* Sentence textarea */}
+      <div className="mb-3">
+        <label className="block text-xs font-bold text-textSecondary uppercase tracking-wide mb-1">
+          Sentence
+        </label>
+        {hasExistingBlanks && (
+          <p className="text-xs text-amber-600 mb-1">
+            Editing the sentence will clear existing blanks.
+          </p>
+        )}
+        <textarea
+          rows={2}
+          className="input-base resize-none"
+          placeholder="Type a sentence, then click words below to mark them as blanks"
+          value={sentenceText}
+          onChange={(e) => setSentence(e.target.value)}
+        />
       </div>
-      <button
-        type="button"
-        onClick={addItem}
-        className="mt-3 text-xs font-bold text-amber-700 hover:underline"
-      >
-        + Add sentence
-      </button>
+
+      {/* Word chips */}
+      {segments.length > 0 && (
+        <div className="mb-4">
+          <div className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">
+            Click a word to make it a blank
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {segments.map((s, i) => {
+              if (s.text.trim() === '') {
+                // Whitespace token — render as non-interactive spacer
+                return <span key={i} className="inline-block w-2" aria-hidden />;
+              }
+              if (s.blank) {
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => toggleSegmentBlank(i)}
+                    className="bg-primary text-white px-2.5 py-1 rounded-lg text-sm font-semibold flex items-center gap-1"
+                    aria-label={`Remove blank for "${s.text}"`}
+                  >
+                    ___
+                    <span className="text-xs opacity-80">×</span>
+                  </button>
+                );
+              }
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => toggleSegmentBlank(i)}
+                  className="bg-gray-100 text-textPrimary px-2.5 py-1 rounded-lg text-sm hover:bg-primary/10 cursor-pointer"
+                  aria-label={`Make "${s.text}" a blank`}
+                >
+                  {s.text}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Distractor inputs — one row per blank */}
+      {blanks.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-1">
+            Distractors per blank
+          </div>
+          {blanks.map((b) => (
+            <div key={b.blankIndex} className="flex items-center gap-2">
+              <span className="text-xs font-mono text-textSecondary shrink-0 w-24">
+                Blank {(b.blankIndex ?? 0) + 1}: &quot;{b.correctWord}&quot;
+              </span>
+              <input
+                className="flex-1 px-3 py-1.5 rounded-lg border border-border text-sm"
+                value={(b.distractors ?? []).join(', ')}
+                onChange={(e) =>
+                  updateDistractors(
+                    b.blankIndex!,
+                    e.target.value
+                      .split(',')
+                      .map((x) => x.trim())
+                      .filter(Boolean)
+                  )
+                }
+                placeholder="Comma-separated distractors (e.g. dog, bird)"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {segments.length === 0 && (
+        <p className="text-xs text-textSecondary italic">
+          Type a sentence above to get started.
+        </p>
+      )}
     </div>
   );
 }
@@ -315,8 +328,12 @@ function SortableActivityCard({
   onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
   onUploadError: (msg: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } = useSortable({ id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
 
   return (
     <div ref={setNodeRef} style={style} className="card overflow-hidden bg-white rounded-2xl border border-border shadow-card">
@@ -360,7 +377,7 @@ function SortableActivityCard({
         {activity.type === 'MATCH' ? (
           <MatchingActivityEditor activity={activity} onUpdate={onUpdate} onUploadError={onUploadError} />
         ) : (
-          <FillBlankActivityEditor activity={activity} onUpdate={onUpdate} />
+          <FillInBlankActivityEditor activity={activity} onUpdate={onUpdate} />
         )}
       </div>
     </div>
@@ -378,7 +395,8 @@ export default function ReadingCreationPage() {
   const [uploadError, setUploadError] = useState('');
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
   function addMatchingActivity() {
@@ -391,7 +409,7 @@ export default function ReadingCreationPage() {
   function addFillBlankActivity() {
     setActivities((prev) => [
       ...prev,
-      { clientId: crypto.randomUUID(), type: 'FILL_BLANK' as ReadingActivityType, items: [] },
+      { clientId: crypto.randomUUID(), type: 'FILL_BLANK' as ReadingActivityType, segments: [] },
     ]);
   }
 
@@ -411,12 +429,14 @@ export default function ReadingCreationPage() {
       setActivities((prev) => {
         const oldIdx = prev.findIndex((a) => a.clientId === active.id);
         const newIdx = prev.findIndex((a) => a.clientId === over.id);
+        if (oldIdx < 0 || newIdx < 0) return prev;
         return arrayMove(prev, oldIdx, newIdx);
       });
     }
   }
 
   function validate(): string | null {
+    if (!name.trim()) return 'Homework name is required.';
     if (activities.length === 0) return 'Add at least one activity.';
 
     for (let idx = 0; idx < activities.length; idx++) {
@@ -431,21 +451,21 @@ export default function ReadingCreationPage() {
           return `Matching activity ${idx + 1}: every pair needs a word label.`;
         }
       } else {
-        const itemCount = activity.items?.length ?? 0;
-        if (itemCount < 1) {
-          return `Fill-in-blank activity ${idx + 1}: add at least 1 sentence.`;
+        // FILL_BLANK — segment-based validation
+        const segs = activity.segments ?? [];
+        if (!segs.length || !segs.some((s) => s.blank)) {
+          return `Fill-in-blank activity ${idx + 1}: needs at least one blank.`;
         }
-        for (let j = 0; j < (activity.items ?? []).length; j++) {
-          const item = activity.items![j];
-          if (!item.sentence.includes('___')) {
-            return `Fill-in-blank activity ${idx + 1} sentence ${j + 1}: must contain ___ for the blank.`;
+        // Verify contiguous blankIndex sequence 0..n-1 (Pitfall 3 defense)
+        const blanks = segs.filter((s) => s.blank).sort((a, b) => (a.blankIndex ?? 0) - (b.blankIndex ?? 0));
+        for (let i = 0; i < blanks.length; i++) {
+          if (blanks[i].blankIndex !== i) {
+            return `Fill-in-blank activity ${idx + 1}: internal blank index out of sequence — try toggling one blank again.`;
           }
-          if ((item.choices?.length ?? 0) < 2) {
-            return `Fill-in-blank activity ${idx + 1} sentence ${j + 1}: add at least 2 word choices.`;
-          }
-          if (item.choices.filter((c) => c.isCorrect).length !== 1) {
-            return `Fill-in-blank activity ${idx + 1} sentence ${j + 1}: mark one choice as correct.`;
-          }
+        }
+        // Require at least 1 distractor per blank (D-08)
+        if (blanks.some((b) => !(b.distractors?.length ?? 0))) {
+          return `Fill-in-blank activity ${idx + 1}: each blank needs at least one distractor.`;
         }
       }
     }
@@ -461,11 +481,6 @@ export default function ReadingCreationPage() {
     }
     setError('');
     setLoading(true);
-
-    if (!name.trim()) {
-      setError('Homework name is required.');
-      return;
-    }
 
     const payload: CreateReadingHomeworkInput = {
       name: name.trim(),
