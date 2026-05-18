@@ -309,11 +309,6 @@ export default function ClassesPage() {
                       <div className="text-xl font-black text-textPrimary">{c._count.students}</div>
                       <div className="text-[10px] text-textSecondary font-medium uppercase tracking-wide">Students</div>
                     </div>
-                    <div className="w-px bg-border/60" />
-                    <div className="flex-1 text-center">
-                      <div className="text-xl font-black text-textPrimary">{c._count.homeworks}</div>
-                      <div className="text-[10px] text-textSecondary font-medium uppercase tracking-wide">Homework</div>
-                    </div>
                   </div>
                 )}
               </div>
