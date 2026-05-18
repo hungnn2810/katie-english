@@ -87,13 +87,13 @@
 4. Teacher opens a student's attempt and sees per-item score breakdown; for speaking/phonics, audio/video playback is available inline.
 
 **Plans:**
-- [ ] 03-01-PLAN.md — Schema foundation: extend Prisma + push DB + sync HomeworkType across DTO/admin-api + backend reading stubs (Wave 1)
-- [ ] 03-02-PLAN.md — Submission count slice + TEACH-02 regression: assignmentInclude student count, X/Y pill on list+detail, non-submitted list, AssignModal multi-class verification (Wave 2)
-- [ ] 03-03-PLAN.md — TypePickerModal entry point + Reading creation page skeleton + READING filter tab (Wave 3)
-- [ ] 03-04-PLAN.md — Reading CRUD backend + matching-activity creation slice (image upload reuse, create+save end-to-end) (Wave 4)
-- [ ] 03-05-PLAN.md — @dnd-kit install + FillInBlank editor (tokenizer + chip toggle + distractors) + drag-and-drop activity reorder (Wave 5)
+- [x] 03-01-PLAN.md — Schema foundation: extend Prisma + push DB + sync HomeworkType across DTO/admin-api + backend reading stubs (Wave 1)
+- [x] 03-02-PLAN.md — Submission count slice + TEACH-02 regression: assignmentInclude student count, X/Y pill on list+detail, non-submitted list, AssignModal multi-class verification (Wave 2)
+- [x] 03-03-PLAN.md — TypePickerModal entry point + Reading creation page skeleton + READING filter tab (Wave 3)
+- [x] 03-04-PLAN.md — Reading CRUD backend + matching-activity creation slice (image upload reuse, create+save end-to-end) (Wave 4)
+- [x] 03-05-PLAN.md — @dnd-kit install + FillInBlank editor (tokenizer + chip toggle + distractors) + drag-and-drop activity reorder (Wave 5)
 - [x] 03-06-PLAN.md — Edit mode route + Try/Preview button + interactive client-side READING preview branch in try page (Wave 6)
-- [ ] 03-07-PLAN.md — completeSession READING branch + sessionInclude reading results + session detail page Reading section (collapsible activity cards, per-item rows) (Wave 7)
+- [x] 03-07-PLAN.md — completeSession READING branch + sessionInclude reading results + session detail page Reading section (collapsible activity cards, per-item rows) (Wave 7)
 
 ---
 
@@ -136,12 +136,12 @@
 | READ-04 | Phase 2 | Complete |
 | READ-05 | Phase 2 | Complete |
 | READ-06 | Phase 2 | Complete |
-| READ-07 | Phase 3 | Pending |
-| TEACH-01 | Phase 3 | Pending |
-| TEACH-02 | Phase 3 | Pending |
-| TEACH-03 | Phase 3 | Pending |
-| TEACH-04 | Phase 3 | Pending |
-| TEACH-05 | Phase 3 | Pending |
+| READ-07 | Phase 3 | Complete |
+| TEACH-01 | Phase 3 | Complete |
+| TEACH-02 | Phase 3 | Complete |
+| TEACH-03 | Phase 3 | Complete |
+| TEACH-04 | Phase 3 | Complete |
+| TEACH-05 | Phase 3 | Complete |
 | STUDENT-01 | Phase 4 | Pending |
 | STUDENT-02 | Phase 4 | Pending |
 
@@ -149,4 +149,4 @@
 
 ---
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-05-17 — Phase 3 plans finalized (7 plans, Plan 07 added for reading session results; Plan 02 requirements updated to include TEACH-02)*
+*Last updated: 2026-05-18 — Phase 3 all 7 plans complete; READ-07/TEACH-01-05 marked complete*

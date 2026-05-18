@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-18T03:45:00.000Z"
+last_updated: "2026-05-18T03:46:09.209Z"
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 17
-  completed_plans: 12
-  percent: 71
+  completed_plans: 13
+  percent: 76
 ---
 
 # Project State: Katie English
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 ## Current Phase
 
-**Phase 3: Teacher Dashboard** — Wave 6 in progress (6/7 plans done)
+**Phase 3: Teacher Dashboard** — Wave 7 complete (7/7 plans done)
 
 | Plan | Status |
 |------|--------|
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 | 03-04 Reading create persistence | ✓ Complete |
 | 03-05 FillInBlank editor + DnD reorder | ✓ Complete |
 | 03-06 Edit reading homework | ✓ Complete |
-| 03-07 Human verification | Pending |
+| 03-07 Reading session result slice | ✓ Complete |
 
 ## Phase Progress
 
@@ -67,6 +67,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-05-18**: Plan 02-04 complete. Student reading game page live at /game/reading/[id]. Full state machine, matching + fill-blank renderers, submission flow, results screen.
 - **2026-05-18**: Plan 03-05 complete. FillInBlankActivityEditor with chip-toggle/reindexBlanks/distractor inputs + DnD keyboard sensor + isDragging feedback. FILL_BLANK now serializes segments format to backend.
 - **2026-05-18**: Plan 03-06 complete. ReadingCreationPage extracted to _components/, edit mode + edit route live, READING branch in try page with interactive matching+fill-in-blank preview (no DB writes).
+- **2026-05-18**: Plan 03-07 complete. READING completeSession spec block (4 tests); repository sessionInclude documents per-activity gap; session detail page extended with ActivityResultCard/MatchingResultRow/FillInBlankResultRow (D-15/D-16/D-17). Phase 3 all 7 plans done.
 
 ---
 *State updated: 2026-05-18*
