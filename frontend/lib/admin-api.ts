@@ -416,6 +416,32 @@ export interface HomeworkDetail extends HomeworkItem {
   assignments: (AssignmentItem & { sessions: GameSession[] })[];
 }
 
+// ── Plan 03-04 reading homework CRUD (POST/GET/PUT /homework/reading) ────────
+
+export interface CreateReadingPairInput {
+  imageUrl: string;
+  word: string;
+}
+
+export interface CreateReadingHomeworkInput {
+  name: string;
+  activities: CreateReadingActivityInput[];
+}
+
+export interface UpdateReadingHomeworkInput {
+  name?: string;
+  activities?: CreateReadingActivityInput[];
+}
+
+export const createReadingHomework = (data: CreateReadingHomeworkInput) =>
+  req<ReadingHomeworkDetail>('/homework/reading', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+
+export const getReadingHomework = (id: number) =>
+  req<ReadingHomeworkDetail>(`/homework/reading/${id}`);
+
+export const updateReadingHomework = (id: number, data: UpdateReadingHomeworkInput) =>
+  req<ReadingHomeworkDetail>(`/homework/reading/${id}`, { method: 'PUT', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+
 // ── Plan 03-01 reading result types ──────────────────────────────────────────
 
 export interface SentenceSegment {
