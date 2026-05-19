@@ -4,6 +4,7 @@ import { GameService } from './game.service';
 import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
+import { WordRepository } from '../word/word.repository';
 import { calcScore, levenshtein, calcSpeakingScore } from './game.scoring';
 import { SaveReadingResultDto } from './game.dto';
 
@@ -50,10 +51,24 @@ const mockSpeakingSession = (overrides = {}) => ({
 });
 
 const mockBfaSuccess = (score: number) => ({
-  success: true, score, phonemes: [], feedback: [], word: 'sh',
+  success: true,
+  score,
+  phonemes: [],
+  feedback: [],
+  word: 'sh',
+  transcription: { text: 'sh' },
+  espeak_fallback: false,
 });
 
-const mockBfaFail = () => ({ success: false, score: 0, phonemes: [], feedback: [], word: 'sh' });
+const mockBfaFail = () => ({
+  success: false,
+  score: 0,
+  phonemes: [],
+  feedback: [],
+  word: 'sh',
+  transcription: { text: '' },
+  espeak_fallback: false,
+});
 
 const mockReadingSession = (overrides = {}) => ({
   id: 1,
@@ -180,6 +195,7 @@ describe('GameService.savePhonicsResult', () => {
   let service: GameService;
   let repo: jest.Mocked<GameRepository>;
   let bfa: jest.Mocked<BfaService>;
+  let wordRepo: { findByText: jest.Mock };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -195,34 +211,36 @@ describe('GameService.savePhonicsResult', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
     repo = module.get(GameRepository);
     bfa = module.get(BfaService);
+    wordRepo = module.get<{ findByText: jest.Mock }>(WordRepository);
     repo.savePhonicsResult.mockResolvedValue({ id: 1, sessionId: 1, wordId: 1, transcribedText: '', score: 0, word: { id: 1, text: 'sh' } } as any);
-    bfa.transcribe.mockResolvedValue({ text: 'sh', words: [] });
+    wordRepo.findByText.mockResolvedValue(null);  // default — no stored phonemes
   });
 
   it('uses BFA score when BFA succeeds', async () => {
     repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
-    bfa.align.mockResolvedValue(mockBfaSuccess(87) as any);
+    bfa.analyze.mockResolvedValue(mockBfaSuccess(87) as any);
     await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
     expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, 'sh', 87);
   });
 
   it('scores 0 when BFA fails', async () => {
     repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
-    bfa.align.mockResolvedValue(mockBfaFail() as any);
+    bfa.analyze.mockResolvedValue(mockBfaFail() as any);
     await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
-    expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, 'sh', 0);
+    expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
   });
 
   it('scores 0 when no audio', async () => {
     repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
     await service.savePhonicsResult(1, { wordId: 1 });
-    expect(bfa.align).not.toHaveBeenCalled();
+    expect(bfa.analyze).not.toHaveBeenCalled();
     expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
   });
 
@@ -249,6 +267,23 @@ describe('GameService.savePhonicsResult', () => {
     await expect(service.savePhonicsResult(1, { wordId: 999 }))
       .rejects.toThrow(BadRequestException);
   });
+
+  it('passes stored phonemes from Word table to BFA analyze', async () => {
+    repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
+    bfa.analyze.mockResolvedValue(mockBfaSuccess(90) as any);
+    wordRepo.findByText.mockResolvedValue({ id: 1, text: 'sh', phonemes: '["sh"]' } as any);
+    await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+    expect(wordRepo.findByText).toHaveBeenCalledWith('sh');
+    expect(bfa.analyze).toHaveBeenCalledWith(expect.any(Buffer), 'audio/webm', 'sh', ['sh']);
+  });
+
+  it('falls back to empty phonemes array when Word not in DB', async () => {
+    repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
+    bfa.analyze.mockResolvedValue(mockBfaSuccess(80) as any);
+    wordRepo.findByText.mockResolvedValue(null);
+    await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+    expect(bfa.analyze).toHaveBeenCalledWith(expect.any(Buffer), 'audio/webm', 'sh', []);
+  });
 });
 
 // ── GameService.completeSession ───────────────────────────────────────────────
@@ -271,7 +306,8 @@ describe('GameService.completeSession', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -340,7 +376,8 @@ describe('saveReadingResult', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -416,7 +453,8 @@ describe('completeSession READING branch', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -484,7 +522,8 @@ describe('completeSession READING', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
