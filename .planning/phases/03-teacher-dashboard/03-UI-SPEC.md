@@ -45,8 +45,8 @@ Declared values (multiples of 4):
 Exceptions:
 - Sidebar width: fixed `w-64` (256px) — desktop-only shell, no collapsible (source: D-25)
 - Shell minimum width: 1280px enforced via inline `minWidth: 1280` on root div (source: codebase, TeacherShell.tsx)
-- Card content padding: `p-5` (20px) — actual measured value in card components
-- Activity card header: `px-5 py-3` (20px / 12px) — deliberate asymmetric for compact header strip
+- Card content padding: `p-4` (16px) — standard token (`md`)
+- Activity card header: `px-4 py-2` (16px / 8px) — uses standard tokens (`md` / `sm`); no non-standard values
 
 ---
 
@@ -129,7 +129,9 @@ Gradient patterns in use:
 | Loading state | "Loading…" (inline centered text, `text-textSecondary`) |
 | Saving in progress | "Saving…" (replaces Create/Update button label) |
 | Error state — validation | Specific field-level message, e.g.: "Homework name is required." / "Add at least one activity." / "Matching activity N: add 2 to 6 image-word pairs." / "Fill-in-blank activity N: each blank needs at least one distractor." |
-| Error state — API failure | "Failed to save." / "Failed to load homework." / "Failed to load sessions" — problem statement only, no recovery instruction |
+| Error state — API failure (save) | "Failed to save. Check your connection and try again." |
+| Error state — API failure (homework load) | "Failed to load homework. Refresh the page to try again." |
+| Error state — API failure (sessions load) | "Failed to load sessions. Refresh the page to try again." |
 | Destructive — delete assignment | No AlertDialog confirmation — single delete button with direct API call (source: existing pattern in homework detail page) |
 | Destructive — remove matching pair | "✕" icon button (no confirmation — not destructive at data layer, only removes draft state) |
 | Destructive — remove activity | "Remove" text button (no confirmation — only removes draft state) |
@@ -223,8 +225,8 @@ Shared UI patterns:
 ### Session Detail — Reading Results Section
 - Section heading: "Reading Results" `text-base font-bold text-textPrimary`
 - Activity cards: `bg-white border border-border rounded-2xl shadow-sm`, stacked with `space-y-3`
-- Card header: full-width button row, `px-5 py-3`, with activity label + score + expand chevron (▸/▾)
-- Expand state: `border-t border-border px-5 py-3` content area, `divide-y divide-border/50` row separator
+- Card header: full-width button row, `px-4 py-2` (standard `md`/`sm` tokens), with activity label + score + expand chevron (▸/▾)
+- Expand state: `border-t border-border px-4 py-2` content area, `divide-y divide-border/50` row separator
 - Image thumbnail in MatchingResultRow: `w-10 h-10 rounded-lg object-cover border border-border` (40×40px, source: RESEARCH.md Claude's Discretion)
 - Score display: `font-bold text-sm` with `scoreHex()` inline color style (green/amber/red by threshold)
 - **Inline override — at-a-glance score:** The top-of-page aggregate score is rendered at `text-3xl` (30px) with `font-bold` and an inline `color` from `scoreHex()`. This is a one-off inline style override — it is NOT a declared type scale token and does not affect the 4-size scale above.
@@ -279,6 +281,8 @@ No third-party shadcn registries were used. Registry vetting gate is not applica
 | TypePickerModal copy | `frontend/app/teacher/homework/page.tsx` TypePickerModal render |
 | Empty state copy (all) | Codebase direct read of rendered JSX |
 | Typography revision (4 sizes, 2 weights) | Checker revision — collapsed 15px→14px Body, 11px→12px Label, removed font-black (900), moved 30px score to inline override |
+| API error copy — recovery instructions added | Checker revision (blocking issue 1) — "Failed to save/load" now includes recovery instruction |
+| Spacing — non-standard p-5/px-5/py-3 replaced | Checker revision (blocking issue 2) — aligned to standard tokens p-4 (16px) / py-2 (8px) |
 
 ---
 
