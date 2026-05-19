@@ -5,6 +5,7 @@ import AuthGate from '@/components/AuthGate';
 import { authHeaders } from '@/lib/auth';
 import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, BfaResult, SpeakingMode } from '@/lib/admin-api';
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
+import PhonemeChips from './_components/PhonemeChips';
 
 type ItemKind = 'speaking' | 'phonics';
 type ItemState = 'waiting' | 'recording' | 'done';
@@ -536,18 +537,7 @@ export default function SessionPage() {
                           </div>
                         </div>
                         {item.bfa?.success && item.bfa.feedback.length > 0 && (
-                          <div className="flex gap-1 mt-2 flex-wrap">
-                            {item.bfa.feedback.map((op, i) => (
-                              <span key={i} className="text-xs px-2 py-0.5 rounded font-mono font-bold"
-                                style={{
-                                  background: op.status === 'correct' ? '#22c55e22' : '#ef444422',
-                                  color: op.status === 'correct' ? '#22c55e' : '#ef4444',
-                                }}>
-                                {op.expected ?? op.aligned}
-                                {op.status === 'substituted' && ` → ${op.aligned}`}
-                              </span>
-                            ))}
-                          </div>
+                          <PhonemeChips feedback={item.bfa.feedback} />
                         )}
                       </div>
                     ) : (
