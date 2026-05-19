@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import json
 import logging
 import os
@@ -404,14 +405,34 @@ async def _align_impl(
     )
 
 
-def _run_alignment(wav_path: Path, word: str, expected: List[str], espeak_fallback: bool) -> dict:
+def _transcribe_wav(wav_path: Path, word: str) -> str:
+    """Run WhisperX transcription on a prepared WAV file. Returns transcript text or ''."""
+    try:
+        model = get_whisperx_model()
+        audio_data = whisperx.load_audio(str(wav_path))
+        # batch_size=1 is optimal for short single-word clips on CPU — larger batches add overhead
+        result = model.transcribe(audio_data, batch_size=1, language="en")
+        return " ".join(s.get("text", "").strip() for s in result.get("segments", [])).strip()
+    except Exception as exc:
+        logger.warning(json.dumps({"event": "transcription_error", "word": word, "error": str(exc)}))
+        return ""
+
+
+def _run_alignment(
+    wav_path: Path,
+    word: str,
+    expected: List[str],
+    espeak_fallback: bool,
+    skip_energy_check: bool = False,
+) -> dict:
     """Run forced alignment on a prepared 16kHz mono WAV file and return the align response dict.
 
     Shared by _align_sync and _analyze_sync so that alignment logic is not duplicated.
     Returns the same dict shape as POST /align (success, phonemes, score, feedback, word, espeak_fallback).
     On any internal failure, returns error_payload(word, ...) with espeak_fallback absent/False.
+    skip_energy_check: set True when caller already verified energy to avoid a second ffmpeg subprocess.
     """
-    if not has_sufficient_energy(wav_path):
+    if not skip_energy_check and not has_sufficient_energy(wav_path):
         return error_payload(word, "No speech detected in audio")
 
     aligner = get_aligner()
@@ -618,20 +639,13 @@ def _analyze_sync(
         if not has_sufficient_energy(wav_path):
             return {**error_payload(word, "No speech detected in audio"), "transcription": {"text": ""}}
 
-        # Transcribe — failure does NOT abort alignment
-        transcription_text = ""
-        try:
-            model = get_whisperx_model()
-            audio_data = whisperx.load_audio(str(wav_path))
-            result = model.transcribe(audio_data, batch_size=16, language="en")
-            transcription_text = " ".join(
-                s.get("text", "").strip() for s in result.get("segments", [])
-            ).strip()
-        except Exception as exc:
-            logger.warning(json.dumps({"event": "transcription_error", "word": word, "error": str(exc)}))
-
-        # Align — uses the shared helper
-        align_result = _run_alignment(wav_path, word, expected, espeak_fallback)
+        # Run transcription and alignment in parallel — they share the same WAV but are independent.
+        # skip_energy_check=True avoids a redundant ffmpeg volumedetect subprocess in _run_alignment.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            transcribe_fut = pool.submit(_transcribe_wav, wav_path, word)
+            align_fut = pool.submit(_run_alignment, wav_path, word, expected, espeak_fallback, True)
+            transcription_text = transcribe_fut.result()
+            align_result = align_fut.result()
 
         # Re-score using what whisperx actually heard (forced aligner labels always
         # match expected lexicon, so alignment score is always 100% regardless of
