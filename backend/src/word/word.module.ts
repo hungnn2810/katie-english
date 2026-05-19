@@ -8,6 +8,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [AuthModule],
   controllers: [WordController],
   providers: [WordService, WordRepository],
-  exports: [WordService],
+  exports: [WordService, WordRepository],
 })
 export class WordModule {}

@@ -56,6 +56,7 @@ async function main() {
         text: wordData.text,
         audioUrl: wordData.audioUrl,
         difficulty: wordData.difficulty,
+        phonemes: JSON.stringify(wordData.phonemes),
       },
     });
 

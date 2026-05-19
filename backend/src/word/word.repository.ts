@@ -38,4 +38,11 @@ export class WordRepository {
       },
     });
   }
+
+  findByText(text: string) {
+    return this.prisma.word.findUnique({
+      where: { text },
+      select: { id: true, text: true, phonemes: true },
+    });
+  }
 }
