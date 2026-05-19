@@ -404,6 +404,77 @@ async def _align_impl(
     )
 
 
+def _run_alignment(wav_path: Path, word: str, expected: List[str], espeak_fallback: bool) -> dict:
+    """Run forced alignment on a prepared 16kHz mono WAV file and return the align response dict.
+
+    Shared by _align_sync and _analyze_sync so that alignment logic is not duplicated.
+    Returns the same dict shape as POST /align (success, phonemes, score, feedback, word, espeak_fallback).
+    On any internal failure, returns error_payload(word, ...) with espeak_fallback absent/False.
+    """
+    if not has_sufficient_energy(wav_path):
+        return error_payload(word, "No speech detected in audio")
+
+    aligner = get_aligner()
+    audio_data = aligner.load_audio(str(wav_path))
+    result = aligner.process_sentence(word, audio_data)
+
+    segments = result.get("segments") if isinstance(result, dict) else None
+    if not segments:
+        return error_payload(word, "No alignment segments produced")
+
+    phoneme_ts = segments[0].get("phoneme_ts") if isinstance(segments[0], dict) else None
+    if not phoneme_ts:
+        return error_payload(word, "No phoneme timestamps produced")
+
+    silence_labels = {"-", "SIL", "sil", "sp", "spn", "<eps>", ""}
+    aligned_phonemes: List[dict] = []
+    for entry in phoneme_ts:
+        if not isinstance(entry, dict):
+            continue
+        label = str(entry.get("ipa_label") or entry.get("phoneme_label") or "").strip()
+        if not label or label in silence_labels:
+            continue
+        symbol = normalize_ipa(label)
+        if not symbol or symbol in silence_labels:
+            continue
+        start_ms = float(entry.get("start_ms", 0.0))
+        end_ms = float(entry.get("end_ms", 0.0))
+        aligned_phonemes.append({
+            "symbol": symbol,
+            "ipa": label,
+            "start": round(start_ms / 1000, 3),
+            "end": round(end_ms / 1000, 3),
+            "duration": round((end_ms - start_ms) / 1000, 3),
+        })
+
+    if not aligned_phonemes:
+        return error_payload(word, "No valid phoneme entries produced")
+
+    aligned_symbols = [p["symbol"] for p in aligned_phonemes]
+    score, ops = score_alignment(expected, aligned_symbols)
+
+    feedback: List[dict] = []
+    aligned_idx = 0
+    for op in ops:
+        entry = {**op}
+        if op["status"] in ("correct", "similar", "substituted", "extra") and aligned_idx < len(aligned_phonemes):
+            ph = aligned_phonemes[aligned_idx]
+            entry["start"] = ph["start"]
+            entry["end"] = ph["end"]
+            entry["duration"] = ph["duration"]
+            aligned_idx += 1
+        feedback.append(entry)
+
+    return {
+        "success": True,
+        "phonemes": aligned_phonemes,
+        "score": score,
+        "feedback": feedback,
+        "word": word,
+        "espeak_fallback": espeak_fallback,
+    }
+
+
 def _align_sync(
     raw_bytes: bytes,
     suffix: str,
@@ -432,68 +503,7 @@ def _align_sync(
         if conv.returncode != 0:
             return error_payload(word, f"Audio conversion failed: {conv.stderr.decode()[:200]}")
 
-        if not has_sufficient_energy(wav_path):
-            return error_payload(word, "No speech detected in audio")
-
-        aligner = get_aligner()
-        audio_data = aligner.load_audio(str(wav_path))
-        result = aligner.process_sentence(word, audio_data)
-
-        segments = result.get("segments") if isinstance(result, dict) else None
-        if not segments:
-            return error_payload(word, "No alignment segments produced")
-
-        phoneme_ts = segments[0].get("phoneme_ts") if isinstance(segments[0], dict) else None
-        if not phoneme_ts:
-            return error_payload(word, "No phoneme timestamps produced")
-
-        silence_labels = {"-", "SIL", "sil", "sp", "spn", "<eps>", ""}
-        aligned_phonemes: List[dict] = []
-        for entry in phoneme_ts:
-            if not isinstance(entry, dict):
-                continue
-            label = str(entry.get("ipa_label") or entry.get("phoneme_label") or "").strip()
-            if not label or label in silence_labels:
-                continue
-            symbol = normalize_ipa(label)
-            if not symbol or symbol in silence_labels:
-                continue
-            start_ms = float(entry.get("start_ms", 0.0))
-            end_ms = float(entry.get("end_ms", 0.0))
-            aligned_phonemes.append({
-                "symbol": symbol,
-                "ipa": label,
-                "start": round(start_ms / 1000, 3),
-                "end": round(end_ms / 1000, 3),
-                "duration": round((end_ms - start_ms) / 1000, 3),
-            })
-
-        if not aligned_phonemes:
-            return error_payload(word, "No valid phoneme entries produced")
-
-        aligned_symbols = [p["symbol"] for p in aligned_phonemes]
-        score, ops = score_alignment(expected, aligned_symbols)
-
-        feedback: List[dict] = []
-        aligned_idx = 0
-        for op in ops:
-            entry = {**op}
-            if op["status"] in ("correct", "similar", "substituted", "extra") and aligned_idx < len(aligned_phonemes):
-                ph = aligned_phonemes[aligned_idx]
-                entry["start"] = ph["start"]
-                entry["end"] = ph["end"]
-                entry["duration"] = ph["duration"]
-                aligned_idx += 1
-            feedback.append(entry)
-
-        return {
-            "success": True,
-            "phonemes": aligned_phonemes,
-            "score": score,
-            "feedback": feedback,
-            "word": word,
-            "espeak_fallback": espeak_fallback,
-        }
+        return _run_alignment(wav_path, word, expected, espeak_fallback)
     finally:
         shutil.rmtree(work_dir, ignore_errors=True)
 
@@ -538,6 +548,94 @@ def _transcribe_sync(raw_bytes: bytes, suffix: str):
 
         text = " ".join(s.get("text", "").strip() for s in result.get("segments", []))
         return {"text": text.strip()}
+    finally:
+        shutil.rmtree(work_dir, ignore_errors=True)
+
+
+@app.post("/analyze")
+async def analyze(
+    audio: UploadFile = File(...),
+    word: str = Form(...),
+    expected_phonemes: str = Form(...),
+):
+    async with REQUEST_SEMAPHORE:
+        return await _analyze_impl(audio, word, expected_phonemes)
+
+
+async def _analyze_impl(
+    audio: UploadFile,
+    word: str,
+    expected_phonemes: str,
+):
+    try:
+        expected: List[str] = json.loads(expected_phonemes)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid expected_phonemes: {exc}") from exc
+
+    if not isinstance(expected, list):
+        raise HTTPException(status_code=400, detail="expected_phonemes must be a JSON array")
+
+    if len(expected) > MAX_EXPECTED_PHONEMES:
+        raise HTTPException(status_code=413, detail="expected_phonemes is too large")
+
+    suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+    raw_bytes = await audio.read()
+    if len(raw_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Audio file too large")
+
+    return await asyncio.to_thread(_analyze_sync, raw_bytes, suffix, word, expected)
+
+
+def _analyze_sync(
+    raw_bytes: bytes,
+    suffix: str,
+    word: str,
+    expected: List[str],
+):
+    # Fall back to espeak-ng when no phoneme data in DB
+    espeak_fallback = False
+    if not expected:
+        expected = espeak_phonemes(word)
+        espeak_fallback = bool(expected)
+
+    work_dir = Path(tempfile.mkdtemp(prefix="bfa_analyze_"))
+    try:
+        raw_path = work_dir / f"input{suffix}"
+        with open(raw_path, "wb") as f:
+            f.write(raw_bytes)
+
+        # Normalize to 16kHz mono WAV — use -t 300 for long-form transcription support
+        wav_path = work_dir / "input.wav"
+        conv = subprocess.run(
+            ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-t", "300", "-y", str(wav_path)],
+            capture_output=True,
+            timeout=FFMPEG_TIMEOUT,
+        )
+        if conv.returncode != 0:
+            err = f"Audio conversion failed: {conv.stderr.decode()[:200]}"
+            return {**error_payload(word, err), "transcription": {"text": ""}}
+
+        if not has_sufficient_energy(wav_path):
+            return {**error_payload(word, "No speech detected in audio"), "transcription": {"text": ""}}
+
+        # Transcribe — failure does NOT abort alignment
+        transcription_text = ""
+        try:
+            model = get_whisperx_model()
+            audio_data = whisperx.load_audio(str(wav_path))
+            result = model.transcribe(audio_data, batch_size=16, language="en")
+            transcription_text = " ".join(
+                s.get("text", "").strip() for s in result.get("segments", [])
+            ).strip()
+        except Exception as exc:
+            logger.warning(json.dumps({"event": "transcription_error", "word": word, "error": str(exc)}))
+
+        # Align — uses the shared helper
+        align_result = _run_alignment(wav_path, word, expected, espeak_fallback)
+
+        # Merge transcription into the alignment result
+        align_result["transcription"] = {"text": transcription_text}
+        return align_result
     finally:
         shutil.rmtree(work_dir, ignore_errors=True)
 
