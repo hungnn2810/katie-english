@@ -102,6 +102,7 @@ export default function SessionPage() {
   const finalTextRef = useRef('');
   const itemsRef = useRef<SessionItem[]>([]);
   const processingRef = useRef(false);
+  const currentIndexRef = useRef(0);
   const audioBlobsRef = useRef<(Blob | null)[]>([]);
 
   useEffect(() => { itemsRef.current = items; }, [items]);
@@ -249,6 +250,7 @@ export default function SessionPage() {
   }, [sessionId, stopTimer, stopSpeech]);
 
   function playItem(index: number) {
+    currentIndexRef.current = index;
     const item = itemsRef.current[index];
     if (!item) return;
     const t = itemTime(item.kind);
@@ -279,7 +281,7 @@ export default function SessionPage() {
   async function handleSubmitItem() {
     stopTimer();
     stopSpeech();
-    await processItem(currentIndex, finalTextRef.current);
+    await processItem(currentIndexRef.current, finalTextRef.current);
   }
 
   async function stopRecordingTracks() {
