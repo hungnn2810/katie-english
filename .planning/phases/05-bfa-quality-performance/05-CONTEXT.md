@@ -15,11 +15,13 @@ Deliverables:
 - 1 new Python endpoint + TS client update ✓ DONE (Plans 05-01 + 05-02)
 - 1 frontend phoneme feedback component (Plan 05-03)
 - 1 teacher sessions overview page — folded in as bonus deliverable (Plan 05-03)
+- Unit test coverage for BFA pipeline — Python pytest + NestJS Jest (Plan 05-04)
 
 **Implementation status (as of 2026-05-19):**
 - Plan 05-01 (Python BFA): COMPLETE
 - Plan 05-02 (NestJS bridge + DB): COMPLETE (DB push deferred — Docker paused)
 - Plan 05-03 (Frontend): NOT STARTED
+- Plan 05-04 (Unit tests): NOT STARTED
 
 </domain>
 
@@ -71,6 +73,12 @@ Add `espeak_fallback?: boolean` to `BfaAlignResult` in `backend/src/bfa/bfa.dto.
 - No additional nav changes required — just commit the page file
 **LOCKED. PENDING (commit with Plan 05-03).**
 
+### D-09: Unit test scope (Plan 05-04)
+Python pytest (`bfa-service/test_bfa.py`) covers pure functions only — `score_alignment`, `_phoneme_cost`, `normalize_ipa`, `error_payload`. External deps stubbed via `sys.modules` before `import main` (MagicMock for whisperx, bournemouth_aligner, fastapi, prometheus_client). Runs without Docker.
+NestJS Jest (`backend/src/bfa/bfa.service.spec.ts`) covers `analyze()`, `align()`, `transcribe()` — mock axios, verify endpoint URL, timeout, FormData field construction.
+D-01 regression guard: `test_score_alignment_similar_status_d01_regression` locks the similar-status fix.
+**LOCKED.**
+
 ### D-08: Plan 05-03 execution sequencing
 - Execute 05-03 Tasks 1-3 (tsc + build validation) WITHOUT waiting for DB push. Frontend code does not depend on DB state.
 - After code tasks pass: pause at Task 4 human checkpoint for live Docker verification.
@@ -93,12 +101,14 @@ Add `espeak_fallback?: boolean` to `BfaAlignResult` in `backend/src/bfa/bfa.dto.
 
 ### BFA Python Service
 - `bfa-service/main.py` — Full service. Bugs fixed at lines 465, model init. `/analyze` endpoint added. `_run_alignment` shared helper extracted.
+- `bfa-service/test_bfa.py` — Python pytest suite (NEW in Plan 05-04). Pure function tests, no external deps.
 - `bfa-service/Dockerfile` — Python deps and startup command
 
 ### NestJS BFA Bridge
 - `backend/src/bfa/bfa.service.ts` — TS client. `align()`, `transcribe()`, and new `analyze()` calls.
 - `backend/src/bfa/bfa.dto.ts` — `BfaAlignResult` (+ `espeak_fallback?`), `BfaAnalyzeResult` (+ `transcription`), `WhisperXResult` interfaces
 - `backend/src/bfa/bfa.module.ts` — Module wiring
+- `backend/src/bfa/bfa.service.spec.ts` — NestJS Jest spec (NEW in Plan 05-04). Mock axios, test analyze/align/transcribe.
 
 ### Game Service (BFA consumer)
 - `backend/src/game/game.service.ts` — `savePhonicsResult` now calls `bfa.analyze()` once with stored phonemes
