@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-19T02:39:11.021Z"
+last_updated: "2026-05-19T04:30:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 20
-  completed_plans: 13
-  percent: 65
+  completed_plans: 15
+  percent: 75
 ---
 
 # Project State: Katie English
@@ -43,7 +43,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 | Phase 2: Reading Homework | In Progress | 2026-05-17 | — |
 | Phase 3: Teacher Dashboard | Complete | 2026-05-18 | 2026-05-18 |
 | Phase 4: Student UX Polish | Not started | — | — |
-| Phase 5: BFA Quality & Performance | Not started | — | — |
+| Phase 5: BFA Quality & Performance | In Progress | 2026-05-19 | — |
 
 ## Decisions
 
@@ -62,6 +62,10 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - Used FastAPI lifespan context manager (not deprecated on_event) for eager model warm-up
 - Extracted _run_alignment shared helper to avoid duplicating alignment logic between _align_sync and _analyze_sync
 - Transcription failure in _analyze_sync is non-fatal: alignment still runs, transcription.text returns empty string
+- JSON.stringify/JSON.parse for Word.phonemes round-trip (not join/split)
+- findByText uses findUnique+select (text is @unique, no eager relation load)
+- BfaAnalyzeResult extends BfaAlignResult + transcription field (single /analyze call replaces transcribe+align)
+- WordRepository exported via WordModule.exports (not added directly to GameModule providers)
 
 ## Session Log
 
@@ -73,6 +77,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-05-18**: Plan 03-06 complete. ReadingCreationPage extracted to _components/, edit mode + edit route live, READING branch in try page with interactive matching+fill-in-blank preview (no DB writes).
 - **2026-05-18**: Plan 03-07 complete. READING completeSession spec block (4 tests); repository sessionInclude documents per-activity gap; session detail page extended with ActivityResultCard/MatchingResultRow/FillInBlankResultRow (D-15/D-16/D-17). Phase 3 all 7 plans done.
 - **2026-05-19**: Phase 5 BFA Quality & Performance added. Review identified 3 bugs (similar timestamps, empty expected phonemes, thread-unsafe model init) + 2 improvements (phoneme DB, combined /analyze endpoint, per-phoneme UI). Requirements BFA-01–05 added.
+- **2026-05-19**: Plan 05-02 complete. Word.phonemes column added, BfaService.analyze() wired, savePhonicsResult collapsed to single /analyze call, 110 backend tests passing. DB push deferred (Docker Desktop paused — run npx prisma db push + db seed when unpaused).
 
 ## Accumulated Context
 
