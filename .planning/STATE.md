@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-19T02:25:46.195Z"
+last_updated: "2026-05-19T02:39:11.021Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 20
-  completed_plans: 12
-  percent: 60
+  completed_plans: 13
+  percent: 65
 ---
 
 # Project State: Katie English
@@ -59,6 +59,9 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - ReadingCreationPage extracted to _components/ as named export (Next.js cross-route import requirement)
 - ReadingHomeworkDetail.readingActivities (not activities) — matches Prisma field name (bug fixed Plan 06)
 - Try button hidden in create mode (no DB row yet) — intentional UX decision
+- Used FastAPI lifespan context manager (not deprecated on_event) for eager model warm-up
+- Extracted _run_alignment shared helper to avoid duplicating alignment logic between _align_sync and _analyze_sync
+- Transcription failure in _analyze_sync is non-fatal: alignment still runs, transcription.text returns empty string
 
 ## Session Log
 

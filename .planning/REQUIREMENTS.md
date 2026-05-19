@@ -42,10 +42,13 @@
 
 ### BFA Quality & Performance
 
-- [ ] **BFA-01**: `similar` phoneme ops include `start`/`end`/`duration` timestamps in alignment feedback
+- [x] **BFA-01
+**: `similar` phoneme ops include `start`/`end`/`duration` timestamps in alignment feedback
 - [ ] **BFA-02**: `Word` model stores pre-computed espeak phonemes; game service passes stored phonemes to BFA align (not empty array)
-- [ ] **BFA-03**: WhisperX and PhonemeTimestampAligner preloaded on service startup; `/health` reports model load status
-- [ ] **BFA-04**: New `/analyze` endpoint combines transcription + phoneme alignment in one request; NestJS `BfaService` updated; game service uses single call
+- [x] **BFA-03
+**: WhisperX and PhonemeTimestampAligner preloaded on service startup; `/health` reports model load status
+- [x] **BFA-04
+**: New `/analyze` endpoint combines transcription + phoneme alignment in one request; NestJS `BfaService` updated; game service uses single call
 - [ ] **BFA-05**: Student phonics result screen shows per-phoneme colored feedback chips (correct/similar/wrong) using timestamps from `/analyze`
 
 ## v2 Requirements
