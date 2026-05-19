@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** Student completes homework on tablet, gets AI-scored result immediately — no manual teacher grading.
-**Current focus:** Phase 03 — teacher-dashboard
+**Current focus:** Phase --phase — 05
 
 ## Current Phase
 
