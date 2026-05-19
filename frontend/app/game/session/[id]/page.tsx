@@ -206,6 +206,7 @@ export default function SessionPage() {
     rec.interimResults = true;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rec.onresult = (e: any) => {
+      if (recognitionRef.current !== rec) return; // stale — fired after stop(), discard
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const text = Array.from(e.results as any[]).map((r: any) => r[0].transcript).join(' ').trim();
       onUpdate(text);
