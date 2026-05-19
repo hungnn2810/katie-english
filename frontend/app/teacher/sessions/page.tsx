@@ -4,6 +4,7 @@ import {
   getSessionResults, getSession, getStudents, getHomeworkList,
   GameSession, Student, HomeworkItem,
 } from '@/lib/admin-api';
+import { Button } from '@/components/ui/button';
 
 function ScoreBadge({ score }: { score?: number | null }) {
   if (score === null || score === undefined) return <span className="text-textSecondary">—</span>;
@@ -93,14 +94,14 @@ export default function SessionsPage() {
             {assignments.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
           </select>
         </div>
-        <button
+        <Button
           onClick={search}
           disabled={loading}
-          className="px-5 py-2 rounded-xl text-sm font-bold text-white transition-opacity disabled:opacity-60"
+          className="px-5 py-2 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60"
           style={{ background: 'linear-gradient(135deg, #4F9DFF, #6ED6C1)' }}
         >
           {loading ? 'Loading…' : 'Search'}
-        </button>
+        </Button>
       </div>
 
       {error && (

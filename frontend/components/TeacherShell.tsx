@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { clearAuth, changePassword, AuthUser } from '@/lib/auth';
 import { gradients } from '@/lib/colors';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const nav = [
   { href: '/teacher', label: 'Dashboard', icon: '🏠' },
@@ -111,57 +113,62 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
               <div className="text-slate-500 text-[11px]">Teacher</div>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => { setShowPwForm((v) => !v); setPwError(''); setPwSuccess(false); }}
-            className="w-full text-left text-slate-500 hover:text-slate-300 text-xs px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-colors flex items-center gap-2 mb-0.5"
+            className="w-full justify-start text-slate-500 hover:text-slate-300 hover:bg-white/[0.05] text-xs px-3 mb-0.5"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
             Change password
-          </button>
+          </Button>
 
           {showPwForm && (
-            <form onSubmit={handleChangePassword} className="mb-1 px-1 animate-slide-up">
-              <input
+            <form onSubmit={handleChangePassword} className="mb-1 px-1 animate-slide-up space-y-1.5">
+              <Input
                 type="password"
                 placeholder="Current password"
                 value={currentPw}
                 onChange={(e) => setCurrentPw(e.target.value)}
                 required
-                className="w-full bg-white/[0.07] border border-white/[0.10] rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-primary/60 mb-1.5"
+                className="bg-white/[0.07] border-white/[0.10] text-slate-200 placeholder:text-slate-600 focus-visible:border-primary/60 h-7 text-xs rounded-lg"
               />
-              <input
+              <Input
                 type="password"
                 placeholder="New password (min 6)"
                 value={newPw}
                 onChange={(e) => setNewPw(e.target.value)}
                 required
                 minLength={6}
-                className="w-full bg-white/[0.07] border border-white/[0.10] rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-primary/60 mb-2"
+                className="bg-white/[0.07] border-white/[0.10] text-slate-200 placeholder:text-slate-600 focus-visible:border-primary/60 h-7 text-xs rounded-lg"
               />
-              {pwError && <p className="text-[10px] text-red-400 mb-1.5 px-1">{pwError}</p>}
-              {pwSuccess && <p className="text-[10px] text-green-400 mb-1.5 px-1">Password updated!</p>}
-              <button
+              {pwError && <p className="text-[10px] text-red-400 px-1">{pwError}</p>}
+              {pwSuccess && <p className="text-[10px] text-green-400 px-1">Password updated!</p>}
+              <Button
                 type="submit"
                 disabled={pwLoading}
-                className="w-full py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50 transition-opacity"
+                size="sm"
+                className="w-full text-xs font-semibold text-white disabled:opacity-50"
                 style={{ background: 'rgba(79,157,255,0.25)', border: '1px solid rgba(79,157,255,0.3)' }}
               >
                 {pwLoading ? 'Updating...' : 'Update password'}
-              </button>
+              </Button>
             </form>
           )}
 
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={logout}
-            className="w-full text-left text-slate-500 hover:text-slate-300 text-xs px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-colors flex items-center gap-2"
+            className="w-full justify-start text-slate-500 hover:text-slate-300 hover:bg-white/[0.05] text-xs px-3"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             Sign out
-          </button>
+          </Button>
         </div>
       </aside>
 

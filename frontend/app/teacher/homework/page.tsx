@@ -9,6 +9,14 @@ import {
   CreateAssignmentInput, HomeworkType, SpeakingMode, CreatePartInput, CreateWordInput,
 } from '@/lib/admin-api';
 import { cardGradients, gradients, colors } from '@/lib/colors';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
 
 const TYPE_META: Record<HomeworkType, { label: string; emoji: string; color: string; bg: string }> = {
   PHONICS:  { label: 'Phonics',  emoji: '🔤', color: '#A78BFA', bg: '#A78BFA18' },
@@ -141,24 +149,22 @@ function HomeworkModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto"
-      style={{ background: 'rgba(15,12,41,0.55)', backdropFilter: 'blur(2px)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl animate-slide-up mb-10">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-0" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
           <div>
-            <h2 className="text-lg font-black text-textPrimary">
+            <DialogTitle className="text-lg font-black text-textPrimary">
               {editingId !== null ? 'Edit Homework' : 'New Homework'}
-            </h2>
+            </DialogTitle>
             <p className="text-xs text-textSecondary mt-0.5">Reusable template — assign to classes separately.</p>
           </div>
-          <button type="button" onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-textSecondary hover:text-textPrimary hover:bg-gray-100 transition-colors">
+          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
+            className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
-        </div>
+          </Button>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="px-6 py-5 space-y-5">
@@ -170,14 +176,14 @@ function HomeworkModal({
                     const m = TYPE_META[t];
                     const active = form.type === t;
                     return (
-                      <button key={t} type="button"
+                      <Button key={t} type="button" variant="outline"
                         onClick={() => setForm((f) => ({ ...f, type: t, speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingText: '', speakingPictureUrl: '' }))}
-                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border-2 transition-all"
+                        className="flex-1 gap-2 py-3 h-auto rounded-xl text-sm font-bold border-2 transition-all"
                         style={active
                           ? { background: m.color, color: 'white', borderColor: m.color }
                           : { background: 'white', color: m.color, borderColor: m.color + '55' }}>
                         <span>{m.emoji}</span>{m.label}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -188,10 +194,10 @@ function HomeworkModal({
               <div className="space-y-4">
                 {/* Homework name */}
                 <div>
-                  <label className="block text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">
+                  <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">
                     Homework Name
-                  </label>
-                  <input type="text" className="input-base"
+                  </Label>
+                  <Input type="text" className="input-base"
                     placeholder="e.g. er, r, ou"
                     value={form.name ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
@@ -218,10 +224,10 @@ function HomeworkModal({
                           </span>
                           <span className="text-sm font-bold" style={{ color: meta.color }}>{part.name}</span>
                           <div className="flex-1" />
-                          <button type="button" onClick={() => removePart(pIdx)}
-                            className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50">
+                          <Button type="button" variant="ghost" size="sm" onClick={() => removePart(pIdx)}
+                            className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-auto px-2 py-1">
                             Remove part
-                          </button>
+                          </Button>
                         </div>
 
                         {/* Words list */}
@@ -233,10 +239,10 @@ function HomeworkModal({
                                 <div key={wIdx} className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-border">
                                   <span className="text-sm font-bold text-textPrimary flex-1">{word.text}</span>
                                   {word.highlight && (
-                                    <span className="text-xs px-2 py-0.5 rounded-lg font-semibold"
+                                    <Badge className="text-xs px-2 py-0.5 rounded-lg font-semibold h-auto border-0"
                                       style={{ background: meta.bg, color: meta.color }}>
                                       _{word.highlight}_
-                                    </span>
+                                    </Badge>
                                   )}
                                   {/* Word image */}
                                   {word.imageUrl ? (
@@ -252,12 +258,12 @@ function HomeworkModal({
                                     </div>
                                   ) : (
                                     <>
-                                      <button type="button"
+                                      <Button type="button" variant="outline" size="xs"
                                         onClick={() => wordFileRefs.current[uploadKey]?.click()}
                                         disabled={wordUploading === uploadKey}
-                                        className="text-xs px-2 py-1 rounded-lg border border-dashed text-textSecondary hover:text-textPrimary hover:border-textSecondary disabled:opacity-50">
+                                        className="text-xs px-2 py-1 h-auto rounded-lg border-dashed text-textSecondary">
                                         {wordUploading === uploadKey ? '…' : '🖼️'}
-                                      </button>
+                                      </Button>
                                       <input type="file" accept="image/*" className="hidden"
                                         ref={(el) => { wordFileRefs.current[uploadKey] = el; }}
                                         onChange={(e) => {
@@ -267,8 +273,9 @@ function HomeworkModal({
                                         }} />
                                     </>
                                   )}
-                                  <button type="button" onClick={() => removeWord(pIdx, wIdx)}
-                                    className="text-textSecondary hover:text-red-500 text-sm ml-1">✕</button>
+                                  <Button type="button" variant="ghost" size="icon-xs"
+                                    onClick={() => removeWord(pIdx, wIdx)}
+                                    className="text-textSecondary hover:text-red-500 ml-1">✕</Button>
                                 </div>
                               );
                             })}
@@ -277,21 +284,21 @@ function HomeworkModal({
 
                         {/* Add word row */}
                         <div className="flex gap-2">
-                          <input type="text" className="input-base flex-1 text-sm py-1.5"
+                          <Input type="text" className="input-base flex-1 text-sm py-1.5 h-auto"
                             placeholder={`Word (e.g. paper)`}
                             value={newWordInputs[pIdx]?.text ?? ''}
                             onChange={(e) => setNewWordInputs((prev) => ({ ...prev, [pIdx]: { ...prev[pIdx], text: e.target.value } }))}
                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
-                          <input type="text" className="input-base w-20 text-sm py-1.5"
+                          <Input type="text" className="input-base w-20 text-sm py-1.5 h-auto"
                             placeholder={`_${part.name}_`}
                             value={newWordInputs[pIdx]?.highlight ?? ''}
                             onChange={(e) => setNewWordInputs((prev) => ({ ...prev, [pIdx]: { ...prev[pIdx], highlight: e.target.value } }))}
                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
-                          <button type="button" onClick={() => addWord(pIdx)}
-                            className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white shrink-0"
+                          <Button type="button" size="sm" onClick={() => addWord(pIdx)}
+                            className="px-3 rounded-xl text-xs font-semibold text-white shrink-0 h-auto py-1.5"
                             style={{ background: meta.color }}>
                             + Word
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -299,16 +306,16 @@ function HomeworkModal({
 
                   {/* Add part row */}
                   <div className="flex gap-2 mt-3">
-                    <input type="text" className="input-base flex-1"
+                    <Input type="text" className="input-base flex-1"
                       placeholder="Part name (e.g. er)"
                       value={newPartName}
                       onChange={(e) => setNewPartName(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPart(); } }} />
-                    <button type="button" onClick={addPart}
-                      className="px-4 py-2 rounded-xl text-sm font-semibold text-white shrink-0"
+                    <Button type="button" size="sm" onClick={addPart}
+                      className="px-4 rounded-xl text-sm font-semibold text-white shrink-0 h-auto py-2"
                       style={{ background: meta.color }}>
                       + Part
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -324,15 +331,15 @@ function HomeworkModal({
                     ]).map(({ value, label, desc }) => {
                       const active = (form.speakingMode ?? 'SCRIPT_MATCH') === value;
                       return (
-                        <button key={value} type="button"
+                        <Button key={value} type="button" variant="outline"
                           onClick={() => setForm((f) => ({ ...f, speakingMode: value }))}
-                          className="flex-1 py-3 px-3 rounded-xl border-2 text-left transition-all"
+                          className="flex-1 h-auto py-3 px-3 rounded-xl border-2 text-left flex-col items-start transition-all"
                           style={active
                             ? { background: meta.color, borderColor: meta.color, color: 'white' }
                             : { background: 'white', borderColor: meta.color + '55', color: '#6B7280' }}>
                           <div className="text-xs font-bold">{label}</div>
                           <div className="text-[10px] mt-0.5 opacity-80">{desc}</div>
-                        </button>
+                        </Button>
                       );
                     })}
                   </div>
@@ -346,17 +353,18 @@ function HomeworkModal({
                       <div className="relative rounded-xl overflow-hidden border border-border" style={{ maxHeight: 160 }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={form.speakingPictureUrl} alt="Speaking picture" className="w-full object-cover" style={{ maxHeight: 160 }} />
-                        <button type="button" onClick={() => setForm((f) => ({ ...f, speakingPictureUrl: '' }))}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-black/60 text-white text-xs flex items-center justify-center hover:bg-black/80">✕</button>
+                        <Button type="button" variant="ghost" size="icon-sm"
+                          onClick={() => setForm((f) => ({ ...f, speakingPictureUrl: '' }))}
+                          className="absolute top-2 right-2 bg-black/60 text-white hover:bg-black/80 rounded-lg">✕</Button>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
-                        className="w-full rounded-xl border-2 border-dashed py-6 flex flex-col items-center gap-1.5 disabled:opacity-60"
+                      <Button type="button" variant="outline" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
+                        className="w-full h-auto rounded-xl border-2 border-dashed py-6 flex flex-col items-center gap-1.5 disabled:opacity-60"
                         style={{ borderColor: meta.color + '55', background: meta.bg }}>
                         {speakUploading
                           ? <span className="text-xs font-semibold" style={{ color: meta.color }}>Uploading…</span>
                           : <><span className="text-xl">🖼️</span><span className="text-xs font-semibold" style={{ color: meta.color }}>Click to upload picture</span></>}
-                      </button>
+                      </Button>
                     )}
                     <input ref={speakFileRef} type="file" accept="image/*" className="hidden" onChange={handleSpeakFile} />
                     {uploadError && <p className="text-xs text-highlight mt-1">{uploadError}</p>}
@@ -365,9 +373,9 @@ function HomeworkModal({
 
                 {/* Text field — label changes based on mode */}
                 <div>
-                  <label className="block text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">
+                  <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">
                     {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' ? 'Keywords (comma-separated)' : 'Target Text'}
-                  </label>
+                  </Label>
                   <textarea className="input-base resize-none" rows={3}
                     placeholder={(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK'
                       ? 'e.g. cat, sits, mat, fluffy'
@@ -382,27 +390,27 @@ function HomeworkModal({
             )}
           </div>
 
-          <div className="px-6 pb-6">
-            {error && (
-              <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4">{error}</div>
-            )}
-            {uploadError && form.type === 'PHONICS' && (
-              <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4">{uploadError}</div>
-            )}
-            <div className="flex gap-3">
-              <button type="button" onClick={onClose}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-textSecondary border border-border hover:bg-gray-50">Cancel</button>
-              <button type="submit" disabled={loading}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 flex items-center justify-center gap-2"
-                style={{ background: gradients.primarySecondary }}>
-                {loading && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}
-                {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
-              </button>
+          <DialogFooter className="px-6 pb-6 bg-transparent border-0 -mx-0 -mb-0 rounded-none flex-row gap-3 p-0 mt-0">
+            <div className="flex gap-3 w-full px-6 pb-6">
+              {error && (
+                <div className="w-full text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4">{error}</div>
+              )}
             </div>
-          </div>
+            {uploadError && form.type === 'PHONICS' && (
+              <div className="w-full text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4 mx-6">{uploadError}</div>
+            )}
+            <Button type="button" variant="outline" onClick={onClose}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+            <Button type="submit" disabled={loading}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
+              style={{ background: gradients.primarySecondary }}>
+              {loading && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}
+              {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -446,26 +454,24 @@ function AssignModal({
   const meta = TYPE_META[homework.type];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto"
-      style={{ background: 'rgba(15,12,41,0.55)', backdropFilter: 'blur(2px)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-slide-up mb-10">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-md rounded-3xl p-0" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
           <div>
-            <h2 className="text-lg font-black text-textPrimary">Assign Homework</h2>
+            <DialogTitle className="text-lg font-black text-textPrimary">Assign Homework</DialogTitle>
             <p className="text-xs text-textSecondary mt-0.5">
               <span style={{ color: meta.color }}>{meta.emoji} {meta.label}</span>
               {homework.type === 'PHONICS' && homework.name && ` · ${homework.name}`}
               {homework.type === 'SPEAKING' && homework.speakingText && ` · "${homework.speakingText.slice(0, 40)}${homework.speakingText.length > 40 ? '…' : ''}"`}
             </p>
           </div>
-          <button type="button" onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-textSecondary hover:text-textPrimary hover:bg-gray-100">
+          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
+            className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
-        </div>
+          </Button>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="px-6 py-5 space-y-5">
@@ -477,43 +483,42 @@ function AssignModal({
                   {classes.map((c) => {
                     const active = selectedClassIds.includes(c.id);
                     return (
-                      <button key={c.id} type="button" onClick={() => toggleClass(c.id)}
-                        className="px-3.5 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all"
+                      <Button key={c.id} type="button" variant="outline" size="sm"
+                        onClick={() => toggleClass(c.id)}
+                        className="px-3.5 py-1.5 h-auto rounded-xl text-sm font-semibold border-2 transition-all"
                         style={active
                           ? { background: colors.primary, color: 'white', borderColor: colors.primary }
                           : { background: 'white', color: colors.textSecondary, borderColor: colors.border }}>
                         {c.name}
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
               }
             </div>
             <div>
-              <label className="block text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">End Date</label>
-              <input type="datetime-local" className="input-base"
+              <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">End Date</Label>
+              <Input type="datetime-local" className="input-base h-auto"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 required />
             </div>
           </div>
 
-          <div className="px-6 pb-6">
-            {error && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4">{error}</div>}
-            <div className="flex gap-3">
-              <button type="button" onClick={onClose}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-textSecondary border border-border hover:bg-gray-50">Cancel</button>
-              <button type="submit" disabled={loading}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60 flex items-center justify-center gap-2"
-                style={{ background: gradients.primarySecondary }}>
-                {loading && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}
-                {loading ? 'Assigning…' : 'Assign'}
-              </button>
-            </div>
-          </div>
+          <DialogFooter className="px-6 pb-6 bg-transparent border-0 -mx-0 -mb-0 rounded-none flex-row gap-3 p-0">
+            {error && <div className="w-full text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-2">{error}</div>}
+            <Button type="button" variant="outline" onClick={onClose}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+            <Button type="submit" disabled={loading}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
+              style={{ background: gradients.primarySecondary }}>
+              {loading && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}
+              {loading ? 'Assigning…' : 'Assign'}
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -529,28 +534,26 @@ function TypePickerModal({
   onPickReading: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto"
-      style={{ background: 'rgba(15,12,41,0.55)', backdropFilter: 'blur(2px)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md animate-slide-up mb-10">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-md rounded-3xl p-0" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
           <div>
-            <h2 className="text-lg font-black text-textPrimary">New Homework</h2>
+            <DialogTitle className="text-lg font-black text-textPrimary">New Homework</DialogTitle>
             <p className="text-xs text-textSecondary mt-0.5">Choose the type of homework to create.</p>
           </div>
-          <button type="button" onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-textSecondary hover:text-textPrimary hover:bg-gray-100 transition-colors">
+          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
+            className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
-        </div>
+          </Button>
+        </DialogHeader>
         <div className="px-6 py-5">
           <div className="grid grid-cols-3 gap-3">
             {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
               const m = TYPE_META[t];
               return (
-                <button key={t} type="button"
+                <Button key={t} type="button" variant="outline"
                   onClick={() => {
                     if (t === 'READING') {
                       onPickReading();
@@ -559,17 +562,17 @@ function TypePickerModal({
                       onClose();
                     }
                   }}
-                  className="flex flex-col items-center justify-center gap-2 py-5 rounded-xl text-sm font-bold border-2 transition-all hover:shadow-md hover:scale-105"
+                  className="flex-col h-auto gap-2 py-5 rounded-xl text-sm font-bold border-2 transition-all hover:shadow-md hover:scale-105"
                   style={{ background: 'white', color: m.color, borderColor: m.color + '55' }}>
                   <span className="text-2xl">{m.emoji}</span>
                   <span>{m.label}</span>
-                </button>
+                </Button>
               );
             })}
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -634,24 +637,24 @@ export default function HomeworkPage() {
             { key: 'SPEAKING', label: '🎤 Speaking' },
             { key: 'READING', label: '📖 Reading' },
           ] as const).map((t) => (
-            <button key={t.key} onClick={() => setTypeFilter(t.key)}
-              className="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all"
+            <Button key={t.key} variant="outline" size="sm" onClick={() => setTypeFilter(t.key)}
+              className="px-3.5 py-2 h-auto rounded-xl text-xs font-semibold border transition-all"
               style={typeFilter === t.key
                 ? { background: '#F0F9FF', color: colors.primary, borderColor: colors.primary }
                 : { background: 'white', color: colors.textSecondary, borderColor: colors.border }}>
               {t.label}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="flex-1" />
-        <button onClick={openCreate} aria-expanded={showTypePicker}
-          className="btn-primary flex items-center gap-2 shrink-0"
+        <Button onClick={openCreate} aria-expanded={showTypePicker}
+          className="btn-primary flex items-center gap-2 shrink-0 h-auto"
           style={{ background: gradients.primarySecondary }}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           + Create
-        </button>
+        </Button>
       </div>
 
       {/* Grid */}
@@ -686,17 +689,17 @@ export default function HomeworkPage() {
           );
 
           return (
-            <div key={h.id} className="card overflow-hidden hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 flex flex-col">
-              <div className="h-1" style={{ background: `linear-gradient(90deg, ${g.from}, ${g.to})` }} />
+            <Card key={h.id} className="overflow-hidden hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-0 py-0 rounded-2xl border-border shadow-card">
+              <div className="h-1 shrink-0" style={{ background: `linear-gradient(90deg, ${g.from}, ${g.to})` }} />
 
               <Link href={`/teacher/homework/${h.id}`} className="block p-5 pb-3 flex-1">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0 pr-2">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold px-2.5 py-1 rounded-full"
+                      <Badge className="text-xs font-bold px-2.5 py-1 rounded-full h-auto border-0"
                         style={{ background: meta.bg, color: meta.color }}>
                         {meta.emoji} {meta.label}
-                      </span>
+                      </Badge>
                     </div>
                     <div className="text-xs text-textSecondary mt-1">
                       Created {new Date(h.createdAt).toLocaleDateString()}
@@ -704,13 +707,13 @@ export default function HomeworkPage() {
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     {activeAssignments.length > 0 ? (
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600">
+                      <Badge className="text-xs font-semibold px-2.5 py-1 rounded-full h-auto bg-emerald-50 text-emerald-600 border-0">
                         {activeAssignments.length} active
-                      </span>
+                      </Badge>
                     ) : (
-                      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-textSecondary">
+                      <Badge variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-full h-auto border-0">
                         Unassigned
-                      </span>
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -724,15 +727,15 @@ export default function HomeworkPage() {
                       )}
                       <div className="flex flex-wrap gap-1">
                         {(h.parts ?? []).slice(0, 4).map((part) => (
-                          <span key={part.id} className="text-xs px-2 py-0.5 rounded-lg font-bold"
+                          <Badge key={part.id} className="text-xs px-2 py-0.5 rounded-lg font-bold h-auto border-0"
                             style={{ background: meta.bg, color: meta.color }}>
                             {part.name} ({part.words.length})
-                          </span>
+                          </Badge>
                         ))}
                         {(h.parts ?? []).length > 4 && (
-                          <span className="text-xs px-2 py-0.5 rounded-lg bg-gray-100 text-textSecondary">
+                          <Badge variant="secondary" className="text-xs px-2 py-0.5 rounded-lg h-auto border-0">
                             +{h.parts.length - 4}
-                          </span>
+                          </Badge>
                         )}
                         {(h.parts ?? []).length === 0 && (
                           <span className="text-xs text-textSecondary/60 italic">No parts yet</span>
@@ -751,44 +754,44 @@ export default function HomeworkPage() {
                       {(h.readingActivities ?? []).length === 0 ? (
                         <span className="text-xs text-textSecondary/60 italic">No activities yet</span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-lg font-bold" style={{ background: meta.bg, color: meta.color }}>
+                        <Badge className="text-xs px-2 py-0.5 rounded-lg font-bold h-auto border-0" style={{ background: meta.bg, color: meta.color }}>
                           {(h.readingActivities ?? []).length} activit{(h.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   )}
                 </div>
 
                 {h.assignments.length > 0 && (
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${submittedStudents > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-500'}`}>
+                  <Badge className={`text-xs font-semibold px-2.5 py-1 rounded-full h-auto border-0 ${submittedStudents > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-500'}`}>
                     {submittedStudents} / {totalEnrolled} submitted
-                  </span>
+                  </Badge>
                 )}
               </Link>
 
-              <div className="px-5 py-3 bg-background/50 border-t border-border flex items-center gap-1">
-                <button onClick={() => setAssigningHw(h)}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors">
+              <CardFooter className="px-5 py-3 bg-background/50 border-t border-border flex items-center gap-1 rounded-none">
+                <Button variant="ghost" size="sm" onClick={() => setAssigningHw(h)}
+                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-emerald-600 hover:bg-emerald-50">
                   Assign
-                </button>
-                <button onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/8 transition-colors">
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
+                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-primary hover:bg-primary/8">
                   Edit
-                </button>
+                </Button>
                 <Link href={`/teacher/homework/${h.id}/try`}
                   className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center text-purple-500 hover:bg-purple-500/8 transition-colors">
                   Try
                 </Link>
-                <button onClick={async () => {
+                <Button variant="ghost" size="sm" onClick={async () => {
                   if (confirm('Delete this homework and all its assignments?')) {
                     await deleteHomework(h.id); load();
                   }
                 }}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8 transition-colors">
+                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8">
                   Delete
-                </button>
-              </div>
-            </div>
+                </Button>
+              </CardFooter>
+            </Card>
           );
         })}
       </div>

@@ -2,6 +2,10 @@
 import { useEffect, useState } from 'react';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
 import { gradients, colors } from '@/lib/colors';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const STATUS_CONFIG: Record<ClassStatus, { label: string; color: string; bg: string; dot: string }> = {
   PENDING:    { label: 'Pending',     color: '#92400E', bg: '#FEF3C7', dot: '#F59E0B' },
@@ -52,74 +56,75 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto"
-      style={{ background: 'rgba(15,12,41,0.55)', backdropFilter: 'blur(2px)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-slide-up mb-10">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-lg rounded-3xl p-0" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
           <div>
-            <h2 className="text-lg font-black text-textPrimary">{editing ? `Edit ${editing.name}` : 'New Class'}</h2>
+            <DialogTitle className="text-lg font-black text-textPrimary">{editing ? `Edit ${editing.name}` : 'New Class'}</DialogTitle>
             <p className="text-xs text-textSecondary mt-0.5">{editing ? 'Update class details and schedule.' : 'Create a new class for your students.'}</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-xl text-textSecondary hover:bg-gray-100 transition-colors">
+          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
+            className="text-textSecondary hover:bg-gray-100 rounded-xl">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
+          </Button>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="px-6 py-5 space-y-5">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class Name</label>
-                <input className="input-base" value={form.name} onChange={(e) => setField('name', e.target.value)} required placeholder="e.g. English Beginners" />
+                <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class Name</Label>
+                <Input className="input-base h-auto" value={form.name} onChange={(e) => setField('name', e.target.value)} required placeholder="e.g. English Beginners" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class Code</label>
-                <input className="input-base" value={form.code} onChange={(e) => setField('code', e.target.value)} required placeholder="e.g. ENG-01" />
+                <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class Code</Label>
+                <Input className="input-base h-auto" value={form.code} onChange={(e) => setField('code', e.target.value)} required placeholder="e.g. ENG-01" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Start Date</label>
-                <input type="date" className="input-base" value={form.startDate} onChange={(e) => setField('startDate', e.target.value)} required />
+                <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Start Date</Label>
+                <Input type="date" className="input-base h-auto" value={form.startDate} onChange={(e) => setField('startDate', e.target.value)} required />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">End Date</label>
-                <input type="date" className="input-base" value={form.endDate} onChange={(e) => setField('endDate', e.target.value)} required />
+                <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">End Date</Label>
+                <Input type="date" className="input-base h-auto" value={form.endDate} onChange={(e) => setField('endDate', e.target.value)} required />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-2 uppercase tracking-wide">Status</label>
+              <Label className="block text-xs font-semibold text-textSecondary mb-2 uppercase tracking-wide">Status</Label>
               <div className="flex gap-2">
                 {(['PENDING', 'INPROGRESS', 'ENDED'] as ClassStatus[]).map((s) => {
                   const sc = STATUS_CONFIG[s];
                   const active = form.status === s;
                   return (
-                    <button key={s} type="button" onClick={() => setField('status', s)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border-2 transition-all"
+                    <Button key={s} type="button" variant="outline" size="sm"
+                      onClick={() => setField('status', s)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 h-auto rounded-xl text-xs font-semibold border-2 transition-all"
                       style={active
                         ? { background: sc.bg, color: sc.color, borderColor: sc.dot }
                         : { borderColor: colors.border, color: colors.textSecondary, background: 'white' }}>
                       <span className="w-1.5 h-1.5 rounded-full" style={{ background: active ? sc.dot : colors.border }} />
                       {sc.label}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-2 uppercase tracking-wide">Schedule</label>
+              <Label className="block text-xs font-semibold text-textSecondary mb-2 uppercase tracking-wide">Schedule</Label>
               <div className="flex gap-2 flex-wrap mb-3">
                 {DAYS.map((day) => {
                   const active = !!form.scheduleSlots.find((s) => s.day === day);
                   return (
-                    <button key={day} type="button" onClick={() => toggleDay(day)}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all"
+                    <Button key={day} type="button" variant="outline" size="sm"
+                      onClick={() => toggleDay(day)}
+                      className="px-3 py-1.5 h-auto rounded-lg text-xs font-bold border-2 transition-all"
                       style={active
                         ? { background: `${colors.primary}15`, color: colors.primary, borderColor: colors.primary }
                         : { borderColor: colors.border, color: colors.textSecondary, background: 'white' }}>
                       {DAY_LABELS[day]}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -130,7 +135,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
                     return (
                       <div key={day} className="flex items-center gap-3">
                         <span className="w-9 text-xs font-bold text-primary">{DAY_LABELS[day]}</span>
-                        <input type="time" required className="input-base flex-1" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} />
+                        <Input type="time" required className="input-base flex-1 h-auto" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} />
                       </div>
                     );
                   })}
@@ -139,26 +144,25 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
             </div>
           </div>
 
-          <div className="px-6 pb-6">
+          <DialogFooter className="px-6 pb-6 bg-transparent border-0 -mx-0 -mb-0 rounded-none flex-row gap-3 p-0">
             {error && (
-              <div className="flex items-start gap-2 text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4">
+              <div className="w-full flex items-start gap-2 text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-2">
                 <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
                 {error}
               </div>
             )}
-            <div className="flex gap-3">
-              <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-textSecondary border border-border hover:bg-gray-50 transition-colors">Cancel</button>
-              <button type="submit" disabled={loading}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-                style={{ background: gradients.primaryPurple }}>
-                {loading && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}
-                {loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
-              </button>
-            </div>
-          </div>
+            <Button type="button" variant="outline" onClick={onClose}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+            <Button type="submit" disabled={loading}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white hover:opacity-90 disabled:opacity-60 gap-2"
+              style={{ background: gradients.primaryPurple }}>
+              {loading && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}
+              {loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -214,15 +218,15 @@ export default function ClassesPage() {
           <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input className="input-base pl-10" placeholder="Search classes…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input className="input-base pl-10 h-auto" placeholder="Search classes…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="flex gap-1.5 flex-1">
           {filterTabs.map((t) => {
             const active = statusFilter === t.key;
             const sc = t.key !== 'ALL' ? STATUS_CONFIG[t.key] : null;
             return (
-              <button key={t.key} onClick={() => setStatusFilter(t.key)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border"
+              <Button key={t.key} variant="outline" size="sm" onClick={() => setStatusFilter(t.key)}
+                className="flex items-center gap-1.5 px-3.5 py-2 h-auto rounded-xl text-xs font-semibold transition-all border"
                 style={active
                   ? { background: sc ? sc.bg : '#F0F9FF', color: sc ? sc.color : colors.primary, borderColor: sc ? sc.dot : colors.primary }
                   : { background: 'white', color: colors.textSecondary, borderColor: colors.border }}>
@@ -232,14 +236,14 @@ export default function ClassesPage() {
                   style={{ background: active ? (sc ? sc.dot + '25' : colors.primary + '20') : '#F3F4F6', color: active ? (sc ? sc.color : colors.primary) : colors.textSecondary }}>
                   {counts[t.key] ?? 0}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
-        <button onClick={openCreate} className="btn-primary flex items-center gap-2 shrink-0" style={{ background: gradients.primaryPurple }}>
+        <Button onClick={openCreate} className="btn-primary flex items-center gap-2 shrink-0 h-auto" style={{ background: gradients.primaryPurple }}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           New Class
-        </button>
+        </Button>
       </div>
 
       {/* Grid */}
@@ -314,14 +318,14 @@ export default function ClassesPage() {
               </div>
 
               <div className="px-5 py-3 bg-background/50 border-t border-border flex gap-1">
-                <button onClick={() => openEdit(c)}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/8 transition-colors">
+                <Button variant="ghost" size="sm" onClick={() => openEdit(c)}
+                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-primary hover:bg-primary/8">
                   Edit
-                </button>
-                <button onClick={async () => { if (confirm('Delete this class?')) { await deleteClass(c.id); load(); } }}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8 transition-colors">
+                </Button>
+                <Button variant="ghost" size="sm" onClick={async () => { if (confirm('Delete this class?')) { await deleteClass(c.id); load(); } }}
+                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8">
                   Delete
-                </button>
+                </Button>
               </div>
             </div>
           );

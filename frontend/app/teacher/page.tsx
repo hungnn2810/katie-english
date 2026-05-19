@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getClasses, getStudents, getHomeworkList, ClassItem, ScheduleSlot } from '@/lib/admin-api';
 import { cardGradients, colors } from '@/lib/colors';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 const DAY_ORDER = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
@@ -100,25 +102,27 @@ export default function TeacherDashboard() {
           )}
           {!loading && <p className="text-xs text-textSecondary mt-1">{todayCount} class{todayCount !== 1 ? 'es' : ''} scheduled today</p>}
         </div>
-        <button
+        <Button
           onClick={loadDashboard}
-          className="self-start sm:self-auto px-3.5 py-2 rounded-xl text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+          size="sm"
+          className="self-start sm:self-auto text-xs font-semibold text-white hover:opacity-90"
           style={{ background: colors.primary }}
         >
           Refresh data
-        </button>
+        </Button>
       </div>
 
       {error && (
         <div className="mb-5 rounded-xl border border-highlight/25 bg-highlight/8 px-4 py-3 flex items-center justify-between gap-3">
           <div className="text-sm text-highlight">{error}</div>
-          <button
+          <Button
             onClick={loadDashboard}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
+            size="sm"
+            className="text-xs font-semibold text-white"
             style={{ background: colors.highlight }}
           >
             Retry
-          </button>
+          </Button>
         </div>
       )}
 
@@ -148,19 +152,19 @@ export default function TeacherDashboard() {
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-7">
         {actions.map((a) => (
-          <Link
-            key={a.href}
-            href={a.href}
-            className="group bg-white rounded-2xl p-5 border border-border shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200"
-          >
-            <div
-              className="w-11 h-11 rounded-xl mb-4 flex items-center justify-center text-xl transition-transform group-hover:scale-110 duration-200"
-              style={{ background: a.bg }}
-            >
-              {a.icon}
-            </div>
-            <div className="font-semibold text-textPrimary text-[15px] mb-1">{a.label}</div>
-            <div className="text-textSecondary text-sm leading-relaxed">{a.desc}</div>
+          <Link key={a.href} href={a.href} className="group">
+            <Card className="p-5 border-border shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 cursor-pointer gap-0">
+              <CardContent className="p-0">
+                <div
+                  className="w-11 h-11 rounded-xl mb-4 flex items-center justify-center text-xl transition-transform group-hover:scale-110 duration-200"
+                  style={{ background: a.bg }}
+                >
+                  {a.icon}
+                </div>
+                <div className="font-semibold text-textPrimary text-[15px] mb-1">{a.label}</div>
+                <div className="text-textSecondary text-sm leading-relaxed">{a.desc}</div>
+              </CardContent>
+            </Card>
           </Link>
         ))}
       </div>

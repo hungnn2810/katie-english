@@ -7,6 +7,10 @@ import {
   getPasswordResetRequests, resetStudentPassword, PasswordResetRequest,
 } from '@/lib/admin-api';
 import { gradients, colors } from '@/lib/colors';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const emptyParent = { name: '', phoneNumber: '', type: 'FATHER' as const };
 const emptyCreate = (): CreateStudentInput => ({ fullname: '', sex: 'MALE', dateOfBirth: '', classId: undefined, parents: [{ ...emptyParent }], upn: '', password: '' });
@@ -18,22 +22,21 @@ const emptyApprove = (): ApproveForm => ({ fullname: '', sex: 'MALE', dateOfBirt
 // ── Shared modal shell ────────────────────────────────────────────────────────
 function Modal({ title, subtitle, onClose, children }: { title: string; subtitle?: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 overflow-y-auto"
-      style={{ background: 'rgba(15,12,41,0.55)', backdropFilter: 'blur(2px)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg animate-slide-up mb-10">
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-lg rounded-3xl p-0 max-h-[90vh] overflow-y-auto" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
           <div>
-            <h2 className="text-lg font-black text-textPrimary">{title}</h2>
+            <DialogTitle className="text-lg font-black text-textPrimary">{title}</DialogTitle>
             {subtitle && <p className="text-xs text-textSecondary mt-0.5">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-xl text-textSecondary hover:bg-gray-100 transition-colors">
+          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
+            className="text-textSecondary hover:bg-gray-100 rounded-xl">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-        </div>
+          </Button>
+        </DialogHeader>
         {children}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -58,9 +61,9 @@ function ParentFields({ parents, onChange }: {
     <div className="space-y-2">
       {parents.slice(0, 1).map((p, i) => (
         <div key={i} className="grid grid-cols-3 gap-2">
-          <input className="input-base" placeholder="Parent name" value={p.name}
+          <Input className="input-base h-auto" placeholder="Parent name" value={p.name}
             onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], name: e.target.value }; onChange(ps); }} />
-          <input className="input-base" placeholder="Phone number" value={p.phoneNumber}
+          <Input className="input-base h-auto" placeholder="Phone number" value={p.phoneNumber}
             onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], phoneNumber: e.target.value }; onChange(ps); }} />
           <select className="input-base" value={p.type}
             onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], type: e.target.value as 'FATHER' | 'MOTHER' }; onChange(ps); }}>
@@ -97,29 +100,30 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
         <div className="px-6 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name</label>
-              <input className="input-base" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required placeholder="Student's full name" />
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name</Label>
+              <Input className="input-base h-auto" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required placeholder="Student's full name" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Sex</label>
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Sex</Label>
               <div className="flex gap-2">
                 {(['MALE', 'FEMALE'] as const).map((s) => (
-                  <button key={s} type="button" onClick={() => setForm((f) => ({ ...f, sex: s }))}
-                    className="flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all"
+                  <Button key={s} type="button" variant="outline" size="sm"
+                    onClick={() => setForm((f) => ({ ...f, sex: s }))}
+                    className="flex-1 py-2 h-auto rounded-xl text-xs font-semibold border-2 transition-all"
                     style={form.sex === s
                       ? { background: s === 'MALE' ? '#EFF6FF' : '#FDF2F8', color: s === 'MALE' ? colors.primary : '#EC4899', borderColor: s === 'MALE' ? colors.primary : '#EC4899' }
                       : { borderColor: colors.border, color: colors.textSecondary, background: 'white' }}>
                     {s === 'MALE' ? '👦 Male' : '👧 Female'}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth</label>
-              <input type="date" className="input-base" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth</Label>
+              <Input type="date" className="input-base h-auto" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</label>
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
               <select className="input-base" value={form.classId ?? ''} onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
                 <option value="">No class assigned</option>
                 {classes.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
@@ -131,21 +135,22 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
             <p className="text-xs font-bold text-textSecondary uppercase tracking-wide">Parent / Guardian</p>
             <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Initial Password</label>
-              <input type="password" className="input-base" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required placeholder="Min 6 characters" minLength={6} />
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Initial Password</Label>
+              <Input type="password" className="input-base h-auto" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required placeholder="Min 6 characters" minLength={6} />
             </div>
           </div>
         </div>
         <div className="px-6 pb-6">
           {error && <ErrorBanner msg={error} />}
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-textSecondary border border-border hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" disabled={loading}
-              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 hover:opacity-90 transition-opacity"
+            <Button type="button" variant="outline" onClick={onClose}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+            <Button type="submit" disabled={loading}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white gap-2 disabled:opacity-60 hover:opacity-90"
               style={{ background: gradients.pinkHighlight }}>
               {loading && <Spinner />}
               {loading ? 'Adding…' : 'Add Student'}
-            </button>
+            </Button>
           </div>
         </div>
       </form>
@@ -178,29 +183,30 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
         <div className="px-6 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name</label>
-              <input className="input-base" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required />
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name</Label>
+              <Input className="input-base h-auto" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Sex</label>
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Sex</Label>
               <div className="flex gap-2">
                 {(['MALE', 'FEMALE'] as const).map((s) => (
-                  <button key={s} type="button" onClick={() => setForm((f) => ({ ...f, sex: s }))}
-                    className="flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all"
+                  <Button key={s} type="button" variant="outline" size="sm"
+                    onClick={() => setForm((f) => ({ ...f, sex: s }))}
+                    className="flex-1 py-2 h-auto rounded-xl text-xs font-semibold border-2 transition-all"
                     style={form.sex === s
                       ? { background: s === 'MALE' ? '#EFF6FF' : '#FDF2F8', color: s === 'MALE' ? colors.primary : '#EC4899', borderColor: s === 'MALE' ? colors.primary : '#EC4899' }
                       : { borderColor: colors.border, color: colors.textSecondary, background: 'white' }}>
                     {s === 'MALE' ? '👦 Male' : '👧 Female'}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth</label>
-              <input type="date" className="input-base" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth</Label>
+              <Input type="date" className="input-base h-auto" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</label>
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
               <select className="input-base" value={form.classId ?? ''} onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
                 <option value="">No class assigned</option>
                 {classes.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
@@ -215,13 +221,14 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
         <div className="px-6 pb-6">
           {error && <ErrorBanner msg={error} />}
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-textSecondary border border-border hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" disabled={loading}
-              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 hover:opacity-90 transition-opacity"
+            <Button type="button" variant="outline" onClick={onClose}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+            <Button type="submit" disabled={loading}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white gap-2 disabled:opacity-60 hover:opacity-90"
               style={{ background: gradients.primarySecondary }}>
               {loading && <Spinner />}
               {loading ? 'Saving…' : 'Save Changes'}
-            </button>
+            </Button>
           </div>
         </div>
       </form>
@@ -262,29 +269,30 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name *</label>
-              <input className="input-base" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required placeholder="Student's full name" />
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name *</Label>
+              <Input className="input-base h-auto" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required placeholder="Student's full name" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Sex</label>
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Sex</Label>
               <div className="flex gap-2">
                 {(['MALE', 'FEMALE'] as const).map((s) => (
-                  <button key={s} type="button" onClick={() => setForm((f) => ({ ...f, sex: s }))}
-                    className="flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all"
+                  <Button key={s} type="button" variant="outline" size="sm"
+                    onClick={() => setForm((f) => ({ ...f, sex: s }))}
+                    className="flex-1 py-2 h-auto rounded-xl text-xs font-semibold border-2 transition-all"
                     style={form.sex === s
                       ? { background: s === 'MALE' ? '#EFF6FF' : '#FDF2F8', color: s === 'MALE' ? colors.primary : '#EC4899', borderColor: s === 'MALE' ? colors.primary : '#EC4899' }
                       : { borderColor: colors.border, color: colors.textSecondary, background: 'white' }}>
                     {s === 'MALE' ? '👦' : '👧'} {s === 'MALE' ? 'Male' : 'Female'}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth *</label>
-              <input type="date" className="input-base" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth *</Label>
+              <Input type="date" className="input-base h-auto" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</label>
+              <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
               <select className="input-base" value={form.classId ?? ''} onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
                 <option value="">No class assigned</option>
                 {classes.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
@@ -299,13 +307,14 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
         <div className="px-6 pb-6">
           {error && <ErrorBanner msg={error} />}
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-textSecondary border border-border hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" disabled={loading}
-              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 hover:opacity-90 transition-opacity"
+            <Button type="button" variant="outline" onClick={onClose}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+            <Button type="submit" disabled={loading}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white gap-2 disabled:opacity-60 hover:opacity-90"
               style={{ background: gradients.greenSecondary }}>
               {loading && <Spinner />}
               {loading ? 'Approving…' : 'Confirm Approval'}
-            </button>
+            </Button>
           </div>
         </div>
       </form>
@@ -336,20 +345,21 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
             <strong>Account:</strong> {request.upn}
           </div>
           <div>
-            <label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">New Password</label>
-            <input type="password" className="input-base" placeholder="Min 6 characters" value={pw} onChange={(e) => setPw(e.target.value)} required minLength={6} autoFocus />
+            <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">New Password</Label>
+            <Input type="password" className="input-base h-auto" placeholder="Min 6 characters" value={pw} onChange={(e) => setPw(e.target.value)} required minLength={6} autoFocus />
           </div>
         </div>
         <div className="px-6 pb-6">
           {error && <ErrorBanner msg={error} />}
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-textSecondary border border-border hover:bg-gray-50 transition-colors">Cancel</button>
-            <button type="submit" disabled={loading}
-              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 hover:opacity-90 transition-opacity"
+            <Button type="button" variant="outline" onClick={onClose}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+            <Button type="submit" disabled={loading}
+              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white gap-2 disabled:opacity-60 hover:opacity-90"
               style={{ background: gradients.primarySecondary }}>
               {loading && <Spinner />}
               {loading ? 'Updating…' : 'Set Password'}
-            </button>
+            </Button>
           </div>
         </div>
       </form>
@@ -407,17 +417,17 @@ export default function StudentsPage() {
           <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input className="input-base pl-10" placeholder="Search students…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input className="input-base pl-10 h-auto" placeholder="Search students…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         {students.length > 0 && (
           <span className="text-sm text-textSecondary font-medium">
             {filtered.length} of {students.length}
           </span>
         )}
-        <button onClick={() => setModal({ kind: 'create' })} className="btn-primary flex items-center gap-2" style={{ background: gradients.pinkHighlight }}>
+        <Button onClick={() => setModal({ kind: 'create' })} className="btn-primary flex items-center gap-2 h-auto" style={{ background: gradients.pinkHighlight }}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
           Add Student
-        </button>
+        </Button>
       </div>
 
       {/* Pending approvals */}
@@ -429,7 +439,7 @@ export default function StudentsPage() {
               <h3 className="font-bold text-amber-900 text-sm">Pending Approvals</h3>
               <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-800">{pending.length}</span>
             </div>
-            <button onClick={loadPending} className="text-xs text-amber-700 hover:text-amber-900 font-semibold transition-colors">Refresh</button>
+            <Button variant="ghost" size="sm" onClick={loadPending} className="text-xs text-amber-700 hover:text-amber-900 font-semibold h-auto px-2 py-1">Refresh</Button>
           </div>
           <div className="space-y-2">
             {pending.map((p) => (
@@ -438,11 +448,11 @@ export default function StudentsPage() {
                   <div className="font-semibold text-textPrimary text-sm">{p.registrationData?.fullname ?? p.upn}</div>
                   <div className="text-xs text-textSecondary mt-0.5">{p.upn} · {new Date(p.createdAt).toLocaleString()}</div>
                 </div>
-                <button onClick={() => setModal({ kind: 'approve', pending: p })}
-                  className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl text-white transition-opacity hover:opacity-90"
+                <Button size="sm" onClick={() => setModal({ kind: 'approve', pending: p })}
+                  className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 h-auto rounded-xl text-white hover:opacity-90"
                   style={{ background: gradients.greenSecondary }}>
                   Review & Approve →
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -458,7 +468,7 @@ export default function StudentsPage() {
               <h3 className="font-bold text-blue-900 text-sm">Password Reset Requests</h3>
               <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-200 text-blue-800">{resetRequests.length}</span>
             </div>
-            <button onClick={loadResets} className="text-xs text-blue-700 hover:text-blue-900 font-semibold transition-colors">Refresh</button>
+            <Button variant="ghost" size="sm" onClick={loadResets} className="text-xs text-blue-700 hover:text-blue-900 font-semibold h-auto px-2 py-1">Refresh</Button>
           </div>
           <div className="space-y-2">
             {resetRequests.map((r) => (
@@ -467,11 +477,11 @@ export default function StudentsPage() {
                   <div className="font-semibold text-textPrimary text-sm">{r.student?.fullname ?? r.upn}</div>
                   <div className="text-xs text-textSecondary mt-0.5">{r.upn}</div>
                 </div>
-                <button onClick={() => setModal({ kind: 'reset', request: r })}
-                  className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl text-white transition-opacity hover:opacity-90"
+                <Button size="sm" onClick={() => setModal({ kind: 'reset', request: r })}
+                  className="flex items-center gap-1.5 text-xs font-bold px-4 py-2 h-auto rounded-xl text-white hover:opacity-90"
                   style={{ background: gradients.primarySecondary }}>
                   Set Password
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -532,14 +542,14 @@ export default function StudentsPage() {
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => setModal({ kind: 'edit', student: s })}
-                        className="text-xs font-semibold text-primary hover:text-primary/70 transition-colors px-2 py-1 rounded-lg hover:bg-primary/8">
+                      <Button variant="ghost" size="sm" onClick={() => setModal({ kind: 'edit', student: s })}
+                        className="text-xs font-semibold text-primary hover:text-primary/70 px-2 py-1 h-auto rounded-lg hover:bg-primary/8">
                         Edit
-                      </button>
-                      <button onClick={async () => { if (confirm(`Delete ${s.fullname}?`)) { await deleteStudent(s.id); load(); } }}
-                        className="text-xs font-semibold text-highlight hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-highlight/8">
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={async () => { if (confirm(`Delete ${s.fullname}?`)) { await deleteStudent(s.id); load(); } }}
+                        className="text-xs font-semibold text-highlight hover:text-red-600 px-2 py-1 h-auto rounded-lg hover:bg-highlight/8">
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
