@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import threading
 import time
 import uuid
 from functools import lru_cache
@@ -275,6 +276,7 @@ def has_sufficient_energy(wav_path: Path, threshold_db: float = -50.0) -> bool:
 
 
 _whisperx_model = None
+_whisperx_lock = threading.Lock()
 
 _WHISPERX_MODEL_SIZE = os.getenv("WHISPERX_MODEL", "small")
 _WHISPERX_DEVICE = "cpu"
@@ -335,10 +337,13 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 def get_whisperx_model():
     global _whisperx_model
-    if _whisperx_model is None:
-        _whisperx_model = whisperx.load_model(
-            _WHISPERX_MODEL_SIZE, _WHISPERX_DEVICE, compute_type=_WHISPERX_COMPUTE_TYPE
-        )
+    if _whisperx_model is not None:
+        return _whisperx_model
+    with _whisperx_lock:
+        if _whisperx_model is None:
+            _whisperx_model = whisperx.load_model(
+                _WHISPERX_MODEL_SIZE, _WHISPERX_DEVICE, compute_type=_WHISPERX_COMPUTE_TYPE
+            )
     return _whisperx_model
 
 
@@ -462,7 +467,7 @@ def _align_sync(
         aligned_idx = 0
         for op in ops:
             entry = {**op}
-            if op["status"] in ("correct", "substituted", "extra") and aligned_idx < len(aligned_phonemes):
+            if op["status"] in ("correct", "similar", "substituted", "extra") and aligned_idx < len(aligned_phonemes):
                 ph = aligned_phonemes[aligned_idx]
                 entry["start"] = ph["start"]
                 entry["end"] = ph["end"]
