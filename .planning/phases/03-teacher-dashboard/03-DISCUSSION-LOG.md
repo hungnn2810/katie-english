@@ -192,3 +192,140 @@
 - Auto-generated distractors — user chose manual; revisit if feedback warrants
 - Bulk assignment to all classes — not requested
 - Reading analytics (score trends) — v2 roadmap
+
+---
+
+# UI/UX Overhaul Session — 2026-05-19
+
+**Areas discussed:** shadcn setup & theme, Sidebar & shell redesign, CRUD interaction pattern, Data display pattern
+
+---
+
+## shadcn setup & theme
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Zinc | Neutral gray-zinc palette — professional, clean | ✓ |
+| Slate | Slightly cooler gray-blue tones | |
+| Neutral | Pure gray, no color tint | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Map to CSS vars | Define --primary, --accent in globals.css from colors.ts | ✓ |
+| Keep colors.ts alongside shadcn | Import directly, use shadcn for structure only | |
+| Full reset — shadcn defaults only | Drop colors.ts entirely | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Light mode only | Dark sidebar is design choice, not theme state | ✓ |
+| Dark/light toggle | OS-level or manual toggle | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Pre-install core set | button input dialog alert-dialog sheet table card badge select label form tabs | ✓ |
+| Add as needed per plan | Each plan installs its own components | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| frontend/components/ui/ | Standard shadcn convention | ✓ |
+| frontend/components/ flat | Mix shadcn + custom in same dir | |
+
+---
+
+## Sidebar & shell redesign
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Keep dark sidebar | Preserve current gradient, refactor internals | ✓ |
+| Full light sidebar | Switch to zinc palette throughout | |
+| shadcn Sidebar component | Built-in collapsible + keyboard shortcuts | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Fixed — always expanded | w-64, desktop-only app | ✓ |
+| Collapsible to icon-only | More horizontal space for content | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Keep page header bar | White bar with title + subtitle | ✓ |
+| Remove — use inline headings | Title inside content area | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Keep current 5 items | Dashboard, Classes, Students, Homework, Sessions | |
+| Add Reports/Analytics | Simple stats page in-scope | ✓ |
+| Other changes | Reorder/rename nav | |
+
+**Reports scope:** Simple summary page — total sessions, avg scores per class, homework completion rates.
+
+---
+
+## CRUD interaction pattern
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| shadcn Dialog | Replace all custom modals | ✓ |
+| shadcn Sheet (slide-over) | Forms from right | |
+| Mixed (Dialog + dedicated pages) | Simple=Dialog, complex=page | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| shadcn AlertDialog | Blocking confirm modal | ✓ |
+| Inline confirm tooltip | Less interrupting | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Single scrollable Dialog | All fields in one dialog | ✓ |
+| Multi-step wizard in Sheet | Step-by-step, progress indicator | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| react-hook-form + zod + FormMessage | Field-level errors, type-safe | ✓ |
+| Manual useState + validation | Current approach, no new deps | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Tabs in Students page | List / Pending Approvals / Password Resets | ✓ |
+| Separate /teacher/students/admin page | Dedicated admin route | |
+
+---
+
+## Data display pattern
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| shadcn DataTable (TanStack) | Sort + filter, @tanstack/react-table | ✓ |
+| shadcn Table (simple) | No built-in sort | |
+| Keep card grid | Reskin with shadcn Card | |
+
+**Classes:** Card grid (suits small count) ✓
+
+**Homework:** DataTable (Name/Type/Status/Submitted/Due Date) ✓
+
+**Sessions:** DataTable (Student/Homework/Score/Type/Date) ✓
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Sort + filter | Column sort + dropdown/input filters | ✓ |
+| Sort only | No filter UI | |
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Stat cards + upcoming + recent homework | Extend current layout | ✓ |
+| Stat cards + quick actions | Action-oriented | |
+| Redesign with metric cards + panels | Full redesign | |
+
+---
+
+## Claude's Discretion (UI overhaul)
+
+- Reports page: simple Table not chart library
+- TeacherShell: Button variant="ghost" for nav links, keep visual CSS
+- DataTable filter UX: filter row inside table header
+- Empty state: centered message + icon
+- Dialog ScrollArea for tall student creation form
+
+## Deferred Ideas (UI overhaul)
+
+- Full analytics dashboard (charts, trends, export) — future phase
+- Reading analytics score trends — Reports shows completion rates only
