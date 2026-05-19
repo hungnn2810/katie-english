@@ -80,7 +80,14 @@
       "Bash(rm -f __TRACKED_VAR__/.claude/cache/gsd-update-check.json)",
       "Bash(rm -f __TRACKED_VAR__/.cache/gsd/gsd-update-check.json)",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); perms=d.get\\('permissions',{}\\); print\\('allow:', perms.get\\('allow',[]\\)\\); print\\('deny:', perms.get\\('deny',[]\\)\\)\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "WebFetch(domain:boldvoice.com)",
+      "Bash(redis-cli ping *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); deps={**d.get\\('dependencies',{}\\),**d.get\\('devDependencies',{}\\)}; ui_libs=[k for k in deps if any\\(x in k for x in ['shadcn','radix','mui','antd','mantine','headless','tailwind','daisyui']\\)]; print\\('\\\\n'.join\\(ui_libs\\)\\)\")",
+      "Bash(python3 *)",
+      "Bash(python -m pytest test_bfa.py -v)",
+      "Bash(pip3 list *)",
+      "Bash(pip3 install *)"
     ]
   },
   "enableAllProjectMcpServers": true,

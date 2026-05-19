@@ -25,6 +25,11 @@ const readingActivitiesInclude = {
 const assignmentInclude = {
   classes: { include: { class: { include: { _count: { select: { students: true } } } } } },
   _count: { select: { sessions: true } },
+  sessions: {
+    where: { completedAt: { not: null } },
+    select: { studentId: true, completedAt: true },
+    orderBy: { startedAt: 'desc' as const },
+  },
 };
 
 const assignmentDetailInclude = {
