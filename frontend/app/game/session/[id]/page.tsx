@@ -305,6 +305,16 @@ export default function SessionPage() {
   }
 
   async function finishSession() {
+    // Stop all media tracks immediately — camera/mic off before any async work
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) videoRef.current.srcObject = null;
+    if (audioRecorderRef.current?.state !== 'inactive') {
+      try { audioRecorderRef.current?.stop(); } catch {}
+      audioRecorderRef.current = null;
+    }
     setPageState('uploading');
     const currentItems = itemsRef.current;
     const scored = [...currentItems];

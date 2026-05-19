@@ -34,7 +34,6 @@ export class GameController {
   }
 
   @Post('session/:id/phonics-result')
-  @HttpCode(202)
   @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 10 * 1024 * 1024 } }))
   savePhonicsResult(
     @Param('id', ParseIntPipe) id: number,
@@ -43,7 +42,7 @@ export class GameController {
     @UploadedFile() audio?: Express.Multer.File,
   ) {
     const dto: SavePhonicsResultDto = { wordId: Number(wordId), transcribedText };
-    return this.jobs.enqueuePhonicsResult(id, dto, audio?.buffer, audio?.mimetype);
+    return this.service.savePhonicsResult(id, dto, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/speaking-result')
