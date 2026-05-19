@@ -40,6 +40,14 @@
 - [ ] **STUDENT-01**: Student homework list shows assignments ordered by due date
 - [ ] **STUDENT-02**: All student game screens function correctly on tablet/phone (touch-first, minimum 44px touch targets)
 
+### BFA Quality & Performance
+
+- [ ] **BFA-01**: `similar` phoneme ops include `start`/`end`/`duration` timestamps in alignment feedback
+- [ ] **BFA-02**: `Word` model stores pre-computed espeak phonemes; game service passes stored phonemes to BFA align (not empty array)
+- [ ] **BFA-03**: WhisperX and PhonemeTimestampAligner preloaded on service startup; `/health` reports model load status
+- [ ] **BFA-04**: New `/analyze` endpoint combines transcription + phoneme alignment in one request; NestJS `BfaService` updated; game service uses single call
+- [ ] **BFA-05**: Student phonics result screen shows per-phoneme colored feedback chips (correct/similar/wrong) using timestamps from `/analyze`
+
 ## v2 Requirements
 
 ### Progress & Analytics
@@ -93,10 +101,15 @@
 | TEACH-05 | Phase 3 | Pending |
 | STUDENT-01 | Phase 4 | Pending |
 | STUDENT-02 | Phase 4 | Pending |
+| BFA-01 | Phase 5 | Pending |
+| BFA-02 | Phase 5 | Pending |
+| BFA-03 | Phase 5 | Pending |
+| BFA-04 | Phase 5 | Pending |
+| BFA-05 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 21 total
-- Mapped to phases: 21
+- v1 requirements: 26 total
+- Mapped to phases: 26
 - Unmapped: 0 ✓
 
 ---

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-18T03:46:09.209Z"
+last_updated: "2026-05-19T02:25:46.195Z"
 progress:
-  total_phases: 4
-  completed_phases: 3
-  total_plans: 17
-  completed_plans: 14
-  percent: 82
+  total_phases: 5
+  completed_phases: 2
+  total_plans: 20
+  completed_plans: 12
+  percent: 60
 ---
 
 # Project State: Katie English
@@ -43,6 +43,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 | Phase 2: Reading Homework | In Progress | 2026-05-17 | — |
 | Phase 3: Teacher Dashboard | Complete | 2026-05-18 | 2026-05-18 |
 | Phase 4: Student UX Polish | Not started | — | — |
+| Phase 5: BFA Quality & Performance | Not started | — | — |
 
 ## Decisions
 
@@ -68,6 +69,15 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-05-18**: Plan 03-05 complete. FillInBlankActivityEditor with chip-toggle/reindexBlanks/distractor inputs + DnD keyboard sensor + isDragging feedback. FILL_BLANK now serializes segments format to backend.
 - **2026-05-18**: Plan 03-06 complete. ReadingCreationPage extracted to _components/, edit mode + edit route live, READING branch in try page with interactive matching+fill-in-blank preview (no DB writes).
 - **2026-05-18**: Plan 03-07 complete. READING completeSession spec block (4 tests); repository sessionInclude documents per-activity gap; session detail page extended with ActivityResultCard/MatchingResultRow/FillInBlankResultRow (D-15/D-16/D-17). Phase 3 all 7 plans done.
+- **2026-05-19**: Phase 5 BFA Quality & Performance added. Review identified 3 bugs (similar timestamps, empty expected phonemes, thread-unsafe model init) + 2 improvements (phoneme DB, combined /analyze endpoint, per-phoneme UI). Requirements BFA-01–05 added.
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 5 added: BFA Quality & Performance (BFA-01–05)
 
 ---
-*State updated: 2026-05-18*
+*State updated: 2026-05-19*
+
+**Planned Phase:** 5 (BFA Quality & Performance) — 3 plans — 2026-05-19T02:25:46.153Z

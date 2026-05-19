@@ -119,6 +119,34 @@
 
 ---
 
+### Phase 5: BFA Quality & Performance
+
+**Goal:** Fix three confirmed bugs in the forced-alignment pipeline, pre-store canonical phonemes on the Word model to eliminate per-request espeak fallback, preload AI models on startup to remove cold-start latency, collapse the two serial HTTP calls (transcribe + align) into a single `/analyze` endpoint, and add a per-phoneme colored feedback strip on the student phonics result screen.
+**Mode:** mvp
+**Depends on:** Phase 4
+**Plans:** 3 plans
+
+**Requirements:**
+- BFA-01: Fix `similar` phoneme ops missing timestamps (feedback loop includes "similar" in timestamp assignment)
+- BFA-02: Store canonical espeak phonemes on the `Word` model; game service passes stored phonemes instead of `[]`
+- BFA-03: Preload WhisperX and PhonemeTimestampAligner on startup; `/health` reports model load status
+- BFA-04: New `/analyze` endpoint combines transcription + alignment in one request; TS client updated; game service collapses two calls into one
+- BFA-05: Student phonics result screen shows per-phoneme colored chips (green=correct, yellow=similar, red=wrong/missing) using timestamps from `/analyze`
+
+**Success Criteria:**
+1. Submitting a phonics recording where a phoneme is acoustically "similar" (e.g. /l/ for /r/) returns that op with `start`/`end`/`duration` populated and `status: "similar"`.
+2. Word creation endpoint pre-computes and stores espeak phonemes; `/align` (or `/analyze`) never hits espeak at request time for words already in DB.
+3. First `/analyze` request after cold start completes in under 5 seconds (models pre-warmed at startup).
+4. Phonics game flow makes exactly one HTTP call to BFA service (not two).
+5. Student sees phoneme feedback chips on the result screen — each chip labeled with the phoneme symbol and colored by correctness status.
+
+**Plans:**
+- [ ] 05-01-PLAN.md — Python BFA service: fix similar-timestamp bug (D-01/BFA-01) + startup warm-up & threading lock (D-03/BFA-03) + new POST /analyze endpoint (D-04/BFA-04) (Wave 1)
+- [ ] 05-02-PLAN.md — Prisma Word.phonemes column + db push [BLOCKING] + BfaAnalyzeResult DTO + BfaService.analyze + savePhonicsResult single-call rewrite + spec update (D-02/D-04/D-06, BFA-02/BFA-04) (Wave 2)
+- [ ] 05-03-PLAN.md — Frontend PhonemeChips component (correct/similar/wrong/missing) + session/[id] results wiring + human verification (D-05/BFA-05) (Wave 3)
+
+---
+
 ## Requirement Coverage
 
 | Requirement | Phase | Status |
@@ -144,9 +172,14 @@
 | TEACH-05 | Phase 3 | Complete |
 | STUDENT-01 | Phase 4 | Pending |
 | STUDENT-02 | Phase 4 | Pending |
+| BFA-01 | Phase 5 | Pending |
+| BFA-02 | Phase 5 | Pending |
+| BFA-03 | Phase 5 | Pending |
+| BFA-04 | Phase 5 | Pending |
+| BFA-05 | Phase 5 | Pending |
 
-**Coverage:** 21/21 v1 requirements mapped ✓
+**Coverage:** 26/26 v1 requirements mapped ✓
 
 ---
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-05-18 — Phase 3 all 7 plans complete; READ-07/TEACH-01-05 marked complete*
+*Last updated: 2026-05-19 — Phase 5 plans (05-01/05-02/05-03) registered*
