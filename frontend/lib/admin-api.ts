@@ -555,6 +555,8 @@ export interface BfaResult {
   score: number;
   feedback: PhonemeOp[];
   word: string;
+  transcription?: { text: string };   // populated by /analyze, absent on legacy /align responses
+  espeak_fallback?: boolean;          // true when BFA had to fall back to espeak for expected phonemes
 }
 
 export interface PhonicsItemResult {
