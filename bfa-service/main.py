@@ -8,6 +8,7 @@ import tempfile
 import threading
 import time
 import uuid
+from contextlib import asynccontextmanager
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Optional
@@ -18,13 +19,23 @@ from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 from prometheus_client import Counter, Histogram, generate_latest
 
-app = FastAPI()
-
 logger = logging.getLogger("bfa_service")
 _handler = logging.StreamHandler()
 _handler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(_handler)
 logger.setLevel(logging.INFO)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info(json.dumps({"event": "startup_warmup_begin"}))
+    get_whisperx_model()
+    get_aligner()
+    logger.info(json.dumps({"event": "startup_warmup_complete", "whisperx_loaded": _whisperx_model is not None}))
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 MAX_UPLOAD_BYTES = int(os.getenv("BFA_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
 MAX_EXPECTED_PHONEMES = int(os.getenv("BFA_MAX_EXPECTED_PHONEMES", "200"))
@@ -537,6 +548,7 @@ def health():
         "status": "ok",
         "models_loaded": {
             "whisperx": _whisperx_model is not None,
+            "aligner": get_aligner.cache_info().currsize > 0,
         },
         "dependencies": {
             "ffmpeg": shutil.which("ffmpeg") is not None,
