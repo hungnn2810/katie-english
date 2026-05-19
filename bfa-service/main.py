@@ -633,6 +633,18 @@ def _analyze_sync(
         # Align — uses the shared helper
         align_result = _run_alignment(wav_path, word, expected, espeak_fallback)
 
+        # Re-score using what whisperx actually heard (forced aligner labels always
+        # match expected lexicon, so alignment score is always 100% regardless of
+        # what the student said). Transcription-based phonemes reflect actual speech.
+        if transcription_text and align_result.get("success"):
+            spoken_phonemes: List[str] = []
+            for w in transcription_text.lower().split():
+                spoken_phonemes.extend(espeak_phonemes(w))
+            if spoken_phonemes:
+                t_score, t_ops = score_alignment(expected, spoken_phonemes)
+                align_result["score"] = t_score
+                align_result["feedback"] = t_ops
+
         # Merge transcription into the alignment result
         align_result["transcription"] = {"text": transcription_text}
         return align_result
