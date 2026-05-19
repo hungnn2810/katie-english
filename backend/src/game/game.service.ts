@@ -2,7 +2,8 @@ import { Injectable, NotFoundException, BadRequestException, Logger } from '@nes
 import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
-import { BfaAlignResult } from '../bfa/bfa.dto';
+import { BfaAnalyzeResult } from '../bfa/bfa.dto';
+import { WordRepository } from '../word/word.repository';
 import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto } from './game.dto';
 import { calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 
@@ -14,6 +15,7 @@ export class GameService {
     private readonly repo: GameRepository,
     private readonly storage: StorageService,
     private readonly bfa: BfaService,
+    private readonly wordRepository: WordRepository,
   ) {}
 
   async getAvailableAssignments(studentId: number) {
@@ -82,8 +84,22 @@ export class GameService {
     }
     if (!wordText) throw new BadRequestException(`Word ${dto.wordId} not found in homework`);
 
+    // Look up stored phonemes for this word (BFA-02: avoids espeak fallback for known words)
+    const wordRecord = await this.wordRepository.findByText(wordText.trim().toLowerCase());
+    let expectedPhonemes: string[] = [];
+    if (wordRecord?.phonemes) {
+      try {
+        const parsed = JSON.parse(wordRecord.phonemes);
+        if (Array.isArray(parsed) && parsed.every((p) => typeof p === 'string')) {
+          expectedPhonemes = parsed;
+        }
+      } catch {
+        // malformed JSON in DB — fall through to [] -> espeak fallback
+      }
+    }
+
     let score = 0;
-    let bfaResult: BfaAlignResult | null = null;
+    let bfaResult: BfaAnalyzeResult | null = null;
     let transcribedText = dto.transcribedText ?? '';
 
     this.logger.log(
@@ -91,22 +107,20 @@ export class GameService {
     );
 
     if (audioBuffer && audioBuffer.length > 0) {
-      // WhisperX: transcription for display
       try {
-        const whisperResult = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
-        transcribedText = whisperResult.text;
-        this.logger.log(`[session=${sessionId}] WhisperX phonics: "${transcribedText}"`);
-      } catch (err) {
-        this.logger.warn(`[session=${sessionId}] WhisperX error for "${wordText}": ${(err as Error).message}`);
-      }
-
-      // BFA: phoneme-level alignment and scoring
-      try {
-        bfaResult = await this.bfa.align(audioBuffer, mimeType ?? 'audio/webm', wordText, []);
-        this.logger.log(`[session=${sessionId}] BFA phonics: success=${bfaResult.success} score=${bfaResult.score}`);
+        bfaResult = await this.bfa.analyze(
+          audioBuffer,
+          mimeType ?? 'audio/webm',
+          wordText,
+          expectedPhonemes,
+        );
+        this.logger.log(
+          `[session=${sessionId}] BFA analyze: success=${bfaResult.success} score=${bfaResult.score} espeak_fallback=${bfaResult.espeak_fallback ?? false}`,
+        );
+        transcribedText = bfaResult.transcription?.text ?? transcribedText;
         score = bfaResult.success ? bfaResult.score : 0;
       } catch (err) {
-        this.logger.warn(`[session=${sessionId}] BFA error for "${wordText}": ${(err as Error).message}`);
+        this.logger.warn(`[session=${sessionId}] BFA analyze error for "${wordText}": ${(err as Error).message}`);
       }
     }
 
