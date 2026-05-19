@@ -52,18 +52,19 @@ Exceptions:
 
 ## Typography
 
+Declared type scale (4 sizes, 2 weights):
+
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
-| Body | 14px (`text-sm`) | 400 (regular) | 1.5 | Card content, form labels, list rows, modal body text |
-| Label | 12px (`text-xs`) | 700 (bold) | 1.4 | Section headers, uppercase tracking labels (`uppercase tracking-wide`), badge text |
-| Heading | 18px (`text-lg`) | 700 (bold) | 1.2 | Page header title in TeacherShell (`font-bold`) |
-| Display | 24px (`text-2xl`) | 900 (`font-black`) | 1.1 | Reading creation page main heading; modal primary headings use `text-lg font-black` |
+| Label | 12px (`text-xs`) | 700 (Bold) | 1.4 | Section headers, uppercase tracking labels (`uppercase tracking-wide`), badge text, sidebar sub-label ("Teacher Portal") |
+| Body | 14px (`text-sm`) | 400 (Regular) | 1.5 | Card content, form labels, list rows, modal body text, sidebar brand name |
+| Heading | 18px (`text-lg`) | 700 (Bold) | 1.2 | Page header title in TeacherShell (`font-bold`) |
+| Display | 24px (`text-2xl`) | 700 (Bold) | 1.1 | Reading creation page main heading; modal primary headings |
 
-Exceptions:
-- Score display on session detail: 30px (`text-3xl`) `font-black` — deliberate oversized for at-a-glance score
-- Sidebar brand name: 15px (`text-[15px]`) `font-bold` — fractional size preserved from existing shell
-- Sidebar sub-label ("Teacher Portal"): 11px (`text-[11px]`) — deliberate small label
-- Activity section labels (uppercase): 12px `font-bold uppercase tracking-wide` — all-caps section dividers
+**Weight mapping:** Regular = `font-normal` (400). Bold = `font-bold` (700). There is no `font-black` / weight-900 in the declared scale.
+
+**Inline style overrides (not part of the declared scale):**
+- Score display on session detail: `text-3xl` (30px) with inline `color` via `scoreHex()` — intentional at-a-glance oversized display; applied as an inline style override on a single element, not a scale token.
 
 ---
 
@@ -225,7 +226,8 @@ Shared UI patterns:
 - Card header: full-width button row, `px-5 py-3`, with activity label + score + expand chevron (▸/▾)
 - Expand state: `border-t border-border px-5 py-3` content area, `divide-y divide-border/50` row separator
 - Image thumbnail in MatchingResultRow: `w-10 h-10 rounded-lg object-cover border border-border` (40×40px, source: RESEARCH.md Claude's Discretion)
-- Score display: `font-bold text-sm` with `scoreHex()` inline style (green/amber/red by threshold)
+- Score display: `font-bold text-sm` with `scoreHex()` inline color style (green/amber/red by threshold)
+- **Inline override — at-a-glance score:** The top-of-page aggregate score is rendered at `text-3xl` (30px) with `font-bold` and an inline `color` from `scoreHex()`. This is a one-off inline style override — it is NOT a declared type scale token and does not affect the 4-size scale above.
 
 ### Sessions List Page
 - Filter row: `bg-white rounded-2xl border border-border p-4 flex flex-wrap gap-3` with Student and Assignment dropdowns + Search button
@@ -276,6 +278,7 @@ No third-party shadcn registries were used. Registry vetting gate is not applica
 | Activity card opacity 0.6 during drag | `ReadingCreationPage.tsx` `isDragging` style |
 | TypePickerModal copy | `frontend/app/teacher/homework/page.tsx` TypePickerModal render |
 | Empty state copy (all) | Codebase direct read of rendered JSX |
+| Typography revision (4 sizes, 2 weights) | Checker revision — collapsed 15px→14px Body, 11px→12px Label, removed font-black (900), moved 30px score to inline override |
 
 ---
 
