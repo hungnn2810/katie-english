@@ -34,4 +34,9 @@ export interface BfaAlignResult {
   score: number;
   feedback: PhonemeOp[];
   word: string;
+  espeak_fallback?: boolean;
+}
+
+export interface BfaAnalyzeResult extends BfaAlignResult {
+  transcription: { text: string };
 }

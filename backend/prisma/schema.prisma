@@ -54,6 +54,7 @@ model Word {
   text         String        @unique
   audioUrl     String
   difficulty   Int           @default(1)
+  phonemes     String?
   wordPhonemes WordPhoneme[]
 
   @@map("words")
@@ -298,4 +299,3 @@ model User {
 
   @@map("users")
 }
-
