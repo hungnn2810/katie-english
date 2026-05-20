@@ -389,24 +389,20 @@ function HomeworkModal({
             )}
           </div>
 
-          <DialogFooter className="px-6 pb-6 bg-transparent border-0 -mx-0 -mb-0 rounded-none flex-row gap-3 p-0 mt-0">
-            <div className="flex gap-3 w-full px-6 pb-6">
-              {error && (
-                <div className="w-full text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4">{error}</div>
-              )}
+          <div className="px-6 pb-6 pt-4 border-t border-border">
+            {error && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{error}</div>}
+            {uploadError && form.type === 'PHONICS' && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{uploadError}</div>}
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={onClose}
+                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+              <Button type="submit" disabled={loading}
+                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
+                style={{ background: gradients.primarySecondary }}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
+              </Button>
             </div>
-            {uploadError && form.type === 'PHONICS' && (
-              <div className="w-full text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4 mx-6">{uploadError}</div>
-            )}
-            <Button type="button" variant="outline" onClick={onClose}
-              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
-            <Button type="submit" disabled={loading}
-              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
-              style={{ background: gradients.primarySecondary }}>
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
-            </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
@@ -502,17 +498,19 @@ function AssignModal({
             </div>
           </div>
 
-          <DialogFooter className="px-6 pb-6 bg-transparent border-0 -mx-0 -mb-0 rounded-none flex-row gap-3 p-0">
-            {error && <div className="w-full text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-2">{error}</div>}
-            <Button type="button" variant="outline" onClick={onClose}
-              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
-            <Button type="submit" disabled={loading}
-              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
-              style={{ background: gradients.primarySecondary }}>
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {loading ? 'Assigning…' : 'Assign'}
-            </Button>
-          </DialogFooter>
+          <div className="px-6 pb-6 pt-4 border-t border-border">
+            {error && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{error}</div>}
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={onClose}
+                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+              <Button type="submit" disabled={loading}
+                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
+                style={{ background: gradients.primarySecondary }}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {loading ? 'Assigning…' : 'Assign'}
+              </Button>
+            </div>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
