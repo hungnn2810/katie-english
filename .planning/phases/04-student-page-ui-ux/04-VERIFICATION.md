@@ -1,5 +1,5 @@
 ---
-phase: 04-student-ux-polish
+phase: 04-student-page-ui-ux
 verified: 2026-05-14T00:00:00Z
 status: human_needed
 score: 8/8 plan must-haves verified; ROADMAP SC1 verified; ROADMAP SC2 deferred (D-01); ROADMAP SC3 needs human

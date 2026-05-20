@@ -1,10 +1,10 @@
-# Phase 4: Student UX Polish - Discussion Log
+# Phase 4: Student Page UI/UX - Discussion Log
 
 > **Audit trail only.** Do not use as input to planning, research, or execution agents.
 > Decisions are captured in CONTEXT.md — this log preserves the alternatives considered.
 
 **Date:** 2026-05-14
-**Phase:** 4-student-ux-polish
+**Phase:** 4-student-page-ui-ux
 **Areas discussed:** Responsive layout, Due date ordering + overdue
 
 ---
@@ -80,3 +80,4 @@
 - Hover state changes — not needed on desktop
 - Separate overdue section — user chose badge-only; revisit if feedback suggests students miss overdue work
 - Backend ORDER BY — frontend sort chosen; revisit if pagination is added
+- Student homework page made more kid-friendly for ages 6–12 (larger type, softer visuals, simpler copy)

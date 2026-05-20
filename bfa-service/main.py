@@ -290,7 +290,7 @@ def has_sufficient_energy(wav_path: Path, threshold_db: float = -50.0) -> bool:
 _whisperx_model = None
 _whisperx_lock = threading.Lock()
 
-_WHISPERX_MODEL_SIZE = os.getenv("WHISPERX_MODEL", "small")
+_WHISPERX_MODEL_SIZE = os.getenv("WHISPERX_MODEL", "tiny")
 _WHISPERX_DEVICE = "cpu"
 _WHISPERX_COMPUTE_TYPE = "int8"
 

@@ -1,6 +1,6 @@
 ---
 status: partial
-phase: 04-student-ux-polish
+phase: 04-student-page-ui-ux
 source: [04-VERIFICATION.md]
 started: 2026-05-14T15:30:00Z
 updated: 2026-05-14T15:30:00Z

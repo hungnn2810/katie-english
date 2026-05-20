@@ -1,5 +1,5 @@
 ---
-phase: 04-student-ux-polish
+phase: 04-student-page-ui-ux
 reviewed: 2026-05-14T00:00:00Z
 depth: standard
 files_reviewed: 1

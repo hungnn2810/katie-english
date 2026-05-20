@@ -277,3 +277,75 @@ def test_r_controlled_vowel_words(filename, word):
         pytest.skip("BFA service not reachable")
     result = _analyze(filename, word, [])
     assert result.get("success"), f"{word}: {result}"
+
+
+# ── Full results report ───────────────────────────────────────────────────────
+
+@requires_service
+def test_bfa_results_report(capsys):
+    """
+    Process all 59 samples and print a results table.
+    Run with: python -m pytest test_bfa_integration.py::test_bfa_results_report -v -s
+
+    Columns: WORD | SCORE | HEARD (whisperx transcription) | PHONEMES (aligned)
+    STATUS column: OK=success, FAIL=service error, ERR=exception
+    """
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+
+    COL = {"word": 12, "score": 6, "status": 6, "heard": 22, "phonemes": 30}
+    header = (
+        f"{'WORD':<{COL['word']}} {'SCORE':>{COL['score']}} {'STATUS':<{COL['status']}} "
+        f"{'HEARD':<{COL['heard']}} {'PHONEMES':<{COL['phonemes']}}"
+    )
+    sep = "-" * (sum(COL.values()) + len(COL))
+
+    errors = []
+    ok = 0
+
+    with capsys.disabled():
+        print(f"\n{'BFA SAMPLE RESULTS':^{sum(COL.values()) + len(COL)}}")
+        print(sep)
+        print(header)
+        print(sep)
+
+        for filename, word in SAMPLE_FIXTURES:
+            path = SAMPLES_DIR / filename
+            if not path.exists():
+                print(f"{word:<{COL['word']}} {'—':>{COL['score']}} {'MISS':<{COL['status']}} {'file missing':<{COL['heard']}}")
+                continue
+            try:
+                result = _analyze(filename, word, [])
+                if result.get("success"):
+                    score = str(result["score"])
+                    heard = result.get("transcription", {}).get("text", "") or "—"
+                    phonemes = " ".join(p["symbol"] for p in result.get("phonemes", []))
+                    status = "OK"
+                    ok += 1
+                else:
+                    fb = result.get("feedback", [{}])
+                    score = "0"
+                    heard = fb[0].get("message", "?") if fb else "?"
+                    phonemes = ""
+                    status = "FAIL"
+                    errors.append(f"{word}: {heard}")
+            except Exception as exc:
+                score = "—"
+                heard = str(exc)[:40]
+                phonemes = ""
+                status = "ERR"
+                errors.append(f"{word}: {exc}")
+
+            print(
+                f"{word:<{COL['word']}} {score:>{COL['score']}} {status:<{COL['status']}} "
+                f"{heard[:COL['heard']]:<{COL['heard']}} {phonemes[:COL['phonemes']]:<{COL['phonemes']}}",
+                flush=True,
+            )
+
+        print(sep)
+        print(f"  {ok}/{len(SAMPLE_FIXTURES)} succeeded")
+        if errors:
+            print(f"  ERRORS ({len(errors)}):")
+            for e in errors:
+                print(f"    {e}")
+        print()

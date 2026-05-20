@@ -1,6 +1,6 @@
 ---
 plan: 04-01
-phase: 04-student-ux-polish
+phase: 04-student-page-ui-ux
 status: complete
 completed: 2026-05-14
 commit: 7dc63f51201d0a369db82669cfd7b310fa4e5d94

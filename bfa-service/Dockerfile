@@ -7,6 +7,10 @@ RUN apt-get update \
 RUN pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir whisperx bournemouth-forced-aligner fastapi uvicorn python-multipart prometheus_client
 
+# Pre-download tiny model at build time — avoids first-startup download.
+# WHISPERX_MODEL env var can override to 'small' or 'base' if needed.
+RUN python -c "import whisperx; whisperx.load_model('tiny', 'cpu', compute_type='int8')"
+
 WORKDIR /app
 COPY main.py .
 

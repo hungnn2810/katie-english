@@ -1,4 +1,4 @@
-# Phase 4: Student UX Polish - Context
+# Phase 4: Student Page UI/UX - Context
 
 **Gathered:** 2026-05-14
 **Status:** Ready for planning
@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-Fix the student homework list to display assignments sorted by ascending due date, with overdue assignments visually marked in red. All other student-facing screen layout and touch-target concerns are out of scope — student devices are laptop/PC only (STUDENT-02 requirement revised during discuss-phase).
+Polish the student homework page UI/UX: display assignments sorted by ascending due date, mark overdue assignments in red, and make the page kid-friendly for ages 6–12. All other student-facing screen layout and touch-target concerns are out of scope — student devices are laptop/PC only (STUDENT-02 requirement revised during discuss-phase).
 
 </domain>
 
@@ -21,6 +21,12 @@ Fix the student homework list to display assignments sorted by ascending due dat
 - **D-03:** Sort is done on the **frontend** in the component after the API response: `assignments.sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())`.
 - **D-04:** Overdue assignments (daysLeft < 0) display a **red "Overdue" badge** in place of the "X days left" badge. No separate section — overdue items remain mixed into the sorted list.
 - **D-05:** Completed assignments (bestScore !== null) are **mixed in by due date** — no separate "completed" section. Student sees full list sorted by date.
+
+### Kid-Friendly UI (STUDENT-03)
+- **D-06:** Typography is larger than current: bigger headings, clearer badges, and more readable labels for ages 6–12.
+- **D-07:** Palette shifts to gentler, friendlier colors while keeping existing gradients; avoid harsh contrast.
+- **D-08:** Add playful icons and rounded, "cute" primary buttons on the student homework page.
+- **D-09:** Use more colorful shapes or accents in cards/badges to feel playful, without changing layout structure.
 
 ### Claude's Discretion
 - Exact shade of red for the "Overdue" badge — use existing `highlight` color token (already used for "Due today" warning styling) for consistency.
@@ -80,5 +86,5 @@ Fix the student homework list to display assignments sorted by ascending due dat
 
 ---
 
-*Phase: 4-Student-UX-Polish*
+*Phase: 4-Student-Page-UI-UX*
 *Context gathered: 2026-05-14*

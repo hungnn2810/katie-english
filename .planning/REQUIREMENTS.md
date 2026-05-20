@@ -39,6 +39,7 @@
 
 - [ ] **STUDENT-01**: Student homework list shows assignments ordered by due date
 - [ ] **STUDENT-02**: All student game screens function correctly on tablet/phone (touch-first, minimum 44px touch targets)
+- [ ] **STUDENT-03**: Student homework page uses kid-friendly visuals for ages 6–12 (larger type, gentle colors, playful icons, cute buttons)
 
 ### BFA Quality & Performance
 
@@ -104,6 +105,7 @@
 | TEACH-05 | Phase 3 | Pending |
 | STUDENT-01 | Phase 4 | Pending |
 | STUDENT-02 | Phase 4 | Pending |
+| STUDENT-03 | Phase 4 | Pending |
 | BFA-01 | Phase 5 | Pending |
 | BFA-02 | Phase 5 | Pending |
 | BFA-03 | Phase 5 | Pending |

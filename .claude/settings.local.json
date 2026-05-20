@@ -87,7 +87,11 @@
       "Bash(python3 *)",
       "Bash(python -m pytest test_bfa.py -v)",
       "Bash(pip3 list *)",
-      "Bash(pip3 install *)"
+      "Bash(pip3 install *)",
+      "Bash(npx shadcn@latest init --yes --base-color zinc --style default --css-variables --no-rsc --typescript)",
+      "Bash(npx shadcn@latest init --help)",
+      "Bash(npx shadcn@latest init --yes --defaults)",
+      "Bash(npx shadcn@latest add card badge input label select dialog table separator avatar --yes)"
     ]
   },
   "enableAllProjectMcpServers": true,

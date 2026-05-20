@@ -13,7 +13,7 @@
 | 1 | Speaking Homework | 1/1 | Complete    | 2026-05-13 |
 | 2 | Reading Homework | Student matches + fills blanks, score stored | READ-01–06 | 4 |
 | 3 | Teacher Dashboard | Unified creation, assignment, results review | READ-07, TEACH-01–05 | 4 |
-| 4 | Student UX Polish | Tablet-first UI, ordered homework list | STUDENT-01–02 | 3 |
+| 4 | Student Page UI/UX | Student homework page UI/UX polish | STUDENT-01–02 | 3 |
 
 ---
 
@@ -97,25 +97,27 @@
 
 ---
 
-### Phase 4: Student UX Polish
+### Phase 4: Student Page UI/UX
 
-**Goal:** All student-facing game screens work correctly on tablet/phone with touch-first UI; homework list is properly ordered.
+**Goal:** Student homework page UI/UX polish — ordered list, clear urgency badges, laptop/PC-first layout, and kid-friendly visuals for ages 6–12.
 **Mode:** mvp
 **Plans:** 1 plan
 
 **Requirements:**
 - STUDENT-01: Student homework list shows assignments ordered by due date
 - STUDENT-02: All student game screens function correctly on tablet/phone (touch-first, minimum 44px touch targets)
+- STUDENT-03: Student homework page uses kid-friendly visuals for ages 6–12 (larger type, gentle colors, playful icons, cute buttons)
 
-> **Phase-context note (2026-05-14, per 04-CONTEXT.md D-01):** Student device target was revised during the discuss-phase to **laptop/PC only**. STUDENT-02 is satisfied by retaining the existing `minWidth: 1024` constraint on the game screens; no tablet/phone or touch-target work is performed in this phase. The original goal text above is preserved for historical traceability; the implementation contract is in `.planning/phases/04-student-ux-polish/04-CONTEXT.md`.
+> **Phase-context note (2026-05-14, per 04-CONTEXT.md D-01):** Student device target is **laptop/PC only**. STUDENT-02 is satisfied by retaining the existing `minWidth: 1024` constraint on the student page; no tablet/phone or touch-target work is performed in this phase. The implementation contract is in `.planning/phases/04-student-page-ui-ux/04-CONTEXT.md`.
 
 **Plans:**
 - [x] 04-01-PLAN.md — Sort student homework list by endDate ascending and add Overdue badge variant
 
 **Success Criteria:**
-1. Homework list orders assignments by ascending due date; overdue items visually distinct.
-2. All interactive elements on phonics, speaking, and reading game screens have touch targets ≥ 44px verified on a physical tablet or 768px viewport.
-3. No game screen relies on hover-only state for core interactions.
+1. Homework list orders assignments by ascending due date; overdue items show a red "Overdue" badge.
+2. Student homework page retains laptop/PC layout (`minWidth: 1024`) with no responsive/touch changes.
+3. Completed assignments remain mixed by due date; best-score badge remains visible.
+4. Homework page styling is kid-friendly: larger typography, playful icons, and colorful, rounded primary buttons.
 
 ---
 
