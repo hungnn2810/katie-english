@@ -4,11 +4,12 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getHomework, deleteAssignment, HomeworkDetail, HomeworkType } from '@/lib/admin-api';
 import { gradients } from '@/lib/colors';
+import { Hash, Mic, BookOpen, Eye } from 'lucide-react';
 
-const TYPE_META: Record<HomeworkType, { label: string; emoji: string; color: string }> = {
-  PHONICS:  { label: 'Phonics',  emoji: '🔤', color: '#A78BFA' },
-  SPEAKING: { label: 'Speaking', emoji: '🎤', color: '#FF9BD2' },
-  READING:  { label: 'Reading',  emoji: '📖', color: '#6ED6C1' },
+const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string }> = {
+  PHONICS:  { label: 'Phonics',  icon: Hash,     color: '#A78BFA' },
+  SPEAKING: { label: 'Speaking', icon: Mic,      color: '#FF9BD2' },
+  READING:  { label: 'Reading',  icon: BookOpen, color: '#6ED6C1' },
 };
 
 function scoreColor(score: number) {
@@ -44,16 +45,16 @@ export default function TeacherHomeworkDetailPage() {
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
           style={{ background: gradients.primaryPurple }}
         >
-          <span>👁️</span> Try
+          <Eye className="w-4 h-4" /> Try
         </button>
       </div>
 
       {/* Homework info */}
       <div className="bg-white rounded-2xl border border-border shadow-sm p-5 mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm font-bold px-3 py-1 rounded-full"
+          <span className="inline-flex items-center gap-1 text-sm font-bold px-3 py-1 rounded-full"
             style={{ background: meta.color + '18', color: meta.color }}>
-            {meta.emoji} {meta.label}
+            <meta.icon className="w-3.5 h-3.5" /> {meta.label}
           </span>
           <span className="text-xs text-textSecondary">Created {new Date(hw.createdAt).toLocaleDateString()}</span>
         </div>

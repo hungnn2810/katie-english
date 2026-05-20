@@ -12,12 +12,13 @@ export const colors = {
   border: '#E5E7EB',
   textPrimary: '#1F2937',
   textSecondary: '#6B7280',
+  teacherAccent: '#F0623A',
 } as const;
 
 export const gradients = {
-  // Deep immersive bg for game/student screens (dark for good contrast + immersion)
-  gameBg: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)',
-  gameBgAlt: 'linear-gradient(135deg, #0F0C29, #1E1B4B, #312E81)',
+  // Student game screens — bright solid blue for kids aged 6-12
+  gameBg: '#2563EB',
+  gameBgAlt: '#1D4ED8',
 
   // Bright card/button gradients using new palette
   primaryPurple: `linear-gradient(135deg, #4F9DFF, #A78BFA)`,
@@ -31,14 +32,14 @@ export const gradients = {
   sidebar: 'linear-gradient(180deg, #1F2937 0%, #374151 100%)',
 } as const;
 
-// Ordered list used for cycling homework/stat card colors
+// Ordered list used for cycling homework/stat card colors (bright + kid-friendly)
 export const cardGradients: { from: string; to: string }[] = [
-  { from: colors.primary, to: colors.purple },
-  { from: colors.pink, to: colors.highlight },
-  { from: colors.primary, to: colors.secondary },
-  { from: colors.green, to: colors.secondary },
-  { from: colors.pink, to: colors.accent },
-  { from: colors.purple, to: colors.pink },
+  { from: '#F97316', to: '#FBBF24' }, // orange → yellow
+  { from: '#EC4899', to: '#F472B6' }, // pink → light pink
+  { from: '#8B5CF6', to: '#A78BFA' }, // violet → lavender
+  { from: '#10B981', to: '#34D399' }, // emerald → mint
+  { from: '#EF4444', to: '#F87171' }, // red → coral
+  { from: '#06B6D4', to: '#67E8F9' }, // cyan → sky
 ];
 
 export function scoreHexColor(score: number): string {

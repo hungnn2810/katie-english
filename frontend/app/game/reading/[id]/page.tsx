@@ -13,6 +13,7 @@ import {
   FillBlankChoice,
 } from '@/lib/admin-api';
 import { gradients, scoreHexColor } from '@/lib/colors';
+import { PartyPopper, ImageIcon, Check, PenLine } from 'lucide-react';
 
 // ── Constants & helpers ────────────────────────────────────────────────────────
 
@@ -93,7 +94,7 @@ function ResultsState({
   return (
     <div className="min-h-screen py-12 px-8" style={{ background: gradients.gameBg, minWidth: 1024 }}>
       <div className="max-w-xl mx-auto text-center mb-10">
-        <div className="text-6xl mb-4">🎉</div>
+        <div className="flex justify-center mb-4"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><PartyPopper className="w-8 h-8 text-white" /></div></div>
         <div className="text-white text-2xl font-black mb-2">Homework Complete!</div>
         <div className="text-7xl font-black mt-4" style={{ color: scoreHexColor(score) }}>{score}%</div>
         <div className="text-white/70 text-sm mt-2">Your score has been saved</div>
@@ -110,12 +111,12 @@ function ResultsState({
             total = act.pairs.length;
             correct = act.pairs.filter((p) => p.status === 'locked').length;
             label = `${correct} / ${total} pairs matched`;
-            typeTag = '📷 Matching';
+            typeTag = 'Matching';
           } else {
             total = act.items.length;
             correct = act.items.filter((it) => it.correct === true).length;
             label = `${correct} / ${total} sentences correct`;
-            typeTag = '✏️ Fill in the Blank';
+            typeTag = 'Fill in the Blank';
           }
           const activityPct = total > 0 ? Math.round((correct / total) * 100) : 0;
           return (
@@ -261,7 +262,7 @@ function MatchingActivityRenderer({
   return (
     <div className="max-w-3xl mx-auto w-full">
       <div className="text-white/60 text-xs font-bold uppercase tracking-wide mb-8 text-center">
-        📷 Match each image to its word
+        <ImageIcon className="w-4 h-4 inline mr-1" />Match each image to its word
       </div>
 
       {/* Image row */}
@@ -286,7 +287,7 @@ function MatchingActivityRenderer({
               <img src={p.pair.imageUrl} alt={p.pair.word} className="w-full h-full object-cover" />
               {isLocked && (
                 <div className="absolute inset-0 flex items-center justify-center bg-brand-green/30">
-                  <span className="text-brand-green text-2xl font-black">✓</span>
+                  <Check className="w-6 h-6 text-brand-green" />
                 </div>
               )}
             </button>

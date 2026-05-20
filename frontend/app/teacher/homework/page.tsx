@@ -17,12 +17,12 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, X, Loader2, AlignLeft, Mic } from 'lucide-react';
+import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search } from 'lucide-react';
 
-const TYPE_META: Record<HomeworkType, { label: string; emoji: string; color: string; bg: string }> = {
-  PHONICS:  { label: 'Phonics',  emoji: '🔤', color: '#A78BFA', bg: '#A78BFA18' },
-  SPEAKING: { label: 'Speaking', emoji: '🎤', color: '#FF9BD2', bg: '#FF9BD218' },
-  READING:  { label: 'Reading',  emoji: '📖', color: '#6ED6C1', bg: '#6ED6C118' },
+const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
+  PHONICS:  { label: 'Phonics',  icon: Hash,     color: '#A78BFA', bg: '#A78BFA18' },
+  SPEAKING: { label: 'Speaking', icon: Mic,      color: '#FF9BD2', bg: '#FF9BD218' },
+  READING:  { label: 'Reading',  icon: BookOpen, color: '#6ED6C1', bg: '#6ED6C118' },
 };
 
 // ── Homework form modal ───────────────────────────────────────────────────────
@@ -181,7 +181,7 @@ function HomeworkModal({
                         style={active
                           ? { background: m.color, color: 'white', borderColor: m.color }
                           : { background: 'white', color: m.color, borderColor: m.color + '55' }}>
-                        <span>{m.emoji}</span>{m.label}
+                        <m.icon className="w-4 h-4" />{m.label}
                       </Button>
                     );
                   })}
@@ -253,7 +253,7 @@ function HomeworkModal({
                                         onClick={() => setParts((prev) => prev.map((p, i) =>
                                           i !== pIdx ? p : { ...p, words: p.words.map((w, j) => j !== wIdx ? w : { ...w, imageUrl: '' }) }
                                         ))}
-                                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center">✕</button>
+                                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center"><X className="w-2.5 h-2.5" /></button>
                                     </div>
                                   ) : (
                                     <>
@@ -261,7 +261,7 @@ function HomeworkModal({
                                         onClick={() => wordFileRefs.current[uploadKey]?.click()}
                                         disabled={wordUploading === uploadKey}
                                         className="text-xs px-2 py-1 h-auto rounded-lg border-dashed text-textSecondary">
-                                        {wordUploading === uploadKey ? '…' : '🖼️'}
+                                        {wordUploading === uploadKey ? '…' : <ImageIcon className="w-3.5 h-3.5" />}
                                       </Button>
                                       <input type="file" accept="image/*" className="hidden"
                                         ref={(el) => { wordFileRefs.current[uploadKey] = el; }}
@@ -274,7 +274,7 @@ function HomeworkModal({
                                   )}
                                   <Button type="button" variant="ghost" size="icon-xs"
                                     onClick={() => removeWord(pIdx, wIdx)}
-                                    className="text-textSecondary hover:text-red-500 ml-1">✕</Button>
+                                    className="text-textSecondary hover:text-red-500 ml-1"><X className="w-3.5 h-3.5" /></Button>
                                 </div>
                               );
                             })}
@@ -354,7 +354,7 @@ function HomeworkModal({
                         <img src={form.speakingPictureUrl} alt="Speaking picture" className="w-full object-cover" style={{ maxHeight: 160 }} />
                         <Button type="button" variant="ghost" size="icon-sm"
                           onClick={() => setForm((f) => ({ ...f, speakingPictureUrl: '' }))}
-                          className="absolute top-2 right-2 bg-black/60 text-white hover:bg-black/80 rounded-lg">✕</Button>
+                          className="absolute top-2 right-2 bg-black/60 text-white hover:bg-black/80 rounded-lg"><X className="w-3.5 h-3.5" /></Button>
                       </div>
                     ) : (
                       <Button type="button" variant="outline" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
@@ -362,7 +362,7 @@ function HomeworkModal({
                         style={{ borderColor: meta.color + '55', background: meta.bg }}>
                         {speakUploading
                           ? <span className="text-xs font-semibold" style={{ color: meta.color }}>Uploading…</span>
-                          : <><span className="text-xl">🖼️</span><span className="text-xs font-semibold" style={{ color: meta.color }}>Click to upload picture</span></>}
+                          : <><ImageIcon className="w-5 h-5" style={{ color: meta.color }} /><span className="text-xs font-semibold" style={{ color: meta.color }}>Click to upload picture</span></>}
                       </Button>
                     )}
                     <input ref={speakFileRef} type="file" accept="image/*" className="hidden" onChange={handleSpeakFile} />
@@ -455,7 +455,7 @@ function AssignModal({
           <div>
             <DialogTitle className="text-lg font-black text-textPrimary">Assign Homework</DialogTitle>
             <p className="text-xs text-textSecondary mt-0.5">
-              <span style={{ color: meta.color }}>{meta.emoji} {meta.label}</span>
+              <span className="inline-flex items-center gap-1" style={{ color: meta.color }}><meta.icon className="w-3.5 h-3.5" /> {meta.label}</span>
               {homework.type === 'PHONICS' && homework.name && ` · ${homework.name}`}
               {homework.type === 'SPEAKING' && homework.speakingText && ` · "${homework.speakingText.slice(0, 40)}${homework.speakingText.length > 40 ? '…' : ''}"`}
             </p>
@@ -557,7 +557,7 @@ function TypePickerModal({
                   }}
                   className="flex-col h-auto gap-2 py-5 rounded-xl text-sm font-bold border-2 transition-all hover:shadow-md hover:scale-105"
                   style={{ background: 'white', color: m.color, borderColor: m.color + '55' }}>
-                  <span className="text-2xl">{m.emoji}</span>
+                  <m.icon className="w-6 h-6" />
                   <span>{m.label}</span>
                 </Button>
               );
@@ -653,14 +653,14 @@ export default function HomeworkPage() {
       <div className="grid grid-cols-3 gap-4">
         {list.length === 0 && (
           <div className="col-span-3 text-center py-20 text-textSecondary">
-            <div className="text-4xl mb-3">📚</div>
+            <div className="flex justify-center mb-3"><div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center"><BookOpen className="w-8 h-8 text-slate-400" /></div></div>
             <div className="font-medium">No homework yet</div>
             <div className="text-sm mt-1">Create a reusable homework template</div>
           </div>
         )}
         {list.length > 0 && filtered.length === 0 && (
           <div className="col-span-3 text-center py-16 text-textSecondary">
-            <div className="text-3xl mb-3">🔍</div>
+            <div className="flex justify-center mb-3"><div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center"><Search className="w-8 h-8 text-slate-400" /></div></div>
             <div className="font-medium">No homework matches filter</div>
           </div>
         )}
@@ -688,9 +688,9 @@ export default function HomeworkPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0 pr-2">
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge className="text-xs font-bold px-2.5 py-1 rounded-full h-auto border-0"
+                      <Badge className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full h-auto border-0"
                         style={{ background: meta.bg, color: meta.color }}>
-                        {meta.emoji} {meta.label}
+                        <meta.icon className="w-3.5 h-3.5" /> {meta.label}
                       </Badge>
                     </div>
                     <div className="text-xs text-textSecondary mt-1">

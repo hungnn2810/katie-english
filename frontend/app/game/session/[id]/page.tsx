@@ -6,6 +6,7 @@ import { authHeaders } from '@/lib/auth';
 import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, BfaResult, SpeakingMode } from '@/lib/admin-api';
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
 import PhonemeChips from './_components/PhonemeChips';
+import { Camera, School, Mic, Hash, PartyPopper, CheckCircle2, FolderOpen, ImageIcon } from 'lucide-react';
 
 type ItemKind = 'speaking' | 'phonics';
 type ItemState = 'waiting' | 'recording' | 'done';
@@ -393,7 +394,7 @@ export default function SessionPage() {
 
             <div className="w-full max-w-sm flex flex-col items-center gap-6">
               <div className="text-center">
-                <div className="text-4xl mb-3">{isFreespeak ? '🖼️' : '🎤'}</div>
+                <div className="flex justify-center mb-3"><div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center">{isFreespeak ? <ImageIcon className="w-7 h-7 text-white" /> : <Mic className="w-7 h-7 text-white" />}</div></div>
                 <h2 className="text-white text-2xl font-black mb-1">
                   {isFreespeak ? 'Free Speak' : 'Script Match'}
                 </h2>
@@ -423,7 +424,7 @@ export default function SessionPage() {
               <div className="w-full">
                 <label className="flex flex-col items-center gap-3 w-full cursor-pointer rounded-2xl border-2 border-dashed border-white/30 py-8 px-4 hover:border-white/60 transition-colors"
                   style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <span className="text-3xl">{uploadFile ? '✅' : '📁'}</span>
+                  {uploadFile ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <FolderOpen className="w-8 h-8 text-white/60" />}
                   {uploadFile ? (
                     <div className="text-center">
                       <p className="text-white font-semibold text-sm">{uploadFile.name}</p>
@@ -469,7 +470,7 @@ export default function SessionPage() {
       <AuthGate requiredRole="STUDENT">
         {() => (
           <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-8" style={{ background: gradients.gameBg }}>
-            <div className="text-6xl">📷</div>
+            <div className="flex justify-center"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><Camera className="w-8 h-8 text-white" /></div></div>
             <div className="text-center">
               <h2 className="text-white text-2xl font-black mb-2">Camera Required</h2>
               <p className="text-white/70 text-sm max-w-sm">Camera and microphone access is required. Please allow access and reload.</p>
@@ -521,7 +522,7 @@ export default function SessionPage() {
           <div className="min-h-screen py-12 px-8" style={{ background: gradients.gameBg, minWidth: 1024 }}>
             <div className="max-w-xl mx-auto">
               <div className="text-center mb-10">
-                <div className="text-6xl mb-4">🎉</div>
+                <div className="flex justify-center mb-4"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><PartyPopper className="w-8 h-8 text-white" /></div></div>
                 <h1 className="text-white text-3xl font-black mb-2">Homework Complete!</h1>
                 {items.length > 0 && (
                   <div className="text-7xl font-black mt-4" style={{ color: scoreColor }}>{finalScore}%</div>
@@ -539,7 +540,7 @@ export default function SessionPage() {
                       <div>
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="text-white/60 text-xs font-semibold uppercase mb-1">🔤 Phonics</div>
+                            <div className="flex items-center gap-1 text-white/60 text-xs font-semibold uppercase mb-1"><Hash className="w-3.5 h-3.5" /> Phonics</div>
                             <div className="text-white font-bold text-lg">{item.text}</div>
                             <div className="text-white/70 text-sm mt-0.5">
                               You said: <span className="text-white italic">"{item.transcribed || '—'}"</span>
@@ -555,7 +556,7 @@ export default function SessionPage() {
                       </div>
                     ) : (
                       <div>
-                        <div className="text-white/60 text-xs font-semibold uppercase mb-2">🎤 Speaking</div>
+                        <div className="flex items-center gap-1 text-white/60 text-xs font-semibold uppercase mb-2"><Mic className="w-3.5 h-3.5" /> Speaking</div>
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="text-white font-medium text-sm mb-1">{item.text}</div>
@@ -619,7 +620,7 @@ export default function SessionPage() {
                 )}
                 {pageState === 'playing' && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-primary/80 px-4 py-2 rounded-full">
-                    <span className="text-white text-xs font-semibold">🎤 Listening</span>
+                    <Mic className="w-3.5 h-3.5 text-white" /><span className="text-white text-xs font-semibold">Listening</span>
                   </div>
                 )}
               </div>
@@ -628,13 +629,13 @@ export default function SessionPage() {
             <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto">
               {pageState === 'ready' && (
                 <div className="text-center">
-                  <div className="text-6xl mb-6">🎓</div>
+                  <div className="flex justify-center mb-6"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><School className="w-8 h-8 text-white" /></div></div>
                   <h2 className="text-white text-3xl font-black mb-3">Ready?</h2>
                   <p className="text-white/60 text-sm mb-10">Say each item clearly when it appears</p>
                   <div className="flex flex-wrap gap-2 justify-center mb-10">
                     {items.map((item, i) => (
                       <span key={i} className="bg-white bg-opacity-10 text-white/80 text-sm px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5">
-                        <span className="text-xs opacity-60">{item.kind === 'speaking' ? '🎤' : '🔤'}</span>
+                        {item.kind === 'speaking' ? <Mic className="w-3 h-3 opacity-60" /> : <Hash className="w-3 h-3 opacity-60" />}
                         {item.kind === 'speaking'
                           ? `${item.text.slice(0, 24)}${item.text.length > 24 ? '…' : ''}`
                           : item.text}
@@ -657,7 +658,7 @@ export default function SessionPage() {
 
                   {current.kind === 'speaking' ? (
                     <>
-                      <div className="text-white/60 text-sm font-semibold uppercase tracking-wide mb-3">🎤 Read aloud</div>
+                      <div className="flex items-center justify-center gap-1.5 text-white/60 text-sm font-semibold uppercase tracking-wide mb-3"><Mic className="w-4 h-4" /> Read aloud</div>
                       {current.pictureUrl && (
                         <div className="mb-4 rounded-2xl overflow-hidden max-h-48 max-w-xs mx-auto">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -671,7 +672,7 @@ export default function SessionPage() {
                     </>
                   ) : (
                     <>
-                      <div className="text-white/60 text-sm font-semibold uppercase tracking-wide mb-3">🔤 Say this sound</div>
+                      <div className="flex items-center justify-center gap-1.5 text-white/60 text-sm font-semibold uppercase tracking-wide mb-3"><Hash className="w-4 h-4" /> Say this sound</div>
                       <div className="text-7xl font-black text-white mb-4 tracking-widest"
                         style={{ textShadow: '0 0 40px rgba(167,139,250,0.6)' }}>
                         {current.text}
@@ -697,7 +698,7 @@ export default function SessionPage() {
                       {items.filter((w) => w.state === 'done').map((item, i) => (
                         <span key={i} className="text-xs px-3 py-1 rounded-full font-bold"
                           style={{ background: '#ffffff15', color: '#ffffffcc' }}>
-                          {item.kind === 'phonics' ? `🔤 ${item.text}` : '🎤'}
+                          {item.kind === 'phonics' ? <><Hash className="w-3 h-3" /> {item.text}</> : <Mic className="w-3 h-3" />}
                         </span>
                       ))}
                     </div>

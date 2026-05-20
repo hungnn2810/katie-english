@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, GameSession, SpeakingResult, PhonicsItemResult, ReadingActivityResult, MatchingItemResult, FillInBlankItemResult, SentenceSegment } from '@/lib/admin-api';
 import { getToken } from '@/lib/auth';
+import { Check, X, ChevronDown, ChevronRight } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -41,7 +42,7 @@ function MatchingResultRow({ r }: { r: MatchingItemResult }) {
           r.isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
         }`}
       >
-        {r.isCorrect ? '✓' : '✗'}
+        {r.isCorrect ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
       </span>
     </div>
   );
@@ -67,7 +68,7 @@ function FillInBlankResultRow({ r }: { r: FillInBlankItemResult }) {
           r.isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
         }`}
       >
-        {r.isCorrect ? '✓' : '✗'}
+        {r.isCorrect ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
       </span>
     </div>
   );
@@ -118,7 +119,7 @@ function ActivityResultCard({ activityResult }: { activityResult: ReadingActivit
           >
             {pct}%
           </span>
-          <span>{expanded ? '▾' : '▸'}</span>
+          {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </div>
       </button>
 

@@ -40,3 +40,19 @@ export interface BfaAlignResult {
 export interface BfaAnalyzeResult extends BfaAlignResult {
   transcription: { text: string };
 }
+
+export interface BfaSpeakingWordResult {
+  word: string;
+  phonemes: PhonemeAlignment[];
+  score: number;
+  feedback: PhonemeOp[];
+}
+
+export interface BfaSpeakingResult {
+  success: boolean;
+  transcription: { text: string };
+  words: BfaSpeakingWordResult[];
+  overall_score: number;
+  matched_words: number;
+  total_words: number;
+}

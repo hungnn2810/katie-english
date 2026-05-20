@@ -184,7 +184,7 @@ function MatchingActivityEditor({
                       <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                     </svg>
                   ) : (
-                    <span className="text-2xl">🖼️</span>
+                    <svg className="w-6 h-6 text-textSecondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                   )}
                   <input
                     type="file"
@@ -411,11 +411,11 @@ function SortableActivityCard({
 
         {activity.type === 'MATCH' ? (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-secondary/15 text-secondary">
-            📷 Matching
+            Matching
           </span>
         ) : (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-accent/20 text-amber-700">
-            ✏️ Fill in the Blank
+            Fill in the Blank
           </span>
         )}
 
@@ -631,9 +631,9 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
               type="button"
               onClick={() => router.push(`/teacher/homework/${editId}/try`)}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-              style={{ background: gradients.primaryPurple }}
+              style={{ background: '#F0623A' }}
             >
-              <span aria-hidden>👁️</span> Try
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> Try
             </button>
           )}
           <button

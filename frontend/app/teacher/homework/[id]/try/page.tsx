@@ -5,6 +5,7 @@ import AuthGate from '@/components/AuthGate';
 import { getHomework, getReadingHomework } from '@/lib/admin-api';
 import type { ReadingHomeworkDetail, ReadingActivity, MatchPair, FillBlank, FillBlankChoice } from '@/lib/admin-api';
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
+import { Check, X, BookOpen, PartyPopper, Camera, Eye, Mic, Hash, ImageIcon as ImageLucide } from 'lucide-react';
 
 type ItemState = 'waiting' | 'recording' | 'done';
 type PageState = 'loading' | 'cam-check' | 'cam-denied' | 'ready' | 'playing' | 'results' | 'error';
@@ -144,7 +145,7 @@ function MatchingActivityPreview({ activity, onNext }: MatchingActivityPreviewPr
                 <img src={pair.imageUrl} alt="" className="w-20 h-20 object-cover" />
                 {state && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                    <span className="text-2xl">{state.correct ? '✓' : '✗'}</span>
+                    {state.correct ? <Check className="w-8 h-8 text-white" /> : <X className="w-8 h-8 text-white" />}
                   </div>
                 )}
               </button>
@@ -419,7 +420,7 @@ function ReadingPreview({ homework, hwId }: ReadingPreviewProps) {
                 Preview Mode — Results not saved to database
               </div>
               <div className="text-center mb-10">
-                <div className="text-6xl mb-4">📖</div>
+                <div className="flex justify-center mb-4"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><BookOpen className="w-8 h-8 text-white" /></div></div>
                 <h1 className="text-white text-3xl font-black mb-2">Reading Preview Complete!</h1>
                 <div className="text-7xl font-black mt-4" style={{ color: scoreHexColor(avgScore) }}>
                   {avgScore}%
@@ -506,7 +507,7 @@ function ReadingPreview({ homework, hwId }: ReadingPreviewProps) {
           <div className="flex-1 flex flex-col items-center justify-center px-8 pb-8 overflow-auto">
             <div className="mb-6 text-center">
               <span className="bg-white/10 text-white/70 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide">
-                {current?.type === 'MATCH' ? '📷 Matching' : '✏️ Fill in the Blank'} · Activity {activityIdx + 1}
+                {current?.type === 'MATCH' ? 'Matching' : 'Fill in the Blank'} · Activity {activityIdx + 1}
               </span>
             </div>
             {current && current.type === 'MATCH' && (
@@ -707,7 +708,7 @@ export default function TeacherTryHomeworkPage() {
       <AuthGate requiredRole="TEACHER">
         {() => (
           <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-8" style={{ background: gradients.gameBg }}>
-            <div className="text-6xl">📷</div>
+            <div className="flex justify-center"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><Camera className="w-8 h-8 text-white" /></div></div>
             <div className="text-center">
               <h2 className="text-white text-2xl font-black mb-2">Camera Required</h2>
               <p className="text-white/70 text-sm max-w-sm">Camera and microphone access is required to preview. Please allow access and retry.</p>
@@ -746,7 +747,7 @@ export default function TeacherTryHomeworkPage() {
                 Preview Mode — Results not saved
               </div>
               <div className="text-center mb-10">
-                <div className="text-6xl mb-4">🎉</div>
+                <div className="flex justify-center mb-4"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><PartyPopper className="w-8 h-8 text-white" /></div></div>
                 <h1 className="text-white text-3xl font-black mb-2">Preview Complete!</h1>
                 <div className="text-7xl font-black mt-4" style={{ color: scoreHexColor(finalScore) }}>{finalScore}%</div>
                 <p className="text-white/60 text-sm mt-2">This is how students experience the scoring</p>
@@ -821,7 +822,7 @@ export default function TeacherTryHomeworkPage() {
                 )}
                 {pageState === 'playing' && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-primary/80 px-4 py-2 rounded-full">
-                    <span className="text-white text-xs font-semibold">🎤 Listening</span>
+                    <Mic className="w-3.5 h-3.5 text-white" /><span className="text-white text-xs font-semibold">Listening</span>
                   </div>
                 )}
               </div>
@@ -830,7 +831,7 @@ export default function TeacherTryHomeworkPage() {
             <div className="flex-1 flex flex-col items-center justify-center">
               {pageState === 'ready' && (
                 <div className="text-center">
-                  <div className="text-6xl mb-6">👁️</div>
+                  <div className="flex justify-center mb-6"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><Eye className="w-8 h-8 text-white" /></div></div>
                   <h2 className="text-white text-3xl font-black mb-3">Preview Homework</h2>
                   <p className="text-white/70 mb-2">{items.length} item{items.length !== 1 ? 's' : ''} · {timeInSeconds}s each</p>
                   <p className="text-white/40 text-xs mb-10">Results not saved — teacher preview only</p>

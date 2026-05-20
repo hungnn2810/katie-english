@@ -91,7 +91,13 @@
       "Bash(npx shadcn@latest init --yes --base-color zinc --style default --css-variables --no-rsc --typescript)",
       "Bash(npx shadcn@latest init --help)",
       "Bash(npx shadcn@latest init --yes --defaults)",
-      "Bash(npx shadcn@latest add card badge input label select dialog table separator avatar --yes)"
+      "Bash(npx shadcn@latest add card badge input label select dialog table separator avatar --yes)",
+      "WebFetch(domain:dribbble.com)",
+      "Skill(gsd-stats)",
+      "Bash(jobs)",
+      "Bash(npx playwright *)",
+      "Bash(sed -n '410,422p' /Users/hung/Documents/katie-english/frontend/app/teacher/homework/_components/ReadingCreationPage.tsx)",
+      "Bash(sed -n '633,639p' /Users/hung/Documents/katie-english/frontend/app/teacher/homework/_components/ReadingCreationPage.tsx)"
     ]
   },
   "enableAllProjectMcpServers": true,

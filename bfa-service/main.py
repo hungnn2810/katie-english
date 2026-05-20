@@ -3,6 +3,7 @@ import concurrent.futures
 import json
 import logging
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -664,6 +665,308 @@ def _analyze_sync(
         return align_result
     finally:
         shutil.rmtree(work_dir, ignore_errors=True)
+
+
+def _tokenize_target(text: str) -> List[str]:
+    cleaned = re.sub(r"[^\w\s']", " ", text.lower())
+    return [w for w in cleaned.split() if w]
+
+
+def _speaking_error_payload(target_text: str, message: str) -> dict:
+    words = _tokenize_target(target_text)
+    return {
+        "success": False,
+        "transcription": {"text": ""},
+        "words": [
+            {
+                "word": w,
+                "phonemes": [],
+                "score": 0,
+                "feedback": [{"status": "error", "message": message, "expected": None, "aligned": None}],
+            }
+            for w in words
+        ],
+        "overall_score": 0,
+        "matched_words": 0,
+        "total_words": len(words),
+    }
+
+
+def _extract_per_word_results(word_segments: List[dict], target_words: List[str]) -> dict:
+    silence_labels = {"-", "SIL", "sil", "sp", "spn", "<eps>", ""}
+    word_results = []
+    for seg, word in zip(word_segments, target_words):
+        phoneme_ts = seg.get("phoneme_ts") or []
+        aligned_phonemes: List[dict] = []
+        for entry in phoneme_ts:
+            if not isinstance(entry, dict):
+                continue
+            label = str(entry.get("ipa_label") or entry.get("phoneme_label") or "").strip()
+            if not label or label in silence_labels:
+                continue
+            symbol = normalize_ipa(label)
+            if not symbol or symbol in silence_labels:
+                continue
+            start_ms = float(entry.get("start_ms", 0.0))
+            end_ms = float(entry.get("end_ms", 0.0))
+            aligned_phonemes.append({
+                "symbol": symbol,
+                "ipa": label,
+                "start": round(start_ms / 1000, 3),
+                "end": round(end_ms / 1000, 3),
+                "duration": round((end_ms - start_ms) / 1000, 3),
+            })
+
+        expected = espeak_phonemes(word)
+        aligned_symbols = [p["symbol"] for p in aligned_phonemes]
+
+        if not aligned_phonemes:
+            score, ops = 0, [{"status": "error", "message": "No phonemes aligned", "expected": None, "aligned": None}]
+        else:
+            score, ops = score_alignment(expected, aligned_symbols)
+            aligned_idx = 0
+            enriched_ops = []
+            for op in ops:
+                entry = {**op}
+                if op["status"] in ("correct", "similar", "substituted", "extra") and aligned_idx < len(aligned_phonemes):
+                    ph = aligned_phonemes[aligned_idx]
+                    entry["start"] = ph["start"]
+                    entry["end"] = ph["end"]
+                    entry["duration"] = ph["duration"]
+                    aligned_idx += 1
+                enriched_ops.append(entry)
+            ops = enriched_ops
+
+        word_results.append({
+            "word": word,
+            "phonemes": aligned_phonemes,
+            "expected_phonemes": expected,
+            "aligned_phonemes": aligned_symbols,
+            "score": score,
+            "feedback": ops,
+        })
+    return {"success": True, "words": word_results, "error": None}
+
+
+def _partition_flat_alignment(
+    flat_phoneme_ts: List[dict],
+    target_words: List[str],
+    silence_labels: set,
+) -> dict:
+    word_expected = [(w, espeak_phonemes(w)) for w in target_words]
+    total_expected = sum(len(ph) for _, ph in word_expected)
+
+    content = [
+        e for e in flat_phoneme_ts
+        if isinstance(e, dict) and
+           str(e.get("ipa_label") or e.get("phoneme_label") or "").strip() not in silence_labels
+    ]
+
+    word_results = []
+    pos = 0
+    for word, expected in word_expected:
+        if total_expected > 0:
+            count = round(len(expected) / total_expected * len(content))
+        else:
+            count = max(1, len(content) // len(target_words)) if target_words else 0
+        slice_ = content[pos: pos + count]
+        pos += count
+
+        aligned_phonemes = []
+        for entry in slice_:
+            label = str(entry.get("ipa_label") or entry.get("phoneme_label") or "").strip()
+            symbol = normalize_ipa(label)
+            if not symbol or symbol in silence_labels:
+                continue
+            start_ms = float(entry.get("start_ms", 0.0))
+            end_ms = float(entry.get("end_ms", 0.0))
+            aligned_phonemes.append({
+                "symbol": symbol,
+                "ipa": label,
+                "start": round(start_ms / 1000, 3),
+                "end": round(end_ms / 1000, 3),
+                "duration": round((end_ms - start_ms) / 1000, 3),
+            })
+
+        aligned_symbols = [p["symbol"] for p in aligned_phonemes]
+        if aligned_phonemes:
+            score, ops = score_alignment(expected, aligned_symbols)
+        else:
+            score, ops = 0, [{"status": "error", "message": "No phonemes in slice", "expected": None, "aligned": None}]
+
+        word_results.append({
+            "word": word,
+            "phonemes": aligned_phonemes,
+            "expected_phonemes": expected,
+            "aligned_phonemes": aligned_symbols,
+            "score": score,
+            "feedback": ops,
+        })
+    return {"success": True, "words": word_results, "error": None}
+
+
+def _run_speaking_alignment(wav_path: Path, target_text: str) -> dict:
+    aligner = get_aligner()
+    audio_data = aligner.load_audio(str(wav_path))
+
+    target_words = _tokenize_target(target_text)
+    if not target_words:
+        return {"success": False, "words": [], "error": "Empty target text after tokenization"}
+
+    result = aligner.process_sentence(target_text, audio_data)
+    segments = result.get("segments") if isinstance(result, dict) else None
+    if not segments:
+        return {"success": False, "words": [], "error": "No alignment segments produced"}
+
+    silence_labels = {"-", "SIL", "sil", "sp", "spn", "<eps>", ""}
+
+    word_segments = []
+    for seg in segments:
+        if not isinstance(seg, dict):
+            continue
+        phoneme_ts = seg.get("phoneme_ts") or []
+        content_phonemes = [
+            e for e in phoneme_ts
+            if isinstance(e, dict) and
+               str(e.get("ipa_label") or e.get("phoneme_label") or "").strip() not in silence_labels
+        ]
+        if content_phonemes:
+            word_segments.append(seg)
+
+    if len(word_segments) == len(target_words):
+        return _extract_per_word_results(word_segments, target_words)
+    elif len(segments) == 1:
+        flat_phonemes = segments[0].get("phoneme_ts") or []
+        return _partition_flat_alignment(flat_phonemes, target_words, silence_labels)
+    else:
+        logger.warning(json.dumps({
+            "event": "speaking_segment_mismatch",
+            "target_words": len(target_words),
+            "segments": len(word_segments),
+        }))
+        mappable = min(len(word_segments), len(target_words))
+        partial = _extract_per_word_results(word_segments[:mappable], target_words[:mappable])
+        for w in target_words[mappable:]:
+            expected = espeak_phonemes(w)
+            partial["words"].append({
+                "word": w,
+                "phonemes": [],
+                "expected_phonemes": expected,
+                "aligned_phonemes": [],
+                "score": 0,
+                "feedback": [{"status": "error", "message": "No alignment segment", "expected": None, "aligned": None}],
+            })
+        partial["success"] = True
+        return partial
+
+
+def _analyze_speaking_sync(
+    raw_bytes: bytes,
+    suffix: str,
+    target_text: str,
+    mode: str,
+) -> dict:
+    work_dir = Path(tempfile.mkdtemp(prefix="bfa_speaking_"))
+    try:
+        raw_path = work_dir / f"input{suffix}"
+        with open(raw_path, "wb") as f:
+            f.write(raw_bytes)
+
+        wav_path = work_dir / "input.wav"
+        conv = subprocess.run(
+            ["ffmpeg", "-i", str(raw_path), "-ar", "16000", "-ac", "1", "-t", "300", "-y", str(wav_path)],
+            capture_output=True,
+            timeout=FFMPEG_TIMEOUT,
+        )
+        if conv.returncode != 0:
+            err = f"Audio conversion failed: {conv.stderr.decode()[:200]}"
+            return _speaking_error_payload(target_text, err)
+
+        if not has_sufficient_energy(wav_path):
+            return _speaking_error_payload(target_text, "No speech detected in audio")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            transcribe_fut = pool.submit(_transcribe_wav, wav_path, target_text)
+            align_fut = pool.submit(_run_speaking_alignment, wav_path, target_text)
+            transcription_text = transcribe_fut.result()
+            align_result = align_fut.result()
+
+        if not align_result["success"]:
+            return _speaking_error_payload(target_text, align_result.get("error", "Alignment failed"))
+
+        word_results = align_result["words"]
+
+        if transcription_text and mode == "SCRIPT_MATCH":
+            spoken_words = _tokenize_target(transcription_text)
+            for i, word_result in enumerate(word_results):
+                spoken_word = spoken_words[i] if i < len(spoken_words) else ""
+                if spoken_word:
+                    spoken_phonemes = espeak_phonemes(spoken_word)
+                    if spoken_phonemes:
+                        expected = word_result["expected_phonemes"]
+                        t_score, t_ops = score_alignment(expected, spoken_phonemes)
+                        word_result["score"] = t_score
+                        word_result["feedback"] = t_ops
+
+        total_phonemes = sum(len(w["expected_phonemes"]) for w in word_results)
+        if total_phonemes > 0:
+            weighted_sum = sum(w["score"] * len(w["expected_phonemes"]) for w in word_results)
+            overall_score = round(weighted_sum / total_phonemes)
+        else:
+            overall_score = 0
+
+        matched_words = sum(1 for w in word_results if w["score"] >= 70)
+
+        response_words = [
+            {
+                "word": wr["word"],
+                "phonemes": wr["phonemes"],
+                "score": wr["score"],
+                "feedback": wr["feedback"],
+            }
+            for wr in word_results
+        ]
+
+        return {
+            "success": True,
+            "transcription": {"text": transcription_text},
+            "words": response_words,
+            "overall_score": overall_score,
+            "matched_words": matched_words,
+            "total_words": len(word_results),
+        }
+    finally:
+        shutil.rmtree(work_dir, ignore_errors=True)
+
+
+@app.post("/analyze-speaking")
+async def analyze_speaking(
+    audio: UploadFile = File(...),
+    target_text: str = Form(...),
+    mode: str = Form(default="SCRIPT_MATCH"),
+):
+    async with REQUEST_SEMAPHORE:
+        return await _analyze_speaking_impl(audio, target_text, mode)
+
+
+async def _analyze_speaking_impl(
+    audio: UploadFile,
+    target_text: str,
+    mode: str,
+):
+    if mode not in ("SCRIPT_MATCH", "FREE_SPEAK"):
+        raise HTTPException(status_code=400, detail="mode must be SCRIPT_MATCH or FREE_SPEAK")
+
+    target_text = target_text.strip()
+    if not target_text:
+        raise HTTPException(status_code=400, detail="target_text is required")
+
+    suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+    raw_bytes = await audio.read()
+    if len(raw_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Audio file too large")
+
+    return await asyncio.to_thread(_analyze_speaking_sync, raw_bytes, suffix, target_text, mode)
 
 
 @app.get("/health")
