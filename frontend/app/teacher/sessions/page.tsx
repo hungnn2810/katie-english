@@ -5,6 +5,8 @@ import {
   GameSession, Student, HomeworkItem,
 } from '@/lib/admin-api';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, ChevronDown, AlignLeft, Mic } from 'lucide-react';
 
 function ScoreBadge({ score }: { score?: number | null }) {
   if (score === null || score === undefined) return <span className="text-textSecondary">—</span>;
@@ -74,25 +76,27 @@ export default function SessionsPage() {
       <div className="bg-white rounded-2xl border border-border p-4 flex flex-wrap gap-3 items-end">
         <div className="flex-1 min-w-36">
           <label className="block text-xs font-semibold text-textSecondary mb-1">Student</label>
-          <select
-            value={studentFilter}
-            onChange={e => setStudentFilter(e.target.value)}
-            className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">All students</option>
-            {students.map(s => <option key={s.id} value={s.id}>{s.fullname}</option>)}
-          </select>
+          <Select value={studentFilter} onValueChange={(v) => setStudentFilter(v ?? '')}>
+            <SelectTrigger className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/30">
+              <SelectValue placeholder="All students" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All students</SelectItem>
+              {students.map(s => <SelectItem key={s.id} value={String(s.id)}>{s.fullname}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex-1 min-w-48">
           <label className="block text-xs font-semibold text-textSecondary mb-1">Assignment</label>
-          <select
-            value={assignmentFilter}
-            onChange={e => setAssignmentFilter(e.target.value)}
-            className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">All assignments</option>
-            {assignments.map(a => <option key={a.id} value={a.id}>{a.label}</option>)}
-          </select>
+          <Select value={assignmentFilter} onValueChange={(v) => setAssignmentFilter(v ?? '')}>
+            <SelectTrigger className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary/30">
+              <SelectValue placeholder="All assignments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All assignments</SelectItem>
+              {assignments.map(a => <SelectItem key={a.id} value={String(a.id)}>{a.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
         <Button
           onClick={search}
@@ -128,10 +132,12 @@ export default function SessionsPage() {
                 className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-gray-50 transition-colors"
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: isPhonics ? '#4F9DFF22' : '#A78BFA22' }}
                 >
-                  {isPhonics ? '🔤' : '🎤'}
+                  {isPhonics
+                    ? <AlignLeft className="w-5 h-5" style={{ color: '#4F9DFF' }} />
+                    : <Mic className="w-5 h-5" style={{ color: '#A78BFA' }} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-textPrimary truncate">
@@ -146,12 +152,9 @@ export default function SessionsPage() {
                     ? <ScoreBadge score={s.score} />
                     : <span className="text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full">In progress</span>
                   }
-                  <svg
+                  <ChevronDown
                     className={`w-4 h-4 text-textSecondary transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  />
                 </div>
               </button>
 
@@ -159,10 +162,7 @@ export default function SessionsPage() {
                 <div className="border-t border-border px-5 py-4 space-y-4">
                   {!detail && (
                     <div className="flex items-center gap-2 text-sm text-textSecondary">
-                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-                        <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                      </svg>
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       Loading details…
                     </div>
                   )}

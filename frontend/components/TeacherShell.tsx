@@ -6,13 +6,14 @@ import { clearAuth, changePassword, AuthUser } from '@/lib/auth';
 import { gradients } from '@/lib/colors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { LayoutDashboard, School, Users, BookOpen, Video, KeyRound, LogOut } from 'lucide-react';
 
 const nav = [
-  { href: '/teacher', label: 'Dashboard', icon: '🏠' },
-  { href: '/teacher/classes', label: 'Classes', icon: '🏫' },
-  { href: '/teacher/students', label: 'Students', icon: '👦' },
-  { href: '/teacher/homework', label: 'Homework', icon: '📚' },
-  { href: '/teacher/sessions', label: 'Sessions', icon: '🎬' },
+  { href: '/teacher', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/teacher/classes', label: 'Classes', icon: School },
+  { href: '/teacher/students', label: 'Students', icon: Users },
+  { href: '/teacher/homework', label: 'Homework', icon: BookOpen },
+  { href: '/teacher/sessions', label: 'Sessions', icon: Video },
 ];
 
 interface Props {
@@ -91,7 +92,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                     style={{ background: '#4F9DFF' }}
                   />
                 )}
-                <span className="text-[15px] leading-none">{item.icon}</span>
+                <item.icon className="w-[15px] h-[15px] shrink-0" />
                 <span className={active ? 'text-blue-200 font-semibold' : ''}>{item.label}</span>
               </Link>
             );
@@ -119,9 +120,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
             onClick={() => { setShowPwForm((v) => !v); setPwError(''); setPwSuccess(false); }}
             className="w-full justify-start text-slate-500 hover:text-slate-300 hover:bg-white/[0.05] text-xs px-3 mb-0.5"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
+            <KeyRound className="w-3.5 h-3.5" />
             Change password
           </Button>
 
@@ -164,9 +163,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
             onClick={logout}
             className="w-full justify-start text-slate-500 hover:text-slate-300 hover:bg-white/[0.05] text-xs px-3"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            <LogOut className="w-3.5 h-3.5" />
             Sign out
           </Button>
         </div>

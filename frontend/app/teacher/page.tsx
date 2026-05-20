@@ -5,6 +5,7 @@ import { getClasses, getStudents, getHomeworkList, ClassItem, ScheduleSlot } fro
 import { cardGradients, colors } from '@/lib/colors';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, RefreshCw } from 'lucide-react';
 
 const DAY_ORDER = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
@@ -108,6 +109,7 @@ export default function TeacherDashboard() {
           className="self-start sm:self-auto text-xs font-semibold text-white hover:opacity-90"
           style={{ background: colors.primary }}
         >
+          <RefreshCw className="w-3.5 h-3.5" />
           Refresh data
         </Button>
       </div>
@@ -121,6 +123,7 @@ export default function TeacherDashboard() {
             className="text-xs font-semibold text-white"
             style={{ background: colors.highlight }}
           >
+            <RefreshCw className="w-3.5 h-3.5" />
             Retry
           </Button>
         </div>
@@ -139,9 +142,7 @@ export default function TeacherDashboard() {
               <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center text-2xl backdrop-blur-sm">
                 {c.icon}
               </div>
-              <svg className="w-4 h-4 text-white/40 group-hover:text-white/70 group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-              </svg>
+              <ArrowRight className="w-4 h-4 text-white/40 group-hover:text-white/70 group-hover:translate-x-0.5 transition-all" />
             </div>
             <div className="text-3xl font-black mb-1 tracking-tight">{loading ? '—' : c.value}</div>
             <div className="text-white/75 text-sm font-medium">{c.label}</div>

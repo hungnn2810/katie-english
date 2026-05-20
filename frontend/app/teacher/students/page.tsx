@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const emptyParent = { name: '', phoneNumber: '', type: 'FATHER' as const };
 const emptyCreate = (): CreateStudentInput => ({ fullname: '', sex: 'MALE', dateOfBirth: '', classId: undefined, parents: [{ ...emptyParent }], upn: '', password: '' });
@@ -65,11 +66,15 @@ function ParentFields({ parents, onChange }: {
             onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], name: e.target.value }; onChange(ps); }} />
           <Input className="input-base h-auto" placeholder="Phone number" value={p.phoneNumber}
             onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], phoneNumber: e.target.value }; onChange(ps); }} />
-          <select className="input-base" value={p.type}
-            onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], type: e.target.value as 'FATHER' | 'MOTHER' }; onChange(ps); }}>
-            <option value="FATHER">Father</option>
-            <option value="MOTHER">Mother</option>
-          </select>
+          <Select value={p.type} onValueChange={(v) => { const ps = [...parents]; ps[i] = { ...ps[i], type: v as 'FATHER' | 'MOTHER' }; onChange(ps); }}>
+            <SelectTrigger className="input-base h-auto">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="FATHER">Father</SelectItem>
+              <SelectItem value="MOTHER">Mother</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       ))}
     </div>
@@ -124,10 +129,15 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
             </div>
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
-              <select className="input-base" value={form.classId ?? ''} onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
-                <option value="">No class assigned</option>
-                {classes.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
-              </select>
+              <Select value={String(form.classId ?? '')} onValueChange={(v) => setForm((f) => ({ ...f, classId: v ? Number(v) : undefined }))}>
+                <SelectTrigger className="input-base h-auto">
+                  <SelectValue placeholder="No class assigned" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No class assigned</SelectItem>
+                  {classes.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name} ({c.code})</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -207,10 +217,15 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
             </div>
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
-              <select className="input-base" value={form.classId ?? ''} onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
-                <option value="">No class assigned</option>
-                {classes.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
-              </select>
+              <Select value={String(form.classId ?? '')} onValueChange={(v) => setForm((f) => ({ ...f, classId: v ? Number(v) : undefined }))}>
+                <SelectTrigger className="input-base h-auto">
+                  <SelectValue placeholder="No class assigned" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No class assigned</SelectItem>
+                  {classes.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name} ({c.code})</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="rounded-xl border border-border p-4 space-y-3 bg-background/50">
@@ -293,10 +308,15 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
             </div>
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
-              <select className="input-base" value={form.classId ?? ''} onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
-                <option value="">No class assigned</option>
-                {classes.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
-              </select>
+              <Select value={String(form.classId ?? '')} onValueChange={(v) => setForm((f) => ({ ...f, classId: v ? Number(v) : undefined }))}>
+                <SelectTrigger className="input-base h-auto">
+                  <SelectValue placeholder="No class assigned" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No class assigned</SelectItem>
+                  {classes.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name} ({c.code})</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="rounded-xl border border-border p-4 space-y-3 bg-background/50">

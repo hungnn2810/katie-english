@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Search, Plus, Calendar, Pencil, Trash2 } from 'lucide-react';
 
 const STATUS_CONFIG: Record<ClassStatus, { label: string; color: string; bg: string; dot: string }> = {
   PENDING:    { label: 'Pending',     color: '#92400E', bg: '#FEF3C7', dot: '#F59E0B' },
@@ -215,9 +216,7 @@ export default function ClassesPage() {
       {/* Toolbar */}
       <div className="flex items-center gap-3 mb-5">
         <div className="relative flex-1 max-w-xs">
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary" />
           <Input className="input-base pl-10 h-auto" placeholder="Search classes…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="flex gap-1.5 flex-1">
@@ -241,7 +240,7 @@ export default function ClassesPage() {
           })}
         </div>
         <Button onClick={openCreate} className="btn-primary flex items-center gap-2 shrink-0 h-auto" style={{ background: gradients.primaryPurple }}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          <Plus className="w-4 h-4" />
           New Class
         </Button>
       </div>
@@ -287,7 +286,7 @@ export default function ClassesPage() {
               <div className="p-5 flex-1 flex flex-col gap-3">
                 {/* Date range */}
                 <div className="flex items-center gap-1.5 text-xs text-textSecondary">
-                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  <Calendar className="w-3.5 h-3.5 shrink-0" />
                   {new Date(c.startDate).toLocaleDateString()} – {new Date(c.endDate).toLocaleDateString()}
                 </div>
 
@@ -319,11 +318,13 @@ export default function ClassesPage() {
 
               <div className="px-5 py-3 bg-background/50 border-t border-border flex gap-1">
                 <Button variant="ghost" size="sm" onClick={() => openEdit(c)}
-                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-primary hover:bg-primary/8">
+                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-primary hover:bg-primary/8 gap-1.5">
+                  <Pencil className="w-3.5 h-3.5" />
                   Edit
                 </Button>
                 <Button variant="ghost" size="sm" onClick={async () => { if (confirm('Delete this class?')) { await deleteClass(c.id); load(); } }}
-                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8">
+                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8 gap-1.5">
+                  <Trash2 className="w-3.5 h-3.5" />
                   Delete
                 </Button>
               </div>

@@ -17,6 +17,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
+import { Plus, X, Loader2, AlignLeft, Mic } from 'lucide-react';
 
 const TYPE_META: Record<HomeworkType, { label: string; emoji: string; color: string; bg: string }> = {
   PHONICS:  { label: 'Phonics',  emoji: '🔤', color: '#A78BFA', bg: '#A78BFA18' },
@@ -160,9 +161,7 @@ function HomeworkModal({
           </div>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
             className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-4 h-4" />
           </Button>
         </DialogHeader>
 
@@ -404,7 +403,7 @@ function HomeworkModal({
             <Button type="submit" disabled={loading}
               className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
               style={{ background: gradients.primarySecondary }}>
-              {loading && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
             </Button>
           </DialogFooter>
@@ -467,9 +466,7 @@ function AssignModal({
           </div>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
             className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-4 h-4" />
           </Button>
         </DialogHeader>
 
@@ -512,7 +509,7 @@ function AssignModal({
             <Button type="submit" disabled={loading}
               className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
               style={{ background: gradients.primarySecondary }}>
-              {loading && <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? 'Assigning…' : 'Assign'}
             </Button>
           </DialogFooter>
@@ -543,9 +540,7 @@ function TypePickerModal({
           </div>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
             className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-4 h-4" />
           </Button>
         </DialogHeader>
         <div className="px-6 py-5">
@@ -632,16 +627,17 @@ export default function HomeworkPage() {
       <div className="flex items-center gap-3 mb-5 flex-wrap">
         <div className="flex gap-1.5">
           {([
-            { key: 'ALL', label: 'All' },
-            { key: 'PHONICS', label: '🔤 Phonics' },
-            { key: 'SPEAKING', label: '🎤 Speaking' },
-            { key: 'READING', label: '📖 Reading' },
+            { key: 'ALL', label: 'All', icon: null },
+            { key: 'PHONICS', label: 'Phonics', icon: AlignLeft },
+            { key: 'SPEAKING', label: 'Speaking', icon: Mic },
+            { key: 'READING', label: 'Reading', icon: null },
           ] as const).map((t) => (
             <Button key={t.key} variant="outline" size="sm" onClick={() => setTypeFilter(t.key)}
-              className="px-3.5 py-2 h-auto rounded-xl text-xs font-semibold border transition-all"
+              className="px-3.5 py-2 h-auto rounded-xl text-xs font-semibold border transition-all gap-1.5"
               style={typeFilter === t.key
                 ? { background: '#F0F9FF', color: colors.primary, borderColor: colors.primary }
                 : { background: 'white', color: colors.textSecondary, borderColor: colors.border }}>
+              {t.icon && <t.icon className="w-3.5 h-3.5" />}
               {t.label}
             </Button>
           ))}
@@ -650,9 +646,7 @@ export default function HomeworkPage() {
         <Button onClick={openCreate} aria-expanded={showTypePicker}
           className="btn-primary flex items-center gap-2 shrink-0 h-auto"
           style={{ background: gradients.primarySecondary }}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <Plus className="w-4 h-4" />
           + Create
         </Button>
       </div>
