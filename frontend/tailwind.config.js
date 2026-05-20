@@ -4,6 +4,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Brand tokens (direct values)
         primary: '#4F9DFF',
         secondary: '#6ED6C1',
         accent: '#FFD166',
@@ -17,6 +18,26 @@ module.exports = {
         border: '#E2E8F0',
         textPrimary: '#0F172A',
         textSecondary: '#64748B',
+        // shadcn semantic tokens (CSS variables)
+        foreground: 'var(--foreground)',
+        'primary-foreground': 'var(--primary-foreground)',
+        'secondary-foreground': 'var(--secondary-foreground)',
+        'card-foreground': 'var(--card-foreground)',
+        'accent-foreground': 'var(--accent-foreground)',
+        'popover-foreground': 'var(--popover-foreground)',
+        muted: {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
+        },
+        popover: {
+          DEFAULT: '#ffffff',
+          foreground: 'var(--foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+        },
+        input: 'var(--input)',
+        ring: 'var(--ring)',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
