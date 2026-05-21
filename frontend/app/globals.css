@@ -121,4 +121,13 @@
   .card {
     @apply bg-white rounded-2xl border border-border shadow-card;
   }
+
+  .calendar-accent button[data-selected-single="true"] {
+    background-color: #F0623A !important;
+    color: #ffffff !important;
+  }
+  .calendar-accent .rdp-day_today:not([data-selected-single="true"]) {
+    background-color: #FFF2EF;
+    color: #F0623A;
+  }
 }

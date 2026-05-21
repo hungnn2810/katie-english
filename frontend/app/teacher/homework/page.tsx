@@ -6,18 +6,19 @@ import {
   getHomeworkList, createHomework, updateHomework, deleteHomework,
   getClasses, createAssignment, uploadSpeakingImage,
   HomeworkItem, ClassItem, CreateHomeworkInput, UpdateHomeworkInput,
-  CreateAssignmentInput, HomeworkType, SpeakingMode, CreatePartInput, CreateWordInput,
+  CreateAssignmentInput, HomeworkType, SpeakingMode, CreatePartInput,
 } from '@/lib/admin-api';
-import { cardGradients, gradients, colors } from '@/lib/colors';
+import { cardGradients, colors } from '@/lib/colors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardFooter } from '@/components/ui/card';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search } from 'lucide-react';
+import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { DateTimePicker } from '@/components/ui/date-picker';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   PHONICS:  { label: 'Phonics',  icon: Hash,     color: '#A78BFA', bg: '#A78BFA18' },
@@ -28,18 +29,20 @@ const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; 
 // ── Homework form modal ───────────────────────────────────────────────────────
 
 function HomeworkModal({
-  editingId, form, setForm, onClose, onSaved,
+  editingId, form, setForm, onClose, onSaved, onNavigateToReading,
 }: {
   editingId: number | null;
   form: CreateHomeworkInput;
   setForm: React.Dispatch<React.SetStateAction<CreateHomeworkInput>>;
   onClose: () => void;
   onSaved: () => void;
+  onNavigateToReading: () => void;
 }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [newPartName, setNewPartName] = useState('');
   const [newWordInputs, setNewWordInputs] = useState<Record<number, { text: string; highlight: string }>>({});
+  const [collapsedParts, setCollapsedParts] = useState<Set<number>>(new Set());
   const [wordUploading, setWordUploading] = useState<string | null>(null);
   const [speakUploading, setSpeakUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -55,12 +58,33 @@ function HomeworkModal({
   function addPart() {
     const name = newPartName.trim();
     if (!name) return;
+    const newIdx = parts.length;
     setParts((prev) => [...prev, { name, words: [] }]);
+    if (newIdx >= 1) {
+      setCollapsedParts((prev) => new Set(Array.from(prev).concat(newIdx)));
+    }
     setNewPartName('');
   }
 
   function removePart(pIdx: number) {
     setParts((prev) => prev.filter((_, i) => i !== pIdx));
+    setCollapsedParts((prev) => {
+      const next = new Set<number>();
+      Array.from(prev).forEach((idx) => {
+        if (idx < pIdx) next.add(idx);
+        else if (idx > pIdx) next.add(idx - 1);
+      });
+      return next;
+    });
+  }
+
+  function togglePartCollapse(pIdx: number) {
+    setCollapsedParts((prev) => {
+      const next = new Set(prev);
+      if (next.has(pIdx)) next.delete(pIdx);
+      else next.add(pIdx);
+      return next;
+    });
   }
 
   function addWord(pIdx: number) {
@@ -149,15 +173,18 @@ function HomeworkModal({
     }
   }
 
+  const headingName = editingId !== null ? (form.name || meta.label) : meta.label;
+
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-0" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-8 pt-7 pb-5 border-b border-border gap-0">
           <div>
-            <DialogTitle className="text-lg font-black text-textPrimary">
-              {editingId !== null ? 'Edit Homework' : 'New Homework'}
+            <DialogTitle className="text-xl font-black text-textPrimary">
+              <span className="text-textSecondary font-semibold">{editingId !== null ? 'Edit · ' : 'New · '}</span>
+              <span style={{ color: meta.color }}>{headingName}</span>
             </DialogTitle>
-            <p className="text-xs text-textSecondary mt-0.5">Reusable template — assign to classes separately.</p>
+            <p className="text-xs text-textSecondary mt-1">Reusable template — assign to classes separately.</p>
           </div>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
             className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
@@ -166,22 +193,25 @@ function HomeworkModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="px-6 py-5 space-y-5">
+          <div className="px-8 py-6 space-y-6">
+
+            {/* Type selector — create mode only */}
             {editingId === null && (
               <div>
-                <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">Type</p>
-                <div className="flex gap-3">
+                <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-3">Type</p>
+                <div className="grid grid-cols-3 gap-4">
                   {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
                     const m = TYPE_META[t];
                     const active = form.type === t;
                     return (
                       <Button key={t} type="button" variant="outline"
                         onClick={() => setForm((f) => ({ ...f, type: t, speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingText: '', speakingPictureUrl: '' }))}
-                        className="flex-1 gap-2 py-3 h-auto rounded-xl text-sm font-bold border-2 transition-all"
+                        className="flex-col h-auto gap-2 py-4 rounded-xl text-sm font-bold border-2 transition-all"
                         style={active
                           ? { background: m.color, color: 'white', borderColor: m.color }
                           : { background: 'white', color: m.color, borderColor: m.color + '55' }}>
-                        <m.icon className="w-4 h-4" />{m.label}
+                        <m.icon className="w-5 h-5" />
+                        {m.label}
                       </Button>
                     );
                   })}
@@ -189,9 +219,30 @@ function HomeworkModal({
               </div>
             )}
 
-            {form.type === 'PHONICS' ? (
-              <div className="space-y-4">
-                {/* Homework name */}
+            {/* READING redirect block */}
+            {form.type === 'READING' && (
+              <div className="flex flex-col items-center gap-4 py-10 rounded-2xl border-2 border-dashed"
+                style={{ borderColor: meta.color + '55', background: meta.bg }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ background: meta.color + '22' }}>
+                  <BookOpen className="w-7 h-7" style={{ color: meta.color }} />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-textPrimary">Reading homework uses a dedicated editor</p>
+                  <p className="text-xs text-textSecondary mt-1">Build activities, set sequences, and preview inline.</p>
+                </div>
+                <Button type="button"
+                  className="px-6 py-2.5 h-auto rounded-xl text-sm font-bold text-white gap-2"
+                  style={{ background: meta.color }}
+                  onClick={() => { onClose(); onNavigateToReading(); }}>
+                  Open Reading Editor
+                </Button>
+              </div>
+            )}
+
+            {/* PHONICS form */}
+            {form.type === 'PHONICS' && (
+              <div className="space-y-5">
                 <div>
                   <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">
                     Homework Name
@@ -202,7 +253,6 @@ function HomeworkModal({
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
                 </div>
 
-                {/* Parts */}
                 <div>
                   <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-3">
                     Parts
@@ -211,96 +261,119 @@ function HomeworkModal({
                     </span>
                   </p>
 
-                  <div className="space-y-4">
-                    {parts.map((part, pIdx) => (
-                      <div key={pIdx} className="rounded-2xl border border-border p-4"
-                        style={{ background: meta.bg + '60' }}>
-                        {/* Part header */}
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white"
-                            style={{ background: meta.color }}>
-                            Part {pIdx + 1}
-                          </span>
-                          <span className="text-sm font-bold" style={{ color: meta.color }}>{part.name}</span>
-                          <div className="flex-1" />
-                          <Button type="button" variant="ghost" size="sm" onClick={() => removePart(pIdx)}
-                            className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-auto px-2 py-1">
-                            Remove part
-                          </Button>
-                        </div>
-
-                        {/* Words list */}
-                        {part.words.length > 0 && (
-                          <div className="space-y-2 mb-3">
-                            {part.words.map((word, wIdx) => {
-                              const uploadKey = `${pIdx}-${wIdx}`;
-                              return (
-                                <div key={wIdx} className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-border">
-                                  <span className="text-sm font-bold text-textPrimary flex-1">{word.text}</span>
-                                  {word.highlight && (
-                                    <Badge className="text-xs px-2 py-0.5 rounded-lg font-semibold h-auto border-0"
-                                      style={{ background: meta.bg, color: meta.color }}>
-                                      _{word.highlight}_
-                                    </Badge>
-                                  )}
-                                  {/* Word image */}
-                                  {word.imageUrl ? (
-                                    <div className="relative">
-                                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                                      <img src={word.imageUrl} alt={word.text}
-                                        className="w-8 h-8 rounded-lg object-cover border border-border" />
-                                      <button type="button"
-                                        onClick={() => setParts((prev) => prev.map((p, i) =>
-                                          i !== pIdx ? p : { ...p, words: p.words.map((w, j) => j !== wIdx ? w : { ...w, imageUrl: '' }) }
-                                        ))}
-                                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center"><X className="w-2.5 h-2.5" /></button>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <Button type="button" variant="outline" size="xs"
-                                        onClick={() => wordFileRefs.current[uploadKey]?.click()}
-                                        disabled={wordUploading === uploadKey}
-                                        className="text-xs px-2 py-1 h-auto rounded-lg border-dashed text-textSecondary">
-                                        {wordUploading === uploadKey ? '…' : <ImageIcon className="w-3.5 h-3.5" />}
-                                      </Button>
-                                      <input type="file" accept="image/*" className="hidden"
-                                        ref={(el) => { wordFileRefs.current[uploadKey] = el; }}
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          if (file) uploadWordImage(pIdx, wIdx, file);
-                                          e.target.value = '';
-                                        }} />
-                                    </>
-                                  )}
-                                  <Button type="button" variant="ghost" size="icon-xs"
-                                    onClick={() => removeWord(pIdx, wIdx)}
-                                    className="text-textSecondary hover:text-red-500 ml-1"><X className="w-3.5 h-3.5" /></Button>
-                                </div>
-                              );
-                            })}
+                  <div className="space-y-3">
+                    {parts.map((part, pIdx) => {
+                      const isCollapsed = collapsedParts.has(pIdx);
+                      return (
+                        <div key={pIdx} className="rounded-2xl border border-border overflow-hidden"
+                          style={{ background: meta.bg + '60' }}>
+                          {/* Part header — always visible */}
+                          <div className="flex items-center gap-2 px-4 py-3">
+                            <button type="button" onClick={() => togglePartCollapse(pIdx)}
+                              className="shrink-0 text-textSecondary hover:text-textPrimary transition-colors">
+                              {isCollapsed
+                                ? <ChevronRight className="w-4 h-4" />
+                                : <ChevronDown className="w-4 h-4" />}
+                            </button>
+                            <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white shrink-0"
+                              style={{ background: meta.color }}>
+                              Part {pIdx + 1}
+                            </span>
+                            <span className="text-sm font-bold flex-1" style={{ color: meta.color }}>{part.name}</span>
+                            {isCollapsed && (
+                              <span className="text-xs text-textSecondary/60 mr-2">
+                                {part.words.length} word{part.words.length !== 1 ? 's' : ''}
+                              </span>
+                            )}
+                            <Button type="button" variant="ghost" size="sm" onClick={() => removePart(pIdx)}
+                              className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-auto px-2 py-1 shrink-0">
+                              Remove
+                            </Button>
                           </div>
-                        )}
 
-                        {/* Add word row */}
-                        <div className="flex gap-2">
-                          <Input type="text" className="input-base flex-1 text-sm py-1.5 h-auto"
-                            placeholder={`Word (e.g. paper)`}
-                            value={newWordInputs[pIdx]?.text ?? ''}
-                            onChange={(e) => setNewWordInputs((prev) => ({ ...prev, [pIdx]: { ...prev[pIdx], text: e.target.value } }))}
-                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
-                          <Input type="text" className="input-base w-20 text-sm py-1.5 h-auto"
-                            placeholder={`_${part.name}_`}
-                            value={newWordInputs[pIdx]?.highlight ?? ''}
-                            onChange={(e) => setNewWordInputs((prev) => ({ ...prev, [pIdx]: { ...prev[pIdx], highlight: e.target.value } }))}
-                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
-                          <Button type="button" size="sm" onClick={() => addWord(pIdx)}
-                            className="px-3 rounded-xl text-xs font-semibold text-white shrink-0 h-auto py-1.5"
-                            style={{ background: meta.color }}>
-                            + Word
-                          </Button>
+                          {/* Part body — collapsible */}
+                          {!isCollapsed && (
+                            <div className="px-4 pb-4">
+                              {part.words.length > 0 && (
+                                <div className="space-y-2 mb-3">
+                                  {part.words.map((word, wIdx) => {
+                                    const uploadKey = `${pIdx}-${wIdx}`;
+                                    return (
+                                      <div key={wIdx} className="flex items-center gap-3 bg-white rounded-xl px-3 py-2.5 border border-border">
+                                        <span className="text-sm font-bold text-textPrimary flex-1">{word.text}</span>
+                                        {word.highlight && (
+                                          <Badge className="text-xs px-2 py-0.5 rounded-lg font-semibold h-auto border-0"
+                                            style={{ background: meta.bg, color: meta.color }}>
+                                            _{word.highlight}_
+                                          </Badge>
+                                        )}
+                                        {word.imageUrl ? (
+                                          <div className="relative">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={word.imageUrl} alt={word.text}
+                                              className="w-8 h-8 rounded-lg object-cover border border-border" />
+                                            <button type="button"
+                                              onClick={() => setParts((prev) => prev.map((p, i) =>
+                                                i !== pIdx ? p : { ...p, words: p.words.map((w, j) => j !== wIdx ? w : { ...w, imageUrl: '' }) }
+                                              ))}
+                                              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center">
+                                              <X className="w-2.5 h-2.5" />
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <>
+                                            <Button type="button" variant="outline" size="xs"
+                                              onClick={() => wordFileRefs.current[uploadKey]?.click()}
+                                              disabled={wordUploading === uploadKey}
+                                              className="text-xs px-2 py-1 h-auto rounded-lg border-dashed text-textSecondary">
+                                              {wordUploading === uploadKey ? '…' : <ImageIcon className="w-3.5 h-3.5" />}
+                                            </Button>
+                                            <input type="file" accept="image/*" className="hidden"
+                                              ref={(el) => { wordFileRefs.current[uploadKey] = el; }}
+                                              onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) uploadWordImage(pIdx, wIdx, file);
+                                                e.target.value = '';
+                                              }} />
+                                          </>
+                                        )}
+                                        <Button type="button" variant="ghost" size="icon-xs"
+                                          onClick={() => removeWord(pIdx, wIdx)}
+                                          className="text-textSecondary hover:text-red-500 ml-1">
+                                          <X className="w-3.5 h-3.5" />
+                                        </Button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+
+                              {/* Add word row */}
+                              <div>
+                                <div className="flex gap-2">
+                                  <Input type="text" className="input-base flex-1 text-sm py-1.5 h-auto"
+                                    placeholder="Word (e.g. paper)"
+                                    value={newWordInputs[pIdx]?.text ?? ''}
+                                    onChange={(e) => setNewWordInputs((prev) => ({ ...prev, [pIdx]: { ...prev[pIdx], text: e.target.value } }))}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
+                                  <Input type="text" className="input-base w-28 text-sm py-1.5 h-auto"
+                                    placeholder={`_${part.name}_`}
+                                    value={newWordInputs[pIdx]?.highlight ?? ''}
+                                    onChange={(e) => setNewWordInputs((prev) => ({ ...prev, [pIdx]: { ...prev[pIdx], highlight: e.target.value } }))}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
+                                  <Button type="button" onClick={() => addWord(pIdx)}
+                                    className="px-4 py-2 h-auto rounded-xl text-sm font-bold text-white shrink-0"
+                                    style={{ background: meta.color }}>
+                                    + Add Word
+                                  </Button>
+                                </div>
+                                <p className="text-[10px] text-textSecondary mt-1.5">Press Enter to add quickly</p>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Add part row */}
@@ -310,20 +383,22 @@ function HomeworkModal({
                       value={newPartName}
                       onChange={(e) => setNewPartName(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPart(); } }} />
-                    <Button type="button" size="sm" onClick={addPart}
-                      className="px-4 rounded-xl text-sm font-semibold text-white shrink-0 h-auto py-2"
+                    <Button type="button" onClick={addPart}
+                      className="px-4 py-2 h-auto rounded-xl text-sm font-bold text-white shrink-0"
                       style={{ background: meta.color }}>
                       + Part
                     </Button>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Mode selector */}
+            )}
+
+            {/* SPEAKING form */}
+            {form.type === 'SPEAKING' && (
+              <div className="space-y-5">
                 <div>
                   <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">Mode</p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     {([
                       { value: 'SCRIPT_MATCH' as SpeakingMode, label: 'Script Match', desc: 'Student reads target text' },
                       { value: 'FREE_SPEAK' as SpeakingMode, label: 'Free Speak', desc: 'Student speaks from image prompt' },
@@ -344,7 +419,6 @@ function HomeworkModal({
                   </div>
                 </div>
 
-                {/* Image prompt — always shown for FREE_SPEAK, optional for SCRIPT_MATCH */}
                 {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' && (
                   <div>
                     <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">Image Prompt (optional)</p>
@@ -354,7 +428,9 @@ function HomeworkModal({
                         <img src={form.speakingPictureUrl} alt="Speaking picture" className="w-full object-cover" style={{ maxHeight: 160 }} />
                         <Button type="button" variant="ghost" size="icon-sm"
                           onClick={() => setForm((f) => ({ ...f, speakingPictureUrl: '' }))}
-                          className="absolute top-2 right-2 bg-black/60 text-white hover:bg-black/80 rounded-lg"><X className="w-3.5 h-3.5" /></Button>
+                          className="absolute top-2 right-2 bg-black/60 text-white hover:bg-black/80 rounded-lg">
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     ) : (
                       <Button type="button" variant="outline" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
@@ -370,7 +446,6 @@ function HomeworkModal({
                   </div>
                 )}
 
-                {/* Text field — label changes based on mode */}
                 <div>
                   <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">
                     {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' ? 'Keywords (comma-separated)' : 'Target Text'}
@@ -389,18 +464,20 @@ function HomeworkModal({
             )}
           </div>
 
-          <div className="px-6 pb-6 pt-4 border-t border-border">
+          <div className="px-8 pb-7 pt-5 border-t border-border">
             {error && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{error}</div>}
             {uploadError && form.type === 'PHONICS' && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{uploadError}</div>}
             <div className="flex gap-3">
               <Button type="button" variant="outline" onClick={onClose}
                 className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
-              <Button type="submit" disabled={loading}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
-                style={{ background: gradients.primarySecondary }}>
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
-              </Button>
+              {form.type !== 'READING' && (
+                <Button type="submit" disabled={loading}
+                  className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
+                  style={{ background: colors.teacherAccent }}>
+                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
+                </Button>
+              )}
             </div>
           </div>
         </form>
@@ -447,17 +524,21 @@ function AssignModal({
   }
 
   const meta = TYPE_META[homework.type];
+  const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? '…' : '') : meta.label);
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-md rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
+      <DialogContent className="max-w-2xl rounded-3xl p-0" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-8 pt-7 pb-5 border-b border-border gap-0">
           <div>
-            <DialogTitle className="text-lg font-black text-textPrimary">Assign Homework</DialogTitle>
-            <p className="text-xs text-textSecondary mt-0.5">
-              <span className="inline-flex items-center gap-1" style={{ color: meta.color }}><meta.icon className="w-3.5 h-3.5" /> {meta.label}</span>
-              {homework.type === 'PHONICS' && homework.name && ` · ${homework.name}`}
-              {homework.type === 'SPEAKING' && homework.speakingText && ` · "${homework.speakingText.slice(0, 40)}${homework.speakingText.length > 40 ? '…' : ''}"`}
+            <DialogTitle className="text-xl font-black text-textPrimary">
+              <span className="text-textSecondary font-semibold">Assign · </span>
+              <span style={{ color: meta.color }}>{assignHeading}</span>
+            </DialogTitle>
+            <p className="text-xs text-textSecondary mt-1">
+              <span className="inline-flex items-center gap-1" style={{ color: meta.color }}>
+                <meta.icon className="w-3.5 h-3.5" /> {meta.label}
+              </span>
             </p>
           </div>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
@@ -467,12 +548,12 @@ function AssignModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="px-6 py-5 space-y-5">
+          <div className="px-8 py-6 space-y-6">
             <div>
-              <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">Classes</p>
+              <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-3">Classes</p>
               {classes.length === 0
                 ? <p className="text-sm text-textSecondary/60 italic">No classes found.</p>
-                : <div className="flex flex-wrap gap-2">
+                : <div className="flex flex-wrap gap-3">
                   {classes.map((c) => {
                     const active = selectedClassIds.includes(c.id);
                     return (
@@ -491,79 +572,24 @@ function AssignModal({
             </div>
             <div>
               <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">End Date</Label>
-              <Input type="datetime-local" className="input-base h-auto"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required />
+              <DateTimePicker value={endDate} onChange={setEndDate} />
             </div>
           </div>
 
-          <div className="px-6 pb-6 pt-4 border-t border-border">
+          <div className="px-8 pb-7 pt-5 border-t border-border">
             {error && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{error}</div>}
             <div className="flex gap-3">
               <Button type="button" variant="outline" onClick={onClose}
                 className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
               <Button type="submit" disabled={loading}
                 className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
-                style={{ background: gradients.primarySecondary }}>
+                style={{ background: colors.teacherAccent }}>
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {loading ? 'Assigning…' : 'Assign'}
               </Button>
             </div>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ── TypePickerModal ───────────────────────────────────────────────────────────
-
-function TypePickerModal({
-  onClose,
-  onPickInline,
-  onPickReading,
-}: {
-  onClose: () => void;
-  onPickInline: (type: 'PHONICS' | 'SPEAKING') => void;
-  onPickReading: () => void;
-}) {
-  return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-md rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
-          <div>
-            <DialogTitle className="text-lg font-black text-textPrimary">New Homework</DialogTitle>
-            <p className="text-xs text-textSecondary mt-0.5">Choose the type of homework to create.</p>
-          </div>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
-            className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
-            <X className="w-4 h-4" />
-          </Button>
-        </DialogHeader>
-        <div className="px-6 py-5">
-          <div className="grid grid-cols-3 gap-3">
-            {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
-              const m = TYPE_META[t];
-              return (
-                <Button key={t} type="button" variant="outline"
-                  onClick={() => {
-                    if (t === 'READING') {
-                      onPickReading();
-                    } else {
-                      onPickInline(t as 'PHONICS' | 'SPEAKING');
-                      onClose();
-                    }
-                  }}
-                  className="flex-col h-auto gap-2 py-5 rounded-xl text-sm font-bold border-2 transition-all hover:shadow-md hover:scale-105"
-                  style={{ background: 'white', color: m.color, borderColor: m.color + '55' }}>
-                  <m.icon className="w-6 h-6" />
-                  <span>{m.label}</span>
-                </Button>
-              );
-            })}
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   );
@@ -579,7 +605,6 @@ export default function HomeworkPage() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [form, setForm] = useState(emptyForm());
   const [showModal, setShowModal] = useState(false);
-  const [showTypePicker, setShowTypePicker] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assigningHw, setAssigningHw] = useState<HomeworkItem | null>(null);
   const [typeFilter, setTypeFilter] = useState<HomeworkType | 'ALL'>('ALL');
@@ -587,9 +612,9 @@ export default function HomeworkPage() {
   const load = () => getHomeworkList().then(setList).catch(() => {});
   useEffect(() => { load(); getClasses().then(setClasses); }, []);
 
-  function openCreate() { setShowTypePicker(true); }
+  function openCreate() { setForm(emptyForm()); setShowModal(true); }
   function openEdit(h: HomeworkItem) {
-    if (h.type === 'READING') return; /* editing deferred to Phase 3 */
+    if (h.type === 'READING') return;
     setEditingId(h.id);
     setForm({
       type: h.type,
@@ -611,15 +636,17 @@ export default function HomeworkPage() {
 
   return (
     <div className="animate-fade-in">
-      {showModal && <HomeworkModal editingId={editingId} form={form} setForm={setForm} onClose={closeModal} onSaved={load} />}
-      {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={load} />}
-      {showTypePicker && (
-        <TypePickerModal
-          onClose={() => setShowTypePicker(false)}
-          onPickInline={(t) => { setForm({ ...emptyForm(), type: t }); setShowModal(true); }}
-          onPickReading={() => router.push('/teacher/homework/create/reading')}
+      {showModal && (
+        <HomeworkModal
+          editingId={editingId}
+          form={form}
+          setForm={setForm}
+          onClose={closeModal}
+          onSaved={load}
+          onNavigateToReading={() => router.push('/teacher/homework/create/reading')}
         />
       )}
+      {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={load} />}
 
       {/* Toolbar */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
@@ -641,11 +668,11 @@ export default function HomeworkPage() {
           ))}
         </div>
         <div className="flex-1" />
-        <Button onClick={openCreate} aria-expanded={showTypePicker}
+        <Button onClick={openCreate}
           className="btn-primary flex items-center gap-2 shrink-0 h-auto"
-          style={{ background: gradients.primarySecondary }}>
+          style={{ background: colors.teacherAccent }}>
           <Plus className="w-4 h-4" />
-          + Create
+          New Homework
         </Button>
       </div>
 
@@ -710,7 +737,6 @@ export default function HomeworkPage() {
                   </div>
                 </div>
 
-                {/* Content preview */}
                 <div className="mb-3">
                   {h.type === 'PHONICS' && (
                     <div className="space-y-1">

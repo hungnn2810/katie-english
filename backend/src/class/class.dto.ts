@@ -1,6 +1,7 @@
 export interface ScheduleSlot {
   day: string;
   time: string;
+  duration?: number;
 }
 
 export class CreateClassDto {

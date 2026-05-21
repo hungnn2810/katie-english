@@ -43,24 +43,62 @@ export class GameService {
     if (hw.type !== 'SPEAKING') throw new BadRequestException('Homework is not a SPEAKING type');
     if (!hw.speakingText) throw new BadRequestException('Homework has no speaking text');
 
+    const speakingMode = (hw as { speakingMode?: 'FREE_SPEAK' | 'SCRIPT_MATCH' }).speakingMode ?? 'SCRIPT_MATCH';
+    const targetWords = hw.speakingText.trim().split(/\s+/).filter(Boolean);
+
     let transcribedText = '';
+    let score = 0;
+    let matchedWords = 0;
+    let totalWords = targetWords.length;
+    let phonemesJson: string | null = null;
+
     if (audioBuffer && audioBuffer.length > 0) {
-      try {
-        const result = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
-        transcribedText = result.text;
-        this.logger.log(`[session=${sessionId}] WhisperX speaking transcription: "${transcribedText}"`);
-      } catch (err) {
-        this.logger.warn(`[session=${sessionId}] WhisperX transcribe error: ${(err as Error).message}`);
+      if (speakingMode === 'SCRIPT_MATCH') {
+        try {
+          const bfaResult = await this.bfa.analyzeSpeaking(
+            audioBuffer,
+            mimeType ?? 'audio/webm',
+            hw.speakingText,
+            'SCRIPT_MATCH',
+          );
+          transcribedText = bfaResult.transcription?.text ?? '';
+          score = bfaResult.overall_score;
+          matchedWords = bfaResult.matched_words;
+          totalWords = bfaResult.total_words;
+          phonemesJson = JSON.stringify(bfaResult.words);
+          this.logger.log(
+            `[session=${sessionId}] BFA speaking: score=${score} matched=${matchedWords}/${totalWords} words=${bfaResult.words.length}`,
+          );
+        } catch (err) {
+          this.logger.warn(`[session=${sessionId}] BFA analyzeSpeaking error: ${(err as Error).message} — falling back to transcribe`);
+          try {
+            const result = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
+            transcribedText = result.text;
+            const scored = calcSpeakingScore(transcribedText, hw.speakingText);
+            score = scored.score;
+            matchedWords = scored.matchedWords;
+            totalWords = scored.totalWords;
+          } catch (transcribeErr) {
+            this.logger.warn(`[session=${sessionId}] Fallback transcribe error: ${(transcribeErr as Error).message}`);
+          }
+        }
+      } else {
+        try {
+          const result = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
+          transcribedText = result.text;
+          this.logger.log(`[session=${sessionId}] FREE_SPEAK transcription: "${transcribedText}"`);
+        } catch (err) {
+          this.logger.warn(`[session=${sessionId}] WhisperX transcribe error: ${(err as Error).message}`);
+        }
+        const scored = calcFreeSpeak(transcribedText, hw.speakingText);
+        score = scored.score;
+        matchedWords = scored.matchedWords;
+        totalWords = scored.totalWords;
       }
     }
 
-    const speakingMode = (hw as { speakingMode?: 'FREE_SPEAK' | 'SCRIPT_MATCH' }).speakingMode;
-    const { score, matchedWords, totalWords } = speakingMode === 'FREE_SPEAK'
-      ? calcFreeSpeak(transcribedText, hw.speakingText)
-      : calcSpeakingScore(transcribedText, hw.speakingText);
-    this.logger.log(`[session=${sessionId}] speaking score=${score} matched=${matchedWords}/${totalWords} mode=${speakingMode ?? 'SCRIPT_MATCH'}`);
-
-    return this.repo.saveSpeakingResult(sessionId, transcribedText, score, matchedWords, totalWords);
+    this.logger.log(`[session=${sessionId}] speaking score=${score} matched=${matchedWords}/${totalWords} mode=${speakingMode}`);
+    return this.repo.saveSpeakingResult(sessionId, transcribedText, score, matchedWords, totalWords, phonemesJson);
   }
 
   async savePhonicsResult(

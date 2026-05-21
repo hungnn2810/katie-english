@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login, register, forgotPassword, RegisterInput } from '@/lib/auth';
 import { BookOpen, Mic, BarChart2, CheckCircle2, GraduationCap, User } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
 const ACCENT = '#F0623A';
 
@@ -274,8 +275,7 @@ export default function LoginPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-textSecondary mb-1.5">Date of Birth *</label>
-                          <input type="date" className="input-base" value={reg.dateOfBirth}
-                            onChange={(e) => setReg((r) => ({ ...r, dateOfBirth: e.target.value }))} required />
+                          <DatePicker value={reg.dateOfBirth} onChange={(v) => setReg((r) => ({ ...r, dateOfBirth: v }))} />
                         </div>
                       </div>
                       <div className="rounded-xl border border-border p-4 space-y-3">

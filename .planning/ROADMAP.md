@@ -94,6 +94,7 @@
 - [x] 03-05-PLAN.md — @dnd-kit install + FillInBlank editor (tokenizer + chip toggle + distractors) + drag-and-drop activity reorder (Wave 5)
 - [x] 03-06-PLAN.md — Edit mode route + Try/Preview button + interactive client-side READING preview branch in try page (Wave 6)
 - [x] 03-07-PLAN.md — completeSession READING branch + sessionInclude reading results + session detail page Reading section (collapsible activity cards, per-item rows) (Wave 7)
+- [ ] 03-09-PLAN.md — Create Homework UI/UX upgrade: merge TypePickerModal into HomeworkModal, max-w-2xl + px-8 spacing, type-colored headings, collapsible PHONICS parts, better word entry, AssignModal upgrade (Wave 9)
 
 ---
 

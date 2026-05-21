@@ -254,3 +254,104 @@ def test_error_payload_shape():
     assert "no speech detected" in fb["message"]
     assert fb["expected"] is None
     assert fb["aligned"] is None
+
+
+# ── _tokenize_target ──────────────────────────────────────────────────────────
+
+def test_tokenize_target_basic():
+    assert main._tokenize_target("the cat sat") == ["the", "cat", "sat"]
+
+
+def test_tokenize_target_strips_punctuation():
+    result = main._tokenize_target("Hello, world!")
+    assert result == ["hello", "world"]
+
+
+def test_tokenize_target_lowercases():
+    assert main._tokenize_target("The CAT") == ["the", "cat"]
+
+
+def test_tokenize_target_empty():
+    assert main._tokenize_target("") == []
+
+
+def test_tokenize_target_preserves_apostrophe():
+    result = main._tokenize_target("it's a cat")
+    assert "it's" in result
+
+
+# ── _speaking_error_payload ───────────────────────────────────────────────────
+
+def test_speaking_error_payload_shape():
+    payload = main._speaking_error_payload("cat sat", "No speech")
+    assert payload["success"] is False
+    assert payload["overall_score"] == 0
+    assert payload["matched_words"] == 0
+    assert payload["total_words"] == 2
+    assert payload["transcription"] == {"text": ""}
+    assert len(payload["words"]) == 2
+    assert payload["words"][0]["word"] == "cat"
+    assert payload["words"][1]["word"] == "sat"
+    fb = payload["words"][0]["feedback"][0]
+    assert fb["status"] == "error"
+    assert "No speech" in fb["message"]
+
+
+# ── _extract_per_word_results ─────────────────────────────────────────────────
+
+# ── _transcription_matches_word ──────────────────────────────────────────────
+
+def test_transcription_matches_exact():
+    assert main._transcription_matches_word("cat", "cat") is True
+
+def test_transcription_matches_close():
+    # "cats" vs "cat" — ratio ≥ 0.5
+    assert main._transcription_matches_word("cats", "cat") is True
+
+def test_transcription_matches_inside_sentence():
+    assert main._transcription_matches_word("the cat sat", "cat") is True
+
+def test_transcription_no_match_gibberish():
+    # WhisperX hears "see ay tee" for a phoneme-by-phoneme "C-a-t" recording
+    assert main._transcription_matches_word("see ay tee", "cat") is False
+
+def test_transcription_no_match_empty():
+    assert main._transcription_matches_word("", "cat") is False
+    assert main._transcription_matches_word("cat", "") is False
+
+
+# ── _extract_per_word_results ─────────────────────────────────────────────────
+
+def test_extract_per_word_results_correct():
+    # Simulate aligner returning one segment per word with correct phonemes
+    # cat = [k, æ, t] → simplified [c, a, t]
+    segments = [
+        {
+            "phoneme_ts": [
+                {"ipa_label": "k", "start_ms": 0, "end_ms": 100},
+                {"ipa_label": "æ", "start_ms": 100, "end_ms": 200},
+                {"ipa_label": "t", "start_ms": 200, "end_ms": 300},
+            ]
+        }
+    ]
+    from unittest.mock import patch
+    with patch.object(main, "espeak_phonemes", return_value=["c", "a", "t"]):
+        result = main._extract_per_word_results(segments, ["cat"])
+    assert result["success"] is True
+    assert len(result["words"]) == 1
+    w = result["words"][0]
+    assert w["word"] == "cat"
+    assert w["score"] == 100
+    assert len(w["phonemes"]) == 3
+    assert w["phonemes"][0]["symbol"] == "c"
+
+
+def test_extract_per_word_results_empty_segment():
+    # Segment with only silence labels
+    segments = [{"phoneme_ts": [{"ipa_label": "SIL", "start_ms": 0, "end_ms": 500}]}]
+    result = main._extract_per_word_results(segments, ["cat"])
+    assert result["success"] is True
+    w = result["words"][0]
+    assert w["phonemes"] == []
+    assert w["score"] == 0
+    assert w["feedback"][0]["status"] == "error"

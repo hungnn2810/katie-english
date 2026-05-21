@@ -84,11 +84,11 @@ export class GameRepository {
     });
   }
 
-  saveSpeakingResult(sessionId: number, transcribedText: string, score: number, matchedWords: number, totalWords: number) {
+  saveSpeakingResult(sessionId: number, transcribedText: string, score: number, matchedWords: number, totalWords: number, phonemesJson: string | null = null) {
     return this.prisma.speakingResult.upsert({
       where: { sessionId },
-      update: { transcribedText, score, matchedWords, totalWords },
-      create: { sessionId, transcribedText, score, matchedWords, totalWords },
+      update: { transcribedText, score, matchedWords, totalWords, phonemes: phonemesJson },
+      create: { sessionId, transcribedText, score, matchedWords, totalWords, phonemes: phonemesJson },
     });
   }
 

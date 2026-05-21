@@ -204,6 +204,7 @@ model SpeakingResult {
   score           Float
   matchedWords    Int
   totalWords      Int
+  phonemes        String?
   session         HomeworkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@map("speaking_results")

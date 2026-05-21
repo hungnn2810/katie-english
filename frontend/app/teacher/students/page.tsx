@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, User, Users, Clock, KeyRound, CheckCircle2, UserMinus, Pencil } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
 const ACCENT = '#F0623A';
 
@@ -22,14 +23,14 @@ type EditForm = Omit<CreateStudentInput, 'upn' | 'password'>;
 type ApproveForm = { fullname: string; sex: 'MALE' | 'FEMALE'; dateOfBirth: string; classId: number | undefined; parents: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[] };
 const emptyApprove = (): ApproveForm => ({ fullname: '', sex: 'MALE', dateOfBirth: '', classId: undefined, parents: [{ ...emptyParent }] });
 
-function Modal({ title, subtitle, onClose, children }: { title: string; subtitle?: string; onClose: () => void; children: React.ReactNode }) {
+function Modal({ title, subtitle, onClose, children }: { title: React.ReactNode; subtitle?: React.ReactNode; onClose: () => void; children: React.ReactNode }) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-lg rounded-3xl p-0 max-h-[90vh] overflow-y-auto" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
+      <DialogContent className="max-w-2xl rounded-3xl p-0 max-h-[90vh] overflow-y-auto" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-8 pt-7 pb-5 border-b border-border gap-0">
           <div>
-            <DialogTitle className="text-lg font-black text-textPrimary">{title}</DialogTitle>
-            {subtitle && <p className="text-xs text-textSecondary mt-0.5">{subtitle}</p>}
+            <DialogTitle className="text-xl font-black text-textPrimary">{title}</DialogTitle>
+            {subtitle && <p className="text-xs text-textSecondary mt-1">{subtitle}</p>}
           </div>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose} className="text-textSecondary hover:bg-gray-100 rounded-xl">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -115,8 +116,8 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
   return (
     <Modal title="Add Student" subtitle="Parent phone number will be used as the login." onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="px-6 py-5 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="px-8 py-6 space-y-5">
+          <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name</Label>
               <Input className="input-base h-auto" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required placeholder="Student's full name" />
@@ -127,7 +128,7 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
             </div>
             <div>
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth</Label>
-              <Input type="date" className="input-base h-auto" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
+              <DatePicker value={form.dateOfBirth} onChange={(v) => setForm((f) => ({ ...f, dateOfBirth: v }))} />
             </div>
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
@@ -149,7 +150,7 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
             </div>
           </div>
         </div>
-        <div className="px-6 pb-6">
+        <div className="px-8 pb-7">
           {error && <ErrorBanner msg={error} />}
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
@@ -179,10 +180,10 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
   }
 
   return (
-    <Modal title={`Edit ${student.fullname}`} subtitle="Update student info and class assignment." onClose={onClose}>
+    <Modal title={<><span className="text-textSecondary font-semibold">Edit </span><span style={{ color: ACCENT }}>{student.fullname}</span></>} subtitle="Update student info and class assignment." onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="px-6 py-5 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="px-8 py-6 space-y-5">
+          <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name</Label>
               <Input className="input-base h-auto" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required />
@@ -193,7 +194,7 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
             </div>
             <div>
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth</Label>
-              <Input type="date" className="input-base h-auto" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
+              <DatePicker value={form.dateOfBirth} onChange={(v) => setForm((f) => ({ ...f, dateOfBirth: v }))} />
             </div>
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
@@ -211,7 +212,7 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
             <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
           </div>
         </div>
-        <div className="px-6 pb-6">
+        <div className="px-8 pb-7">
           {error && <ErrorBanner msg={error} />}
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
@@ -248,13 +249,13 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
   }
 
   return (
-    <Modal title="Approve Registration" subtitle={`Confirm student info for ${pending.upn}`} onClose={onClose}>
+    <Modal title={<><span className="text-textSecondary font-semibold">Approve </span><span style={{ color: '#10B981' }}>Registration</span></>} subtitle={`Confirm student info for ${pending.upn}`} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="px-6 py-5 space-y-4">
+        <div className="px-8 py-6 space-y-5">
           <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-sm text-amber-800">
             <strong>Login:</strong> {pending.upn} · Registered {new Date(pending.createdAt).toLocaleDateString()}
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Full Name *</Label>
               <Input className="input-base h-auto" value={form.fullname} onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))} required placeholder="Student's full name" />
@@ -265,7 +266,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
             </div>
             <div>
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Date of Birth *</Label>
-              <Input type="date" className="input-base h-auto" value={form.dateOfBirth} onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))} required />
+              <DatePicker value={form.dateOfBirth} onChange={(v) => setForm((f) => ({ ...f, dateOfBirth: v }))} />
             </div>
             <div className="col-span-2">
               <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class</Label>
@@ -283,7 +284,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
             <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
           </div>
         </div>
-        <div className="px-6 pb-6">
+        <div className="px-8 pb-7">
           {error && <ErrorBanner msg={error} />}
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
@@ -312,9 +313,9 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
   }
 
   return (
-    <Modal title="Reset Password" subtitle={`Set a new password for ${request.student?.fullname ?? request.upn}`} onClose={onClose}>
+    <Modal title={<><span className="text-textSecondary font-semibold">Reset </span><span style={{ color: '#3B82F6' }}>Password</span></>} subtitle={`Set a new password for ${request.student?.fullname ?? request.upn}`} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="px-6 py-5 space-y-4">
+        <div className="px-8 py-6 space-y-5">
           <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm text-blue-800">
             <strong>Account:</strong> {request.upn}
           </div>
@@ -323,7 +324,7 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
             <Input type="password" className="input-base h-auto" placeholder="Min 6 characters" value={pw} onChange={(e) => setPw(e.target.value)} required minLength={6} autoFocus />
           </div>
         </div>
-        <div className="px-6 pb-6">
+        <div className="px-8 pb-7">
           {error && <ErrorBanner msg={error} />}
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>

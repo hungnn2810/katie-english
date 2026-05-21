@@ -279,6 +279,201 @@ def test_r_controlled_vowel_words(filename, word):
     assert result.get("success"), f"{word}: {result}"
 
 
+# ── /analyze-speaking endpoint ───────────────────────────────────────────────
+
+def _analyze_speaking(filename: str, target_text: str, mode: str = "SCRIPT_MATCH") -> dict:
+    path = SAMPLES_DIR / filename
+    with open(path, "rb") as f:
+        audio_bytes = f.read()
+
+    boundary = "----BFASpeakingBoundary"
+    body = b""
+    for field_name, field_value in [
+        ("target_text", target_text.encode()),
+        ("mode", mode.encode()),
+    ]:
+        body += f"--{boundary}\r\nContent-Disposition: form-data; name=\"{field_name}\"\r\n\r\n".encode()
+        body += field_value + b"\r\n"
+    body += (
+        f"--{boundary}\r\n"
+        f"Content-Disposition: form-data; name=\"audio\"; filename=\"{filename}\"\r\n"
+        f"Content-Type: audio/mp4\r\n\r\n"
+    ).encode()
+    body += audio_bytes + b"\r\n"
+    body += f"--{boundary}--\r\n".encode()
+
+    req = urllib.request.Request(
+        f"{BFA_URL}/analyze-speaking",
+        data=body,
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        return json.loads(resp.read())
+
+
+@requires_service
+def test_analyze_speaking_response_shape():
+    """Response has all required top-level fields."""
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+    result = _analyze_speaking("C-a-t —— cat.m4a", "cat")
+    assert "success" in result
+    assert "transcription" in result
+    assert "words" in result
+    assert "overall_score" in result
+    assert "matched_words" in result
+    assert "total_words" in result
+    assert isinstance(result["words"], list)
+    assert result["total_words"] == 1
+
+
+@requires_service
+def test_analyze_speaking_single_word():
+    """Single word target → one word result with phonemes."""
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+    result = _analyze_speaking("C-a-t —— cat.m4a", "cat")
+    assert result.get("success") is True, f"failed: {result}"
+    assert len(result["words"]) == 1
+    w = result["words"][0]
+    assert w["word"] == "cat"
+    assert isinstance(w["phonemes"], list)
+    assert isinstance(w["score"], int)
+    assert isinstance(w["feedback"], list)
+
+
+@requires_service
+def test_analyze_speaking_word_result_phoneme_shape():
+    """Each phoneme in words[].phonemes has symbol/ipa/start/end/duration."""
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+    result = _analyze_speaking("C-a-t —— cat.m4a", "cat")
+    if not result.get("success"):
+        pytest.skip("no speech detected")
+    word = result["words"][0]
+    for ph in word["phonemes"]:
+        assert "symbol" in ph
+        assert "ipa" in ph
+        assert "start" in ph
+        assert "end" in ph
+        assert "duration" in ph
+
+
+@requires_service
+def test_analyze_speaking_multi_word():
+    """Multi-word target text processed — total_words matches word count."""
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+    # "raincoat" sample used as audio; target is 2 words (tests segment handling)
+    result = _analyze_speaking("R-ai-n c-oa-t.m4a", "rain coat")
+    assert result["total_words"] == 2
+    assert len(result["words"]) == 2
+    for w in result["words"]:
+        assert "word" in w
+        assert "score" in w
+        assert "phonemes" in w
+
+
+@requires_service
+def test_analyze_speaking_overall_score_range():
+    """overall_score is 0–100."""
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+    result = _analyze_speaking("C-a-t —— cat.m4a", "cat")
+    assert 0 <= result["overall_score"] <= 100
+
+
+@requires_service
+def test_analyze_speaking_invalid_mode():
+    """Invalid mode returns 400."""
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+    try:
+        _analyze_speaking("C-a-t —— cat.m4a", "cat", mode="INVALID")
+        pytest.fail("Expected HTTP 400")
+    except urllib.error.HTTPError as e:
+        assert e.code == 400
+
+
+@requires_service
+def test_analyze_speaking_free_speak_mode():
+    """FREE_SPEAK mode returns valid response shape."""
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+    result = _analyze_speaking("C-a-t —— cat.m4a", "cat", mode="FREE_SPEAK")
+    assert "success" in result
+    assert "overall_score" in result
+    assert "words" in result
+
+
+@requires_service
+def test_analyze_speaking_report(capsys):
+    """
+    Process a selection of samples through /analyze-speaking and print a table.
+    Run: python -m pytest test_bfa_integration.py::test_analyze_speaking_report -v -s
+    """
+    if not _service_reachable():
+        pytest.skip("BFA service not reachable")
+
+    fixtures = [
+        ("C-a-t —— cat.m4a",    "cat"),
+        ("R-ai-n.m4a",           "rain"),
+        ("C-oa-t.m4a",           "coat"),
+        ("S-u-n.m4a",            "sun"),
+        ("Th-i-n.m4a",           "thin"),
+        ("R-ai-n c-oa-t.m4a",   "rain coat"),
+    ]
+
+    COL = {"target": 16, "score": 6, "matched": 10, "status": 6, "heard": 22, "words": 30}
+    header = (
+        f"{'TARGET':<{COL['target']}} {'SCORE':>{COL['score']}} {'MATCHED':<{COL['matched']}} "
+        f"{'STATUS':<{COL['status']}} {'HEARD':<{COL['heard']}} {'WORDS':<{COL['words']}}"
+    )
+    sep = "-" * (sum(COL.values()) + len(COL))
+
+    with capsys.disabled():
+        print(f"\n{'BFA SPEAKING RESULTS':^{sum(COL.values()) + len(COL)}}")
+        print(sep)
+        print(header)
+        print(sep)
+
+        for filename, target in fixtures:
+            path = SAMPLES_DIR / filename
+            if not path.exists():
+                print(f"{target:<{COL['target']}} {'—':>{COL['score']}} {'—':<{COL['matched']}} {'MISS'}")
+                continue
+            try:
+                result = _analyze_speaking(filename, target)
+                if result.get("success"):
+                    score = str(result["overall_score"])
+                    matched = f"{result['matched_words']}/{result['total_words']}"
+                    heard = result.get("transcription", {}).get("text", "") or "—"
+                    word_scores = " ".join(f"{w['word']}:{w['score']}" for w in result.get("words", []))
+                    status = "OK"
+                else:
+                    score = "0"
+                    matched = "0/?"
+                    heard = result.get("words", [{}])[0].get("feedback", [{}])[0].get("message", "?")[:20]
+                    word_scores = ""
+                    status = "FAIL"
+            except Exception as exc:
+                score = "—"
+                matched = "—"
+                heard = str(exc)[:20]
+                word_scores = ""
+                status = "ERR"
+
+            print(
+                f"{target:<{COL['target']}} {score:>{COL['score']}} {matched:<{COL['matched']}} "
+                f"{status:<{COL['status']}} {heard[:COL['heard']]:<{COL['heard']}} {word_scores[:COL['words']]}",
+                flush=True,
+            )
+
+        print(sep)
+        print()
+
+
 # ── Full results report ───────────────────────────────────────────────────────
 
 @requires_service

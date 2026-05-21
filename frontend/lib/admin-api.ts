@@ -207,6 +207,7 @@ export type ClassStatus = 'PENDING' | 'INPROGRESS' | 'ENDED';
 export interface ScheduleSlot {
   day: string;
   time: string;
+  duration?: number;
 }
 
 export interface CreateClassInput {

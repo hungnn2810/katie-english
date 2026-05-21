@@ -1,5 +1,6 @@
 import asyncio
 import concurrent.futures
+import difflib
 import json
 import logging
 import os
@@ -648,10 +649,13 @@ def _analyze_sync(
             transcription_text = transcribe_fut.result()
             align_result = align_fut.result()
 
-        # Re-score using what whisperx actually heard (forced aligner labels always
-        # match expected lexicon, so alignment score is always 100% regardless of
-        # what the student said). Transcription-based phonemes reflect actual speech.
-        if transcription_text and align_result.get("success"):
+        # Re-score using what whisperx actually heard — but only when transcription resembles
+        # the expected word. Forced alignment always produces 100% because it maps the audio
+        # to the target lexicon regardless of what was actually said; transcription re-scoring
+        # catches wrong-word submissions. However, for phoneme-by-phoneme recordings or short
+        # audio, WhisperX often hears letter names or noise instead of the whole word, which
+        # would falsely penalise a correct pronunciation. Skip re-scoring in that case.
+        if transcription_text and align_result.get("success") and _transcription_matches_word(transcription_text, word):
             spoken_phonemes: List[str] = []
             for w in transcription_text.lower().split():
                 spoken_phonemes.extend(espeak_phonemes(w))
@@ -665,6 +669,25 @@ def _analyze_sync(
         return align_result
     finally:
         shutil.rmtree(work_dir, ignore_errors=True)
+
+
+def _transcription_matches_word(transcription: str, expected_word: str, threshold: float = 0.5) -> bool:
+    """Return True if any word in the transcription is phonetically close to expected_word.
+
+    Forced alignment always scores 100% because it maps audio to the target lexicon regardless
+    of what was actually said. Transcription re-scoring corrects for wrong-word submissions.
+    But for teacher/phoneme-by-phoneme recordings, WhisperX often hears letter names or noise,
+    not the target word — causing false penalisation. This gate skips re-scoring when the
+    transcription has no resemblance to the expected word, preserving the alignment score.
+    """
+    if not transcription or not expected_word:
+        return False
+    target = expected_word.lower().strip()
+    for w in transcription.lower().split():
+        ratio = difflib.SequenceMatcher(None, w, target).ratio()
+        if ratio >= threshold:
+            return True
+    return False
 
 
 def _tokenize_target(text: str) -> List[str]:
@@ -900,7 +923,7 @@ def _analyze_speaking_sync(
             spoken_words = _tokenize_target(transcription_text)
             for i, word_result in enumerate(word_results):
                 spoken_word = spoken_words[i] if i < len(spoken_words) else ""
-                if spoken_word:
+                if spoken_word and _transcription_matches_word(spoken_word, word_result["word"]):
                     spoken_phonemes = espeak_phonemes(spoken_word)
                     if spoken_phonemes:
                         expected = word_result["expected_phonemes"]

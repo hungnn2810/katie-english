@@ -16,9 +16,9 @@ export const colors = {
 } as const;
 
 export const gradients = {
-  // Student game screens — bright solid blue for kids aged 6-12
-  gameBg: '#2563EB',
-  gameBgAlt: '#1D4ED8',
+  // Student game screens — Quizizz-style dark wine purple
+  gameBg: '#2D0B2E',
+  gameBgAlt: '#1F0821',
 
   // Bright card/button gradients using new palette
   primaryPurple: `linear-gradient(135deg, #4F9DFF, #A78BFA)`,

@@ -68,7 +68,16 @@ function PageContent({ user }: { user: AuthUser }) {
   const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
   return (
-    <div className="min-h-screen" style={{ background: gradients.gameBg, minWidth: 1024 }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ background: gradients.gameBg, minWidth: 1024 }}>
+      {/* Quizizz-style decorative arcs */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.07 }} xmlns="http://www.w3.org/2000/svg">
+        <circle cx="-80" cy="400" r="380" fill="none" stroke="white" strokeWidth="1"/>
+        <circle cx="-80" cy="400" r="500" fill="none" stroke="white" strokeWidth="1"/>
+        <circle cx="-80" cy="400" r="620" fill="none" stroke="white" strokeWidth="1"/>
+        <circle cx="1360" cy="400" r="380" fill="none" stroke="white" strokeWidth="1"/>
+        <circle cx="1360" cy="400" r="500" fill="none" stroke="white" strokeWidth="1"/>
+        <circle cx="1360" cy="400" r="620" fill="none" stroke="white" strokeWidth="1"/>
+      </svg>
       {showPwModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 animate-slide-up">
@@ -110,7 +119,7 @@ function PageContent({ user }: { user: AuthUser }) {
         </div>
       )}
 
-      <header className="px-10 py-5 flex items-center justify-between">
+      <header className="relative z-10 px-10 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-primary font-black text-xl">K</span>
@@ -136,7 +145,7 @@ function PageContent({ user }: { user: AuthUser }) {
         </div>
       </header>
 
-      <main className="px-10 py-8">
+      <main className="relative z-10 px-10 py-8">
         <div className="mb-10">
           <h1 className="text-5xl font-black text-white mb-3">
             Hi, {displayName}!

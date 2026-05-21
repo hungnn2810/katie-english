@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Plus, Calendar, Pencil, Trash2, Users } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
 const ACCENT = '#F0623A';
 
@@ -31,6 +32,7 @@ const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const DAY_LABELS: Record<string, string> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' };
 
 const emptyForm = () => ({ name: '', code: '', startDate: '', endDate: '', status: 'PENDING' as ClassStatus, scheduleSlots: [] as ScheduleSlot[] });
+const DEFAULT_DURATION = 1.5;
 
 function Spinner() {
   return <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>;
@@ -54,12 +56,16 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
       ...f,
       scheduleSlots: f.scheduleSlots.find((s) => s.day === day)
         ? f.scheduleSlots.filter((s) => s.day !== day)
-        : [...f.scheduleSlots, { day, time: '' }],
+        : [...f.scheduleSlots, { day, time: '', duration: DEFAULT_DURATION }],
     }));
   }
 
   function setSlotTime(day: string, time: string) {
     setForm((f) => ({ ...f, scheduleSlots: f.scheduleSlots.map((s) => s.day === day ? { ...s, time } : s) }));
+  }
+
+  function setSlotDuration(day: string, duration: number) {
+    setForm((f) => ({ ...f, scheduleSlots: f.scheduleSlots.map((s) => s.day === day ? { ...s, duration } : s) }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -75,11 +81,15 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-lg rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border gap-0">
+      <DialogContent className="max-w-2xl rounded-3xl p-0" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between px-8 pt-7 pb-5 border-b border-border gap-0">
           <div>
-            <DialogTitle className="text-lg font-black text-textPrimary">{editing ? `Edit ${editing.name}` : 'New Class'}</DialogTitle>
-            <p className="text-xs text-textSecondary mt-0.5">{editing ? 'Update class details and schedule.' : 'Create a new class for your students.'}</p>
+            <DialogTitle className="text-xl font-black text-textPrimary">
+              {editing
+                ? <><span className="text-textSecondary font-semibold">Edit </span><span style={{ color: ACCENT }}>{editing.name}</span></>
+                : 'New Class'}
+            </DialogTitle>
+            <p className="text-xs text-textSecondary mt-1">{editing ? 'Update class details and schedule.' : 'Create a new class for your students.'}</p>
           </div>
           <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
             className="text-textSecondary hover:bg-gray-100 rounded-xl">
@@ -88,8 +98,8 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="px-6 py-5 space-y-5">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="px-8 py-6 space-y-6">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class Name</Label>
                 <Input className="input-base h-auto" value={form.name} onChange={(e) => setField('name', e.target.value)} required placeholder="e.g. English Beginners" />
@@ -100,11 +110,11 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
               </div>
               <div>
                 <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Start Date</Label>
-                <Input type="date" className="input-base h-auto" value={form.startDate} onChange={(e) => setField('startDate', e.target.value)} required />
+                <DatePicker value={form.startDate} onChange={(v) => setField('startDate', v)} />
               </div>
               <div>
                 <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">End Date</Label>
-                <Input type="date" className="input-base h-auto" value={form.endDate} onChange={(e) => setField('endDate', e.target.value)} required />
+                <DatePicker value={form.endDate} onChange={(v) => setField('endDate', v)} />
               </div>
             </div>
 
@@ -147,13 +157,27 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
                 })}
               </div>
               {form.scheduleSlots.length > 0 && (
-                <div className="space-y-2 bg-background rounded-xl p-3 border border-border">
+                <div className="space-y-3 bg-background rounded-xl p-4 border border-border">
+                  <div className="grid grid-cols-[36px_1fr_100px] gap-2 mb-1">
+                    <span />
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-textSecondary px-1">Start time</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-textSecondary px-1">Duration</span>
+                  </div>
                   {DAYS.filter((d) => form.scheduleSlots.find((s) => s.day === d)).map((day) => {
                     const slot = form.scheduleSlots.find((s) => s.day === day)!;
                     return (
-                      <div key={day} className="flex items-center gap-3">
-                        <span className="w-9 text-xs font-bold" style={{ color: ACCENT }}>{DAY_LABELS[day]}</span>
-                        <Input type="time" required className="input-base flex-1 h-auto" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} />
+                      <div key={day} className="grid grid-cols-[36px_1fr_100px] items-center gap-2">
+                        <span className="text-xs font-bold" style={{ color: ACCENT }}>{DAY_LABELS[day]}</span>
+                        <Input type="time" required className="input-base h-auto" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} />
+                        <div className="relative">
+                          <Input
+                            type="number" required min={0.5} max={8} step={0.5}
+                            className="input-base h-auto pr-6"
+                            value={slot.duration ?? DEFAULT_DURATION}
+                            onChange={(e) => setSlotDuration(day, parseFloat(e.target.value) || DEFAULT_DURATION)}
+                          />
+                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-textSecondary font-medium pointer-events-none">h</span>
+                        </div>
                       </div>
                     );
                   })}
@@ -162,7 +186,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
             </div>
           </div>
 
-          <div className="px-6 pb-6 pt-4 border-t border-border">
+          <div className="px-8 pb-7 pt-5 border-t border-border">
             {error && (
               <div className="flex items-start gap-2 text-sm bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-3">
                 <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
@@ -316,10 +340,11 @@ export default function ClassesPage() {
                   <div className="flex flex-wrap gap-1">
                     {activeDays.map((day) => {
                       const slot = slots.find((s) => s.day === day)!;
+                      const durationLabel = slot.duration ? ` · ${slot.duration}h` : '';
                       return (
                         <span key={day} className="text-xs font-semibold px-2 py-0.5 rounded-lg"
                           style={{ background: '#FFF2EF', color: ACCENT }}>
-                          {DAY_LABELS[day]}{slot.time ? ` ${slot.time}` : ''}
+                          {DAY_LABELS[day]}{slot.time ? ` ${slot.time}` : ''}{durationLabel}
                         </span>
                       );
                     })}
