@@ -402,6 +402,8 @@ async def _align_impl(
 
     if not isinstance(expected, list):
         raise HTTPException(status_code=400, detail="expected_phonemes must be a JSON array")
+    if not all(isinstance(p, str) for p in expected):
+        raise HTTPException(status_code=400, detail="expected_phonemes elements must be strings")
 
     if len(expected) > MAX_EXPECTED_PHONEMES:
         raise HTTPException(status_code=413, detail="expected_phonemes is too large")
@@ -616,6 +618,8 @@ async def _analyze_impl(
 
     if not isinstance(expected, list):
         raise HTTPException(status_code=400, detail="expected_phonemes must be a JSON array")
+    if not all(isinstance(p, str) for p in expected):
+        raise HTTPException(status_code=400, detail="expected_phonemes elements must be strings")
 
     if len(expected) > MAX_EXPECTED_PHONEMES:
         raise HTTPException(status_code=413, detail="expected_phonemes is too large")
