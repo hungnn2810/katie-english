@@ -808,9 +808,12 @@ def _partition_flat_alignment(
 
     word_results = []
     pos = 0
-    for word, expected in word_expected:
-        if total_expected > 0:
-            count = round(len(expected) / total_expected * len(content))
+    for i, (word, expected) in enumerate(word_expected):
+        if i == len(word_expected) - 1:
+            # Last word gets all remaining content to avoid rounding loss
+            count = len(content) - pos
+        elif total_expected > 0:
+            count = max(1, round(len(expected) / total_expected * len(content)))
         else:
             count = max(1, len(content) // len(target_words)) if target_words else 0
         slice_ = content[pos: pos + count]
