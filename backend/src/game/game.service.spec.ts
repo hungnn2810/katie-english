@@ -211,7 +211,7 @@ describe('GameService.savePhonicsResult', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
@@ -306,7 +306,7 @@ describe('GameService.completeSession', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
@@ -376,7 +376,7 @@ describe('saveReadingResult', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
@@ -453,7 +453,7 @@ describe('completeSession READING branch', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
@@ -522,7 +522,7 @@ describe('completeSession READING', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
       ],
     }).compile();
@@ -543,5 +543,80 @@ describe('completeSession READING', () => {
     repo.getReadingResult.mockResolvedValue(null as any);
     await service.completeSession(1);
     expect(repo.completeSession).toHaveBeenCalledWith(1, null, 0);
+  });
+});
+
+// ── GameService.saveSpeakingResult ────────────────────────────────────────────
+
+describe('GameService.saveSpeakingResult', () => {
+  let service: GameService;
+  let repo: jest.Mocked<GameRepository>;
+  let bfa: jest.Mocked<BfaService>;
+
+  const mockBfaSpeakingSuccess = () => ({
+    success: true,
+    transcription: { text: 'hello my name is katie' },
+    words: [{ word: 'hello', phonemes: [], score: 90, feedback: [] }],
+    overall_score: 85,
+    matched_words: 4,
+    total_words: 5,
+  });
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        GameService,
+        {
+          provide: GameRepository,
+          useValue: {
+            getSession: jest.fn(), createSession: jest.fn(),
+            saveSpeakingResult: jest.fn(), savePhonicsResult: jest.fn(),
+            completeSession: jest.fn(), listSessions: jest.fn(),
+            getAvailableAssignments: jest.fn(),
+          },
+        },
+        { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
+        { provide: WordRepository, useValue: { findByText: jest.fn() } },
+      ],
+    }).compile();
+    service = module.get(GameService);
+    repo = module.get(GameRepository);
+    bfa = module.get(BfaService);
+    repo.saveSpeakingResult.mockResolvedValue({ id: 1, sessionId: 1, transcribedText: '', score: 0 } as any);
+  });
+
+  it('uses BFA overall_score when SCRIPT_MATCH BFA succeeds', async () => {
+    repo.getSession.mockResolvedValue(mockSpeakingSession() as any);
+    bfa.analyzeSpeaking.mockResolvedValue(mockBfaSpeakingSuccess() as any);
+    await service.saveSpeakingResult(1, Buffer.from('audio'), 'audio/webm');
+    expect(bfa.analyzeSpeaking).toHaveBeenCalled();
+    expect(repo.saveSpeakingResult).toHaveBeenCalledWith(1, 'hello my name is katie', 85, 4, 5, expect.any(String));
+  });
+
+  it('falls back to transcribe when BFA analyzeSpeaking throws', async () => {
+    repo.getSession.mockResolvedValue(mockSpeakingSession() as any);
+    bfa.analyzeSpeaking.mockRejectedValue(new Error('BFA down'));
+    bfa.transcribe.mockResolvedValue({ text: 'hello my name is katie' } as any);
+    await service.saveSpeakingResult(1, Buffer.from('audio'), 'audio/webm');
+    expect(bfa.transcribe).toHaveBeenCalled();
+    expect(repo.saveSpeakingResult).toHaveBeenCalled();
+  });
+
+  it('scores 0 and skips BFA when no audio provided', async () => {
+    repo.getSession.mockResolvedValue(mockSpeakingSession() as any);
+    await service.saveSpeakingResult(1);
+    expect(bfa.analyzeSpeaking).not.toHaveBeenCalled();
+    expect(repo.saveSpeakingResult).toHaveBeenCalledWith(1, '', 0, 0, expect.any(Number), null);
+  });
+
+  it('throws NotFoundException when session not found', async () => {
+    repo.getSession.mockResolvedValue(null as any);
+    await expect(service.saveSpeakingResult(99)).rejects.toThrow(NotFoundException);
+  });
+
+  it('throws BadRequestException when session already completed', async () => {
+    repo.getSession.mockResolvedValue(mockSpeakingSession({ completedAt: new Date() }) as any);
+    await expect(service.saveSpeakingResult(1)).rejects.toThrow(BadRequestException);
   });
 });
