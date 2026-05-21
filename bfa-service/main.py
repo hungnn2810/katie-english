@@ -47,6 +47,9 @@ ESPEAK_TIMEOUT = int(os.getenv("BFA_ESPEAK_TIMEOUT", "5"))
 BFA_CONCURRENCY = int(os.getenv("BFA_CONCURRENCY", "1"))
 MAX_WORD_LENGTH = int(os.getenv("BFA_MAX_WORD_LENGTH", "200"))
 MAX_TARGET_TEXT_LENGTH = int(os.getenv("BFA_MAX_TARGET_TEXT_LENGTH", "2000"))
+ENERGY_THRESHOLD_DB = float(os.getenv("BFA_ENERGY_THRESHOLD_DB", "-50.0"))
+TRANSCRIPTION_MATCH_THRESHOLD = float(os.getenv("BFA_TRANSCRIPTION_MATCH_THRESHOLD", "0.5"))
+MIN_WORD_SCORE = int(os.getenv("BFA_MIN_WORD_SCORE", "70"))
 
 REQUEST_SEMAPHORE = asyncio.Semaphore(BFA_CONCURRENCY)
 THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=2)
@@ -270,7 +273,7 @@ def error_payload(word: str, message: str) -> dict:
     }
 
 
-def has_sufficient_energy(wav_path: Path, threshold_db: float = -50.0) -> bool:
+def has_sufficient_energy(wav_path: Path, threshold_db: float = ENERGY_THRESHOLD_DB) -> bool:
     """Return True if audio has speech-level energy (not silence/noise)."""
     proc = subprocess.run(
         [
@@ -922,7 +925,7 @@ def _analyze_speaking_sync(
         else:
             overall_score = 0
 
-        matched_words = sum(1 for w in word_results if w["score"] >= 70)
+        matched_words = sum(1 for w in word_results if w["score"] >= MIN_WORD_SCORE)
 
         response_words = [
             {
