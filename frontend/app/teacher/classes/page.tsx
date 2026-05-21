@@ -1,12 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
 import { colors } from '@/lib/colors';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Plus, Calendar, Pencil, Trash2, Users } from 'lucide-react';
+import { Search, Plus, Calendar, Pencil, Trash2, Users, CheckCircle2 } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
 
 const ACCENT = '#F0623A';
@@ -217,9 +218,13 @@ export default function ClassesPage() {
   const [initialForm, setInitialForm] = useState(emptyForm());
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | ClassStatus>('ALL');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [toast, setToast] = useState('');
 
   const load = () => getClasses().then(setClasses).catch(() => {});
   useEffect(() => { load(); }, []);
+
+  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
   function openCreate() { setEditing(null); setInitialForm(emptyForm()); setShowModal(true); }
   function openEdit(c: ClassItem) {
@@ -247,7 +252,18 @@ export default function ClassesPage() {
   return (
     <div className="animate-fade-in">
       {showModal && (
-        <ClassModal editing={editing} initial={initialForm} onClose={() => setShowModal(false)} onSaved={load} />
+        <ClassModal
+          editing={editing}
+          initial={initialForm}
+          onClose={() => setShowModal(false)}
+          onSaved={() => { load(); showToast(editing ? 'Class updated!' : 'Class created!'); }}
+        />
+      )}
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-textPrimary text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl animate-slide-up flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-green-400" /> {toast}
+        </div>
       )}
 
       {/* Toolbar */}
@@ -303,15 +319,15 @@ export default function ClassesPage() {
           const slots: ScheduleSlot[] = Array.isArray(c.scheduleSlots) ? c.scheduleSlots : [];
           const activeDays = DAYS.filter((d) => slots.find((s) => s.day === d));
           const initials = c.name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+          const isDeleting = deletingId === c.id;
+
           return (
             <div key={c.id} className="bg-white rounded-2xl border border-border shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden">
               {/* Card header */}
               <div className="px-5 pt-5 pb-4 flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: STATUS_AVATAR_BG[c.status] }}
-                  >
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: STATUS_AVATAR_BG[c.status] }}>
                     <span className="font-black text-sm" style={{ color: STATUS_AVATAR_COLOR[c.status] }}>{initials}</span>
                   </div>
                   <div className="min-w-0">
@@ -319,23 +335,18 @@ export default function ClassesPage() {
                     <p className="text-textSecondary text-xs font-mono tracking-wider mt-0.5">{c.code}</p>
                   </div>
                 </div>
-                <span
-                  className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 mt-0.5"
-                  style={{ background: sc.bg, color: sc.color }}
-                >
+                <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 mt-0.5"
+                  style={{ background: sc.bg, color: sc.color }}>
                   <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
                   {sc.label}
                 </span>
               </div>
 
               <div className="px-5 pb-4 flex-1 flex flex-col gap-3 border-t border-border/60">
-                {/* Date range */}
                 <div className="flex items-center gap-1.5 text-xs text-textSecondary pt-3">
                   <Calendar className="w-3.5 h-3.5 shrink-0" />
                   {new Date(c.startDate).toLocaleDateString()} – {new Date(c.endDate).toLocaleDateString()}
                 </div>
-
-                {/* Schedule chips */}
                 {activeDays.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {activeDays.map((day) => {
@@ -350,8 +361,6 @@ export default function ClassesPage() {
                     })}
                   </div>
                 )}
-
-                {/* Student count */}
                 {c._count && (
                   <div className="flex items-center gap-1.5 text-xs text-textSecondary mt-auto pt-2 border-t border-border/60">
                     <Users className="w-3.5 h-3.5" />
@@ -360,18 +369,41 @@ export default function ClassesPage() {
                 )}
               </div>
 
-              <div className="px-4 py-3 bg-background/60 border-t border-border flex gap-1">
-                <Button variant="ghost" size="sm" onClick={() => openEdit(c)}
-                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold gap-1.5"
-                  style={{ color: ACCENT }}>
-                  <Pencil className="w-3.5 h-3.5" />
-                  Edit
-                </Button>
-                <Button variant="ghost" size="sm" onClick={async () => { if (confirm('Delete this class?')) { await deleteClass(c.id); load(); } }}
-                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8 gap-1.5">
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Delete
-                </Button>
+              <div className="px-4 py-3 bg-background/60 border-t border-border">
+                {isDeleting ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-textSecondary flex-1">Delete class?</span>
+                    <Button variant="ghost" size="sm" onClick={() => setDeletingId(null)}
+                      className="py-1.5 h-auto rounded-lg text-xs font-semibold text-textSecondary hover:bg-gray-100 px-3">
+                      Cancel
+                    </Button>
+                    <Button variant="ghost" size="sm"
+                      onClick={async () => { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); }}
+                      className="py-1.5 h-auto rounded-lg text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-3">
+                      Delete
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(c)}
+                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold gap-1.5"
+                      style={{ color: ACCENT }}>
+                      <Pencil className="w-3.5 h-3.5" />
+                      Edit
+                    </Button>
+                    <Link href={`/teacher/students?classId=${c.id}`}
+                      className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center flex items-center justify-center gap-1.5 hover:bg-background transition-colors"
+                      style={{ color: colors.purple }}>
+                      <Users className="w-3.5 h-3.5" />
+                      Students
+                    </Link>
+                    <Button variant="ghost" size="sm" onClick={() => setDeletingId(c.id)}
+                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8 gap-1.5">
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           );

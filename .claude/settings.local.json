@@ -101,7 +101,9 @@
       "Bash(chmod +x /Users/hung/Documents/katie-english/bfa-service/run_tests.sh)",
       "Bash(bash run_tests.sh)",
       "Bash(npx shadcn@latest add calendar popover --yes)",
-      "Bash(npx shadcn@latest add calendar popover --yes --overwrite)"
+      "Bash(npx shadcn@latest add calendar popover --yes --overwrite)",
+      "Bash(awk '/async savePhonicsResult/,/^  async [a-zA-Z]/' /Users/hung/Documents/katie-english/backend/src/game/game.service.ts)",
+      "Bash(python -m pytest test_bfa.py -q)"
     ]
   },
   "enableAllProjectMcpServers": true,

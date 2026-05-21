@@ -1,5 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   getStudents, createStudent, deleteStudent, updateStudent, getClasses,
   Student, ClassItem, CreateStudentInput,
@@ -341,28 +342,44 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
 type ModalState = { kind: 'create' } | { kind: 'edit'; student: Student } | { kind: 'approve'; pending: PendingStudent } | { kind: 'reset'; request: PasswordResetRequest } | null;
 
 export default function StudentsPage() {
+  const searchParams = useSearchParams();
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [pending, setPending] = useState<PendingStudent[]>([]);
   const [resetRequests, setResetRequests] = useState<PasswordResetRequest[]>([]);
   const [modal, setModal] = useState<ModalState>(null);
   const [search, setSearch] = useState('');
+  const [classFilter, setClassFilter] = useState<string>(() => searchParams.get('classId') ?? '');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [toast, setToast] = useState('');
 
-  const load = () => getStudents().then(setStudents).catch(() => {});
+  const load = useCallback((cid?: number) => {
+    getStudents(cid).then(setStudents).catch(() => {});
+  }, []);
+
   const loadPending = () => getPendingStudents().then(setPending).catch(() => {});
   const loadResets = () => getPasswordResetRequests().then(setResetRequests).catch(() => {});
-  useEffect(() => { load(); getClasses().then(setClasses); loadPending(); loadResets(); }, []);
+
+  useEffect(() => {
+    getClasses().then(setClasses);
+    loadPending();
+    loadResets();
+  }, []);
+
+  useEffect(() => {
+    load(classFilter ? Number(classFilter) : undefined);
+  }, [classFilter, load]);
 
   function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
   const filtered = students.filter((s) => s.fullname.toLowerCase().includes(search.toLowerCase()));
+  const activeClassName = classes.find((c) => String(c.id) === classFilter)?.name;
 
   return (
     <div className="animate-fade-in">
-      {modal?.kind === 'create' && <CreateModal classes={classes} onClose={() => setModal(null)} onSaved={() => { load(); showToast('Student added!'); }} />}
-      {modal?.kind === 'edit' && <EditModal student={modal.student} classes={classes} onClose={() => setModal(null)} onSaved={() => { load(); showToast('Changes saved!'); }} />}
-      {modal?.kind === 'approve' && <ApproveModal pending={modal.pending} classes={classes} onClose={() => setModal(null)} onSaved={() => { load(); loadPending(); showToast('Student approved!'); }} />}
+      {modal?.kind === 'create' && <CreateModal classes={classes} onClose={() => setModal(null)} onSaved={() => { load(classFilter ? Number(classFilter) : undefined); showToast('Student added!'); }} />}
+      {modal?.kind === 'edit' && <EditModal student={modal.student} classes={classes} onClose={() => setModal(null)} onSaved={() => { load(classFilter ? Number(classFilter) : undefined); showToast('Changes saved!'); }} />}
+      {modal?.kind === 'approve' && <ApproveModal pending={modal.pending} classes={classes} onClose={() => setModal(null)} onSaved={() => { load(classFilter ? Number(classFilter) : undefined); loadPending(); showToast('Student approved!'); }} />}
       {modal?.kind === 'reset' && <ResetModal request={modal.request} onClose={() => setModal(null)} onSaved={() => { loadResets(); showToast('Password updated!'); }} />}
 
       {toast && (
@@ -372,12 +389,28 @@ export default function StudentsPage() {
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="flex-1 relative">
+      <div className="flex items-center gap-3 mb-6 flex-wrap">
+        <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary" />
           <Input className="input-base pl-10 h-auto" placeholder="Search students…" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        {students.length > 0 && <span className="text-sm text-textSecondary font-medium">{filtered.length} of {students.length}</span>}
+        <div className="w-52">
+          <Select value={classFilter} onValueChange={setClassFilter}>
+            <SelectTrigger className="input-base h-auto">
+              <SelectValue placeholder="All classes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All classes</SelectItem>
+              {classes.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        {students.length > 0 && (
+          <span className="text-sm text-textSecondary font-medium">
+            {filtered.length} of {students.length}
+            {activeClassName && <span className="ml-1 text-primary font-semibold">· {activeClassName}</span>}
+          </span>
+        )}
         <Button onClick={() => setModal({ kind: 'create' })} className="btn-primary flex items-center gap-2 h-auto text-white hover:opacity-90" style={{ background: ACCENT }}>
           <Plus className="w-4 h-4" /> Add Student
         </Button>
@@ -461,62 +494,76 @@ export default function StudentsPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-bold text-textSecondary uppercase tracking-wide">Date of Birth</th>
                 <th className="text-left px-5 py-3.5 text-xs font-bold text-textSecondary uppercase tracking-wide">Class</th>
                 <th className="text-left px-5 py-3.5 text-xs font-bold text-textSecondary uppercase tracking-wide">Parent</th>
-                <th className="px-5 py-3.5 w-24"></th>
+                <th className="px-5 py-3.5 w-28"></th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
                 <tr><td colSpan={5} className="text-center py-12 text-textSecondary text-sm">No students match your search.</td></tr>
               )}
-              {filtered.map((s) => (
-                <tr key={s.id} className="border-b border-border/50 hover:bg-background/50 transition-colors group">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
-                        style={{ background: s.sex === 'MALE' ? '#3B82F6' : '#EC4899' }}>
-                        {s.fullname[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-textPrimary text-sm">{s.fullname}</div>
-                        <div className="text-xs text-textSecondary flex items-center gap-1">
-                          <User className="w-3 h-3" />
-                          {s.sex === 'MALE' ? 'Male' : 'Female'}
+              {filtered.map((s) => {
+                const isDeleting = deletingId === s.id;
+                return (
+                  <tr key={s.id} className="border-b border-border/50 hover:bg-background/50 transition-colors group">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
+                          style={{ background: s.sex === 'MALE' ? '#3B82F6' : '#EC4899' }}>
+                          {s.fullname[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-textPrimary text-sm">{s.fullname}</div>
+                          <div className="text-xs text-textSecondary flex items-center gap-1">
+                            <User className="w-3 h-3" />
+                            {s.sex === 'MALE' ? 'Male' : 'Female'}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-sm text-textSecondary">{new Date(s.dateOfBirth).toLocaleDateString()}</td>
-                  <td className="px-5 py-3.5">
-                    {s.class
-                      ? <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#EDE9FE', color: colors.purple }}>{s.class.name}</span>
-                      : <span className="text-textSecondary/40 text-sm">—</span>}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    {s.parents.length > 0
-                      ? <div className="text-xs text-textSecondary leading-relaxed space-y-0.5">
-                          {s.parents.map((p) => (
-                            <div key={p.id} className="flex items-center gap-1.5">
-                              <User className="w-3 h-3 shrink-0" />
-                              {p.type === 'FATHER' ? 'Father' : 'Mother'}: {p.name} · {p.phoneNumber}
-                            </div>
-                          ))}
+                    </td>
+                    <td className="px-5 py-3.5 text-sm text-textSecondary">{new Date(s.dateOfBirth).toLocaleDateString()}</td>
+                    <td className="px-5 py-3.5">
+                      {s.class
+                        ? <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#EDE9FE', color: colors.purple }}>{s.class.name}</span>
+                        : <span className="text-textSecondary/40 text-sm">—</span>}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {s.parents.length > 0
+                        ? <div className="text-xs text-textSecondary leading-relaxed space-y-0.5">
+                            {s.parents.map((p) => (
+                              <div key={p.id} className="flex items-center gap-1.5">
+                                <User className="w-3 h-3 shrink-0" />
+                                {p.type === 'FATHER' ? 'Father' : 'Mother'}: {p.name} · {p.phoneNumber}
+                              </div>
+                            ))}
+                          </div>
+                        : <span className="text-textSecondary/40 text-sm">—</span>}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      {isDeleting ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-textSecondary">Sure?</span>
+                          <Button variant="ghost" size="sm" onClick={() => setDeletingId(null)}
+                            className="text-xs px-2 py-1 h-auto rounded-lg text-textSecondary hover:bg-gray-100">No</Button>
+                          <Button variant="ghost" size="sm"
+                            onClick={async () => { await deleteStudent(s.id); setDeletingId(null); load(classFilter ? Number(classFilter) : undefined); showToast('Student removed.'); }}
+                            className="text-xs px-2 py-1 h-auto rounded-lg text-white bg-red-500 hover:bg-red-600">Yes</Button>
                         </div>
-                      : <span className="text-textSecondary/40 text-sm">—</span>}
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="sm" onClick={() => setModal({ kind: 'edit', student: s })}
-                        className="text-xs font-semibold px-2 py-1 h-auto rounded-lg gap-1" style={{ color: ACCENT }}>
-                        <Pencil className="w-3 h-3" /> Edit
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={async () => { if (confirm(`Delete ${s.fullname}?`)) { await deleteStudent(s.id); load(); } }}
-                        className="text-xs font-semibold text-red-500 hover:text-red-600 px-2 py-1 h-auto rounded-lg hover:bg-red-50 gap-1">
-                        <UserMinus className="w-3 h-3" /> Delete
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                      ) : (
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button variant="ghost" size="sm" onClick={() => setModal({ kind: 'edit', student: s })}
+                            className="text-xs font-semibold px-2 py-1 h-auto rounded-lg gap-1" style={{ color: ACCENT }}>
+                            <Pencil className="w-3 h-3" /> Edit
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setDeletingId(s.id)}
+                            className="text-xs font-semibold text-red-500 hover:text-red-600 px-2 py-1 h-auto rounded-lg hover:bg-red-50 gap-1">
+                            <UserMinus className="w-3 h-3" /> Delete
+                          </Button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

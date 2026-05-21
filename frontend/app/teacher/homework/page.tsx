@@ -17,7 +17,7 @@ import { Card, CardFooter } from '@/components/ui/card';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2 } from 'lucide-react';
 import { DateTimePicker } from '@/components/ui/date-picker';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
@@ -41,8 +41,7 @@ function HomeworkModal({
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [newPartName, setNewPartName] = useState('');
-  const [newWordInputs, setNewWordInputs] = useState<Record<number, { text: string; highlight: string }>>({});
-  const [collapsedParts, setCollapsedParts] = useState<Set<number>>(new Set());
+  const [newWordTexts, setNewWordTexts] = useState<Record<number, string>>({});
   const [wordUploading, setWordUploading] = useState<string | null>(null);
   const [speakUploading, setSpeakUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -58,44 +57,22 @@ function HomeworkModal({
   function addPart() {
     const name = newPartName.trim();
     if (!name) return;
-    const newIdx = parts.length;
     setParts((prev) => [...prev, { name, words: [] }]);
-    if (newIdx >= 1) {
-      setCollapsedParts((prev) => new Set(Array.from(prev).concat(newIdx)));
-    }
     setNewPartName('');
   }
 
   function removePart(pIdx: number) {
     setParts((prev) => prev.filter((_, i) => i !== pIdx));
-    setCollapsedParts((prev) => {
-      const next = new Set<number>();
-      Array.from(prev).forEach((idx) => {
-        if (idx < pIdx) next.add(idx);
-        else if (idx > pIdx) next.add(idx - 1);
-      });
-      return next;
-    });
-  }
-
-  function togglePartCollapse(pIdx: number) {
-    setCollapsedParts((prev) => {
-      const next = new Set(prev);
-      if (next.has(pIdx)) next.delete(pIdx);
-      else next.add(pIdx);
-      return next;
-    });
   }
 
   function addWord(pIdx: number) {
-    const inp = newWordInputs[pIdx];
-    const text = inp?.text?.trim();
+    const text = newWordTexts[pIdx]?.trim();
     if (!text) return;
-    const highlight = inp?.highlight?.trim() || (parts[pIdx]?.name ?? '');
+    const highlight = parts[pIdx]?.name ?? '';
     setParts((prev) => prev.map((p, i) =>
       i !== pIdx ? p : { ...p, words: [...p.words, { text, highlight, imageUrl: '' }] }
     ));
-    setNewWordInputs((prev) => ({ ...prev, [pIdx]: { text: '', highlight: '' } }));
+    setNewWordTexts((prev) => ({ ...prev, [pIdx]: '' }));
   }
 
   function removeWord(pIdx: number, wIdx: number) {
@@ -199,27 +176,27 @@ function HomeworkModal({
             {editingId === null && (
               <div>
                 <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-3">Type</p>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3">
                   {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
                     const m = TYPE_META[t];
                     const active = form.type === t;
                     return (
-                      <Button key={t} type="button" variant="outline"
+                      <button key={t} type="button"
                         onClick={() => setForm((f) => ({ ...f, type: t, speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingText: '', speakingPictureUrl: '' }))}
-                        className="flex-col h-auto gap-2 py-4 rounded-xl text-sm font-bold border-2 transition-all"
+                        className="flex flex-col items-center gap-2 py-4 rounded-2xl border-2 text-sm font-bold transition-all"
                         style={active
                           ? { background: m.color, color: 'white', borderColor: m.color }
-                          : { background: 'white', color: m.color, borderColor: m.color + '55' }}>
+                          : { background: m.bg, color: m.color, borderColor: m.color + '40' }}>
                         <m.icon className="w-5 h-5" />
                         {m.label}
-                      </Button>
+                      </button>
                     );
                   })}
                 </div>
               </div>
             )}
 
-            {/* READING redirect block */}
+            {/* READING redirect */}
             {form.type === 'READING' && (
               <div className="flex flex-col items-center gap-4 py-10 rounded-2xl border-2 border-dashed"
                 style={{ borderColor: meta.color + '55', background: meta.bg }}>
@@ -232,7 +209,7 @@ function HomeworkModal({
                   <p className="text-xs text-textSecondary mt-1">Build activities, set sequences, and preview inline.</p>
                 </div>
                 <Button type="button"
-                  className="px-6 py-2.5 h-auto rounded-xl text-sm font-bold text-white gap-2"
+                  className="px-6 py-2.5 h-auto rounded-xl text-sm font-bold text-white"
                   style={{ background: meta.color }}
                   onClick={() => { onClose(); onNavigateToReading(); }}>
                   Open Reading Editor
@@ -254,132 +231,111 @@ function HomeworkModal({
                 </div>
 
                 <div>
-                  <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-3">
-                    Parts
-                    <span className="ml-1.5 normal-case font-normal" style={{ color: meta.color }}>
-                      ({parts.length} part{parts.length !== 1 ? 's' : ''}, {parts.reduce((s, p) => s + p.words.length, 0)} words)
-                    </span>
-                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-bold text-textSecondary uppercase tracking-wide">
+                      Parts
+                      <span className="ml-1.5 normal-case font-normal" style={{ color: meta.color }}>
+                        ({parts.length} part{parts.length !== 1 ? 's' : ''}, {parts.reduce((s, p) => s + p.words.length, 0)} words)
+                      </span>
+                    </p>
+                  </div>
 
-                  <div className="space-y-3">
-                    {parts.map((part, pIdx) => {
-                      const isCollapsed = collapsedParts.has(pIdx);
-                      return (
+                  {/* Parts list */}
+                  {parts.length > 0 && (
+                    <div className="space-y-3 mb-3">
+                      {parts.map((part, pIdx) => (
                         <div key={pIdx} className="rounded-2xl border border-border overflow-hidden"
-                          style={{ background: meta.bg + '60' }}>
-                          {/* Part header — always visible */}
-                          <div className="flex items-center gap-2 px-4 py-3">
-                            <button type="button" onClick={() => togglePartCollapse(pIdx)}
-                              className="shrink-0 text-textSecondary hover:text-textPrimary transition-colors">
-                              {isCollapsed
-                                ? <ChevronRight className="w-4 h-4" />
-                                : <ChevronDown className="w-4 h-4" />}
-                            </button>
+                          style={{ background: meta.bg + '50' }}>
+                          {/* Part header */}
+                          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/60">
                             <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white shrink-0"
                               style={{ background: meta.color }}>
-                              Part {pIdx + 1}
+                              {part.name}
                             </span>
-                            <span className="text-sm font-bold flex-1" style={{ color: meta.color }}>{part.name}</span>
-                            {isCollapsed && (
-                              <span className="text-xs text-textSecondary/60 mr-2">
-                                {part.words.length} word{part.words.length !== 1 ? 's' : ''}
-                              </span>
-                            )}
+                            <span className="text-xs text-textSecondary flex-1">
+                              {part.words.length} word{part.words.length !== 1 ? 's' : ''}
+                            </span>
                             <Button type="button" variant="ghost" size="sm" onClick={() => removePart(pIdx)}
                               className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-auto px-2 py-1 shrink-0">
                               Remove
                             </Button>
                           </div>
 
-                          {/* Part body — collapsible */}
-                          {!isCollapsed && (
-                            <div className="px-4 pb-4">
-                              {part.words.length > 0 && (
-                                <div className="space-y-2 mb-3">
-                                  {part.words.map((word, wIdx) => {
-                                    const uploadKey = `${pIdx}-${wIdx}`;
-                                    return (
-                                      <div key={wIdx} className="flex items-center gap-3 bg-white rounded-xl px-3 py-2.5 border border-border">
-                                        <span className="text-sm font-bold text-textPrimary flex-1">{word.text}</span>
-                                        {word.highlight && (
-                                          <Badge className="text-xs px-2 py-0.5 rounded-lg font-semibold h-auto border-0"
-                                            style={{ background: meta.bg, color: meta.color }}>
-                                            _{word.highlight}_
-                                          </Badge>
-                                        )}
-                                        {word.imageUrl ? (
-                                          <div className="relative">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img src={word.imageUrl} alt={word.text}
-                                              className="w-8 h-8 rounded-lg object-cover border border-border" />
-                                            <button type="button"
-                                              onClick={() => setParts((prev) => prev.map((p, i) =>
-                                                i !== pIdx ? p : { ...p, words: p.words.map((w, j) => j !== wIdx ? w : { ...w, imageUrl: '' }) }
-                                              ))}
-                                              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center">
-                                              <X className="w-2.5 h-2.5" />
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <>
-                                            <Button type="button" variant="outline" size="xs"
-                                              onClick={() => wordFileRefs.current[uploadKey]?.click()}
-                                              disabled={wordUploading === uploadKey}
-                                              className="text-xs px-2 py-1 h-auto rounded-lg border-dashed text-textSecondary">
-                                              {wordUploading === uploadKey ? '…' : <ImageIcon className="w-3.5 h-3.5" />}
-                                            </Button>
-                                            <input type="file" accept="image/*" className="hidden"
-                                              ref={(el) => { wordFileRefs.current[uploadKey] = el; }}
-                                              onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) uploadWordImage(pIdx, wIdx, file);
-                                                e.target.value = '';
-                                              }} />
-                                          </>
-                                        )}
-                                        <Button type="button" variant="ghost" size="icon-xs"
-                                          onClick={() => removeWord(pIdx, wIdx)}
-                                          className="text-textSecondary hover:text-red-500 ml-1">
-                                          <X className="w-3.5 h-3.5" />
-                                        </Button>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-
-                              {/* Add word row */}
-                              <div>
-                                <div className="flex gap-2">
-                                  <Input type="text" className="input-base flex-1 text-sm py-1.5 h-auto"
-                                    placeholder="Word (e.g. paper)"
-                                    value={newWordInputs[pIdx]?.text ?? ''}
-                                    onChange={(e) => setNewWordInputs((prev) => ({ ...prev, [pIdx]: { ...prev[pIdx], text: e.target.value } }))}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
-                                  <Input type="text" className="input-base w-28 text-sm py-1.5 h-auto"
-                                    placeholder={`_${part.name}_`}
-                                    value={newWordInputs[pIdx]?.highlight ?? ''}
-                                    onChange={(e) => setNewWordInputs((prev) => ({ ...prev, [pIdx]: { ...prev[pIdx], highlight: e.target.value } }))}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
-                                  <Button type="button" onClick={() => addWord(pIdx)}
-                                    className="px-4 py-2 h-auto rounded-xl text-sm font-bold text-white shrink-0"
-                                    style={{ background: meta.color }}>
-                                    + Add Word
-                                  </Button>
-                                </div>
-                                <p className="text-[10px] text-textSecondary mt-1.5">Press Enter to add quickly</p>
+                          {/* Words */}
+                          <div className="px-4 py-3">
+                            {part.words.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-3">
+                                {part.words.map((word, wIdx) => {
+                                  const uploadKey = `${pIdx}-${wIdx}`;
+                                  return (
+                                    <div key={wIdx}
+                                      className="flex items-center gap-1.5 bg-white rounded-xl px-3 py-1.5 border border-border">
+                                      {word.imageUrl ? (
+                                        <div className="relative">
+                                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                                          <img src={word.imageUrl} alt={word.text}
+                                            className="w-6 h-6 rounded-md object-cover border border-border" />
+                                          <button type="button"
+                                            onClick={() => setParts((prev) => prev.map((p, i) =>
+                                              i !== pIdx ? p : { ...p, words: p.words.map((w, j) => j !== wIdx ? w : { ...w, imageUrl: '' }) }
+                                            ))}
+                                            className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 text-white flex items-center justify-center">
+                                            <X className="w-2 h-2" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <Button type="button" variant="ghost" size="icon-xs"
+                                            onClick={() => wordFileRefs.current[uploadKey]?.click()}
+                                            disabled={wordUploading === uploadKey}
+                                            className="w-5 h-5 rounded text-textSecondary/50 hover:text-textSecondary p-0">
+                                            {wordUploading === uploadKey
+                                              ? <Loader2 className="w-3 h-3 animate-spin" />
+                                              : <ImageIcon className="w-3 h-3" />}
+                                          </Button>
+                                          <input type="file" accept="image/*" className="hidden"
+                                            ref={(el) => { wordFileRefs.current[uploadKey] = el; }}
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) uploadWordImage(pIdx, wIdx, file);
+                                              e.target.value = '';
+                                            }} />
+                                        </>
+                                      )}
+                                      <span className="text-sm font-semibold text-textPrimary">{word.text}</span>
+                                      <button type="button" onClick={() => removeWord(pIdx, wIdx)}
+                                        className="text-textSecondary/40 hover:text-red-500 transition-colors ml-0.5">
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  );
+                                })}
                               </div>
+                            )}
+
+                            {/* Add word */}
+                            <div className="flex gap-2">
+                              <Input type="text" className="input-base flex-1 text-sm py-1.5 h-auto"
+                                placeholder={`Add word (e.g. paper) — Enter to add`}
+                                value={newWordTexts[pIdx] ?? ''}
+                                onChange={(e) => setNewWordTexts((prev) => ({ ...prev, [pIdx]: e.target.value }))}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
+                              <Button type="button" onClick={() => addWord(pIdx)}
+                                className="px-3 py-1.5 h-auto rounded-xl text-sm font-bold text-white shrink-0"
+                                style={{ background: meta.color }}>
+                                + Add
+                              </Button>
                             </div>
-                          )}
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Add part row */}
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex gap-2">
                     <Input type="text" className="input-base flex-1"
-                      placeholder="Part name (e.g. er)"
+                      placeholder="New part name (e.g. er)"
                       value={newPartName}
                       onChange={(e) => setNewPartName(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPart(); } }} />
@@ -389,6 +345,7 @@ function HomeworkModal({
                       + Part
                     </Button>
                   </div>
+                  {uploadError && <p className="text-xs text-highlight mt-2">{uploadError}</p>}
                 </div>
               </div>
             )}
@@ -405,15 +362,15 @@ function HomeworkModal({
                     ]).map(({ value, label, desc }) => {
                       const active = (form.speakingMode ?? 'SCRIPT_MATCH') === value;
                       return (
-                        <Button key={value} type="button" variant="outline"
+                        <button key={value} type="button"
                           onClick={() => setForm((f) => ({ ...f, speakingMode: value }))}
-                          className="flex-1 h-auto py-3 px-3 rounded-xl border-2 text-left flex-col items-start transition-all"
+                          className="flex-1 py-3 px-4 rounded-2xl border-2 text-left transition-all"
                           style={active
                             ? { background: meta.color, borderColor: meta.color, color: 'white' }
-                            : { background: 'white', borderColor: meta.color + '55', color: '#6B7280' }}>
+                            : { background: meta.bg, borderColor: meta.color + '40', color: '#6B7280' }}>
                           <div className="text-xs font-bold">{label}</div>
                           <div className="text-[10px] mt-0.5 opacity-80">{desc}</div>
-                        </Button>
+                        </button>
                       );
                     })}
                   </div>
@@ -421,7 +378,9 @@ function HomeworkModal({
 
                 {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' && (
                   <div>
-                    <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">Image Prompt (optional)</p>
+                    <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">
+                      Image Prompt <span className="font-normal normal-case">(optional)</span>
+                    </p>
                     {form.speakingPictureUrl ? (
                       <div className="relative rounded-xl overflow-hidden border border-border" style={{ maxHeight: 160 }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -433,13 +392,16 @@ function HomeworkModal({
                         </Button>
                       </div>
                     ) : (
-                      <Button type="button" variant="outline" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
-                        className="w-full h-auto rounded-xl border-2 border-dashed py-6 flex flex-col items-center gap-1.5 disabled:opacity-60"
+                      <button type="button" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
+                        className="w-full h-auto rounded-2xl border-2 border-dashed py-6 flex flex-col items-center gap-1.5 disabled:opacity-60 transition-colors hover:opacity-80"
                         style={{ borderColor: meta.color + '55', background: meta.bg }}>
                         {speakUploading
                           ? <span className="text-xs font-semibold" style={{ color: meta.color }}>Uploading…</span>
-                          : <><ImageIcon className="w-5 h-5" style={{ color: meta.color }} /><span className="text-xs font-semibold" style={{ color: meta.color }}>Click to upload picture</span></>}
-                      </Button>
+                          : <>
+                            <ImageIcon className="w-5 h-5" style={{ color: meta.color }} />
+                            <span className="text-xs font-semibold" style={{ color: meta.color }}>Click to upload picture</span>
+                          </>}
+                      </button>
                     )}
                     <input ref={speakFileRef} type="file" accept="image/*" className="hidden" onChange={handleSpeakFile} />
                     {uploadError && <p className="text-xs text-highlight mt-1">{uploadError}</p>}
@@ -457,7 +419,9 @@ function HomeworkModal({
                     value={form.speakingText ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, speakingText: e.target.value }))} />
                   {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' && (
-                    <p className="text-[10px] text-textSecondary mt-1">Student gets credit for each keyword found in their recording.</p>
+                    <p className="text-[10px] text-textSecondary mt-1">
+                      Student gets credit for each keyword found in their recording.
+                    </p>
                   )}
                 </div>
               </div>
@@ -465,11 +429,16 @@ function HomeworkModal({
           </div>
 
           <div className="px-8 pb-7 pt-5 border-t border-border">
-            {error && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{error}</div>}
-            {uploadError && form.type === 'PHONICS' && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{uploadError}</div>}
+            {error && (
+              <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">
+                {error}
+              </div>
+            )}
             <div className="flex gap-3">
               <Button type="button" variant="outline" onClick={onClose}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
+                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">
+                Cancel
+              </Button>
               {form.type !== 'READING' && (
                 <Button type="submit" disabled={loading}
                   className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"

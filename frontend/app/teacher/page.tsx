@@ -1,9 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { getClasses, getStudents, getHomeworkList, ClassItem, ScheduleSlot } from '@/lib/admin-api';
+import { getClasses, getStudents, getHomeworkList, getPendingStudents, getPasswordResetRequests, ClassItem, ScheduleSlot } from '@/lib/admin-api';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, RefreshCw, School, Users, BookOpen, Video, ChevronRight } from 'lucide-react';
+import { ArrowRight, RefreshCw, School, Users, BookOpen, Video, ChevronRight, AlertTriangle } from 'lucide-react';
 
 const ACCENT = '#F0623A';
 const DAY_ORDER = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -56,6 +56,8 @@ const QUICK_LINKS = [
 export default function TeacherDashboard() {
   const [stats, setStats] = useState({ classes: 0, students: 0, homework: 0 });
   const [upcomingClasses, setUpcomingClasses] = useState<(ClassItem & { nextAt: Date })[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [resetCount, setResetCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -63,8 +65,14 @@ export default function TeacherDashboard() {
     setLoading(true);
     setError('');
     try {
-      const [c, s, h] = await Promise.all([getClasses(), getStudents(), getHomeworkList()]);
+      const [c, s, h, pending, resets] = await Promise.all([
+        getClasses(), getStudents(), getHomeworkList(),
+        getPendingStudents().catch(() => []),
+        getPasswordResetRequests().catch(() => []),
+      ]);
       setStats({ classes: c.length, students: s.length, homework: h.length });
+      setPendingCount(pending.length);
+      setResetCount(resets.length);
       const withNext = c
         .filter((cls) => cls.status !== 'ENDED')
         .flatMap((cls) => {
@@ -93,6 +101,25 @@ export default function TeacherDashboard() {
             <RefreshCw className="w-3.5 h-3.5" />
             Retry
           </Button>
+        </div>
+      )}
+
+      {/* Pending actions banner */}
+      {(pendingCount > 0 || resetCount > 0) && (
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center gap-3">
+          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+          <div className="flex-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-amber-700">
+            {pendingCount > 0 && (
+              <Link href="/teacher/students" className="font-semibold hover:underline">
+                {pendingCount} pending registration approval{pendingCount !== 1 ? 's' : ''}
+              </Link>
+            )}
+            {resetCount > 0 && (
+              <Link href="/teacher/students" className="font-semibold hover:underline">
+                {resetCount} password reset request{resetCount !== 1 ? 's' : ''}
+              </Link>
+            )}
+          </div>
         </div>
       )}
 
