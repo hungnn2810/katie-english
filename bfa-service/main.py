@@ -53,7 +53,14 @@ TRANSCRIPTION_MATCH_THRESHOLD = float(os.getenv("BFA_TRANSCRIPTION_MATCH_THRESHO
 MIN_WORD_SCORE = int(os.getenv("BFA_MIN_WORD_SCORE", "70"))
 
 REQUEST_SEMAPHORE = asyncio.Semaphore(BFA_CONCURRENCY)
-THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+_THREAD_POOL_WORKERS = int(os.getenv("BFA_THREAD_POOL_WORKERS", str(BFA_CONCURRENCY * 2)))
+if _THREAD_POOL_WORKERS < BFA_CONCURRENCY * 2:
+    logger.warning(json.dumps({
+        "event": "config_warning",
+        "message": f"BFA_THREAD_POOL_WORKERS ({_THREAD_POOL_WORKERS}) < BFA_CONCURRENCY*2 "
+                   f"({BFA_CONCURRENCY * 2}); deadlock possible under load",
+    }))
+THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=_THREAD_POOL_WORKERS)
 
 REQUEST_COUNT = Counter(
     "bfa_request_total",
