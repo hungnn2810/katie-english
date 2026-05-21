@@ -559,7 +559,10 @@ async def _transcribe_impl(audio: UploadFile):
     if len(raw_bytes) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Audio file too large")
 
-    return await asyncio.to_thread(_transcribe_sync, raw_bytes, suffix)
+    result = await asyncio.to_thread(_transcribe_sync, raw_bytes, suffix)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    return result
 
 
 def _transcribe_sync(raw_bytes: bytes, suffix: str):
@@ -576,7 +579,7 @@ def _transcribe_sync(raw_bytes: bytes, suffix: str):
             timeout=FFMPEG_TIMEOUT,
         )
         if conv.returncode != 0:
-            raise HTTPException(status_code=400, detail=f"Audio conversion failed: {conv.stderr.decode()[:200]}")
+            return {"error": f"Audio conversion failed: {conv.stderr.decode()[:200]}"}
 
         if not has_sufficient_energy(wav_path):
             return {"text": ""}
