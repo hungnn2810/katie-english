@@ -29,6 +29,19 @@ logger.addHandler(_handler)
 logger.setLevel(logging.INFO)
 
 
+def _safe_suffix(filename: str | None) -> str:
+    """Return a sanitised file extension from a client-supplied filename.
+
+    Only alphanumeric characters (1–10 chars after the dot) are accepted.
+    Anything else — including semicolons, spaces, or shell metacharacters —
+    falls back to '.webm' to avoid creating oddly-named temp files.
+    """
+    raw = Path(filename or "audio.webm").suffix or ".webm"
+    if re.fullmatch(r'\.[a-zA-Z0-9]{1,10}', raw):
+        return raw
+    return ".webm"
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(json.dumps({"event": "startup_warmup_begin"}))
@@ -411,7 +424,7 @@ async def _align_impl(
     if len(word) > MAX_WORD_LENGTH:
         raise HTTPException(status_code=400, detail="word is too long")
 
-    suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+    suffix = _safe_suffix(audio.filename)
     raw_bytes = await audio.read()
     if len(raw_bytes) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Audio file too large")
@@ -556,7 +569,7 @@ async def transcribe(audio: UploadFile = File(...)):
 
 
 async def _transcribe_impl(audio: UploadFile):
-    suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+    suffix = _safe_suffix(audio.filename)
     raw_bytes = await audio.read()
     if len(raw_bytes) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Audio file too large")
@@ -627,7 +640,7 @@ async def _analyze_impl(
     if len(word) > MAX_WORD_LENGTH:
         raise HTTPException(status_code=400, detail="word is too long")
 
-    suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+    suffix = _safe_suffix(audio.filename)
     raw_bytes = await audio.read()
     if len(raw_bytes) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Audio file too large")
@@ -1014,7 +1027,7 @@ async def _analyze_speaking_impl(
     if len(target_text) > MAX_TARGET_TEXT_LENGTH:
         raise HTTPException(status_code=400, detail="target_text is too long")
 
-    suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
+    suffix = _safe_suffix(audio.filename)
     raw_bytes = await audio.read()
     if len(raw_bytes) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="Audio file too large")
