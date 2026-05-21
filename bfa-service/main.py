@@ -45,6 +45,8 @@ FFMPEG_TIMEOUT = int(os.getenv("BFA_FFMPEG_TIMEOUT", "30"))
 VOLUMEDETECT_TIMEOUT = int(os.getenv("BFA_VOLUME_TIMEOUT", "10"))
 ESPEAK_TIMEOUT = int(os.getenv("BFA_ESPEAK_TIMEOUT", "5"))
 BFA_CONCURRENCY = int(os.getenv("BFA_CONCURRENCY", "1"))
+MAX_WORD_LENGTH = int(os.getenv("BFA_MAX_WORD_LENGTH", "200"))
+MAX_TARGET_TEXT_LENGTH = int(os.getenv("BFA_MAX_TARGET_TEXT_LENGTH", "2000"))
 
 REQUEST_SEMAPHORE = asyncio.Semaphore(BFA_CONCURRENCY)
 
@@ -392,6 +394,9 @@ async def _align_impl(
     if len(expected) > MAX_EXPECTED_PHONEMES:
         raise HTTPException(status_code=413, detail="expected_phonemes is too large")
 
+    if len(word) > MAX_WORD_LENGTH:
+        raise HTTPException(status_code=400, detail="word is too long")
+
     suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
     raw_bytes = await audio.read()
     if len(raw_bytes) > MAX_UPLOAD_BYTES:
@@ -599,6 +604,9 @@ async def _analyze_impl(
 
     if len(expected) > MAX_EXPECTED_PHONEMES:
         raise HTTPException(status_code=413, detail="expected_phonemes is too large")
+
+    if len(word) > MAX_WORD_LENGTH:
+        raise HTTPException(status_code=400, detail="word is too long")
 
     suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
     raw_bytes = await audio.read()
@@ -960,6 +968,9 @@ async def _analyze_speaking_impl(
     target_text = target_text.strip()
     if not target_text:
         raise HTTPException(status_code=400, detail="target_text is required")
+
+    if len(target_text) > MAX_TARGET_TEXT_LENGTH:
+        raise HTTPException(status_code=400, detail="target_text is too long")
 
     suffix = Path(audio.filename or "audio.webm").suffix or ".webm"
     raw_bytes = await audio.read()
