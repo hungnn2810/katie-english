@@ -49,6 +49,7 @@ MAX_WORD_LENGTH = int(os.getenv("BFA_MAX_WORD_LENGTH", "200"))
 MAX_TARGET_TEXT_LENGTH = int(os.getenv("BFA_MAX_TARGET_TEXT_LENGTH", "2000"))
 
 REQUEST_SEMAPHORE = asyncio.Semaphore(BFA_CONCURRENCY)
+THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
 REQUEST_COUNT = Counter(
     "bfa_request_total",
@@ -650,11 +651,10 @@ def _analyze_sync(
 
         # Run transcription and alignment in parallel — they share the same WAV but are independent.
         # skip_energy_check=True avoids a redundant ffmpeg volumedetect subprocess in _run_alignment.
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-            transcribe_fut = pool.submit(_transcribe_wav, wav_path, word)
-            align_fut = pool.submit(_run_alignment, wav_path, word, expected, espeak_fallback, True)
-            transcription_text = transcribe_fut.result()
-            align_result = align_fut.result()
+        transcribe_fut = THREAD_POOL.submit(_transcribe_wav, wav_path, word)
+        align_fut = THREAD_POOL.submit(_run_alignment, wav_path, word, expected, espeak_fallback, True)
+        transcription_text = transcribe_fut.result()
+        align_result = align_fut.result()
 
         # Re-score using what whisperx actually heard (forced aligner labels always
         # match expected lexicon, so alignment score is always 100% regardless of
@@ -893,11 +893,10 @@ def _analyze_speaking_sync(
         if not has_sufficient_energy(wav_path):
             return _speaking_error_payload(target_text, "No speech detected in audio")
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-            transcribe_fut = pool.submit(_transcribe_wav, wav_path, target_text)
-            align_fut = pool.submit(_run_speaking_alignment, wav_path, target_text)
-            transcription_text = transcribe_fut.result()
-            align_result = align_fut.result()
+        transcribe_fut = THREAD_POOL.submit(_transcribe_wav, wav_path, target_text)
+        align_fut = THREAD_POOL.submit(_run_speaking_alignment, wav_path, target_text)
+        transcription_text = transcribe_fut.result()
+        align_result = align_fut.result()
 
         if not align_result["success"]:
             return _speaking_error_payload(target_text, align_result.get("error", "Alignment failed"))
