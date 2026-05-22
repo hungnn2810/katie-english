@@ -73,17 +73,23 @@ Exceptions:
 
 ## Typography
 
+Exactly 4 sizes, exactly 2 weights.
+
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
+| Label / nav-meta | 12px (`text-xs`) | 400 (regular) | 1.4 | Breadcrumbs, stat card subtitles, nav group labels (`uppercase tracking-widest text-slate-600`) |
 | Body | 14px (`text-sm`) | 400 (regular) | 1.5 | Table rows, form labels, nav items, card body |
-| Label | 12px (`text-xs`) | 400 (regular) | 1.4 | Breadcrumbs, stat card subtitles, section group labels |
-| Heading | 26px | 900 (black) | 1.0 (`leading-none`) | Page title (h1) |
-| Display | 28–32px | 700 (bold) | 1.1 | Stat card numbers on dashboard |
+| Heading | 26px | 700 (bold) | 1.0 (`leading-none`) | Page title (h1) |
+| Display | 28px | 700 (bold) | 1.1 | Stat card numbers on dashboard |
+
+Weight contract:
+- **400 (regular):** body text, labels, nav-meta, idle nav items
+- **700 (bold):** page headings (h1), display stat numbers, active nav items
 
 Notes:
-- Nav group labels: 10px, `font-bold uppercase tracking-widest text-slate-600` (matched from TeacherShell)
-- Active nav item: `font-semibold` (600)
-- Source: `TeacherShell.tsx` heading is `text-[26px] font-black`
+- Nav group labels use the 12px Label role with `uppercase tracking-widest text-slate-600` — no separate 10px size
+- Active nav item uses `font-bold` (700), not semibold
+- Source: `TeacherShell.tsx` heading pattern adapted; weight reduced from 900 to 700
 
 ---
 
@@ -107,6 +113,12 @@ Accent NOT used for: table row hover states, secondary actions, breadcrumbs, bad
 Status badge colors (power-user UI, semantic):
 - Active/Enabled teacher: `bg-emerald-50 text-emerald-700` (green)
 - Disabled teacher: `bg-slate-100 text-slate-500` (neutral)
+
+---
+
+## Focal Point
+
+**Primary screen (Dashboard):** The primary visual anchor is the 4-column stat card grid. The stat numbers — the largest text on screen at 28px bold — draw the eye first. Accent-colored values (`#4F9DFF`) within the cards reinforce hierarchy and direct attention to platform-wide counts before the user reads the nav or page chrome.
 
 ---
 
@@ -162,8 +174,10 @@ Status badge colors (power-user UI, semantic):
 | Edit modal heading | "Edit Teacher" |
 | Disable confirmation | "Disable teacher? {name} will no longer be able to log in until re-enabled." |
 | Disable confirm button | "Disable account" |
+| Disable dialog dismiss | "Keep teacher" |
 | Enable confirmation | "Enable teacher? {name} will be able to log in again." |
 | Enable confirm button | "Enable account" |
+| Enable dialog dismiss | "Keep teacher" |
 | Error: email already exists | "An account with this email already exists." |
 | Error: save failed | "Failed to save. Please try again." |
 | Success: teacher created | "Teacher account created." |
@@ -186,6 +200,7 @@ Status badge colors (power-user UI, semantic):
 | Edit modal heading | "Edit Class" |
 | Delete confirmation | "Delete class? All homework and sessions in this class will be permanently deleted." |
 | Delete confirm button | "Delete class" |
+| Delete dialog dismiss | "Keep class" |
 | Error: delete failed | "Failed to delete class. Please try again." |
 | Success: class updated | "Class updated." |
 
@@ -204,14 +219,16 @@ Status badge colors (power-user UI, semantic):
 | Delete session action | "Delete" |
 | Delete session confirmation | "Delete session? This will permanently remove the student's submission and score." |
 | Delete session confirm button | "Delete session" |
+| Delete session dialog dismiss | "Keep session" |
 
 ### Shared / Destructive flow
 
 | Element | Copy |
 |---------|------|
-| Confirmation dialog cancel | "Cancel" |
 | Generic error | "Something went wrong. Please try again." |
 | Generic loading | "Loading..." |
+
+> **Dismiss label rule:** Every destructive confirmation dialog uses a context-specific dismiss label (declared per-dialog above). The word "Cancel" is prohibited as a CTA label.
 
 ---
 
@@ -242,8 +259,9 @@ New component to build:
 <div class="flex h-screen bg-background" style="minWidth: 1280">
   <aside class="w-60 flex-shrink-0" style="background: #0C1220">
     <!-- Logo: "K" mark + "Katie English" + "Admin Portal" subtitle -->
-    <!-- Nav groups: GENERAL group with Dashboard, Teachers, Classes, Students -->
-    <!-- Active indicator: left 3px bar + bg rgba(79,157,255,0.12) + text #60A5FA -->
+    <!-- Nav groups: GENERAL group label at 12px uppercase tracking-widest text-slate-600 -->
+    <!-- Nav items: Dashboard, Teachers, Classes, Students -->
+    <!-- Active indicator: left 3px bar + bg rgba(79,157,255,0.12) + text #60A5FA + font-bold -->
     <!-- Footer: "© Katie English" -->
   </aside>
   <div class="flex-1 flex flex-col overflow-hidden">
@@ -268,8 +286,8 @@ New component to build:
 
 4 cards in a responsive grid (`grid-cols-4` at desktop):
 - Each card: `bg-white rounded-2xl border border-border shadow-card p-6`
-- Stat number: 28px bold, `textPrimary`
-- Stat label: 14px regular, `textSecondary`
+- Stat number: 28px bold (700), `textPrimary`
+- Stat label: 14px regular (400), `textSecondary`
 - Icon: 20px lucide icon, colored with accent or muted
 
 ### Data tables
