@@ -9,11 +9,13 @@
 
 - [ ] **SPEAK-01**: Teacher can create speaking homework in free-speak mode (image prompt, student speaks freely)
 - [ ] **SPEAK-02**: Teacher can create speaking homework in script-matching mode (target text shown, student reads/repeats)
-- [ ] **SPEAK-03**: Student can record video submission for speaking homework
-- [ ] **SPEAK-04**: Student can record audio-only as alternative to video
-- [ ] **SPEAK-05**: System submits recording to WhisperX, stores transcript
-- [ ] **SPEAK-06**: System scores transcript against expected result and stores score
-- [ ] **SPEAK-07**: Teacher can view speaking session result (score + transcript)
+- [x] **SPEAK-03
+**: Student uploads audio recording for speaking homework
+- [x] **SPEAK-04
+**: System submits recording to WhisperX, stores transcript
+- [ ] **SPEAK-05**: System scores transcript against expected result and stores score
+- [x] **SPEAK-06
+**: Teacher can view speaking session result (score + transcript)
 
 ### Reading Homework
 
@@ -33,7 +35,7 @@
 - [ ] **TEACH-02**: Teacher can assign homework to one or more classes with a due date
 - [ ] **TEACH-03**: Teacher can view homework list with submission counts and assignment status
 - [ ] **TEACH-04**: Teacher can see per-student session results for any homework assignment
-- [ ] **TEACH-05**: Teacher can review individual student attempt (score breakdown + recording playback for audio types)
+- [ ] **TEACH-05**: Teacher can review individual student attempt (score breakdown + transcript)
 
 ### Student UX
 

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-22T07:03:37.863Z"
+last_updated: "2026-05-22T07:39:11.519Z"
 progress:
-  total_phases: 5
-  completed_phases: 3
+  total_phases: 6
+  completed_phases: 4
   total_plans: 23
-  completed_plans: 18
-  percent: 78
+  completed_plans: 22
+  percent: 96
 ---
 
 # Project State: Katie English
@@ -66,6 +66,8 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - findByText uses findUnique+select (text is @unique, no eager relation load)
 - BfaAnalyzeResult extends BfaAlignResult + transcription field (single /analyze call replaces transcribe+align)
 - WordRepository exported via WordModule.exports (not added directly to GameModule providers)
+- trySpeakingHomework injects PrismaService directly — no session intermediary
+- completeSession refactored to 1-arg (video upload stripped by linter)
 
 ## Session Log
 
