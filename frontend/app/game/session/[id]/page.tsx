@@ -20,6 +20,8 @@ interface SessionItem {
   imageUrl?: string;
   pictureUrl?: string;
   transcribed: string;
+  matchedWords?: number;
+  totalWords?: number;
   score: number;
   state: ItemState;
   bfa?: BfaResult | null;
@@ -365,6 +367,8 @@ export default function SessionPage() {
         text: speakHw?.speakingText ?? '',
         pictureUrl: speakHw?.speakingPictureUrl ?? undefined,
         transcribed: r.transcribedText ?? '',
+        matchedWords: r.matchedWords,
+        totalWords: r.totalWords,
         score: r.score,
         state: 'done',
       }]);
@@ -556,13 +560,28 @@ export default function SessionPage() {
                       </div>
                     ) : (
                       <div>
-                        <div className="flex items-center gap-1 text-white/60 text-xs font-semibold uppercase mb-2"><Mic className="w-3.5 h-3.5" /> Speaking</div>
+                        <div className="text-white/60 text-xs font-bold uppercase mb-2">
+                          🎤 Speaking{speakHw?.speakingMode === 'FREE_SPEAK' ? ' · Free Speak' : speakHw?.speakingMode === 'SCRIPT_MATCH' ? ' · Script Match' : ''}
+                        </div>
+                        {speakHw?.speakingMode === 'FREE_SPEAK' && item.pictureUrl && (
+                          <div className="rounded-xl overflow-hidden mb-3 max-h-40">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={item.pictureUrl} alt="Speaking prompt" className="w-full object-contain" />
+                          </div>
+                        )}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <div className="text-white font-medium text-sm mb-1">{item.text}</div>
+                            {speakHw?.speakingMode !== 'FREE_SPEAK' && (
+                              <div className="text-white font-medium text-sm mb-1">{item.text}</div>
+                            )}
                             <div className="text-white/70 text-sm">
                               You said: <span className="text-white italic">"{item.transcribed || '—'}"</span>
                             </div>
+                            {speakHw?.speakingMode === 'FREE_SPEAK' && item.matchedWords !== undefined && item.totalWords !== undefined && (
+                              <div className="text-white/70 text-sm mt-1">
+                                Keywords matched: {item.matchedWords}/{item.totalWords}
+                              </div>
+                            )}
                           </div>
                           <div className="text-2xl font-black tabular-nums shrink-0" style={{ color: scoreHexColor(item.score) }}>
                             {item.score}%
