@@ -6,7 +6,7 @@ import { authHeaders } from '@/lib/auth';
 import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, BfaResult, SpeakingMode } from '@/lib/admin-api';
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
 import PhonemeChips from './_components/PhonemeChips';
-import { Camera, School, Mic, Hash, PartyPopper, CheckCircle2, FolderOpen, ImageIcon } from 'lucide-react';
+import { School, Mic, Hash, PartyPopper, CheckCircle2, FolderOpen, ImageIcon } from 'lucide-react';
 
 type ItemKind = 'speaking' | 'phonics';
 type ItemState = 'waiting' | 'recording' | 'done';
@@ -38,11 +38,6 @@ async function fetchSession(id: number): Promise<GameSession> {
   const res = await fetch(`${API_URL}/game/session/${id}`, { headers: { ...authHeaders() } });
   if (!res.ok) throw new Error('Session not found');
   return res.json();
-}
-
-function pickMimeType(): string {
-  const types = ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4'];
-  return types.find((t) => MediaRecorder.isTypeSupported(t)) ?? '';
 }
 
 function pickAudioMimeType(): string {
@@ -93,9 +88,6 @@ export default function SessionPage() {
   } | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const audioRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -142,13 +134,8 @@ export default function SessionPage() {
   async function requestCamera() {
     setPageState('cam-check');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      if (videoRef.current) { videoRef.current.srcObject = stream; }
-      const mimeType = pickMimeType();
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-      mediaRecorderRef.current = recorder;
       setPageState('ready');
     } catch {
       setPageState('cam-denied');
@@ -274,9 +261,6 @@ export default function SessionPage() {
   }
 
   function handleStart() {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'inactive') {
-      mediaRecorderRef.current.start(1000);
-    }
     setPageState('playing');
     setCurrentIndex(0);
     playItem(0);
@@ -295,28 +279,15 @@ export default function SessionPage() {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
-    if (videoRef.current) videoRef.current.srcObject = null;
     await stopWordRecording();
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      await Promise.race([
-        new Promise<void>((resolve) => {
-          try {
-            mediaRecorderRef.current!.onstop = () => resolve();
-            mediaRecorderRef.current!.stop();
-          } catch { resolve(); }
-        }),
-        new Promise<void>((resolve) => setTimeout(resolve, 2000)),
-      ]);
-    }
   }
 
   async function finishSession() {
-    // Stop all media tracks immediately — camera/mic off before any async work
+    // Stop all media tracks immediately — mic off before any async work
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
-    if (videoRef.current) videoRef.current.srcObject = null;
     if (audioRecorderRef.current?.state !== 'inactive') {
       try { audioRecorderRef.current?.stop(); } catch {}
       audioRecorderRef.current = null;
@@ -343,11 +314,8 @@ export default function SessionPage() {
 
     setItems(scored);
 
-    const blob = chunksRef.current.length > 0
-      ? new Blob(chunksRef.current, { type: chunksRef.current[0].type || 'video/webm' })
-      : undefined;
     try {
-      const session = await completeSession(sessionId, blob);
+      const session = await completeSession(sessionId);
       setResults(session);
     } catch (err) {
       console.error('[finishSession] failed:', err);
@@ -360,7 +328,7 @@ export default function SessionPage() {
     setPageState('uploading');
     try {
       const r = await saveSpeakingResult(sessionId, uploadFile ?? undefined);
-      const session = await completeSession(sessionId, uploadFile ?? undefined);
+      const session = await completeSession(sessionId);
       setResults(session);
       setItems([{
         kind: 'speaking',
@@ -383,9 +351,7 @@ export default function SessionPage() {
     stopTimer();
     stopSpeech();
     if (audioRecorderRef.current?.state !== 'inactive') audioRecorderRef.current?.stop();
-    mediaRecorderRef.current?.state !== 'inactive' && mediaRecorderRef.current?.stop();
     streamRef.current?.getTracks().forEach((t) => t.stop());
-    if (videoRef.current) videoRef.current.srcObject = null;
   }, [stopTimer, stopSpeech]);
 
   if (pageState === 'upload' && speakHw) {
@@ -437,7 +403,7 @@ export default function SessionPage() {
                   ) : (
                     <p className="text-white/70 text-sm font-medium text-center">Tap to select your recording</p>
                   )}
-                  <input type="file" accept="video/*,audio/*" className="hidden"
+                  <input type="file" accept="audio/*" className="hidden"
                     onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)} />
                 </label>
               </div>
@@ -462,7 +428,7 @@ export default function SessionPage() {
         {() => (
           <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
             <div className="w-12 h-12 border-4 border-white/70 border-t-transparent rounded-full animate-spin" />
-            <p className="text-white/70 text-sm">{pageState === 'cam-check' ? 'Requesting camera access…' : 'Loading…'}</p>
+            <p className="text-white/70 text-sm">{pageState === 'cam-check' ? 'Requesting microphone access…' : 'Loading…'}</p>
           </div>
         )}
       </AuthGate>
@@ -474,10 +440,10 @@ export default function SessionPage() {
       <AuthGate requiredRole="STUDENT">
         {() => (
           <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-8" style={{ background: gradients.gameBg }}>
-            <div className="flex justify-center"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><Camera className="w-8 h-8 text-white" /></div></div>
+            <div className="flex justify-center"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><Mic className="w-8 h-8 text-white" /></div></div>
             <div className="text-center">
-              <h2 className="text-white text-2xl font-black mb-2">Camera Required</h2>
-              <p className="text-white/70 text-sm max-w-sm">Camera and microphone access is required. Please allow access and reload.</p>
+              <h2 className="text-white text-2xl font-black mb-2">Microphone Required</h2>
+              <p className="text-white/70 text-sm max-w-sm">Microphone access is required. Please allow access and reload.</p>
             </div>
             <button onClick={requestCamera} className="px-6 py-3 rounded-xl text-white font-bold" style={{ background: gradients.pinkHighlight }}>
               Try Again
@@ -628,23 +594,6 @@ export default function SessionPage() {
           </div>
 
           <div className="flex-1 flex gap-6 px-8 pb-8 min-h-0">
-            <div className="w-2/5 flex-shrink-0 flex flex-col">
-              <div className="relative flex-1 bg-black rounded-3xl overflow-hidden">
-                <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-                {pageState === 'playing' && (
-                  <div className="absolute top-4 left-4 flex items-center gap-2 bg-black bg-opacity-50 px-3 py-1.5 rounded-full">
-                    <div className="w-2.5 h-2.5 rounded-full bg-highlight animate-pulse" />
-                    <span className="text-white text-xs font-bold tracking-wider">REC</span>
-                  </div>
-                )}
-                {pageState === 'playing' && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-primary/80 px-4 py-2 rounded-full">
-                    <Mic className="w-3.5 h-3.5 text-white" /><span className="text-white text-xs font-semibold">Listening</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
             <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto">
               {pageState === 'ready' && (
                 <div className="text-center">

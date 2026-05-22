@@ -5,6 +5,7 @@ import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { WordRepository } from '../word/word.repository';
+import { PrismaService } from '../prisma/prisma.service';
 import { calcScore, levenshtein, calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 import { SaveReadingResultDto } from './game.dto';
 
@@ -278,6 +279,7 @@ describe('GameService.savePhonicsResult', () => {
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
+        { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -373,6 +375,7 @@ describe('GameService.completeSession', () => {
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
+        { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -386,7 +389,7 @@ describe('GameService.completeSession', () => {
       phonicsResults: [{ score: 100 }, { score: 0 }, { score: 0 }],
     } as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 33);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 33);
   });
 
   it('gives 100 when all phonics words perfect', async () => {
@@ -395,7 +398,7 @@ describe('GameService.completeSession', () => {
       phonicsResults: [{ score: 100 }, { score: 100 }, { score: 100 }],
     } as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 100);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 100);
   });
 
   it('uses speaking result score for SPEAKING homework', async () => {
@@ -404,13 +407,13 @@ describe('GameService.completeSession', () => {
       speakingResults: [{ score: 75 }],
     } as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 75);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 75);
   });
 
   it('gives 0 when no speaking result', async () => {
     repo.getSession.mockResolvedValue(mockSpeakingSession() as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 0);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 0);
   });
 
   it('throws NotFoundException when session not found', async () => {
@@ -443,6 +446,7 @@ describe('saveReadingResult', () => {
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
+        { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -520,6 +524,7 @@ describe('completeSession READING branch', () => {
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
+        { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -537,7 +542,7 @@ describe('completeSession READING branch', () => {
     );
     repo.getReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 3, correctItems: 3, score: 80 } as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 80);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 80);
   });
 
   it('handles empty readingActivityResults (no division-by-zero) — score from ReadingResult', async () => {
@@ -546,13 +551,13 @@ describe('completeSession READING branch', () => {
     );
     repo.getReadingResult.mockResolvedValue(null as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 0);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 0);
   });
 
   it('SPEAKING branch unchanged — additive guarantee', async () => {
     repo.getSession.mockResolvedValue({ ...mockSpeakingSession(), speakingResults: [{ score: 90 }] } as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 90);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 90);
   });
 
   it('PHONICS branch unchanged — additive guarantee', async () => {
@@ -561,7 +566,7 @@ describe('completeSession READING branch', () => {
       phonicsResults: [{ score: 60 }, { score: 80 }, { score: 100 }],
     } as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 80);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 80);
   });
 });
 
@@ -589,6 +594,7 @@ describe('completeSession READING', () => {
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
+        { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -600,14 +606,14 @@ describe('completeSession READING', () => {
     repo.getSession.mockResolvedValue(mockReadingSession() as any);
     repo.getReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 8, correctItems: 6, score: 75 } as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 75);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 75);
   });
 
   it('uses 0 when ReadingResult is missing', async () => {
     repo.getSession.mockResolvedValue(mockReadingSession() as any);
     repo.getReadingResult.mockResolvedValue(null as any);
     await service.completeSession(1);
-    expect(repo.completeSession).toHaveBeenCalledWith(1, null, 0);
+    expect(repo.completeSession).toHaveBeenCalledWith(1, 0);
   });
 });
 
@@ -643,6 +649,7 @@ describe('GameService.saveSpeakingResult', () => {
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
+        { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -683,5 +690,123 @@ describe('GameService.saveSpeakingResult', () => {
   it('throws BadRequestException when session already completed', async () => {
     repo.getSession.mockResolvedValue(mockSpeakingSession({ completedAt: new Date() }) as any);
     await expect(service.saveSpeakingResult(1)).rejects.toThrow(BadRequestException);
+  });
+});
+
+// ── GameService.trySpeakingHomework ───────────────────────────────────────────
+
+describe('GameService.trySpeakingHomework', () => {
+  let service: GameService;
+  let repo: jest.Mocked<GameRepository>;
+  let bfa: jest.Mocked<BfaService>;
+  let prisma: { homework: { findUnique: jest.Mock } };
+
+  beforeEach(async () => {
+    prisma = { homework: { findUnique: jest.fn() } };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        GameService,
+        {
+          provide: GameRepository,
+          useValue: {
+            getSession: jest.fn(), createSession: jest.fn(),
+            saveSpeakingResult: jest.fn(), savePhonicsResult: jest.fn(),
+            completeSession: jest.fn(), listSessions: jest.fn(),
+            getAvailableAssignments: jest.fn(),
+          },
+        },
+        { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+        { provide: WordRepository, useValue: { findByText: jest.fn() } },
+        { provide: PrismaService, useValue: prisma },
+      ],
+    }).compile();
+    service = module.get(GameService);
+    repo = module.get(GameRepository);
+    bfa = module.get(BfaService);
+  });
+
+  it('throws NotFoundException when homework not found', async () => {
+    prisma.homework.findUnique.mockResolvedValue(null);
+    await expect(service.trySpeakingHomework(999)).rejects.toThrow(NotFoundException);
+  });
+
+  it('throws BadRequestException when homework type is not SPEAKING', async () => {
+    prisma.homework.findUnique.mockResolvedValue({
+      type: 'PHONICS', speakingMode: null, speakingText: null, speakingPictureUrl: null,
+    });
+    await expect(service.trySpeakingHomework(1)).rejects.toThrow(BadRequestException);
+  });
+
+  it('throws BadRequestException when speakingText is missing', async () => {
+    prisma.homework.findUnique.mockResolvedValue({
+      type: 'SPEAKING', speakingMode: 'FREE_SPEAK', speakingText: null, speakingPictureUrl: null,
+    });
+    await expect(service.trySpeakingHomework(1)).rejects.toThrow(BadRequestException);
+  });
+
+  it('returns FREE_SPEAK score from calcFreeSpeak with real BFA transcript', async () => {
+    prisma.homework.findUnique.mockResolvedValue({
+      type: 'SPEAKING', speakingMode: 'FREE_SPEAK',
+      speakingText: 'cat, sits, mat', speakingPictureUrl: 'https://example.com/p.jpg',
+    });
+    bfa.transcribe.mockResolvedValue({ text: 'the cat is on the mat', words: [] } as any);
+    const r = await service.trySpeakingHomework(1, Buffer.from('audio'), 'audio/webm');
+    expect(r.transcribedText).toBe('the cat is on the mat');
+    expect(r.matchedWords).toBe(2);  // "cat" + "mat" match, "sits" does not
+    expect(r.totalWords).toBe(3);
+    expect(r.score).toBe(67);  // round(2/3 * 100)
+    expect(r.speakingMode).toBe('FREE_SPEAK');
+    expect(r.speakingPictureUrl).toBe('https://example.com/p.jpg');
+  });
+
+  it('returns SCRIPT_MATCH score from calcSpeakingScore', async () => {
+    prisma.homework.findUnique.mockResolvedValue({
+      type: 'SPEAKING', speakingMode: 'SCRIPT_MATCH',
+      speakingText: 'hello world', speakingPictureUrl: null,
+    });
+    bfa.transcribe.mockResolvedValue({ text: 'hello world', words: [] } as any);
+    const r = await service.trySpeakingHomework(1, Buffer.from('audio'), 'audio/webm');
+    expect(r.matchedWords).toBe(2);
+    expect(r.totalWords).toBe(2);
+    expect(r.score).toBe(100);
+    expect(r.speakingMode).toBe('SCRIPT_MATCH');
+  });
+
+  it('returns score=0 when no audio buffer is provided', async () => {
+    prisma.homework.findUnique.mockResolvedValue({
+      type: 'SPEAKING', speakingMode: 'FREE_SPEAK',
+      speakingText: 'cat', speakingPictureUrl: null,
+    });
+    const r = await service.trySpeakingHomework(1);
+    expect(bfa.transcribe).not.toHaveBeenCalled();
+    expect(r.transcribedText).toBe('');
+    expect(r.score).toBe(0);
+    expect(r.matchedWords).toBe(0);
+  });
+
+  it('continues with empty transcript when BFA throws', async () => {
+    prisma.homework.findUnique.mockResolvedValue({
+      type: 'SPEAKING', speakingMode: 'FREE_SPEAK',
+      speakingText: 'cat', speakingPictureUrl: null,
+    });
+    bfa.transcribe.mockRejectedValue(new Error('BFA down'));
+    const r = await service.trySpeakingHomework(1, Buffer.from('audio'), 'audio/webm');
+    expect(r.transcribedText).toBe('');
+    expect(r.score).toBe(0);
+    expect(r.matchedWords).toBe(0);
+  });
+
+  it('does NOT write to the database (no repo.saveSpeakingResult / completeSession / createSession calls)', async () => {
+    prisma.homework.findUnique.mockResolvedValue({
+      type: 'SPEAKING', speakingMode: 'FREE_SPEAK',
+      speakingText: 'cat', speakingPictureUrl: null,
+    });
+    bfa.transcribe.mockResolvedValue({ text: 'cat', words: [] } as any);
+    await service.trySpeakingHomework(1, Buffer.from('audio'), 'audio/webm');
+    expect(repo.saveSpeakingResult).not.toHaveBeenCalled();
+    expect(repo.completeSession).not.toHaveBeenCalled();
+    expect(repo.createSession).not.toHaveBeenCalled();
+    expect(repo.savePhonicsResult).not.toHaveBeenCalled();
   });
 });

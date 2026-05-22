@@ -160,6 +160,26 @@ export async function saveSpeakingResult(
   return res.json();
 }
 
+export async function trySpeakingHomework(hwId: number, audio: File): Promise<{
+  score: number;
+  matchedWords: number;
+  totalWords: number;
+  transcribedText: string;
+  speakingMode: SpeakingMode | null;
+  speakingPictureUrl: string | null;
+}> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const form = new FormData();
+  form.append('audio', audio, audio.name);
+  const res = await fetch(`${API_URL}/game/homework/${hwId}/try-speak`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) return parseApiError(res);
+  return res.json();
+}
+
 export async function uploadSpeakingImage(file: File): Promise<string> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const form = new FormData();
@@ -174,17 +194,11 @@ export async function uploadSpeakingImage(file: File): Promise<string> {
   return `${API_URL}/homework/image/${key}`;
 }
 
-export async function completeSession(sessionId: number, videoBlob?: Blob) {
-  const form = new FormData();
-  if (videoBlob) {
-    const filename = (videoBlob as File).name ?? 'recording.webm';
-    form.append('recording', videoBlob, filename);
-  }
+export async function completeSession(sessionId: number) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const res = await fetch(`${API_URL}/game/session/${sessionId}/complete`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: form,
   });
   if (!res.ok) return parseApiError(res);
   return res.json() as Promise<GameSession>;
@@ -520,7 +534,6 @@ export interface GameSession {
   id: number;
   studentId: number;
   assignmentId: number;
-  videoUrl?: string;
   score?: number;
   completedAt?: string;
   startedAt: string;

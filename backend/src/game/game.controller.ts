@@ -1,10 +1,9 @@
 import {
   Controller, Get, Post, Param, Body, ParseIntPipe,
-  UseInterceptors, UploadedFile, UseGuards, Res, NotFoundException,
+  UseInterceptors, UploadedFile, UseGuards,
   HttpCode, Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Response } from 'express';
 import { GameService } from './game.service';
 import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto } from './game.dto';
 import { AuthGuard, TeacherGuard } from '../auth/auth.guard';
@@ -55,6 +54,15 @@ export class GameController {
     return this.jobs.enqueueSpeakingResult(id, audio?.buffer, audio?.mimetype);
   }
 
+  @Post('homework/:id/try-speak')
+  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 100 * 1024 * 1024 } }))
+  trySpeakingHomework(
+    @Param('id', ParseIntPipe) hwId: number,
+    @UploadedFile() audio?: Express.Multer.File,
+  ) {
+    return this.service.trySpeakingHomework(hwId, audio?.buffer, audio?.mimetype);
+  }
+
   @Post('session/:id/reading-result')
   saveReadingResult(
     @Param('id', ParseIntPipe) id: number,
@@ -69,12 +77,8 @@ export class GameController {
   }
 
   @Post('session/:id/complete')
-  @UseInterceptors(FileInterceptor('recording', { limits: { fileSize: 200 * 1024 * 1024 } }))
-  completeSession(
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFile() file?: Express.Multer.File,
-  ) {
-    return this.service.completeSession(id, file?.buffer, file?.mimetype);
+  completeSession(@Param('id', ParseIntPipe) id: number) {
+    return this.service.completeSession(id);
   }
 
   @Get('sessions')
@@ -87,19 +91,5 @@ export class GameController {
       assignmentId ? Number(assignmentId) : undefined,
       studentId ? Number(studentId) : undefined,
     );
-  }
-
-  @Get('session/:id/recording')
-  async streamRecording(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
-  ) {
-    const session = await this.service.getSession(id);
-    if (!session.videoUrl) throw new NotFoundException('No recording for this session');
-    const stream = await this.service.streamRecording(session.videoUrl);
-    const ext = session.videoUrl.endsWith('.webm') ? 'webm' : 'mp4';
-    res.setHeader('Content-Type', `video/${ext}`);
-    res.setHeader('Cache-Control', 'private, max-age=3600');
-    stream.pipe(res);
   }
 }

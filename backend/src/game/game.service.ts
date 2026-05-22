@@ -6,6 +6,7 @@ import { BfaAnalyzeResult } from '../bfa/bfa.dto';
 import { WordRepository } from '../word/word.repository';
 import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto } from './game.dto';
 import { calcSpeakingScore, calcFreeSpeak } from './game.scoring';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class GameService {
@@ -16,6 +17,7 @@ export class GameService {
     private readonly storage: StorageService,
     private readonly bfa: BfaService,
     private readonly wordRepository: WordRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   async getAvailableAssignments(studentId: number) {
@@ -99,6 +101,46 @@ export class GameService {
 
     this.logger.log(`[session=${sessionId}] speaking score=${score} matched=${matchedWords}/${totalWords} mode=${speakingMode}`);
     return this.repo.saveSpeakingResult(sessionId, transcribedText, score, matchedWords, totalWords, phonemesJson);
+  }
+
+  async trySpeakingHomework(hwId: number, audioBuffer?: Buffer, mimeType?: string) {
+    const hw = await this.prisma.homework.findUnique({
+      where: { id: hwId },
+      select: {
+        type: true,
+        speakingMode: true,
+        speakingText: true,
+        speakingPictureUrl: true,
+      },
+    });
+    if (!hw) throw new NotFoundException(`Homework ${hwId} not found`);
+    if (hw.type !== 'SPEAKING') throw new BadRequestException('Homework is not a SPEAKING type');
+    if (!hw.speakingText) throw new BadRequestException('Homework has no speaking text');
+
+    let transcribedText = '';
+    if (audioBuffer && audioBuffer.length > 0) {
+      try {
+        const result = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
+        transcribedText = result.text;
+        this.logger.log(`[try-speak hw=${hwId}] WhisperX: "${transcribedText}"`);
+      } catch (err) {
+        this.logger.warn(`[try-speak hw=${hwId}] WhisperX error: ${(err as Error).message}`);
+      }
+    }
+
+    const { score, matchedWords, totalWords } = hw.speakingMode === 'FREE_SPEAK'
+      ? calcFreeSpeak(transcribedText, hw.speakingText)
+      : calcSpeakingScore(transcribedText, hw.speakingText);
+    this.logger.log(`[try-speak hw=${hwId}] score=${score} matched=${matchedWords}/${totalWords} mode=${hw.speakingMode ?? 'SCRIPT_MATCH'}`);
+
+    return {
+      score,
+      matchedWords,
+      totalWords,
+      transcribedText,
+      speakingMode: hw.speakingMode,
+      speakingPictureUrl: hw.speakingPictureUrl,
+    };
   }
 
   async savePhonicsResult(
@@ -190,31 +232,11 @@ export class GameService {
     return this.repo.listSessions(assignmentId, studentId);
   }
 
-  streamRecording(videoUrl: string) {
-    let key = videoUrl;
-    if (videoUrl.startsWith('http')) {
-      const bucket = process.env.MINIO_BUCKET ?? 'phonics-audio';
-      const marker = `/${bucket}/`;
-      const idx = videoUrl.indexOf(marker);
-      key = idx >= 0 ? videoUrl.slice(idx + marker.length) : videoUrl.split('/').slice(-1)[0];
-    }
-    return this.storage.getObject(key);
-  }
-
-  async completeSession(sessionId: number, videoBuffer?: Buffer, mimeType?: string) {
+  async completeSession(sessionId: number) {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
 
     const hw = session.assignment.homework;
-
-    let videoUrl: string | null = null;
-    if (videoBuffer && videoBuffer.length > 0) {
-      const ext = mimeType?.includes('webm') ? 'webm' : 'mp4';
-      const key = hw.type === 'SPEAKING'
-        ? `speaking/${sessionId}/recording.${ext}`
-        : `sessions/${sessionId}/recording.${ext}`;
-      videoUrl = await this.storage.upload(key, videoBuffer, mimeType ?? 'video/webm');
-    }
     let avgScore = 0;
 
     if (hw.type === 'SPEAKING') {
@@ -230,6 +252,6 @@ export class GameService {
       avgScore = totalWords > 0 ? scoreSum / totalWords : 0;
     }
 
-    return this.repo.completeSession(sessionId, videoUrl, Math.round(avgScore));
+    return this.repo.completeSession(sessionId, Math.round(avgScore));
   }
 }
