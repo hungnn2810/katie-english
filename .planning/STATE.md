@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-05-22T07:39:11.519Z"
+last_updated: "2026-05-22T18:06:15.243Z"
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 23
-  completed_plans: 22
-  percent: 96
+  total_plans: 30
+  completed_plans: 23
+  percent: 77
 ---
 
 # Project State: Katie English
@@ -68,6 +68,8 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - WordRepository exported via WordModule.exports (not added directly to GameModule providers)
 - trySpeakingHomework injects PrismaService directly — no session intermediary
 - completeSession refactored to 1-arg (video upload stripped by linter)
+- Cast Buffer as unknown as ArrayBuffer for Azure SDK pushStream.write — SDK types declare ArrayBuffer but Node Buffer works at runtime
+- Use manual jest.mock factory for Azure Speech SDK — auto-mock triggers SDK init crash
 
 ## Session Log
 
