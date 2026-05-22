@@ -6,10 +6,7 @@ import {
   getSession, GameSession, SpeakingResult, PhonicsItemResult,
   ReadingActivityResult, MatchingItemResult, FillInBlankItemResult, SentenceSegment,
 } from '@/lib/admin-api';
-import { getToken } from '@/lib/auth';
 import { Check, X, ChevronDown, ChevronRight, Hash, Mic, BookOpen } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 function scoreHex(score: number) {
   if (score >= 80) return '#22C55E';
@@ -149,21 +146,7 @@ export default function TeacherSessionDetailPage() {
   const hwId = Number(id);
   const sId = Number(sessionId);
   const [session, setSession] = useState<GameSession | null>(null);
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
-
   useEffect(() => { getSession(sId).then(setSession).catch(() => {}); }, [sId]);
-
-  useEffect(() => {
-    if (!session?.videoUrl) return;
-    const token = getToken();
-    fetch(`${API_URL}/game/session/${sId}/recording`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then((r) => r.blob())
-      .then((b) => setVideoSrc(URL.createObjectURL(b)))
-      .catch(() => {});
-    return () => { if (videoSrc) URL.revokeObjectURL(videoSrc); };
-  }, [session?.videoUrl]);
 
   if (!session) return <div className="text-textSecondary py-16 text-center">Loading...</div>;
 
@@ -222,22 +205,6 @@ export default function TeacherSessionDetailPage() {
           )}
         </div>
       </div>
-
-      {/* Recording */}
-      {session.videoUrl && (
-        <div className="mb-6">
-          <h2 className="text-sm font-bold text-textPrimary mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Mic className="w-3.5 h-3.5 text-slate-500" />
-            </span>
-            Recording
-          </h2>
-          {videoSrc
-            ? <video src={videoSrc} controls playsInline className="w-full rounded-2xl border border-border bg-black shadow-sm" />
-            : <div className="w-full h-28 rounded-2xl border border-border bg-background flex items-center justify-center text-textSecondary text-sm">Loading video...</div>
-          }
-        </div>
-      )}
 
       {/* Phonics */}
       {phonicsResults.length > 0 && (
@@ -360,7 +327,7 @@ export default function TeacherSessionDetailPage() {
         </div>
       )}
 
-      {phonicsResults.length === 0 && speakingResults.length === 0 && readingActivityResults.length === 0 && !session.videoUrl && (
+      {phonicsResults.length === 0 && speakingResults.length === 0 && readingActivityResults.length === 0 && (
         <div className="text-textSecondary text-sm py-10 text-center bg-white rounded-2xl border border-border">
           No results recorded yet.
         </div>

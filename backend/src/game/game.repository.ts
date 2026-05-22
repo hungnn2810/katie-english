@@ -101,10 +101,10 @@ export class GameRepository {
     });
   }
 
-  completeSession(id: number, videoUrl: string | null, score: number) {
+  completeSession(id: number, score: number) {
     return this.prisma.homeworkSession.update({
       where: { id },
-      data: { videoUrl, score, completedAt: new Date() },
+      data: { score, completedAt: new Date() },
       include: {
         speakingResults: true,
         phonicsResults: { include: { word: true } },

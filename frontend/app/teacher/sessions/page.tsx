@@ -5,7 +5,6 @@ import {
   getSessionResults, getSession, getStudents, getHomeworkList,
   GameSession, Student, HomeworkItem,
 } from '@/lib/admin-api';
-import { getToken } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -34,7 +33,6 @@ export default function SessionsPage() {
   const [dateTo, setDateTo] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [details, setDetails] = useState<Record<number, GameSession>>({});
-  const [videoSrc, setVideoSrc] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -69,15 +67,6 @@ export default function SessionsPage() {
       try {
         const d = await getSession(id);
         setDetails(prev => ({ ...prev, [id]: d }));
-        if (d.videoUrl) {
-          const token = getToken();
-          fetch(`${API_URL}/game/session/${id}/recording`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          })
-            .then(r => r.blob())
-            .then(b => setVideoSrc(prev => ({ ...prev, [id]: URL.createObjectURL(b) })))
-            .catch(() => {});
-        }
       } catch { /* ignore */ }
     }
   };
@@ -217,17 +206,6 @@ export default function SessionsPage() {
 
                   {detail && (
                     <>
-                      {detail.videoUrl && (
-                        <div>
-                          <p className="text-xs font-bold text-textSecondary mb-2 uppercase tracking-wide">Recording</p>
-                          {videoSrc[s.id]
-                            ? <video src={videoSrc[s.id]} controls playsInline className="rounded-xl w-full max-w-lg border border-border bg-black" />
-                            : <div className="w-full max-w-lg h-20 rounded-xl border border-border bg-background flex items-center justify-center text-sm text-textSecondary gap-2">
-                                <Loader2 className="w-4 h-4 animate-spin" /> Loading video…
-                              </div>}
-                        </div>
-                      )}
-
                       {isPhonics && detail.phonicsResults && detail.phonicsResults.length > 0 && (
                         <div>
                           <p className="text-xs font-bold text-textSecondary mb-2 uppercase tracking-wide">Word Results</p>
@@ -267,7 +245,7 @@ export default function SessionsPage() {
                         </div>
                       )}
 
-                      {!detail.videoUrl && !detail.phonicsResults?.length && !detail.speakingResults?.length && (
+                      {!detail.phonicsResults?.length && !detail.speakingResults?.length && (
                         <p className="text-sm text-textSecondary">No results recorded yet.</p>
                       )}
                     </>

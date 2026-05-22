@@ -184,7 +184,6 @@ model HomeworkSession {
   id              Int                 @id @default(autoincrement())
   studentId       Int
   assignmentId    Int
-  videoUrl        String?
   score           Float?
   completedAt     DateTime?
   startedAt       DateTime            @default(now())
