@@ -5,7 +5,7 @@ import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { WordRepository } from '../word/word.repository';
-import { calcScore, levenshtein, calcSpeakingScore } from './game.scoring';
+import { calcScore, levenshtein, calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 import { SaveReadingResultDto } from './game.dto';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -186,6 +186,71 @@ describe('calcSpeakingScore', () => {
   it('accepts fuzzy matches above threshold', () => {
     const r = calcSpeakingScore('helo world', 'hello world');
     expect(r.matchedWords).toBe(2);
+  });
+});
+
+// ── calcFreeSpeak ─────────────────────────────────────────────────────────────
+
+describe('calcFreeSpeak', () => {
+  it('returns 0 score and 0 matchedWords for empty keyword list', () => {
+    const r = calcFreeSpeak('hello world', '');
+    expect(r.score).toBe(0);
+    expect(r.matchedWords).toBe(0);
+    expect(r.totalWords).toBe(0);
+  });
+
+  it('counts word-boundary exact match', () => {
+    const r = calcFreeSpeak('I have a cat at home', 'cat');
+    expect(r.matchedWords).toBe(1);
+    expect(r.totalWords).toBe(1);
+    expect(r.score).toBe(100);
+  });
+
+  it('does NOT count substring inside a larger word (catapult does not match cat)', () => {
+    const r = calcFreeSpeak('the catapult fires rocks', 'cat');
+    expect(r.matchedWords).toBe(0);
+    expect(r.score).toBe(0);
+  });
+
+  it('counts fuzzy match at >= 0.75 Levenshtein similarity (single-char substitution on long word)', () => {
+    // "elephnt" vs "elephant": levenshtein=1, maxLen=8, sim=0.875 >= 0.75 → match
+    const r = calcFreeSpeak('I saw an elephnt today', 'elephant');
+    expect(r.matchedWords).toBe(1);
+  });
+
+  it('does NOT count fuzzy match below 0.75 similarity (short words)', () => {
+    // "set" vs "sit": levenshtein=1, maxLen=3, sim=0.666 < 0.75 → NO match
+    const r = calcFreeSpeak('please set down', 'sit');
+    expect(r.matchedWords).toBe(0);
+  });
+
+  it('counts case-insensitive word-boundary match', () => {
+    const r = calcFreeSpeak('The Cat sat down', 'cat');
+    expect(r.matchedWords).toBe(1);
+  });
+
+  it('handles regex special characters in keyword without throwing', () => {
+    // ensure `cat.` keyword does not throw, and does not falsely match unrelated text
+    expect(() => calcFreeSpeak('a regular cat is here', 'cat.')).not.toThrow();
+    // "cat." regex with \b boundaries — \b is between word and non-word, so "cat." in transcript "(cat.)" would match but plain "cat" alone in transcript would NOT match exact "cat." keyword via word-boundary stage; fuzzy stage: levenshtein("cat","cat.")=1, maxLen=4, sim=0.75 >= 0.75 → match
+    const r = calcFreeSpeak('a regular cat is here', 'cat.');
+    // either word-boundary "cat." does not match in transcript "cat" (no trailing dot), but fuzzy fallback hits exactly at 0.75 → match
+    expect(r.matchedWords).toBe(1);
+  });
+
+  it('scores partial match proportionally with multiple keywords', () => {
+    // keywords: "cat", "sits", "mat"; transcript has only "cat" and "mat" → 2/3
+    const r = calcFreeSpeak('the cat is on the mat', 'cat, sits, mat');
+    expect(r.matchedWords).toBe(2);
+    expect(r.totalWords).toBe(3);
+    expect(r.score).toBe(67); // round(2/3 * 100) = 67
+  });
+
+  it('handles empty transcript with non-empty keywords', () => {
+    const r = calcFreeSpeak('', 'cat, dog');
+    expect(r.matchedWords).toBe(0);
+    expect(r.totalWords).toBe(2);
+    expect(r.score).toBe(0);
   });
 });
 
