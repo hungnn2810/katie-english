@@ -577,6 +577,14 @@ export default function HomeworkPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [assigningHw, setAssigningHw] = useState<HomeworkItem | null>(null);
   const [typeFilter, setTypeFilter] = useState<HomeworkType | 'ALL'>('ALL');
+  const [search, setSearch] = useState('');
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [toast, setToast] = useState('');
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  }
 
   const load = () => getHomeworkList().then(setList).catch(() => {});
   useEffect(() => { load(); getClasses().then(setClasses); }, []);
@@ -601,7 +609,14 @@ export default function HomeworkPage() {
   function closeModal() { setShowModal(false); setEditingId(null); }
 
   const now = new Date();
-  const filtered = typeFilter === 'ALL' ? list : list.filter((h) => h.type === typeFilter);
+  const counts = { ALL: list.length, PHONICS: 0, SPEAKING: 0, READING: 0 };
+  list.forEach((h) => { counts[h.type]++; });
+  const q = search.toLowerCase();
+  const filtered = list.filter((h) => {
+    if (typeFilter !== 'ALL' && h.type !== typeFilter) return false;
+    if (q && !h.name?.toLowerCase().includes(q) && !h.speakingText?.toLowerCase().includes(q)) return false;
+    return true;
+  });
 
   return (
     <div className="animate-fade-in">
@@ -611,14 +626,23 @@ export default function HomeworkPage() {
           form={form}
           setForm={setForm}
           onClose={closeModal}
-          onSaved={load}
+          onSaved={() => { load(); showToast(editingId !== null ? 'Homework updated!' : 'Homework created!'); }}
           onNavigateToReading={() => router.push('/teacher/homework/create/reading')}
         />
       )}
-      {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={load} />}
+      {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={() => { load(); showToast('Homework assigned!'); }} />}
 
       {/* Toolbar */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-textSecondary/50 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search homework…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input-base pl-8 pr-3 py-2 h-auto text-sm w-52" />
+        </div>
         <div className="flex gap-1.5">
           {([
             { key: 'ALL', label: 'All', icon: null },
@@ -633,6 +657,7 @@ export default function HomeworkPage() {
                 : { background: 'white', color: colors.textSecondary, borderColor: colors.border }}>
               {t.icon && <t.icon className="w-3.5 h-3.5" />}
               {t.label}
+              <span className="ml-0.5 opacity-60">({counts[t.key]})</span>
             </Button>
           ))}
         </div>
@@ -757,31 +782,57 @@ export default function HomeworkPage() {
               </Link>
 
               <CardFooter className="px-5 py-3 bg-background/50 border-t border-border flex items-center gap-1 rounded-none">
-                <Button variant="ghost" size="sm" onClick={() => setAssigningHw(h)}
-                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-emerald-600 hover:bg-emerald-50">
-                  Assign
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
-                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-primary hover:bg-primary/8">
-                  Edit
-                </Button>
-                <Link href={`/teacher/homework/${h.id}/try`}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center text-purple-500 hover:bg-purple-500/8 transition-colors">
-                  Try
-                </Link>
-                <Button variant="ghost" size="sm" onClick={async () => {
-                  if (confirm('Delete this homework and all its assignments?')) {
-                    await deleteHomework(h.id); load();
-                  }
-                }}
-                  className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8">
-                  Delete
-                </Button>
+                {deletingId === h.id ? (
+                  <div className="flex-1 flex items-center justify-between gap-2">
+                    <span className="text-xs text-textSecondary">Delete homework?</span>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => setDeletingId(null)}
+                        className="px-3 py-1 h-auto rounded-lg text-xs font-semibold text-textSecondary hover:bg-gray-100">
+                        Cancel
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={async () => {
+                        await deleteHomework(h.id);
+                        setDeletingId(null);
+                        load();
+                        showToast('Homework deleted.');
+                      }}
+                        className="px-3 py-1 h-auto rounded-lg text-xs font-semibold text-white bg-red-500 hover:bg-red-600">
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => setAssigningHw(h)}
+                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-emerald-600 hover:bg-emerald-50">
+                      Assign
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
+                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-primary hover:bg-primary/8">
+                      Edit
+                    </Button>
+                    <Link href={`/teacher/homework/${h.id}/try`}
+                      className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center text-purple-500 hover:bg-purple-500/8 transition-colors">
+                      Try
+                    </Link>
+                    <Button variant="ghost" size="sm" onClick={() => setDeletingId(h.id)}
+                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8">
+                      Delete
+                    </Button>
+                  </>
+                )}
               </CardFooter>
             </Card>
           );
         })}
       </div>
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-white border border-border rounded-2xl shadow-lg px-4 py-3 text-sm font-semibold text-textPrimary animate-fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
