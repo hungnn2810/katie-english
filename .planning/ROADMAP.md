@@ -150,6 +150,29 @@
 
 ---
 
+### Phase 6: Admin Portal
+
+**Goal:** Super-admin can log in via a separate /admin route, manage all teacher accounts (create/edit/disable), and view/manage all classes, homeworks, sessions, and student results across the entire platform.
+**Mode:** mvp
+
+**Requirements:**
+- ADMIN-01: Single admin account seeded via env vars (ADMIN_EMAIL, ADMIN_PASSWORD), login via POST /admin/auth/login, separate JWT
+- ADMIN-02: Admin can create teacher accounts (email, password, name, phone number)
+- ADMIN-03: Admin can edit and disable/enable teacher accounts
+- ADMIN-04: Admin can view all classes across all teachers, edit class info, delete class
+- ADMIN-05: Admin can delete any homework or session
+- ADMIN-06: Admin can view all students and their homework results across the platform
+- ADMIN-07: Admin dashboard shows platform-wide stats (teacher count, class count, student count, submission count)
+
+**Success Criteria:**
+1. Admin logs in at /admin/login with env-seeded credentials; sees dashboard with platform stats.
+2. Admin creates a new teacher account with name, email, phone, password — teacher can immediately log in.
+3. Admin disables a teacher account — that teacher cannot log in until re-enabled.
+4. Admin views all classes filtered by teacher; edits a class name; deletes a class.
+5. Admin views all students and can drill into any student's homework result.
+
+---
+
 ## Requirement Coverage
 
 | Requirement | Phase | Status |
