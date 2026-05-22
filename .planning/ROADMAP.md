@@ -19,21 +19,20 @@
 
 ### Phase 1: Speaking Homework
 
-**Goal:** Teacher creates speaking homework in either mode, student records video/audio, system transcribes and scores, teacher views result.
+**Goal:** Teacher creates speaking homework in either mode, student uploads audio recording, system transcribes and scores, teacher views result.
 **Mode:** mvp
 
 **Requirements:**
 - SPEAK-01: Teacher can create speaking homework in free-speak mode (image prompt)
 - SPEAK-02: Teacher can create speaking homework in script-matching mode (target text)
-- SPEAK-03: Student can record video submission for speaking homework
-- SPEAK-04: Student can record audio-only as alternative to video
-- SPEAK-05: System submits recording to WhisperX, stores transcript
-- SPEAK-06: System scores transcript against expected result and stores score
-- SPEAK-07: Teacher can view speaking session result (score + transcript)
+- SPEAK-03: Student uploads audio recording for speaking homework
+- SPEAK-04: System submits recording to WhisperX, stores transcript
+- SPEAK-05: System scores transcript against expected result and stores score
+- SPEAK-06: Teacher can view speaking session result (score + transcript)
 
 **Success Criteria:**
 1. Teacher creates a speaking homework in free-speak mode with an image prompt and it appears in the assigned class's homework list.
-2. Student opens speaking homework, records a video, submits — system generates and stores a score without manual intervention.
+2. Student opens speaking homework, uploads an audio recording, submits — system generates and stores a score without manual intervention.
 3. Teacher opens the assignment results page and sees per-student score and transcript for speaking submissions.
 
 ---
@@ -68,7 +67,7 @@
 
 ### Phase 3: Teacher Dashboard
 
-**Goal:** Teacher can create any homework type from a single flow, assign to classes, and drill into per-student results including recording playback.
+**Goal:** Teacher can create any homework type from a single flow, assign to classes, and drill into per-student results.
 **Mode:** mvp
 **Plans:** 7 plans
 
@@ -78,13 +77,13 @@
 - TEACH-02: Teacher can assign homework to one or more classes with a due date
 - TEACH-03: Teacher can view homework list with submission counts and assignment status
 - TEACH-04: Teacher can see per-student session results for any homework assignment
-- TEACH-05: Teacher can review individual student attempt (score breakdown + recording playback for audio types)
+- TEACH-05: Teacher can review individual student attempt (score breakdown + transcript)
 
 **Success Criteria:**
 1. Teacher reaches homework creation from one entry point and can select phonics, speaking, or reading type.
 2. Teacher assigns a homework to two classes simultaneously with a single action.
 3. Homework list page shows submission count (e.g., "5/12 submitted") for each assignment.
-4. Teacher opens a student's attempt and sees per-item score breakdown; for speaking/phonics, audio/video playback is available inline.
+4. Teacher opens a student's attempt and sees per-item score breakdown with transcript.
 
 **Plans:**
 - [x] 03-01-PLAN.md — Schema foundation: extend Prisma + push DB + sync HomeworkType across DTO/admin-api + backend reading stubs (Wave 1)

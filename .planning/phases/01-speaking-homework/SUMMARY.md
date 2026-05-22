@@ -36,7 +36,7 @@ End-to-end speaking homework system covering SPEAK-01 through SPEAK-07.
   - Score = round(matched / total × 100)%
   - Tested: 100%, 33%, 0% cases all correct
 - `saveSpeakingResult` branches on `speakingMode`: FREE_SPEAK → `calcFreeSpeak`, else → `calcSpeakingScore`
-- `completeSession` stores SPEAKING videos at `speaking/{sessionId}/recording.{ext}`
+- `completeSession` scores and completes session without video storage
 
 ### Backend DTO + Repository (T-03, T-06)
 - `SpeakingMode` type + `speakingMode?: SpeakingMode` added to `CreateHomeworkDto` / `UpdateHomeworkDto`
@@ -56,7 +56,7 @@ End-to-end speaking homework system covering SPEAK-01 through SPEAK-07.
 ### Frontend — Student Session Page (T-09)
 - SPEAKING homework detected at session load → skips camera/MediaRecorder entirely
 - New `'upload'` page state: shows image prompt (FREE_SPEAK) or target text (SCRIPT_MATCH)
-- File picker (`accept="video/*,audio/*"`) with file name + size display
+- File picker (`accept="audio/*"`) with file name + size display
 - Submit calls `saveSpeakingResult` + `completeSession` with the uploaded file
 - PHONICS flow completely unchanged
 

@@ -19,12 +19,12 @@ A student can receive a homework assignment, complete it on a tablet, and get an
 - ✓ Homework assignment to classes with due dates — existing
 - ✓ Student phonics game session (play words, record pronunciation) — existing
 - ✓ BFA pronunciation scoring (WhisperX transcription + phoneme alignment) — existing
-- ✓ Audio/video/image storage via MinIO — existing
+- ✓ Audio/image storage via MinIO — existing
 - ✓ Student homework list: sorted by endDate ascending, overdue badge (red "Overdue"), laptop/PC scope — Validated in Phase 04
 
 ### Active
 
-- [ ] Speaking homework end-to-end: student records video or audio; teacher sets either free-speak (image prompt) or script-matching mode; WhisperX/BFA scores result
+- [ ] Speaking homework end-to-end: student uploads audio recording; teacher sets either free-speak (image prompt) or script-matching mode; WhisperX/BFA scores result
 - [ ] Reading homework: teacher composes a sequence of activities — image-word matching (click-to-pair) and/or fill-in-blank (multiple choice); system scores deterministically
 - [ ] Teacher dashboard complete: create all homework types, assign to classes, review per-student session results
 - [ ] Tablet-friendly student game UI: large touch targets, audio cues, works on phone/tablet for 5–10 year olds

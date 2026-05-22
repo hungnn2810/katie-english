@@ -45,7 +45,7 @@ last_mapped_commit: 76a70d3d792f
 
 ## Storage
 
-- **MinIO** (S3-compatible) — Audio recordings, session videos, homework images
+- **MinIO** (S3-compatible) — Audio recordings, homework images
 - Bucket: `phonics-audio` (configurable via `MINIO_BUCKET`)
 - Ports: 9000 (API), 9001 (console)
 
