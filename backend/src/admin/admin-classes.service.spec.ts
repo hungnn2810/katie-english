@@ -263,13 +263,14 @@ describe('AdminClassesService', () => {
 });
 
 describe('ClassService - create with teacherId (Test 8)', () => {
-  it('create(dto, teacherId) persists teacherId on the new row', async () => {
-    // This test validates that ClassService.create passes teacherId to repo.create
-    // Tested here as an integration-level unit test
-    const { ClassRepository } = require('../class/class.repository');
-    const { ClassService } = require('../class/class.service');
+  let classService: import('../class/class.service').ClassService;
+  let mockRepo: { create: jest.Mock; findById: jest.Mock; findAll: jest.Mock; update: jest.Mock; delete: jest.Mock };
 
-    const mockRepo = {
+  beforeEach(async () => {
+    const { ClassRepository } = await import('../class/class.repository');
+    const { ClassService } = await import('../class/class.service');
+
+    mockRepo = {
       create: jest.fn().mockResolvedValue({ id: 1, teacherId: 5 }),
       findById: jest.fn(),
       findAll: jest.fn(),
@@ -277,46 +278,24 @@ describe('ClassService - create with teacherId (Test 8)', () => {
       delete: jest.fn(),
     };
 
-    const Test2 = await import('@nestjs/testing');
-    const module = await Test2.Test.createTestingModule({
-      providers: [
-        ClassService,
-        { provide: ClassRepository, useValue: mockRepo },
-      ],
+    const { Test: TestFactory } = await import('@nestjs/testing');
+    const module = await TestFactory.createTestingModule({
+      providers: [ClassService, { provide: ClassRepository, useValue: mockRepo }],
     }).compile();
 
-    const classService = module.get(ClassService);
-    await classService.create({ name: 'T', code: 'T-01', startDate: '2025-01-01', endDate: '2025-12-31' }, 5);
+    classService = module.get(ClassService);
+  });
 
+  it('create(dto, teacherId) passes teacherId to repo.create', async () => {
+    await classService.create({ name: 'T', code: 'T-01', startDate: '2025-01-01', endDate: '2025-12-31' }, 5);
     expect(mockRepo.create).toHaveBeenCalledWith(
       { name: 'T', code: 'T-01', startDate: '2025-01-01', endDate: '2025-12-31' },
       5,
     );
   });
 
-  it('create(dto) without teacherId leaves teacherId null', async () => {
-    const { ClassRepository } = require('../class/class.repository');
-    const { ClassService } = require('../class/class.service');
-
-    const mockRepo = {
-      create: jest.fn().mockResolvedValue({ id: 1, teacherId: null }),
-      findById: jest.fn(),
-      findAll: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    };
-
-    const Test2 = await import('@nestjs/testing');
-    const module = await Test2.Test.createTestingModule({
-      providers: [
-        ClassService,
-        { provide: ClassRepository, useValue: mockRepo },
-      ],
-    }).compile();
-
-    const classService = module.get(ClassService);
+  it('create(dto) without teacherId passes undefined to repo.create', async () => {
     await classService.create({ name: 'T', code: 'T-01', startDate: '2025-01-01', endDate: '2025-12-31' });
-
     expect(mockRepo.create).toHaveBeenCalledWith(
       { name: 'T', code: 'T-01', startDate: '2025-01-01', endDate: '2025-12-31' },
       undefined,
@@ -325,79 +304,49 @@ describe('ClassService - create with teacherId (Test 8)', () => {
 });
 
 describe('AdminClassesController - NaN guard (Test 9)', () => {
-  it('findAll(teacherId: "abc") throws BadRequestException', async () => {
-    const { AdminClassesController } = require('./admin-classes.controller');
-    const mockService = {
+  let controller: import('./admin-classes.controller').AdminClassesController;
+  let mockService: { findAll: jest.Mock; update: jest.Mock; delete: jest.Mock };
+
+  beforeEach(async () => {
+    const { AdminClassesController } = await import('./admin-classes.controller');
+    const { AdminClassesService } = await import('./admin-classes.service');
+    const { AdminGuard } = await import('../auth/auth.guard');
+
+    mockService = {
       findAll: jest.fn().mockResolvedValue([]),
       update: jest.fn(),
       delete: jest.fn(),
     };
 
-    const Test2 = await import('@nestjs/testing');
-    const { BadRequestException: BRE } = await import('@nestjs/common');
-    const module = await Test2.Test.createTestingModule({
+    const { Test: TestFactory } = await import('@nestjs/testing');
+    const module = await TestFactory.createTestingModule({
       controllers: [AdminClassesController],
-      providers: [{ provide: require('./admin-classes.service').AdminClassesService, useValue: mockService }],
-    }).compile();
+      providers: [{ provide: AdminClassesService, useValue: mockService }],
+    })
+      .overrideGuard(AdminGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
-    const controller = module.get(AdminClassesController);
-    await expect(controller.findAll('abc')).rejects.toThrow(BRE);
-    await expect(controller.findAll('abc')).rejects.toThrow('teacherId must be a number');
+    controller = module.get(AdminClassesController);
+  });
+
+  it('findAll(teacherId: "abc") throws BadRequestException', async () => {
+    const { BadRequestException: BRE } = await import('@nestjs/common');
+    expect(() => controller.findAll('abc')).toThrow(BRE);
+    expect(() => controller.findAll('abc')).toThrow('teacherId must be a number');
   });
 
   it('findAll(teacherId: "42") calls service.findAll(42)', async () => {
-    const { AdminClassesController } = require('./admin-classes.controller');
-    const mockService = {
-      findAll: jest.fn().mockResolvedValue([]),
-      update: jest.fn(),
-      delete: jest.fn(),
-    };
-
-    const Test2 = await import('@nestjs/testing');
-    const module = await Test2.Test.createTestingModule({
-      controllers: [AdminClassesController],
-      providers: [{ provide: require('./admin-classes.service').AdminClassesService, useValue: mockService }],
-    }).compile();
-
-    const controller = module.get(AdminClassesController);
     await controller.findAll('42');
     expect(mockService.findAll).toHaveBeenCalledWith(42);
   });
 
   it('findAll(teacherId: "ALL") calls service.findAll(undefined)', async () => {
-    const { AdminClassesController } = require('./admin-classes.controller');
-    const mockService = {
-      findAll: jest.fn().mockResolvedValue([]),
-      update: jest.fn(),
-      delete: jest.fn(),
-    };
-
-    const Test2 = await import('@nestjs/testing');
-    const module = await Test2.Test.createTestingModule({
-      controllers: [AdminClassesController],
-      providers: [{ provide: require('./admin-classes.service').AdminClassesService, useValue: mockService }],
-    }).compile();
-
-    const controller = module.get(AdminClassesController);
     await controller.findAll('ALL');
     expect(mockService.findAll).toHaveBeenCalledWith(undefined);
   });
 
   it('findAll(teacherId: undefined) calls service.findAll(undefined)', async () => {
-    const { AdminClassesController } = require('./admin-classes.controller');
-    const mockService = {
-      findAll: jest.fn().mockResolvedValue([]),
-      update: jest.fn(),
-      delete: jest.fn(),
-    };
-
-    const Test2 = await import('@nestjs/testing');
-    const module = await Test2.Test.createTestingModule({
-      controllers: [AdminClassesController],
-      providers: [{ provide: require('./admin-classes.service').AdminClassesService, useValue: mockService }],
-    }).compile();
-
-    const controller = module.get(AdminClassesController);
     await controller.findAll(undefined);
     expect(mockService.findAll).toHaveBeenCalledWith(undefined);
   });
