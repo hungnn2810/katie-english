@@ -1,19 +1,24 @@
 # Roadmap: Katie English
 
-**Milestone:** v1 — Complete Homework Platform
+**Milestone:** v1 — Complete Homework Platform | v2 — Enhanced Assessment Quality
 **Project Mode:** Vertical MVP (end-to-end feature slices)
-**Requirements:** 21 v1 requirements across 4 phases
+**Requirements:** 26 v1 requirements (phases 1–6) + 15 v2 requirements (phases 7–9)
 
 ---
 
 ## Phase Overview
 
-| # | Phase | Goal | Requirements | Criteria |
-|---|-------|------|--------------|----------|
-| 1 | Speaking Homework | 1/1 | Complete    | 2026-05-13 |
-| 2 | Reading Homework | Student matches + fills blanks, score stored | READ-01–06 | 4 |
-| 3 | Teacher Dashboard | Unified creation, assignment, results review | READ-07, TEACH-01–05 | 4 |
-| 4 | Student Page UI/UX | Student homework page UI/UX polish | STUDENT-01–02 | 3 |
+| # | Phase | Goal | Milestone | Status |
+|---|-------|------|-----------|--------|
+| 1 | Speaking Homework | Teacher creates, student records, system scores | v1 | ✅ Complete 2026-05-13 |
+| 2 | Reading Homework | Matching + fill-in-blank, score stored | v1 | 🔄 In progress |
+| 3 | Teacher Dashboard | Unified creation, assignment, results review | v1 | ✅ Complete |
+| 4 | Student Page UI/UX | Kid-friendly polish, due-date ordering | v1 | ✅ Complete |
+| 5 | BFA Quality & Performance | Pipeline fixes, Groq ASR, phoneme feedback | v1 | 🔄 In progress (plan 07) |
+| 6 | Admin Portal | Super-admin: teachers, classes, results mgmt | v1 | 📋 Planned |
+| 7 | BFA Robustness & Audio Gates | Zero silent failures, audio quality validation | v2 | 📋 Planned |
+| 8 | Vocabulary by Image Exercise | Image → student speaks word → phoneme feedback | v2 | 📋 Planned |
+| 9 | Listen & Answer Exercise | Audio prompt → student answers → semantic score | v2 | 📋 Planned |
 
 ---
 
@@ -69,7 +74,6 @@
 
 **Goal:** Teacher can create any homework type from a single flow, assign to classes, and drill into per-student results.
 **Mode:** mvp
-**Plans:** 7 plans
 
 **Requirements:**
 - READ-07: Teacher can view reading session score breakdown per activity
@@ -101,7 +105,6 @@
 
 **Goal:** Student homework page UI/UX polish — ordered list, clear urgency badges, laptop/PC-first layout, and kid-friendly visuals for ages 6–12.
 **Mode:** mvp
-**Plans:** 1 plan
 
 **Requirements:**
 - STUDENT-01: Student homework list shows assignments ordered by due date
@@ -123,29 +126,32 @@
 
 ### Phase 5: BFA Quality & Performance
 
-**Goal:** Fix three confirmed bugs in the forced-alignment pipeline, pre-store canonical phonemes on the Word model to eliminate per-request espeak fallback, preload AI models on startup to remove cold-start latency, collapse the two serial HTTP calls (transcribe + align) into a single `/analyze` endpoint, and add a per-phoneme colored feedback strip on the student phonics result screen.
+**Goal:** Fix confirmed bugs in the forced-alignment pipeline, pre-store canonical phonemes, collapse serial HTTP calls into single `/analyze` endpoint, add per-phoneme colored feedback strip, harden service with input validation and configurable thresholds, replace Azure PA SDK with self-hosted Groq ASR + local phonemizer scoring.
 **Mode:** mvp
 **Depends on:** Phase 4
-**Plans:** 3 plans
 
 **Requirements:**
-- BFA-01: Fix `similar` phoneme ops missing timestamps (feedback loop includes "similar" in timestamp assignment)
+- BFA-01: Fix `similar` phoneme ops missing timestamps
 - BFA-02: Store canonical espeak phonemes on the `Word` model; game service passes stored phonemes instead of `[]`
-- BFA-03: Preload WhisperX and PhonemeTimestampAligner on startup; `/health` reports model load status
-- BFA-04: New `/analyze` endpoint combines transcription + alignment in one request; TS client updated; game service collapses two calls into one
-- BFA-05: Student phonics result screen shows per-phoneme colored chips (green=correct, yellow=similar, red=wrong/missing) using timestamps from `/analyze`
+- BFA-03: Preload models on startup; `/health` reports model load status
+- BFA-04: New `/analyze` endpoint combines transcription + alignment in one request
+- BFA-05: Student phonics result screen shows per-phoneme colored chips (green/yellow/red/gray)
 
 **Success Criteria:**
-1. Submitting a phonics recording where a phoneme is acoustically "similar" (e.g. /l/ for /r/) returns that op with `start`/`end`/`duration` populated and `status: "similar"`.
-2. Word creation endpoint pre-computes and stores espeak phonemes; `/align` (or `/analyze`) never hits espeak at request time for words already in DB.
-3. First `/analyze` request after cold start completes in under 5 seconds (models pre-warmed at startup).
-4. Phonics game flow makes exactly one HTTP call to BFA service (not two).
-5. Student sees phoneme feedback chips on the result screen — each chip labeled with the phoneme symbol and colored by correctness status.
+1. `similar` phoneme ops return `start`/`end`/`duration` populated.
+2. Word creation pre-computes and stores espeak phonemes; no espeak at request time for known words.
+3. Phonics game flow makes exactly one HTTP call to BFA service.
+4. Student sees phoneme feedback chips colored by correctness status.
+5. BFA service uses Groq Whisper API for ASR + local phonemizer — no GPU required.
 
 **Plans:**
-- [ ] 05-01-PLAN.md — Python BFA service: fix similar-timestamp bug (D-01/BFA-01) + startup warm-up & threading lock (D-03/BFA-03) + new POST /analyze endpoint (D-04/BFA-04) (Wave 1)
-- [ ] 05-02-PLAN.md — Prisma Word.phonemes column + db push [BLOCKING] + BfaAnalyzeResult DTO + BfaService.analyze + savePhonicsResult single-call rewrite + spec update (D-02/D-04/D-06, BFA-02/BFA-04) (Wave 2)
-- [ ] 05-03-PLAN.md — Frontend PhonemeChips component (correct/similar/wrong/missing) + session/[id] results wiring + human verification (D-05/BFA-05) (Wave 3)
+- [x] 05-01-PLAN.md — Python BFA service: fix similar-timestamp bug + startup warm-up + `/analyze` endpoint (Wave 1)
+- [x] 05-02-PLAN.md — Prisma Word.phonemes + BfaAnalyzeResult DTO + BfaService.analyze + single-call rewrite (Wave 2)
+- [x] 05-03-PLAN.md — Frontend PhonemeChips component (4 states) + session results wiring + /analyze parallelization (Wave 3)
+- [x] 05-04-PLAN.md — pytest unit tests (pure functions) + NestJS Jest spec (axios mock) (Wave 4)
+- [x] 05-05-PLAN.md — Input validation + shared ThreadPoolExecutor + configurable operational thresholds (Wave 5)
+- [x] 05-06-PLAN.md — Replace BFA engine with Azure Pronunciation Assessment SDK (Wave 6)
+- [ ] 05-07-PLAN.md — Rebuild BFA service: revert Azure → Groq ASR + local phonemizer/espeak scoring, zero GPU (Wave 7)
 
 ---
 
@@ -170,19 +176,123 @@
 4. Admin views all classes filtered by teacher; edits a class name; deletes a class.
 5. Admin views all students and can drill into any student's homework result.
 
+**Plans:**
+- [ ] 06-01-PLAN.md — Schema: ADMIN role + User.email/name/phone/disabled + Class.teacherId + AdminGuard + ensureAdminUser seed (Wave 1)
+- [ ] 06-02-PLAN.md — POST /admin/auth/login endpoint + frontend /admin/login page + middleware guard (Wave 1)
+- [ ] 06-03-PLAN.md — Teacher CRUD: GET/POST/PATCH /admin/teachers + frontend teacher management page (Wave 2)
+- [ ] 06-04-PLAN.md — Classes view: GET /admin/classes (filter by teacher) + PATCH/DELETE + frontend page (Wave 3)
+- [ ] 06-05-PLAN.md — Students view: GET /admin/students drill-in to results + frontend page (Wave 3)
+- [ ] 06-06-PLAN.md — Homework/session delete: DELETE /admin/homework/:id + DELETE /admin/students/sessions/:id (Wave 4)
+
+---
+
+## Milestone v2 — Enhanced Assessment Quality
+
+> **Source:** STATEGY.MD technical report (May 2026) — Vietnamese elementary English assessment stack.
+> Phases 7–9 address the three highest-ROI gaps between current MVP and production-quality assessment.
+
+---
+
+### Phase 7: BFA Robustness & Audio Quality Gates
+
+**Goal:** Eliminate silent failures — every submission either scores correctly or returns a meaningful, actionable error message instead of score 0. Address STATEGY.MD §2 "Missing Requirements" and §12 Critical Risk.
+**Mode:** mvp
+**Depends on:** Phase 5 (plan 07 complete)
+
+**Requirements:**
+- BFA-06: Audio length gate — reject clips shorter than 0.5s or longer than 15s; client shows specific "recording too short/long" error
+- BFA-07: Audio gain normalization — normalize input audio to consistent loudness level before ASR to handle cheap tablet vs. good mic variance
+- BFA-08: Energy/noise gate — if RMS energy or SNR below threshold, return `"recording_too_noisy"` error; client shows "mic quá ồn, thử lại" instead of score 0
+- BFA-09: ASR confidence gate — if Groq returns empty transcript or gibberish (no recognizable words), return `"speech_not_detected"`; client shows "không nghe rõ, nói lại nhé"
+- BFA-10: Language mixing detection — if transcribed text contains >50% non-English tokens (langdetect), return `"wrong_language"`; client shows "please speak in English"
+
+**Success Criteria:**
+1. Submitting a 0.3s clip returns HTTP 400 with `error: "audio_too_short"` — no score computed.
+2. Submitting audio recorded in a noisy environment (SNR < 10dB) returns `"recording_too_noisy"` — student sees actionable message, not 0/100.
+3. Submitting silence returns `"speech_not_detected"` — no score stored.
+4. Submitting Vietnamese speech returns `"wrong_language"` — student sees language prompt.
+5. All existing passing phonics tests still pass after audio gates added.
+
+**Plans:** 2 plans
+- [ ] 07-01-PLAN.md — bfa-service: all 5 audio gates (length / loudnorm / RMS / ASR confidence / langdetect) + pytest suite (Wave 1)
+- [ ] 07-02-PLAN.md — Backend BFA error forwarding (DTO + axios 400 catch) + frontend amber error display per gate code (Wave 2)
+
+---
+
+### Phase 8: Vocabulary by Image Exercise
+
+**Goal:** Teacher creates vocabulary homework with image prompts; student sees the image and says the word; system scores pronunciation using the existing BFA phonics pipeline and stores per-word phoneme feedback.
+**Mode:** mvp
+**Depends on:** Phase 5, Phase 7
+**Source:** STATEGY.MD Exercise 4 — Vocabulary by Image
+
+**Requirements:**
+- VOCAB-01: Teacher can create a Vocabulary homework: upload one image per item, assign the expected word label per image
+- VOCAB-02: Teacher can sequence multiple image-word items (up to 10) in one homework
+- VOCAB-03: Student opens vocab homework, sees image, presses record, speaks the word, receives phoneme feedback chips identical to phonics game
+- VOCAB-04: System distinguishes phonetically close confusions (e.g., "cat" vs "cap") — `similar` phonemes shown in yellow, not green
+- VOCAB-05: Teacher views per-student per-item score breakdown in results page
+
+**Success Criteria:**
+1. Teacher creates a vocabulary homework with 3 images and assigns word labels — homework appears in class list with type VOCABULARY.
+2. Student completes all items in sequence; result screen shows per-word score + phoneme chips.
+3. Score stored per item in DB; teacher sees which images each student struggled with.
+4. Phonetically close substitution (cat→cap: /k æ t/ vs /k æ p/) shows `p` as yellow (similar to `t`), not red.
+
+**Plans:**
+- [ ] 08-01-PLAN.md — Schema: HomeworkType.VOCABULARY + VocabItem model (imageUrl, word, phonemes) + Prisma migration (Wave 1)
+- [ ] 08-02-PLAN.md — Backend: VOCAB CRUD endpoints + game service VOCAB branch (reuse BFA analyze pipeline) + result storage (Wave 2)
+- [ ] 08-03-PLAN.md — Teacher creation page: VOCABULARY type picker + image upload + word label per item + sequence reorder (Wave 3)
+- [ ] 08-04-PLAN.md — Student game: image display → record → phoneme feedback chips (reuse PhonemeChips component) → next item flow (Wave 4)
+- [ ] 08-05-PLAN.md — Teacher results: per-item score breakdown + phoneme detail drill-in (Wave 5)
+
+---
+
+### Phase 9: Listen & Answer Exercise
+
+**Goal:** Teacher creates Q&A homework with audio prompts; student listens then records an answer; system scores semantic correctness against expected keywords and pronunciation on key words; composite score stored.
+**Mode:** mvp
+**Depends on:** Phase 5, Phase 7
+**Source:** STATEGY.MD Exercise 2 — Listen and Answer
+
+**Requirements:**
+- LISTEN-01: Teacher creates Q&A homework: upload or generate audio prompt + specify expected keywords/answer
+- LISTEN-02: Teacher can sequence multiple Q&A items (up to 10) per homework
+- LISTEN-03: Student listens to audio prompt, records answer, submits
+- LISTEN-04: System transcribes student answer via Groq ASR
+- LISTEN-05: System scores semantic similarity between student answer and expected keywords using sentence-transformers (all-MiniLM-L6-v2, CPU, <50ms)
+- LISTEN-06: System scores pronunciation on matched key words via BFA pipeline
+- LISTEN-07: Composite score = semantic × 0.7 + pronunciation × 0.3, stored per item
+- LISTEN-08: Teacher views per-student transcript + semantic score + pronunciation score breakdown
+
+**Success Criteria:**
+1. Teacher creates homework with 2 Q&A items — each has audio prompt and expected keywords.
+2. Student hears prompt, records "Red." for expected "The cat is red." — semantic similarity score > 0.6 (accepts truncated child answers).
+3. Student hears prompt, records entirely wrong answer — score < 0.3.
+4. Teacher sees per-item breakdown: transcript, semantic score, pronunciation score, composite.
+5. sentence-transformers model loads on bfa-service startup; no cold-start penalty after first request.
+
+**Plans:**
+- [ ] 09-01-PLAN.md — Schema: HomeworkType.LISTEN + ListenItem model (audioUrl, keywords, expectedText) + Prisma migration (Wave 1)
+- [ ] 09-02-PLAN.md — bfa-service: add sentence-transformers MiniLM + `/score-semantic` endpoint + composite scoring logic (Wave 2)
+- [ ] 09-03-PLAN.md — Backend: LISTEN CRUD endpoints + game service LISTEN branch (transcribe → semantic score → BFA pronunciation) + result storage (Wave 3)
+- [ ] 09-04-PLAN.md — Teacher creation page: LISTEN type picker + audio upload/TTS + keyword field + sequence reorder (Wave 4)
+- [ ] 09-05-PLAN.md — Student game: audio player → record answer → submit → composite result screen (Wave 5)
+- [ ] 09-06-PLAN.md — Teacher results: transcript + semantic + pronunciation + composite per item (Wave 6)
+
 ---
 
 ## Requirement Coverage
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SPEAK-01 | Phase 1 | Pending |
-| SPEAK-02 | Phase 1 | Pending |
-| SPEAK-03 | Phase 1 | Pending |
-| SPEAK-04 | Phase 1 | Pending |
-| SPEAK-05 | Phase 1 | Pending |
-| SPEAK-06 | Phase 1 | Pending |
-| SPEAK-07 | Phase 1 | Pending |
+| SPEAK-01 | Phase 1 | Complete |
+| SPEAK-02 | Phase 1 | Complete |
+| SPEAK-03 | Phase 1 | Complete |
+| SPEAK-04 | Phase 1 | Complete |
+| SPEAK-05 | Phase 1 | Complete |
+| SPEAK-06 | Phase 1 | Complete |
+| SPEAK-07 | Phase 1 | Complete |
 | READ-01 | Phase 2 | Pending |
 | READ-02 | Phase 2 | Pending |
 | READ-03 | Phase 2 | Pending |
@@ -195,16 +305,48 @@
 | TEACH-03 | Phase 3 | Complete |
 | TEACH-04 | Phase 3 | Complete |
 | TEACH-05 | Phase 3 | Complete |
-| STUDENT-01 | Phase 4 | Pending |
-| STUDENT-02 | Phase 4 | Pending |
-| BFA-01 | Phase 5 | Pending |
-| BFA-02 | Phase 5 | Pending |
-| BFA-03 | Phase 5 | Pending |
-| BFA-04 | Phase 5 | Pending |
-| BFA-05 | Phase 5 | Pending |
+| STUDENT-01 | Phase 4 | Complete |
+| STUDENT-02 | Phase 4 | Complete |
+| STUDENT-03 | Phase 4 | Complete |
+| BFA-01 | Phase 5 | Complete |
+| BFA-02 | Phase 5 | Complete |
+| BFA-03 | Phase 5 | Complete |
+| BFA-04 | Phase 5 | Complete |
+| BFA-05 | Phase 5 | Complete |
+| BFA-06 | Phase 7 | Pending |
+| BFA-07 | Phase 7 | Pending |
+| BFA-08 | Phase 7 | Pending |
+| BFA-09 | Phase 7 | Pending |
+| BFA-10 | Phase 7 | Pending |
+| VOCAB-01 | Phase 8 | Pending |
+| VOCAB-02 | Phase 8 | Pending |
+| VOCAB-03 | Phase 8 | Pending |
+| VOCAB-04 | Phase 8 | Pending |
+| VOCAB-05 | Phase 8 | Pending |
+| LISTEN-01 | Phase 9 | Pending |
+| LISTEN-02 | Phase 9 | Pending |
+| LISTEN-03 | Phase 9 | Pending |
+| LISTEN-04 | Phase 9 | Pending |
+| LISTEN-05 | Phase 9 | Pending |
+| LISTEN-06 | Phase 9 | Pending |
+| LISTEN-07 | Phase 9 | Pending |
+| LISTEN-08 | Phase 9 | Pending |
+| ADMIN-01 | Phase 6 | Pending |
+| ADMIN-02 | Phase 6 | Pending |
+| ADMIN-03 | Phase 6 | Pending |
+| ADMIN-04 | Phase 6 | Pending |
+| ADMIN-05 | Phase 6 | Pending |
+| ADMIN-06 | Phase 6 | Pending |
+| ADMIN-07 | Phase 6 | Pending |
 
-**Coverage:** 26/26 v1 requirements mapped ✓
+**v1 Coverage:** 26/26 requirements mapped ✓
+**v2 Coverage:** 15/15 requirements mapped ✓
 
 ---
+
+> **Post-v2 Deferred:** Whisper fine-tuning on Vietnamese children's English data (STATEGY.MD §7 Priority 1). Requires collecting 10–20h labeled audio from school partnerships — non-trivial data effort. Track separately. Expected improvement: WER 35% → 18%.
+
+---
+
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-05-19 — Phase 5 plans (05-01/05-02/05-03) registered*
+*Last updated: 2026-05-23 — Added v2 milestone phases 7–9 (BFA robustness, Vocabulary by Image, Listen & Answer); updated Phase 5 plan list (07 plans); registered Phase 6 plan list*
