@@ -29,3 +29,31 @@ export interface AdminStats {
 }
 
 export const getAdminStats = () => req<AdminStats>('/admin/stats');
+
+export interface TeacherItem {
+  id: number;
+  upn: string;
+  name: string | null;
+  phone: string | null;
+  disabled: boolean;
+  createdAt: string;
+}
+
+export interface CreateTeacherInput {
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+}
+
+export interface UpdateTeacherInput {
+  name?: string;
+  phone?: string;
+  password?: string;
+}
+
+export const getTeachers = () => req<TeacherItem[]>('/admin/teachers');
+export const createTeacher = (data: CreateTeacherInput) => req<TeacherItem>('/admin/teachers', { method: 'POST', body: JSON.stringify(data) });
+export const updateTeacher = (id: number, data: UpdateTeacherInput) => req<TeacherItem>(`/admin/teachers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const disableTeacher = (id: number) => req<{ id: number; disabled: boolean }>(`/admin/teachers/${id}/disable`, { method: 'PATCH' });
+export const enableTeacher = (id: number) => req<{ id: number; disabled: boolean }>(`/admin/teachers/${id}/enable`, { method: 'PATCH' });
