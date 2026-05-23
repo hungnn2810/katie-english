@@ -57,6 +57,43 @@ describe('BfaService', () => {
     });
   });
 
+  describe('analyze() error forwarding', () => {
+    beforeEach(() => { jest.clearAllMocks(); });
+
+    it('forwards HTTP-400 audio_too_short body as BfaAnalyzeResult with success:false', async () => {
+      const axiosErr = Object.assign(new Error('Request failed with status code 400'), {
+        isAxiosError: true,
+        response: {
+          status: 400,
+          data: { success: false, error: 'audio_too_short', message: 'Recording too short — hold the button longer' },
+        },
+      });
+      mockedAxios.post.mockRejectedValueOnce(axiosErr);
+      (mockedAxios.isAxiosError as unknown as jest.Mock).mockReturnValue(true);
+      const result = await service.analyze(AUDIO, 'audio/webm', 'cat', []);
+      expect(result).toEqual({
+        success: false,
+        error: 'audio_too_short',
+        message: 'Recording too short — hold the button longer',
+        word: 'cat',
+        phonemes: [],
+        feedback: [],
+        score: 0,
+        transcription: { text: '' },
+      });
+    });
+
+    it('re-throws non-400 axios errors (e.g. 500)', async () => {
+      const axiosErr = Object.assign(new Error('Request failed with status code 500'), {
+        isAxiosError: true,
+        response: { status: 500, data: {} },
+      });
+      mockedAxios.post.mockRejectedValueOnce(axiosErr);
+      (mockedAxios.isAxiosError as unknown as jest.Mock).mockReturnValue(true);
+      await expect(service.analyze(AUDIO, 'audio/webm', 'cat', [])).rejects.toThrow();
+    });
+  });
+
   describe('analyzeSpeaking()', () => {
     const MOCK_SPEAKING = {
       success: true,

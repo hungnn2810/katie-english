@@ -71,6 +71,18 @@ const mockBfaFail = () => ({
   espeak_fallback: false,
 });
 
+const mockBfaError = (code: string, msg: string) => ({
+  success: false,
+  error: code,
+  message: msg,
+  score: 0,
+  phonemes: [],
+  feedback: [],
+  word: 'sh',
+  transcription: { text: '' },
+  espeak_fallback: false,
+});
+
 const mockReadingSession = (overrides = {}) => ({
   id: 1,
   studentId: 1,
@@ -350,6 +362,25 @@ describe('GameService.savePhonicsResult', () => {
     wordRepo.findByText.mockResolvedValue(null);
     await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
     expect(bfa.analyze).toHaveBeenCalledWith(expect.any(Buffer), 'audio/webm', 'sh', []);
+  });
+
+  describe('BFA error forwarding', () => {
+    const errorCases: [string, string][] = [
+      ['audio_too_short',     'Recording too short — hold the button longer'],
+      ['audio_too_long',      'Recording too long — keep it under 15 seconds'],
+      ['recording_too_noisy', 'Mic quá ồn — tìm chỗ yên tĩnh hơn nhé'],
+      ['speech_not_detected', 'Không nghe rõ — nói to hơn nhé'],
+      ['wrong_language',      'Please speak in English'],
+    ];
+
+    test.each(errorCases)('forwards error code %s through savePhonicsResult', async (code, msg) => {
+      repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
+      bfa.analyze.mockResolvedValue(mockBfaError(code, msg) as any);
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
+      expect(result.bfa).toMatchObject({ success: false, error: code, message: msg });
+      expect(result.bfa?.success).toBe(false);
+    });
   });
 });
 
