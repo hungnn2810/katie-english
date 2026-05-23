@@ -1,17 +1,21 @@
 import difflib
 import json
 import logging
+import math
 import os
 import re
+import struct
 import subprocess
 import tempfile
 import uuid
+import wave
 from pathlib import Path
 from typing import List, Optional
 
 import requests
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
+from langdetect import detect_langs
 
 logger = logging.getLogger("bfa_service")
 logging.basicConfig(format="%(message)s", level=logging.INFO)
@@ -24,6 +28,9 @@ GROQ_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
 
 MAX_UPLOAD_BYTES = int(os.getenv("BFA_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
 MIN_WORD_SCORE = int(os.getenv("BFA_MIN_WORD_SCORE", "70"))
+AUDIO_MIN_DURATION_S = float(os.getenv("BFA_MIN_DURATION_S", "0.5"))
+AUDIO_MAX_DURATION_S = float(os.getenv("BFA_MAX_DURATION_S", "15.0"))
+ENERGY_THRESHOLD_DB  = float(os.getenv("BFA_ENERGY_THRESHOLD_DB", "-50.0"))
 
 # Phonetically similar pairs (ARPAbet-ish symbols)
 _SIMILAR_PAIRS = {
@@ -54,12 +61,28 @@ def _safe_suffix(filename: Optional[str]) -> str:
 def _to_wav(input_path: Path, output_path: Path) -> None:
     result = subprocess.run(
         ["ffmpeg", "-y", "-i", str(input_path),
+         "-af", "loudnorm=I=-16:LRA=11:TP=-1.5",
          "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le",
          "-f", "wav", str(output_path)],
         capture_output=True, timeout=30,
     )
     if result.returncode != 0:
         raise RuntimeError(f"ffmpeg failed: {result.stderr.decode()}")
+
+
+def _wav_duration_s(wav_path: Path) -> float:
+    with wave.open(str(wav_path), 'rb') as wf:
+        return wf.getnframes() / wf.getframerate()
+
+
+def _rms_dbfs(wav_path: Path) -> float:
+    with wave.open(str(wav_path), 'rb') as wf:
+        raw = wf.readframes(wf.getnframes())
+    samples = struct.unpack(f'{len(raw) // 2}h', raw)
+    rms = math.sqrt(sum(s * s for s in samples) / len(samples)) if samples else 0
+    if rms == 0:
+        return -100.0
+    return 20 * math.log10(rms / 32768)
 
 
 def _groq_transcribe(wav_path: Path, prompt: Optional[str] = None) -> dict:
@@ -190,6 +213,29 @@ async def analyze(
         in_path.write_bytes(raw)
         _to_wav(in_path, wav_path)
 
+        # D-01: length gate
+        dur = _wav_duration_s(wav_path)
+        if dur < AUDIO_MIN_DURATION_S:
+            return JSONResponse(status_code=400, content={
+                "success": False,
+                "error": "audio_too_short",
+                "message": "Recording too short — hold the button longer",
+            })
+        if dur > AUDIO_MAX_DURATION_S:
+            return JSONResponse(status_code=400, content={
+                "success": False,
+                "error": "audio_too_long",
+                "message": "Recording too long — keep it under 15 seconds",
+            })
+
+        # D-03: energy/noise gate
+        if _rms_dbfs(wav_path) < ENERGY_THRESHOLD_DB:
+            return JSONResponse(status_code=200, content={
+                "success": False,
+                "error": "recording_too_noisy",
+                "message": "Mic quá ồn — tìm chỗ yên tĩnh hơn nhé",
+            })
+
         try:
             groq_result = _groq_transcribe(wav_path, prompt=word)
         except Exception as e:
@@ -197,6 +243,29 @@ async def analyze(
             groq_result = {"text": "", "words": []}
 
         transcript = groq_result.get("text", "").strip()
+
+        # D-04: ASR confidence gate
+        if not transcript or re.search(r'[a-zA-Z]', transcript) is None:
+            return JSONResponse(status_code=200, content={
+                "success": False,
+                "error": "speech_not_detected",
+                "message": "Không nghe rõ — nói to hơn nhé",
+            })
+
+        # D-05: language mixing detection (skip if < 3 words)
+        if len(transcript.split()) >= 3:
+            try:
+                langs = detect_langs(transcript)
+                top = langs[0] if langs else None
+                if top is None or top.lang != 'en' or top.prob <= 0.5:
+                    return JSONResponse(status_code=200, content={
+                        "success": False,
+                        "error": "wrong_language",
+                        "message": "Please speak in English",
+                    })
+            except Exception as e:
+                logger.warning(f"langdetect failed: {e}")
+
         groq_words = groq_result.get("words", [])
         word_start = groq_words[0].get("start", 0.0) if groq_words else 0.0
         word_end = groq_words[-1].get("end", 1.0) if groq_words else 1.0
@@ -250,6 +319,29 @@ async def analyze_speaking(
         in_path.write_bytes(raw)
         _to_wav(in_path, wav_path)
 
+        # D-01: length gate
+        dur = _wav_duration_s(wav_path)
+        if dur < AUDIO_MIN_DURATION_S:
+            return JSONResponse(status_code=400, content={
+                "success": False,
+                "error": "audio_too_short",
+                "message": "Recording too short — hold the button longer",
+            })
+        if dur > AUDIO_MAX_DURATION_S:
+            return JSONResponse(status_code=400, content={
+                "success": False,
+                "error": "audio_too_long",
+                "message": "Recording too long — keep it under 15 seconds",
+            })
+
+        # D-03: energy/noise gate
+        if _rms_dbfs(wav_path) < ENERGY_THRESHOLD_DB:
+            return JSONResponse(status_code=200, content={
+                "success": False,
+                "error": "recording_too_noisy",
+                "message": "Mic quá ồn — tìm chỗ yên tĩnh hơn nhé",
+            })
+
         prompt = target_text if mode == "SCRIPT_MATCH" else None
         try:
             groq_result = _groq_transcribe(wav_path, prompt=prompt)
@@ -258,6 +350,29 @@ async def analyze_speaking(
             groq_result = {"text": "", "words": []}
 
         transcript = groq_result.get("text", "").strip()
+
+        # D-04: ASR confidence gate
+        if not transcript or re.search(r'[a-zA-Z]', transcript) is None:
+            return JSONResponse(status_code=200, content={
+                "success": False,
+                "error": "speech_not_detected",
+                "message": "Không nghe rõ — nói to hơn nhé",
+            })
+
+        # D-05: language mixing detection (skip if < 3 words)
+        if len(transcript.split()) >= 3:
+            try:
+                langs = detect_langs(transcript)
+                top = langs[0] if langs else None
+                if top is None or top.lang != 'en' or top.prob <= 0.5:
+                    return JSONResponse(status_code=200, content={
+                        "success": False,
+                        "error": "wrong_language",
+                        "message": "Please speak in English",
+                    })
+            except Exception as e:
+                logger.warning(f"langdetect failed: {e}")
+
         groq_words = groq_result.get("words", [])
 
         target_words = target_text.split()
