@@ -214,7 +214,7 @@
 5. All existing passing phonics tests still pass after audio gates added.
 
 **Plans:** 2 plans
-- [ ] 07-01-PLAN.md — bfa-service: all 5 audio gates (length / loudnorm / RMS / ASR confidence / langdetect) + pytest suite (Wave 1)
+- [x] 07-01-PLAN.md — bfa-service: all 5 audio gates (length / loudnorm / RMS / ASR confidence / langdetect) + pytest suite (Wave 1)
 - [ ] 07-02-PLAN.md — Backend BFA error forwarding (DTO + axios 400 catch) + frontend amber error display per gate code (Wave 2)
 
 ---
