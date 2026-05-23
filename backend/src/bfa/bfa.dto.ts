@@ -36,6 +36,8 @@ export interface BfaAlignResult {
   word: string;
   espeak_fallback?: boolean;
   pronScore?: number;        // Azure composite PronScore (0-100)
+  error?: string;
+  message?: string;
 }
 
 export interface BfaAnalyzeResult extends BfaAlignResult {

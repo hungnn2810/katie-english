@@ -42,8 +42,24 @@ export class BfaService {
     form.append('audio', audioBuffer, { filename: `audio.${ext}`, contentType: mimeType });
     form.append('word', word);
     form.append('expected_phonemes', JSON.stringify(expectedPhonemes));
-    const response = await axios.post<BfaAnalyzeResult>(`${this.baseUrl}/analyze`, form, { headers: form.getHeaders(), timeout: 120_000 });
-    return response.data;
+    try {
+      const response = await axios.post<BfaAnalyzeResult>(`${this.baseUrl}/analyze`, form, { headers: form.getHeaders(), timeout: 120_000 });
+      return response.data;
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 400 && err.response.data?.error) {
+        return {
+          success: false,
+          error: err.response.data.error,
+          message: err.response.data.message ?? '',
+          word,
+          phonemes: [],
+          feedback: [],
+          score: 0,
+          transcription: { text: '' },
+        };
+      }
+      throw err;
+    }
   }
 
   async analyzeSpeaking(audioBuffer: Buffer, mimeType: string, targetText: string, mode: 'SCRIPT_MATCH' | 'FREE_SPEAK' = 'SCRIPT_MATCH'): Promise<BfaSpeakingResult> {

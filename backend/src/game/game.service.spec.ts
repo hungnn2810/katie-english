@@ -365,20 +365,53 @@ describe('GameService.savePhonicsResult', () => {
   });
 
   describe('BFA error forwarding', () => {
-    const errorCases: [string, string][] = [
-      ['audio_too_short',     'Recording too short — hold the button longer'],
-      ['audio_too_long',      'Recording too long — keep it under 15 seconds'],
-      ['recording_too_noisy', 'Mic quá ồn — tìm chỗ yên tĩnh hơn nhé'],
-      ['speech_not_detected', 'Không nghe rõ — nói to hơn nhé'],
-      ['wrong_language',      'Please speak in English'],
-    ];
-
-    test.each(errorCases)('forwards error code %s through savePhonicsResult', async (code, msg) => {
+    it('forwards audio_too_short through savePhonicsResult', async () => {
       repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
-      bfa.analyze.mockResolvedValue(mockBfaError(code, msg) as any);
+      bfa.analyze.mockResolvedValue(mockBfaError('audio_too_short', 'Recording too short — hold the button longer') as any);
       const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
       expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
-      expect(result.bfa).toMatchObject({ success: false, error: code, message: msg });
+      expect(result.bfa?.error).toBe('audio_too_short');
+      expect(result.bfa?.message).toBe('Recording too short — hold the button longer');
+      expect(result.bfa?.success).toBe(false);
+    });
+
+    it('forwards audio_too_long through savePhonicsResult', async () => {
+      repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
+      bfa.analyze.mockResolvedValue(mockBfaError('audio_too_long', 'Recording too long — keep it under 15 seconds') as any);
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
+      expect(result.bfa?.error).toBe('audio_too_long');
+      expect(result.bfa?.message).toBe('Recording too long — keep it under 15 seconds');
+      expect(result.bfa?.success).toBe(false);
+    });
+
+    it('forwards recording_too_noisy through savePhonicsResult', async () => {
+      repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
+      bfa.analyze.mockResolvedValue(mockBfaError('recording_too_noisy', 'Mic quá ồn — tìm chỗ yên tĩnh hơn nhé') as any);
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
+      expect(result.bfa?.error).toBe('recording_too_noisy');
+      expect(result.bfa?.message).toBe('Mic quá ồn — tìm chỗ yên tĩnh hơn nhé');
+      expect(result.bfa?.success).toBe(false);
+    });
+
+    it('forwards speech_not_detected through savePhonicsResult', async () => {
+      repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
+      bfa.analyze.mockResolvedValue(mockBfaError('speech_not_detected', 'Không nghe rõ — nói to hơn nhé') as any);
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
+      expect(result.bfa?.error).toBe('speech_not_detected');
+      expect(result.bfa?.message).toBe('Không nghe rõ — nói to hơn nhé');
+      expect(result.bfa?.success).toBe(false);
+    });
+
+    it('forwards wrong_language through savePhonicsResult', async () => {
+      repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
+      bfa.analyze.mockResolvedValue(mockBfaError('wrong_language', 'Please speak in English') as any);
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
+      expect(result.bfa?.error).toBe('wrong_language');
+      expect(result.bfa?.message).toBe('Please speak in English');
       expect(result.bfa?.success).toBe(false);
     });
   });
