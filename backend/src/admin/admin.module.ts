@@ -5,10 +5,12 @@ import { AdminAuthService } from './admin-auth.service';
 import { AdminAuthController } from './admin-auth.controller';
 import { AdminStatsService } from './admin-stats.service';
 import { AdminStatsController } from './admin-stats.controller';
+import { AdminTeachersService } from './admin-teachers.service';
+import { AdminTeachersController } from './admin-teachers.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule],
-  providers: [AdminAuthService, AdminStatsService],
-  controllers: [AdminAuthController, AdminStatsController],
+  providers: [AdminAuthService, AdminStatsService, AdminTeachersService],
+  controllers: [AdminAuthController, AdminStatsController, AdminTeachersController],
 })
 export class AdminModule {}
