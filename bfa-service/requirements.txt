@@ -4,3 +4,4 @@ python-multipart==0.0.12
 requests==2.32.3
 phonemizer==3.3.0
 espeak-ng==1.51.1
+langdetect==1.0.9
