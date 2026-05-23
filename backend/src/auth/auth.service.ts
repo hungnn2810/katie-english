@@ -18,6 +18,7 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
     if (!user.approved) throw new ForbiddenException('Account pending approval');
+    if (user.disabled) throw new ForbiddenException('Account disabled');
     const token = this.tokenService.sign({
       sub: user.id, upn: user.upn, role: user.role as 'TEACHER' | 'STUDENT', studentId: user.studentId ?? undefined,
     });
