@@ -25,6 +25,7 @@ interface SessionItem {
   score: number;
   state: ItemState;
   bfa?: BfaResult | null;
+  bfaError?: string | null;
 }
 
 function itemTime(kind: ItemKind) {
@@ -66,6 +67,14 @@ function CircleTimer({ seconds, total }: { seconds: number; total: number }) {
   );
 }
 
+const BFA_ERROR_MESSAGES: Record<string, string> = {
+  audio_too_short:     'Bấm lâu hơn nhé — ghi âm quá ngắn',
+  audio_too_long:      'Ghi âm quá dài — nói dưới 15 giây',
+  recording_too_noisy: 'Mic quá ồn — tìm chỗ yên tĩnh hơn',
+  speech_not_detected: 'Không nghe rõ — nói to hơn nhé',
+  wrong_language:      'Please speak in English',
+};
+
 export default function SessionPage() {
   const { id } = useParams<{ id: string }>();
   const sessionId = Number(id);
@@ -99,6 +108,9 @@ export default function SessionPage() {
   const processingRef = useRef(false);
   const currentIndexRef = useRef(0);
   const audioBlobsRef = useRef<(Blob | null)[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const vadRef = useRef<any>(null);
+  const isPlayingRef = useRef(false);
 
   useEffect(() => { itemsRef.current = items; }, [items]);
 
@@ -136,6 +148,37 @@ export default function SessionPage() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
+
+      // Init VAD on same stream (no-op pause/resume so MediaRecorder tracks stay alive)
+      try {
+        const { MicVAD } = await import('@ricky0123/vad-web');
+        const vad = await MicVAD.new({
+          getStream: () => Promise.resolve(stream),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pauseStream: async (_s: any) => {},
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          resumeStream: async (s: any) => s,
+          startOnLoad: false,
+          model: 'legacy',
+          baseAssetPath: '/',
+          onnxWASMBasePath: '/',
+          redemptionMs: 750,
+          minSpeechMs: 300,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ortConfig: (ort: any) => { ort.env.logLevel = 'error'; },
+          onSpeechEnd: () => {
+            if (isPlayingRef.current && !processingRef.current) {
+              stopTimer();
+              stopSpeech();
+              processItem(currentIndexRef.current, finalTextRef.current);
+            }
+          },
+        });
+        vadRef.current = vad;
+      } catch (e) {
+        console.warn('[vad] init failed, timer-only mode:', e);
+      }
+
       setPageState('ready');
     } catch {
       setPageState('cam-denied');
@@ -211,6 +254,7 @@ export default function SessionPage() {
   const processItem = useCallback(async (index: number, detected: string) => {
     if (processingRef.current) return;
     processingRef.current = true;
+    isPlayingRef.current = false;
     stopTimer();
     stopSpeech();
 
@@ -252,6 +296,8 @@ export default function SessionPage() {
     setItems((prev) => prev.map((w, i) => i === index ? { ...w, state: 'recording' } : w));
     if (streamRef.current) startWordRecording(streamRef.current);
     startSpeech((text) => { finalTextRef.current = text; setTranscript(text); });
+    isPlayingRef.current = true;
+    vadRef.current?.start();
     let remaining = t;
     timerRef.current = setInterval(() => {
       remaining -= 1;
@@ -275,6 +321,9 @@ export default function SessionPage() {
   async function stopRecordingTracks() {
     stopTimer();
     stopSpeech();
+    isPlayingRef.current = false;
+    await vadRef.current?.destroy();
+    vadRef.current = null;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
@@ -305,7 +354,8 @@ export default function SessionPage() {
           scored[i] = { ...scored[i], score: r.score };
         } else if (item.kind === 'phonics') {
           const r = await savePhonicsResult(sessionId, item.wordId!, audioBlob);
-          scored[i] = { ...scored[i], score: r.score, bfa: r.bfa ?? null };
+          const bfaError = r.bfa?.error ?? null;
+          scored[i] = { ...scored[i], score: bfaError ? 0 : r.score, bfa: r.bfa ?? null, bfaError };
         }
       } catch (err) {
         console.error(`[score] item="${item.text}"`, err);
@@ -350,6 +400,8 @@ export default function SessionPage() {
   useEffect(() => () => {
     stopTimer();
     stopSpeech();
+    isPlayingRef.current = false;
+    vadRef.current?.destroy();
     if (audioRecorderRef.current?.state !== 'inactive') audioRecorderRef.current?.stop();
     streamRef.current?.getTracks().forEach((t) => t.stop());
   }, [stopTimer, stopSpeech]);
@@ -520,7 +572,12 @@ export default function SessionPage() {
                             {item.score}%
                           </div>
                         </div>
-                        {item.bfa?.success && item.bfa.feedback.length > 0 && (
+                        {item.bfaError && (
+                          <div className="mt-2 text-sm font-semibold text-amber-400">
+                            {BFA_ERROR_MESSAGES[item.bfaError] ?? 'Có lỗi — thử lại nhé'}
+                          </div>
+                        )}
+                        {!item.bfaError && item.bfa?.success && item.bfa.feedback.length > 0 && (
                           <PhonemeChips feedback={item.bfa.feedback} />
                         )}
                       </div>
