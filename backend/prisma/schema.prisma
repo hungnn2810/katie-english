@@ -80,6 +80,8 @@ model Class {
   endDate       DateTime
   status        ClassStatus               @default(PENDING)
   scheduleSlots Json                      @default("[]")
+  teacherId     Int?
+  teacher       User?                     @relation("TeacherClasses", fields: [teacherId], references: [id])
   students      Student[]
   assignments   HomeworkAssignmentClass[]
   createdAt     DateTime                  @default(now())
@@ -283,16 +285,22 @@ model ReadingResult {
 enum UserRole {
   TEACHER
   STUDENT
+  ADMIN
 }
 
 model User {
   id                     Int      @id @default(autoincrement())
   upn                    String   @unique
+  email                  String?  @unique
+  name                   String?
+  phone                  String?
+  disabled               Boolean  @default(false)
   password               String
   role                   UserRole
   approved               Boolean  @default(false)
   studentId              Int?     @unique
   student                Student? @relation(fields: [studentId], references: [id])
+  classes                Class[]  @relation("TeacherClasses")
   registrationData       Json?
   passwordResetRequested Boolean  @default(false)
   createdAt              DateTime @default(now())
