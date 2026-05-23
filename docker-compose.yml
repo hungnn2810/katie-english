@@ -1,4 +1,21 @@
 services:
+  bfa:
+    build:
+      context: ./bfa-service
+      dockerfile: Dockerfile
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      GROQ_MODEL: ${GROQ_MODEL:-whisper-large-v3-turbo}
+      BFA_MIN_WORD_SCORE: '70'
+    ports:
+      - '3002:8000'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -47,9 +64,7 @@ services:
       TEACHER_EMAIL: teacher@example.com
       TEACHER_PASSWORD: Pass1234!
       REDIS_URL: redis://redis:6379
-      BFA_QUEUE_CONCURRENCY: '1'
-      AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY}
-      AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION:-eastus}
+      BFA_URL: http://bfa:8000
     ports:
       - '3001:3001'
     depends_on:
@@ -59,6 +74,18 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      bfa:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   frontend:
     build:
@@ -71,61 +98,6 @@ services:
     depends_on:
       - backend
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - '6379:6379'
-
-  prometheus:
-    image: prom/prometheus:v2.52.0
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    ports:
-      - '9090:9090'
-
-  grafana:
-    image: grafana/grafana:11.0.0
-    environment:
-      GF_AUTH_ANONYMOUS_ENABLED: 'true'
-      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
-      GF_SECURITY_ADMIN_PASSWORD: admin
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
-    ports:
-      - '3003:3000'
-    depends_on:
-      - prometheus
-
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.49.1
-    command:
-      - '--housekeeping_interval=10s'
-      - '--docker_only=true'
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-    ports:
-      - '8080:8080'
-
-  node-exporter:
-    image: prom/node-exporter:v1.8.1
-    command:
-      - '--path.rootfs=/host'
-    volumes:
-      - /:/host:ro,rslave
-    ports:
-      - '9100:9100'
-
 volumes:
   postgres_data:
   minio_data:
-  prometheus_data:
-  grafana_data:
