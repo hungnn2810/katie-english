@@ -51,3 +51,22 @@ export class TeacherGuard implements CanActivate {
     return true;
   }
 }
+
+@Injectable()
+export class AdminGuard implements CanActivate {
+  constructor(
+    private readonly tokenService: TokenService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const req = ctx.switchToHttp().getRequest<Request>();
+    const auth = req.headers['authorization'];
+    if (!auth?.startsWith('Bearer ')) throw new UnauthorizedException('No token');
+    const payload = this.tokenService.verify(auth.slice(7));
+    if (!payload) throw new UnauthorizedException('Invalid token');
+    if (payload.role !== 'ADMIN') throw new ForbiddenException('Admins only');
+    (req as any).user = payload;
+    return true;
+  }
+}
