@@ -129,3 +129,20 @@ export interface AdminStudentResultItem {
 
 export const getAdminStudents = () => req<AdminStudentItem[]>('/admin/students');
 export const getStudentResults = (id: number) => req<AdminStudentResultItem[]>(`/admin/students/${id}/results`);
+
+// ─── Homework ──────────────────────────────────────────────────────────────────
+
+export interface AdminHomeworkItem {
+  id: number;
+  name: string | null;
+  type: 'PHONICS' | 'SPEAKING' | 'READING';
+  speakingMode: 'FREE_SPEAK' | 'SCRIPT_MATCH' | null;
+  createdAt: string;
+  updatedAt: string;
+  _count: { assignments: number };
+  submissionCount: number;
+}
+
+export const getAdminHomework = () => req<AdminHomeworkItem[]>('/admin/homework');
+export const deleteAdminHomework = (id: number) => req<{ deleted: true }>(`/admin/homework/${id}`, { method: 'DELETE' });
+export const deleteAdminSession = (sessionId: number) => req<{ deleted: true }>(`/admin/students/sessions/${sessionId}`, { method: 'DELETE' });

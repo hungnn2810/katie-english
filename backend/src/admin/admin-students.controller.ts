@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Delete, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { AdminStudentsService } from './admin-students.service';
 import { AdminGuard } from '../auth/auth.guard';
 
@@ -10,6 +10,11 @@ export class AdminStudentsController {
   @Get()
   findAll() {
     return this.service.findAll();
+  }
+
+  @Delete('sessions/:sessionId')
+  deleteSession(@Param('sessionId', ParseIntPipe) sessionId: number) {
+    return this.service.deleteSession(sessionId);
   }
 
   @Get(':id/results')

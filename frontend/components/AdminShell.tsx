@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { clearAdminAuth, AdminUser } from '@/lib/admin-auth';
-import { LayoutDashboard, Users, School, GraduationCap, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Users, School, GraduationCap, FileText, LogOut, X } from 'lucide-react';
 
 const ACCENT = '#4F9DFF';
 const ACCENT_BG = 'rgba(79, 157, 255, 0.12)';
@@ -17,6 +17,7 @@ const NAV_GROUPS = [
       { href: '/admin/teachers', label: 'Teachers', icon: Users },
       { href: '/admin/classes', label: 'Classes', icon: School },
       { href: '/admin/students', label: 'Students', icon: GraduationCap },
+      { href: '/admin/homework', label: 'Homework', icon: FileText },
     ],
   },
 ];

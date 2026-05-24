@@ -56,4 +56,19 @@ export class AdminStudentsService {
       },
     });
   }
+
+  async findSessionById(id: number) {
+    const session = await this.prisma.homeworkSession.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!session) throw new NotFoundException(`Session ${id} not found`);
+    return session;
+  }
+
+  async deleteSession(id: number): Promise<{ deleted: true }> {
+    await this.findSessionById(id);
+    await this.prisma.homeworkSession.delete({ where: { id } });
+    return { deleted: true };
+  }
 }
