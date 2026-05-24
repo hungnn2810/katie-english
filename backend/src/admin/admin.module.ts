@@ -11,10 +11,12 @@ import { AdminClassesService } from './admin-classes.service';
 import { AdminClassesController } from './admin-classes.controller';
 import { AdminStudentsService } from './admin-students.service';
 import { AdminStudentsController } from './admin-students.controller';
+import { AdminHomeworkService } from './admin-homework.service';
+import { AdminHomeworkController } from './admin-homework.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule],
-  providers: [AdminAuthService, AdminStatsService, AdminTeachersService, AdminClassesService, AdminStudentsService],
-  controllers: [AdminAuthController, AdminStatsController, AdminTeachersController, AdminClassesController, AdminStudentsController],
+  providers: [AdminAuthService, AdminStatsService, AdminTeachersService, AdminClassesService, AdminStudentsService, AdminHomeworkService],
+  controllers: [AdminAuthController, AdminStatsController, AdminTeachersController, AdminClassesController, AdminStudentsController, AdminHomeworkController],
 })
 export class AdminModule {}
