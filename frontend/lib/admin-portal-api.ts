@@ -97,3 +97,35 @@ export const updateAdminClass = (id: number, data: AdminUpdateClassInput) =>
   req<AdminClassItem>(`/admin/classes/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteAdminClass = (id: number) =>
   req<{ deleted: true }>(`/admin/classes/${id}`, { method: 'DELETE' });
+
+// ─── Students ─────────────────────────────────────────────────────────────────
+
+export interface AdminStudentItem {
+  id: number;
+  fullname: string;
+  sex: 'MALE' | 'FEMALE';
+  classId: number | null;
+  class: {
+    id: number;
+    name: string;
+    code: string;
+    teacher: { id: number; name: string | null; upn: string } | null;
+  } | null;
+  _count: { sessions: number };
+  createdAt: string;
+}
+
+export interface AdminStudentResultItem {
+  id: number;
+  startedAt: string;
+  completedAt: string | null;
+  score: number | null;
+  assignment: {
+    id: number;
+    endDate: string;
+    homework: { id: number; name: string | null; type: 'PHONICS' | 'SPEAKING' | 'READING' };
+  };
+}
+
+export const getAdminStudents = () => req<AdminStudentItem[]>('/admin/students');
+export const getStudentResults = (id: number) => req<AdminStudentResultItem[]>(`/admin/students/${id}/results`);
