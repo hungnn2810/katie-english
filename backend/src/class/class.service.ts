@@ -14,8 +14,8 @@ export class ClassService {
     return cls;
   }
 
-  async create(dto: CreateClassDto) {
-    try { return await this.repo.create(dto); }
+  async create(dto: CreateClassDto, teacherId?: number) {
+    try { return await this.repo.create(dto, teacherId); }
     catch { throw new ConflictException(`Code ${dto.code} already exists`); }
   }
 

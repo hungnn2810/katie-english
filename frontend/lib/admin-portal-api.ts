@@ -1,4 +1,7 @@
 import { adminAuthHeaders } from './admin-auth';
+import type { ScheduleSlot, ClassStatus } from './admin-api';
+
+export type { ScheduleSlot, ClassStatus };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -30,6 +33,7 @@ export interface AdminStats {
 
 export const getAdminStats = () => req<AdminStats>('/admin/stats');
 
+// Teachers
 export interface TeacherItem {
   id: number;
   upn: string;
@@ -40,10 +44,10 @@ export interface TeacherItem {
 }
 
 export interface CreateTeacherInput {
-  email: string;
-  password: string;
   name: string;
-  phone: string;
+  email: string;
+  phone?: string;
+  password: string;
 }
 
 export interface UpdateTeacherInput {
@@ -53,7 +57,43 @@ export interface UpdateTeacherInput {
 }
 
 export const getTeachers = () => req<TeacherItem[]>('/admin/teachers');
-export const createTeacher = (data: CreateTeacherInput) => req<TeacherItem>('/admin/teachers', { method: 'POST', body: JSON.stringify(data) });
-export const updateTeacher = (id: number, data: UpdateTeacherInput) => req<TeacherItem>(`/admin/teachers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-export const disableTeacher = (id: number) => req<{ id: number; disabled: boolean }>(`/admin/teachers/${id}/disable`, { method: 'PATCH' });
-export const enableTeacher = (id: number) => req<{ id: number; disabled: boolean }>(`/admin/teachers/${id}/enable`, { method: 'PATCH' });
+export const createTeacher = (data: CreateTeacherInput) =>
+  req<TeacherItem>('/admin/teachers', { method: 'POST', body: JSON.stringify(data) });
+export const updateTeacher = (id: number, data: UpdateTeacherInput) =>
+  req<TeacherItem>(`/admin/teachers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const disableTeacher = (id: number) =>
+  req<{ id: number; disabled: boolean }>(`/admin/teachers/${id}/disable`, { method: 'PATCH' });
+export const enableTeacher = (id: number) =>
+  req<{ id: number; disabled: boolean }>(`/admin/teachers/${id}/enable`, { method: 'PATCH' });
+
+// Classes
+export interface AdminClassItem {
+  id: number;
+  name: string;
+  code: string;
+  startDate: string;
+  endDate: string;
+  status: ClassStatus;
+  scheduleSlots: ScheduleSlot[];
+  teacherId: number | null;
+  teacher: { id: number; name: string | null; upn: string } | null;
+  _count: { students: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUpdateClassInput {
+  name?: string;
+  code?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: ClassStatus;
+  scheduleSlots?: ScheduleSlot[];
+}
+
+export const getAdminClasses = (teacherId?: number) =>
+  req<AdminClassItem[]>(teacherId !== undefined ? `/admin/classes?teacherId=${teacherId}` : '/admin/classes');
+export const updateAdminClass = (id: number, data: AdminUpdateClassInput) =>
+  req<AdminClassItem>(`/admin/classes/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteAdminClass = (id: number) =>
+  req<{ deleted: true }>(`/admin/classes/${id}`, { method: 'DELETE' });

@@ -24,7 +24,7 @@ export class ClassRepository {
     });
   }
 
-  create(dto: CreateClassDto) {
+  create(dto: CreateClassDto, teacherId?: number) {
     return this.prisma.class.create({
       data: {
         name: dto.name,
@@ -33,6 +33,7 @@ export class ClassRepository {
         endDate: new Date(dto.endDate),
         status: (dto.status as ClassStatus) ?? 'PENDING',
         scheduleSlots: (dto.scheduleSlots ?? []) as unknown as Prisma.InputJsonValue,
+        ...(teacherId !== undefined && { teacherId }),
       },
     });
   }
