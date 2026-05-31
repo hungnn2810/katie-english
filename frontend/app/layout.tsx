@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import './globals.css';
-import { cn } from "@/lib/utils";
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { baseTheme } from '@/lib/theme';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -16,8 +18,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cn("font-sans", inter.variable)}>
-      <body className="bg-background min-h-screen font-sans">{children}</body>
+    <html lang="en" className={inter.variable}>
+      <body>
+        <AppRouterCacheProvider>
+          <ThemeProvider theme={baseTheme}>
+            <CssBaseline />
+            {children}
+          </ThemeProvider>
+        </AppRouterCacheProvider>
+      </body>
     </html>
   );
 }
