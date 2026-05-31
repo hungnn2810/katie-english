@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getUser, AuthUser } from '@/lib/auth';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 interface Props {
   requiredRole?: 'TEACHER' | 'STUDENT';
@@ -22,7 +24,11 @@ export default function AuthGate({ requiredRole, children }: Props) {
     setUser(u);
   }, []);
 
-  if (user === undefined) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Loading...</div>;
+  if (user === undefined) return (
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <CircularProgress size={32} />
+    </Box>
+  );
   if (!user) return null;
   return <>{children(user)}</>;
 }
