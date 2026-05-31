@@ -674,7 +674,7 @@ MUI replacement (note: MUI DatePicker returns a Date object, not a string):
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`app/game/layout.tsx` existence**
    - What we know: The directory `app/game/` has `page.tsx` and subdirectories but no `layout.tsx` was found in the file tree scan
