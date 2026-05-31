@@ -65,6 +65,8 @@ services:
       PORT: 3001
       TEACHER_EMAIL: teacher@example.com
       TEACHER_PASSWORD: Pass1234!
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@katie-english.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin1234!}
       REDIS_URL: redis://redis:6379
       BFA_URL: http://bfa:8000
     ports:
