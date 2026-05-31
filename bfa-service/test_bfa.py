@@ -2,16 +2,16 @@ import io
 import math
 import shutil
 import struct
+import unittest.mock as mock
 import wave
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from main import app, _wav_duration_s, _rms_dbfs, _to_wav
+from main import app, _wav_duration_s, _rms_dbfs, _to_wav, _map_phoneme_ops
 
 client = TestClient(app)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -54,7 +54,40 @@ def _copy_to_wav(input_path: Path, output_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Unit tests — helpers (must pass in RED state)
+# Mock Azure response fixtures
+# ---------------------------------------------------------------------------
+
+MOCK_PA_RESPONSE = {
+    "RecognitionStatus": "Success",
+    "DisplayText": "cat.",
+    "NBest": [{
+        "Lexical": "cat",
+        "PronunciationAssessment": {"AccuracyScore": 90.0, "FluencyScore": 95.0, "PronScore": 91.0},
+        "Words": [{
+            "Word": "cat",
+            "Offset": 1000000,
+            "Duration": 4000000,
+            "PronunciationAssessment": {"AccuracyScore": 90.0, "ErrorType": "None"},
+            "Phonemes": [
+                {"Phoneme": "k", "PronunciationAssessment": {"AccuracyScore": 95.0}, "Offset": 1000000, "Duration": 800000},
+                {"Phoneme": "ae", "PronunciationAssessment": {"AccuracyScore": 85.0}, "Offset": 1800000, "Duration": 1200000},
+                {"Phoneme": "t", "PronunciationAssessment": {"AccuracyScore": 92.0}, "Offset": 3000000, "Duration": 800000},
+            ]
+        }]
+    }]
+}
+
+
+def _mock_response(data: dict, status: int = 200):
+    m = mock.MagicMock()
+    m.ok = (status < 400)
+    m.status_code = status
+    m.json.return_value = data
+    return m
+
+
+# ---------------------------------------------------------------------------
+# Unit tests — helpers
 # ---------------------------------------------------------------------------
 
 def test_wav_duration_helper(tmp_path):
@@ -88,7 +121,6 @@ def test_loudnorm_flag_present(monkeypatch, tmp_path):
 
     def fake_run(args, **kwargs):
         captured_args.extend(args)
-        # Pre-create output so the function doesn't fail downstream
         return FakeResult()
 
     import main as main_module
@@ -96,9 +128,7 @@ def test_loudnorm_flag_present(monkeypatch, tmp_path):
 
     in_path = tmp_path / "in.wav"
     out_path = tmp_path / "out.wav"
-    # Write a dummy input file
     in_path.write_bytes(make_wav(0.5))
-    # Pre-create the output path so downstream callers don't fail
     out_path.write_bytes(b"")
 
     _to_wav(in_path, out_path)
@@ -109,10 +139,52 @@ def test_loudnorm_flag_present(monkeypatch, tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Integration tests — length gate (RED at Task 1 commit — gates not yet wired)
+# Unit tests — _map_phoneme_ops
 # ---------------------------------------------------------------------------
 
-def test_audio_too_short_returns_400(tmp_path, monkeypatch):
+def test_map_phoneme_ops_correct():
+    """All phonemes with AccuracyScore >= 80 should be 'correct'."""
+    word_data = {
+        "PronunciationAssessment": {"AccuracyScore": 90.0, "ErrorType": "None"},
+        "Phonemes": [
+            {"Phoneme": "k", "PronunciationAssessment": {"AccuracyScore": 95.0}, "Offset": 1000000, "Duration": 800000},
+            {"Phoneme": "ae", "PronunciationAssessment": {"AccuracyScore": 85.0}, "Offset": 1800000, "Duration": 1200000},
+            {"Phoneme": "t", "PronunciationAssessment": {"AccuracyScore": 92.0}, "Offset": 3000000, "Duration": 800000},
+        ]
+    }
+    ops = _map_phoneme_ops(word_data)
+    assert len(ops) == 3
+    for op in ops:
+        assert op["status"] == "correct", f"Expected 'correct', got '{op['status']}' for phoneme '{op['expected']}'"
+        assert op["aligned"] == op["expected"]
+        assert op["start"] is not None
+        assert op["end"] is not None
+        assert op["duration"] is not None
+
+
+def test_map_phoneme_ops_thresholds():
+    """Test threshold boundary values: 79->similar, 80->correct, 49->substituted, 50->similar."""
+    word_data = {
+        "PronunciationAssessment": {"AccuracyScore": 60.0, "ErrorType": "None"},
+        "Phonemes": [
+            {"Phoneme": "k", "PronunciationAssessment": {"AccuracyScore": 79.0}, "Offset": 0, "Duration": 500000},
+            {"Phoneme": "ae", "PronunciationAssessment": {"AccuracyScore": 80.0}, "Offset": 500000, "Duration": 500000},
+            {"Phoneme": "t", "PronunciationAssessment": {"AccuracyScore": 49.0}, "Offset": 1000000, "Duration": 500000},
+            {"Phoneme": "s", "PronunciationAssessment": {"AccuracyScore": 50.0}, "Offset": 1500000, "Duration": 500000},
+        ]
+    }
+    ops = _map_phoneme_ops(word_data)
+    assert ops[0]["status"] == "similar",      f"79 -> expected 'similar', got '{ops[0]['status']}'"
+    assert ops[1]["status"] == "correct",      f"80 -> expected 'correct', got '{ops[1]['status']}'"
+    assert ops[2]["status"] == "substituted",  f"49 -> expected 'substituted', got '{ops[2]['status']}'"
+    assert ops[3]["status"] == "similar",      f"50 -> expected 'similar', got '{ops[3]['status']}'"
+
+
+# ---------------------------------------------------------------------------
+# Integration tests — length gate
+# ---------------------------------------------------------------------------
+
+def test_length_gate_too_short(tmp_path, monkeypatch):
     import main as main_module
     monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
 
@@ -122,7 +194,7 @@ def test_audio_too_short_returns_400(tmp_path, monkeypatch):
         files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
         data={"word": "cat", "expected_phonemes": "[]"},
     )
-    assert response.status_code == 400, f"Expected 400, got {response.status_code}: {response.text}"
+    assert response.status_code == 400
     body = response.json()
     assert body == {
         "success": False,
@@ -131,7 +203,7 @@ def test_audio_too_short_returns_400(tmp_path, monkeypatch):
     }, f"Unexpected body: {body}"
 
 
-def test_audio_too_long_returns_400(tmp_path, monkeypatch):
+def test_length_gate_too_long(tmp_path, monkeypatch):
     import main as main_module
     monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
 
@@ -141,7 +213,7 @@ def test_audio_too_long_returns_400(tmp_path, monkeypatch):
         files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
         data={"word": "cat", "expected_phonemes": "[]"},
     )
-    assert response.status_code == 400, f"Expected 400, got {response.status_code}: {response.text}"
+    assert response.status_code == 400
     body = response.json()
     assert body == {
         "success": False,
@@ -150,15 +222,10 @@ def test_audio_too_long_returns_400(tmp_path, monkeypatch):
     }, f"Unexpected body: {body}"
 
 
-def test_recording_too_noisy_returns_200(tmp_path, monkeypatch):
-    """Silent (all-zero) 1s WAV should trigger energy gate before Groq is called."""
+def test_energy_gate(tmp_path, monkeypatch):
+    """Silent (all-zero) 1s WAV should trigger energy gate before Azure is called."""
     import main as main_module
     monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
-
-    def groq_should_not_be_called(*args, **kwargs):
-        raise AssertionError("_groq_transcribe should not be called for silent audio")
-
-    monkeypatch.setattr(main_module, "_groq_transcribe", groq_should_not_be_called)
 
     wav_bytes = make_wav(1.0, amplitude=0)
     response = client.post(
@@ -166,7 +233,7 @@ def test_recording_too_noisy_returns_200(tmp_path, monkeypatch):
         files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
         data={"word": "cat", "expected_phonemes": "[]"},
     )
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    assert response.status_code == 200
     body = response.json()
     assert body == {
         "success": False,
@@ -176,112 +243,14 @@ def test_recording_too_noisy_returns_200(tmp_path, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Integration tests — Task 2 additions (GREEN after gates wired)
+# Integration tests — Azure PA scoring
 # ---------------------------------------------------------------------------
 
-def test_speech_not_detected_empty(monkeypatch, tmp_path):
-    """Empty transcript from Groq triggers speech_not_detected gate."""
+def test_azure_pa_correct_phonemes(monkeypatch, tmp_path):
+    """Mock Azure PA response with all correct phonemes, assert score=90 and ops all 'correct'."""
     import main as main_module
     monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
-    monkeypatch.setattr(main_module, "_groq_transcribe", lambda *a, **kw: {"text": "", "words": []})
-
-    wav_bytes = make_wav(2.0)
-    response = client.post(
-        "/analyze",
-        files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
-        data={"word": "cat", "expected_phonemes": "[]"},
-    )
-    assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
-    body = response.json()
-    assert body == {
-        "success": False,
-        "error": "speech_not_detected",
-        "message": "Không nghe rõ — nói to hơn nhé",
-    }, f"Unexpected body: {body}"
-
-
-def test_speech_not_detected_no_alpha(monkeypatch, tmp_path):
-    """Transcript with no alphabetic chars triggers speech_not_detected gate."""
-    import main as main_module
-    monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
-    monkeypatch.setattr(main_module, "_groq_transcribe", lambda *a, **kw: {"text": "@@@ ### ???", "words": []})
-
-    wav_bytes = make_wav(2.0)
-    response = client.post(
-        "/analyze",
-        files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
-        data={"word": "cat", "expected_phonemes": "[]"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body == {
-        "success": False,
-        "error": "speech_not_detected",
-        "message": "Không nghe rõ — nói to hơn nhé",
-    }, f"Unexpected body: {body}"
-
-
-def test_wrong_language_vietnamese(monkeypatch, tmp_path):
-    """Vietnamese transcript triggers wrong_language gate."""
-    import main as main_module
-    monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
-    monkeypatch.setattr(
-        main_module, "_groq_transcribe",
-        lambda *a, **kw: {"text": "xin chào bạn tôi", "words": []},
-    )
-
-    # Stub langdetect to reliably return Vietnamese
-    LangStub = type("L", (object,), {"lang": "vi", "prob": 0.99})
-    monkeypatch.setattr(main_module, "detect_langs", lambda text: [LangStub()])
-
-    wav_bytes = make_wav(2.0)
-    response = client.post(
-        "/analyze",
-        files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
-        data={"word": "cat", "expected_phonemes": "[]"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body == {
-        "success": False,
-        "error": "wrong_language",
-        "message": "Please speak in English",
-    }, f"Unexpected body: {body}"
-
-
-def test_language_gate_skipped_under_3_words(monkeypatch, tmp_path):
-    """Transcript < 3 words skips langdetect gate; response is success=True."""
-    import main as main_module
-    monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
-    monkeypatch.setattr(
-        main_module, "_groq_transcribe",
-        lambda *a, **kw: {"text": "hello world", "words": [
-            {"word": "hello", "start": 0.0, "end": 0.3},
-            {"word": "world", "start": 0.3, "end": 0.6},
-        ]},
-    )
-    # Also mock _g2p to avoid needing espeak-ng
-    monkeypatch.setattr(main_module, "_g2p", lambda text: list(text.lower().replace(" ", "")))
-
-    wav_bytes = make_wav(2.0)
-    response = client.post(
-        "/analyze",
-        files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
-        data={"word": "hello", "expected_phonemes": "[]"},
-    )
-    assert response.status_code == 200
-    assert response.json()["success"] is True, f"Expected success=True, got: {response.json()}"
-
-
-def test_happy_path_returns_success(monkeypatch, tmp_path):
-    """Valid English clip with mocked Groq and g2p returns success=True with score/phonemes."""
-    import main as main_module
-    monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
-    monkeypatch.setattr(
-        main_module, "_groq_transcribe",
-        lambda *a, **kw: {"text": "cat", "words": [{"word": "cat", "start": 0.0, "end": 0.4}]},
-    )
-    monkeypatch.setattr(main_module, "_g2p", lambda text: ["k", "æ", "t"])
+    monkeypatch.setattr(main_module, "_azure_pa_assess", lambda wav, ref: MOCK_PA_RESPONSE)
 
     wav_bytes = make_wav(2.0)
     response = client.post(
@@ -292,32 +261,153 @@ def test_happy_path_returns_success(monkeypatch, tmp_path):
     assert response.status_code == 200
     body = response.json()
     assert body["success"] is True, f"Expected success=True, got: {body}"
-    assert isinstance(body["score"], int), f"score should be int, got: {type(body['score'])}"
-    assert isinstance(body["phonemes"], list) and len(body["phonemes"]) > 0, "phonemes should be non-empty list"
+    assert body["score"] == 90, f"Expected score=90, got {body['score']}"
+    for op in body["feedback"]:
+        assert op["status"] == "correct", f"Expected 'correct', got '{op['status']}'"
 
 
-def test_gate_order_length_before_groq(monkeypatch, tmp_path):
-    """Length gate fires before Groq — monkeypatched Groq raise should NOT propagate."""
+def test_azure_pa_low_score_substituted(monkeypatch, tmp_path):
+    """Mock PA response with AccuracyScore=30 phoneme, assert status='substituted'."""
     import main as main_module
     monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
 
-    def groq_should_not_be_called(*args, **kwargs):
-        raise AssertionError("groq should not be called")
+    low_score_response = {
+        "RecognitionStatus": "Success",
+        "DisplayText": "cat.",
+        "NBest": [{
+            "Lexical": "cat",
+            "PronunciationAssessment": {"AccuracyScore": 30.0, "FluencyScore": 50.0, "PronScore": 30.0},
+            "Words": [{
+                "Word": "cat",
+                "Offset": 1000000,
+                "Duration": 4000000,
+                "PronunciationAssessment": {"AccuracyScore": 30.0, "ErrorType": "None"},
+                "Phonemes": [
+                    {"Phoneme": "k", "PronunciationAssessment": {"AccuracyScore": 30.0}, "Offset": 1000000, "Duration": 800000},
+                ]
+            }]
+        }]
+    }
+    monkeypatch.setattr(main_module, "_azure_pa_assess", lambda wav, ref: low_score_response)
 
-    monkeypatch.setattr(main_module, "_groq_transcribe", groq_should_not_be_called)
-
-    wav_bytes = make_wav(0.3)
+    wav_bytes = make_wav(2.0)
     response = client.post(
         "/analyze",
         files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
         data={"word": "cat", "expected_phonemes": "[]"},
     )
-    assert response.status_code == 400
-    assert response.json()["error"] == "audio_too_short", f"Unexpected body: {response.json()}"
+    assert response.status_code == 200
+    body = response.json()
+    assert body["success"] is True
+    assert body["feedback"][0]["status"] == "substituted", f"Expected 'substituted', got: {body['feedback'][0]['status']}"
+
+
+def test_azure_pa_similar_score(monkeypatch, tmp_path):
+    """Mock PA response with AccuracyScore=65, assert status='similar'."""
+    import main as main_module
+    monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
+
+    similar_response = {
+        "RecognitionStatus": "Success",
+        "DisplayText": "cat.",
+        "NBest": [{
+            "Lexical": "cat",
+            "PronunciationAssessment": {"AccuracyScore": 65.0, "FluencyScore": 70.0, "PronScore": 65.0},
+            "Words": [{
+                "Word": "cat",
+                "Offset": 1000000,
+                "Duration": 4000000,
+                "PronunciationAssessment": {"AccuracyScore": 65.0, "ErrorType": "None"},
+                "Phonemes": [
+                    {"Phoneme": "ae", "PronunciationAssessment": {"AccuracyScore": 65.0}, "Offset": 1000000, "Duration": 1200000},
+                ]
+            }]
+        }]
+    }
+    monkeypatch.setattr(main_module, "_azure_pa_assess", lambda wav, ref: similar_response)
+
+    wav_bytes = make_wav(2.0)
+    response = client.post(
+        "/analyze",
+        files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
+        data={"word": "cat", "expected_phonemes": "[]"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["success"] is True
+    assert body["feedback"][0]["status"] == "similar", f"Expected 'similar', got: {body['feedback'][0]['status']}"
+
+
+def test_azure_pa_omission_word(monkeypatch, tmp_path):
+    """Mock word ErrorType='Omission', assert all ops are 'missing'."""
+    import main as main_module
+    monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
+
+    omission_response = {
+        "RecognitionStatus": "Success",
+        "DisplayText": "cat.",
+        "NBest": [{
+            "Lexical": "cat",
+            "PronunciationAssessment": {"AccuracyScore": 0.0, "FluencyScore": 50.0, "PronScore": 0.0},
+            "Words": [{
+                "Word": "cat",
+                "Offset": 0,
+                "Duration": 0,
+                "PronunciationAssessment": {"AccuracyScore": 0.0, "ErrorType": "Omission"},
+                "Phonemes": [
+                    {"Phoneme": "k", "PronunciationAssessment": {"AccuracyScore": 0.0}, "Offset": 0, "Duration": 0},
+                    {"Phoneme": "ae", "PronunciationAssessment": {"AccuracyScore": 0.0}, "Offset": 0, "Duration": 0},
+                    {"Phoneme": "t", "PronunciationAssessment": {"AccuracyScore": 0.0}, "Offset": 0, "Duration": 0},
+                ]
+            }]
+        }]
+    }
+    monkeypatch.setattr(main_module, "_azure_pa_assess", lambda wav, ref: omission_response)
+
+    wav_bytes = make_wav(2.0)
+    response = client.post(
+        "/analyze",
+        files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
+        data={"word": "cat", "expected_phonemes": "[]"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["success"] is True
+    for op in body["feedback"]:
+        assert op["status"] == "missing", f"Expected 'missing', got '{op['status']}'"
+        assert op["aligned"] is None
+        assert op["start"] is None
+
+
+def test_speech_not_detected(monkeypatch, tmp_path):
+    """Mock RecognitionStatus='NoMatch' should trigger speech_not_detected gate."""
+    import main as main_module
+    monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
+
+    no_match_response = {
+        "RecognitionStatus": "NoMatch",
+        "DisplayText": "",
+        "NBest": []
+    }
+    monkeypatch.setattr(main_module, "_azure_pa_assess", lambda wav, ref: no_match_response)
+
+    wav_bytes = make_wav(2.0)
+    response = client.post(
+        "/analyze",
+        files={"audio": ("fixture.wav", wav_bytes, "audio/wav")},
+        data={"word": "cat", "expected_phonemes": "[]"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body == {
+        "success": False,
+        "error": "speech_not_detected",
+        "message": "Không nghe rõ — nói to hơn nhé",
+    }, f"Unexpected body: {body}"
 
 
 # ---------------------------------------------------------------------------
-# /analyze-speaking smoke tests
+# Integration tests — /analyze-speaking
 # ---------------------------------------------------------------------------
 
 def test_analyze_speaking_length_gate(monkeypatch, tmp_path):
@@ -340,11 +430,6 @@ def test_analyze_speaking_noisy_gate(monkeypatch, tmp_path):
     import main as main_module
     monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
 
-    def groq_should_not_be_called(*args, **kwargs):
-        raise AssertionError("_groq_transcribe should not be called for silent audio")
-
-    monkeypatch.setattr(main_module, "_groq_transcribe", groq_should_not_be_called)
-
     wav_bytes = make_wav(1.0, amplitude=0)
     response = client.post(
         "/analyze-speaking",
@@ -359,10 +444,17 @@ def test_analyze_speaking_wrong_language(monkeypatch, tmp_path):
     """Vietnamese transcript to /analyze-speaking returns 200 wrong_language."""
     import main as main_module
     monkeypatch.setattr(main_module, "_to_wav", _copy_to_wav)
-    monkeypatch.setattr(
-        main_module, "_groq_transcribe",
-        lambda *a, **kw: {"text": "xin chào bạn tôi", "words": []},
-    )
+
+    vi_response = {
+        "RecognitionStatus": "Success",
+        "DisplayText": "xin chào bạn tôi.",
+        "NBest": [{
+            "Lexical": "xin chao ban toi",
+            "PronunciationAssessment": {"AccuracyScore": 50.0, "FluencyScore": 60.0, "PronScore": 50.0},
+            "Words": []
+        }]
+    }
+    monkeypatch.setattr(main_module, "_azure_pa_assess", lambda wav, ref: vi_response)
     LangStub = type("L", (object,), {"lang": "vi", "prob": 0.99})
     monkeypatch.setattr(main_module, "detect_langs", lambda text: [LangStub()])
 
