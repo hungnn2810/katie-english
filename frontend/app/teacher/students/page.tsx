@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Plus, User, Users, Clock, KeyRound, CheckCircle2, UserMinus, Pencil } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
+import { formatDate } from '@/lib/datetime';
 
 const ACCENT = '#F0623A';
 
@@ -520,7 +521,7 @@ export default function StudentsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-sm text-textSecondary">{new Date(s.dateOfBirth).toLocaleDateString()}</td>
+                    <td className="px-5 py-3.5 text-sm text-textSecondary">{formatDate(s.dateOfBirth)}</td>
                     <td className="px-5 py-3.5">
                       {s.class
                         ? <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#EDE9FE', color: colors.purple }}>{s.class.name}</span>

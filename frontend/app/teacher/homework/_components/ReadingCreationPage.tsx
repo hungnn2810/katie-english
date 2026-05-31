@@ -625,7 +625,6 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          {/* Try button (D-05) — only visible in edit mode when a DB row exists */}
           {editMode && editId && (
             <button
               type="button"

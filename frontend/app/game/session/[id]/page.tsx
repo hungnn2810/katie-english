@@ -6,11 +6,12 @@ import { authHeaders } from '@/lib/auth';
 import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, BfaResult, SpeakingMode } from '@/lib/admin-api';
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
 import PhonemeChips from './_components/PhonemeChips';
-import { School, Mic, Hash, PartyPopper, CheckCircle2, FolderOpen, ImageIcon } from 'lucide-react';
+import { School, Mic, Hash, PartyPopper, CheckCircle2, ImageIcon } from 'lucide-react';
 
 type ItemKind = 'speaking' | 'phonics';
 type ItemState = 'waiting' | 'recording' | 'done';
-type PageState = 'loading' | 'cam-check' | 'cam-denied' | 'ready' | 'playing' | 'uploading' | 'results' | 'error' | 'upload';
+type PageState = 'loading' | 'cam-check' | 'cam-denied' | 'ready' | 'playing' | 'uploading' | 'results' | 'error' | 'record';
+type RecordState = 'idle' | 'recording' | 'recorded';
 
 interface SessionItem {
   kind: ItemKind;
@@ -89,13 +90,15 @@ export default function SessionPage() {
   const [results, setResults] = useState<GameSession | null>(null);
   const [saveError, setSaveError] = useState(false);
 
-  // Speaking file-upload state
+  // Speaking record state
   const [speakHw, setSpeakHw] = useState<{
     speakingMode: SpeakingMode | null;
     speakingText: string | null;
     speakingPictureUrl: string | null;
   } | null>(null);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [recordState, setRecordState] = useState<RecordState>('idle');
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
 
   const streamRef = useRef<MediaStream | null>(null);
   const audioRecorderRef = useRef<MediaRecorder | null>(null);
@@ -111,6 +114,10 @@ export default function SessionPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const vadRef = useRef<any>(null);
   const isPlayingRef = useRef(false);
+  const speakStreamRef = useRef<MediaStream | null>(null);
+  const speakRecorderRef = useRef<MediaRecorder | null>(null);
+  const speakChunksRef = useRef<Blob[]>([]);
+  const speakTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => { itemsRef.current = items; }, [items]);
 
@@ -124,7 +131,7 @@ export default function SessionPage() {
           speakingText: hw.speakingText ?? null,
           speakingPictureUrl: hw.speakingPictureUrl ?? null,
         });
-        setPageState('upload');
+        setPageState('record');
         return;
       }
 
@@ -374,10 +381,50 @@ export default function SessionPage() {
     setPageState('results');
   }
 
+  async function startSpeakRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      speakStreamRef.current = stream;
+      speakChunksRef.current = [];
+      const mimeType = pickAudioMimeType();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) speakChunksRef.current.push(e.data); };
+      recorder.start(100);
+      speakRecorderRef.current = recorder;
+      setRecordingSeconds(0);
+      setRecordState('recording');
+      speakTimerRef.current = setInterval(() => setRecordingSeconds((s) => s + 1), 1000);
+    } catch {
+      // mic denied — stay idle
+    }
+  }
+
+  function stopSpeakRecording() {
+    if (speakTimerRef.current) { clearInterval(speakTimerRef.current); speakTimerRef.current = null; }
+    const recorder = speakRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive') { setRecordState('recorded'); return; }
+    speakRecorderRef.current = null;
+    const chunks = [...speakChunksRef.current];
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      speakStreamRef.current?.getTracks().forEach((t) => t.stop());
+      speakStreamRef.current = null;
+      const blob = chunks.length > 0 ? new Blob(chunks, { type: chunks[0].type || 'audio/webm' }) : null;
+      setRecordedBlob(blob);
+      setRecordState('recorded');
+    };
+    try { recorder.stop(); } catch {
+      speakStreamRef.current?.getTracks().forEach((t) => t.stop());
+      speakStreamRef.current = null;
+      setRecordedBlob(null);
+      setRecordState('recorded');
+    }
+  }
+
   async function handleSpeakingUpload() {
     setPageState('uploading');
     try {
-      const r = await saveSpeakingResult(sessionId, uploadFile ?? undefined);
+      const r = await saveSpeakingResult(sessionId, recordedBlob ?? undefined);
       const session = await completeSession(sessionId);
       setResults(session);
       setItems([{
@@ -404,10 +451,15 @@ export default function SessionPage() {
     vadRef.current?.destroy();
     if (audioRecorderRef.current?.state !== 'inactive') audioRecorderRef.current?.stop();
     streamRef.current?.getTracks().forEach((t) => t.stop());
+    if (speakTimerRef.current) clearInterval(speakTimerRef.current);
+    if (speakRecorderRef.current?.state !== 'inactive') speakRecorderRef.current?.stop();
+    speakStreamRef.current?.getTracks().forEach((t) => t.stop());
   }, [stopTimer, stopSpeech]);
 
-  if (pageState === 'upload' && speakHw) {
+  if (pageState === 'record' && speakHw) {
     const isFreespeak = speakHw.speakingMode === 'FREE_SPEAK';
+    const mins = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
+    const secs = String(recordingSeconds % 60).padStart(2, '0');
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
@@ -416,11 +468,13 @@ export default function SessionPage() {
 
             <div className="w-full max-w-sm flex flex-col items-center gap-6">
               <div className="text-center">
-                <div className="flex justify-center mb-3"><div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center">{isFreespeak ? <ImageIcon className="w-7 h-7 text-white" /> : <Mic className="w-7 h-7 text-white" />}</div></div>
-                <h2 className="text-white text-2xl font-black mb-1">
-                  {isFreespeak ? 'Free Speak' : 'Script Match'}
-                </h2>
-                <p className="text-white/60 text-sm">Record on your device, then upload here</p>
+                <div className="flex justify-center mb-3">
+                  <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center">
+                    {isFreespeak ? <ImageIcon className="w-7 h-7 text-white" /> : <Mic className="w-7 h-7 text-white" />}
+                  </div>
+                </div>
+                <h2 className="text-white text-2xl font-black mb-1">{isFreespeak ? 'Free Speak' : 'Script Match'}</h2>
+                <p className="text-white/60 text-sm">Record your answer below</p>
               </div>
 
               {isFreespeak && speakHw.speakingPictureUrl && (
@@ -443,30 +497,59 @@ export default function SessionPage() {
                 </div>
               )}
 
-              <div className="w-full">
-                <label className="flex flex-col items-center gap-3 w-full cursor-pointer rounded-2xl border-2 border-dashed border-white/30 py-8 px-4 hover:border-white/60 transition-colors"
-                  style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  {uploadFile ? <CheckCircle2 className="w-8 h-8 text-emerald-400" /> : <FolderOpen className="w-8 h-8 text-white/60" />}
-                  {uploadFile ? (
-                    <div className="text-center">
-                      <p className="text-white font-semibold text-sm">{uploadFile.name}</p>
-                      <p className="text-white/50 text-xs mt-0.5">{(uploadFile.size / 1024 / 1024).toFixed(1)} MB</p>
-                    </div>
-                  ) : (
-                    <p className="text-white/70 text-sm font-medium text-center">Tap to select your recording</p>
-                  )}
-                  <input type="file" accept="audio/*" className="hidden"
-                    onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)} />
-                </label>
-              </div>
+              {/* Recording controls */}
+              <div className="flex flex-col items-center gap-4 w-full">
+                {recordState === 'idle' && (
+                  <>
+                    <button
+                      onClick={startSpeakRecording}
+                      className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-white/30 hover:border-white/60 hover:scale-105 transition-all"
+                      style={{ background: 'rgba(255,255,255,0.1)' }}>
+                      <Mic className="w-10 h-10 text-white" />
+                    </button>
+                    <p className="text-white/60 text-sm">Tap to start recording</p>
+                  </>
+                )}
 
-              <button
-                onClick={handleSpeakingUpload}
-                disabled={!uploadFile}
-                className="w-full py-4 rounded-2xl text-white font-black text-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
-                style={{ background: gradients.primaryPurple }}>
-                Submit Recording
-              </button>
+                {recordState === 'recording' && (
+                  <>
+                    <div className="relative flex items-center justify-center">
+                      <div className="absolute w-24 h-24 rounded-full animate-ping opacity-25" style={{ background: '#ef4444' }} />
+                      <button
+                        onClick={stopSpeakRecording}
+                        className="relative w-24 h-24 rounded-full flex items-center justify-center border-4 border-red-500"
+                        style={{ background: 'rgba(239,68,68,0.2)' }}>
+                        <div className="w-8 h-8 rounded-sm bg-red-400" />
+                      </button>
+                    </div>
+                    <div className="text-white font-mono text-3xl font-black tabular-nums">{mins}:{secs}</div>
+                    <p className="text-red-400 text-sm font-semibold animate-pulse">Recording… tap to stop</p>
+                  </>
+                )}
+
+                {recordState === 'recorded' && (
+                  <>
+                    <div className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-emerald-400/50"
+                      style={{ background: 'rgba(52,211,153,0.15)' }}>
+                      <CheckCircle2 className="w-10 h-10 text-emerald-400" />
+                    </div>
+                    <p className="text-white/60 text-sm">Recorded: {mins}:{secs}</p>
+                    <div className="flex gap-3 w-full">
+                      <button
+                        onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
+                        className="flex-1 py-3 rounded-2xl text-white font-bold text-sm border border-white/20 hover:bg-white/10 transition-colors">
+                        Re-record
+                      </button>
+                      <button
+                        onClick={handleSpeakingUpload}
+                        className="flex-1 py-3 rounded-2xl text-white font-black text-sm hover:scale-[1.02] transition-transform"
+                        style={{ background: gradients.primaryPurple }}>
+                        Submit
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -180,6 +180,31 @@ export async function trySpeakingHomework(hwId: number, audio: File): Promise<{
   return res.json();
 }
 
+export interface PhonemeOp {
+  status: 'correct' | 'similar' | 'substituted' | 'missing' | 'extra' | 'error';
+  expected: string | null;
+  aligned: string | null;
+}
+
+export async function tryPhonicsHomework(hwId: number, wordId: number, audio: File): Promise<{
+  score: number;
+  transcribedText: string;
+  wordText: string;
+  bfa: { success: boolean; score: number; feedback: PhonemeOp[]; espeak_fallback?: boolean } | null;
+}> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const form = new FormData();
+  form.append('wordId', String(wordId));
+  form.append('audio', audio, audio.name);
+  const res = await fetch(`${API_URL}/game/homework/${hwId}/try-phonics`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) return parseApiError(res);
+  return res.json();
+}
+
 export async function uploadSpeakingImage(file: File): Promise<string> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const form = new FormData();

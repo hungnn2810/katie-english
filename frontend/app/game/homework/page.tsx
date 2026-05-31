@@ -6,6 +6,7 @@ import { getAvailableHomework, startSession, AssignmentItem, HomeworkType } from
 import { AuthUser, clearAuth, changePassword } from '@/lib/auth';
 import { cardGradients, gradients } from '@/lib/colors';
 import { Hash, Mic, BookOpen, Lock, CheckCircle2, Loader2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap } from 'lucide-react';
+import { parseApiDateTime } from '@/lib/datetime';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType }> = {
   PHONICS:  { label: 'Phonics',  icon: Hash },
@@ -42,7 +43,11 @@ function PageContent({ user }: { user: AuthUser }) {
   useEffect(() => {
     if (!user.studentId) { setLoading(false); return; }
     getAvailableHomework(user.studentId)
-      .then((data) => setAssignments([...data].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())))
+      .then((data) => setAssignments([...data].sort((a, b) => {
+        const aDate = parseApiDateTime(a.endDate)?.getTime() ?? 0;
+        const bDate = parseApiDateTime(b.endDate)?.getTime() ?? 0;
+        return aDate - bDate;
+      })))
       .catch(() => setError('Failed to load homework'))
       .finally(() => setLoading(false));
   }, [user.studentId]);
@@ -187,7 +192,7 @@ function PageContent({ user }: { user: AuthUser }) {
             const g = cardGradients[i % cardGradients.length];
             const hw = a.homework;
             const meta = TYPE_META[hw.type];
-            const dueDate = new Date(a.endDate);
+            const dueDate = parseApiDateTime(a.endDate) ?? new Date(0);
             const daysLeft = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
             const completedSessions = (a.sessions ?? []).filter((s) => s.completedAt);
             const bestScore = completedSessions.length > 0

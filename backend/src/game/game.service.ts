@@ -143,6 +143,53 @@ export class GameService {
     };
   }
 
+  async tryPhonicsHomework(hwId: number, wordId: number, audioBuffer?: Buffer, mimeType?: string) {
+    const hw = await this.prisma.homework.findUnique({
+      where: { id: hwId },
+      select: {
+        type: true,
+        parts: { include: { words: true } },
+      },
+    });
+    if (!hw) throw new NotFoundException(`Homework ${hwId} not found`);
+    if (hw.type !== 'PHONICS') throw new BadRequestException('Homework is not a PHONICS type');
+
+    let wordText = '';
+    for (const part of hw.parts) {
+      const found = part.words.find((w) => w.id === wordId);
+      if (found) { wordText = found.text; break; }
+    }
+    if (!wordText) throw new BadRequestException(`Word ${wordId} not found in homework`);
+
+    const wordRecord = await this.wordRepository.findByText(wordText.trim().toLowerCase());
+    let expectedPhonemes: string[] = [];
+    if (wordRecord?.phonemes) {
+      try {
+        const parsed = JSON.parse(wordRecord.phonemes);
+        if (Array.isArray(parsed) && parsed.every((p) => typeof p === 'string')) {
+          expectedPhonemes = parsed;
+        }
+      } catch { /* malformed JSON */ }
+    }
+
+    let score = 0;
+    let bfaResult: BfaAnalyzeResult | null = null;
+    let transcribedText = '';
+
+    if (audioBuffer && audioBuffer.length > 0) {
+      try {
+        bfaResult = await this.bfa.analyze(audioBuffer, mimeType ?? 'audio/webm', wordText, expectedPhonemes);
+        this.logger.log(`[try-phonics hw=${hwId} word="${wordText}"] score=${bfaResult.score} success=${bfaResult.success}`);
+        transcribedText = bfaResult.transcription?.text ?? '';
+        score = bfaResult.success ? bfaResult.score : 0;
+      } catch (err) {
+        this.logger.warn(`[try-phonics hw=${hwId} word="${wordText}"] BFA error: ${(err as Error).message}`);
+      }
+    }
+
+    return { score, transcribedText, wordText, bfa: bfaResult };
+  }
+
   async savePhonicsResult(
     sessionId: number,
     dto: SavePhonicsResultDto,

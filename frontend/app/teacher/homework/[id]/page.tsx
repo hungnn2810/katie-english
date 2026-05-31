@@ -7,6 +7,7 @@ import { gradients, colors } from '@/lib/colors';
 import { Hash, Mic, BookOpen, Eye, Users, CheckCircle2, Clock, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatDate, parseApiDateTime } from '@/lib/datetime';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   PHONICS:  { label: 'Phonics',  icon: Hash,     color: '#A78BFA', bg: '#A78BFA18' },
@@ -54,7 +55,10 @@ export default function TeacherHomeworkDetailPage() {
     for (const s of a.sessions ?? []) allSubmittedIds.add(s.studentId);
   }
   const submittedCount = allSubmittedIds.size;
-  const activeAssignments = hw.assignments.filter((a) => new Date(a.endDate) >= now);
+  const activeAssignments = hw.assignments.filter((a) => {
+    const endDate = parseApiDateTime(a.endDate);
+    return endDate ? endDate >= now : false;
+  });
 
   return (
     <div className="max-w-2xl animate-fade-in">
@@ -144,7 +148,8 @@ export default function TeacherHomeworkDetailPage() {
       ) : (
         <div className="space-y-4 mb-6">
           {hw.assignments.map((a) => {
-            const isOpen = new Date(a.endDate) >= now;
+            const endDate = parseApiDateTime(a.endDate);
+            const isOpen = endDate ? endDate >= now : false;
             const classNames = a.classes.map((ac) => ac.class.name).join(', ');
             const sessions = a.sessions ?? [];
             const aEnrolled = a.classes.reduce((sum, ac) => sum + (ac.class._count?.students ?? 0), 0);
@@ -175,7 +180,7 @@ export default function TeacherHomeworkDetailPage() {
                     <div className="flex items-center gap-3 text-xs text-textSecondary">
                       <span>{submittedStudentIds.size} / {aEnrolled} submitted</span>
                       <span>·</span>
-                      <span>Due {new Date(a.endDate).toLocaleDateString()}</span>
+                      <span>Due {formatDate(a.endDate)}</span>
                     </div>
                   </div>
                   <button

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Input } from "@/components/ui/input"
+import { toDateInputValue } from "@/lib/datetime"
 
 const ACCENT = '#F0623A'
 
@@ -19,12 +20,13 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ value, onChange, placeholder = "Pick a date", className, disabled }: DatePickerProps) {
-  const parsed = value ? parse(value, "yyyy-MM-dd", new Date()) : undefined
+  const normalizedValue = toDateInputValue(value)
+  const parsed = normalizedValue ? parse(normalizedValue, "yyyy-MM-dd", new Date()) : undefined
   const date = parsed && isValid(parsed) ? parsed : undefined
   const now = new Date()
 
   return (
-    <Popover>
+    <Popover modal>
       <PopoverTrigger
         disabled={disabled}
         className={cn(
@@ -74,7 +76,13 @@ interface DateTimePickerProps {
 }
 
 export function DateTimePicker({ value, onChange, placeholder = "Pick date", className, disabled }: DateTimePickerProps) {
-  const [datePart, timePart] = value ? value.split("T") : ["", ""]
+  const parsedDateTime = value ? new Date(value) : null
+  const hasValidDateTime = parsedDateTime && !Number.isNaN(parsedDateTime.getTime())
+  const datePart = hasValidDateTime ? format(parsedDateTime, "yyyy-MM-dd") : toDateInputValue(value)
+  const rawTimePart = hasValidDateTime
+    ? format(parsedDateTime, "HH:mm")
+    : (value?.split("T")[1] ?? "")
+  const timePart = rawTimePart ? rawTimePart.slice(0, 5) : ""
   const parsed = datePart ? parse(datePart, "yyyy-MM-dd", new Date()) : undefined
   const date = parsed && isValid(parsed) ? parsed : undefined
   const now = new Date()
@@ -90,7 +98,7 @@ export function DateTimePicker({ value, onChange, placeholder = "Pick date", cla
 
   return (
     <div className={cn("flex gap-2", className)}>
-      <Popover>
+      <Popover modal>
         <PopoverTrigger
           disabled={disabled}
           className={cn(
@@ -132,6 +140,7 @@ export function DateTimePicker({ value, onChange, placeholder = "Pick date", cla
         className="input-base h-auto w-28"
         value={timePart || ""}
         onChange={handleTimeChange}
+        step={60}
         disabled={disabled}
       />
     </div>

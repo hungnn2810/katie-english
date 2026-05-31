@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, ChevronDown, AlignLeft, Mic, ExternalLink } from 'lucide-react';
+import { formatDate } from '@/lib/datetime';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
@@ -80,7 +81,7 @@ export default function SessionsPage() {
   const assignments = homeworks.flatMap(hw =>
     hw.assignments.map(a => ({
       id: a.id,
-      label: `${hw.name ?? hw.type} — due ${new Date(a.endDate).toLocaleDateString()}`,
+      label: `${hw.name ?? hw.type} — due ${formatDate(a.endDate)}`,
     }))
   );
 

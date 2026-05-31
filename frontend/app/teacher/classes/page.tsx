@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Plus, Calendar, Pencil, Trash2, Users, CheckCircle2 } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
+import { formatDate } from '@/lib/datetime';
 
 const ACCENT = '#F0623A';
 
@@ -345,7 +346,7 @@ export default function ClassesPage() {
               <div className="px-5 pb-4 flex-1 flex flex-col gap-3 border-t border-border/60">
                 <div className="flex items-center gap-1.5 text-xs text-textSecondary pt-3">
                   <Calendar className="w-3.5 h-3.5 shrink-0" />
-                  {new Date(c.startDate).toLocaleDateString()} – {new Date(c.endDate).toLocaleDateString()}
+                  {formatDate(c.startDate)} – {formatDate(c.endDate)}
                 </div>
                 {activeDays.length > 0 && (
                   <div className="flex flex-wrap gap-1">

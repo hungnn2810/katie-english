@@ -63,6 +63,16 @@ export class GameController {
     return this.service.trySpeakingHomework(hwId, audio?.buffer, audio?.mimetype);
   }
 
+  @Post('homework/:id/try-phonics')
+  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  tryPhonicsHomework(
+    @Param('id', ParseIntPipe) hwId: number,
+    @Body('wordId') wordId: string,
+    @UploadedFile() audio?: Express.Multer.File,
+  ) {
+    return this.service.tryPhonicsHomework(hwId, Number(wordId), audio?.buffer, audio?.mimetype);
+  }
+
   @Post('session/:id/reading-result')
   saveReadingResult(
     @Param('id', ParseIntPipe) id: number,

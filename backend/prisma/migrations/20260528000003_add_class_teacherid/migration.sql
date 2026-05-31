@@ -1,0 +1,2 @@
+ALTER TABLE "classes" ADD COLUMN IF NOT EXISTS "teacherId" INTEGER;
+ALTER TABLE "classes" ADD CONSTRAINT "classes_teacherId_fkey" FOREIGN KEY ("teacherId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

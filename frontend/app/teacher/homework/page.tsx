@@ -18,7 +18,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2 } from 'lucide-react';
-import { DateTimePicker } from '@/components/ui/date-picker';
+import { parseApiDateTime } from '@/lib/datetime';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   PHONICS:  { label: 'Phonics',  icon: Hash,     color: '#A78BFA', bg: '#A78BFA18' },
@@ -465,8 +465,11 @@ function AssignModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const nowLocalValue = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
   const [selectedClassIds, setSelectedClassIds] = useState<number[]>([]);
-  const [endDate, setEndDate] = useState('');
+  const [endDate, setEndDate] = useState(nowLocalValue);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -541,7 +544,13 @@ function AssignModal({
             </div>
             <div>
               <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">End Date</Label>
-              <DateTimePicker value={endDate} onChange={setEndDate} />
+              <Input
+                type="datetime-local"
+                required
+                className="input-base h-auto w-full"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
             </div>
           </div>
 
@@ -688,7 +697,10 @@ export default function HomeworkPage() {
         {filtered.map((h, i) => {
           const g = cardGradients[i % cardGradients.length];
           const meta = TYPE_META[h.type];
-          const activeAssignments = h.assignments.filter((a) => new Date(a.endDate) >= now);
+          const activeAssignments = h.assignments.filter((a) => {
+            const endDate = parseApiDateTime(a.endDate);
+            return endDate ? endDate >= now : false;
+          });
           const submittedStudentIds = new Set<number>();
           for (const assignment of h.assignments) {
             for (const session of assignment.sessions ?? []) {

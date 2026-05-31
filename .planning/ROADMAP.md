@@ -215,7 +215,7 @@
 
 **Plans:** 2 plans
 - [x] 07-01-PLAN.md — bfa-service: all 5 audio gates (length / loudnorm / RMS / ASR confidence / langdetect) + pytest suite (Wave 1)
-- [ ] 07-02-PLAN.md — Backend BFA error forwarding (DTO + axios 400 catch) + frontend amber error display per gate code (Wave 2)
+- [x] 07-02-PLAN.md — Backend BFA error forwarding (DTO + axios 400 catch) + frontend amber error display per gate code (Wave 2)
 
 ---
 

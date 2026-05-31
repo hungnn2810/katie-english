@@ -128,7 +128,12 @@
       "Bash(xargs ls)",
       "Bash(grep *)",
       "Skill(gsd-review)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Read(//Users/hung/.claude/plugins/**)",
+      "Read(//Users/hung/.claude/**)",
+      "Bash(npx --prefix backend prisma migrate status)",
+      "Bash(2>&1)",
+      "Bash(ffmpeg -version)"
     ]
   },
   "enableAllProjectMcpServers": true,
