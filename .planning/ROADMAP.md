@@ -16,9 +16,11 @@
 | 4 | Student Page UI/UX | Kid-friendly polish, due-date ordering | v1 | ✅ Complete |
 | 5 | BFA Quality & Performance | Pipeline fixes, Groq ASR, phoneme feedback | v1 | 🔄 In progress (plan 07) |
 | 6 | Admin Portal | Super-admin: teachers, classes, results mgmt | v1 | 📋 Planned |
-| 7 | BFA Robustness & Audio Gates | Zero silent failures, audio quality validation | v2 | 📋 Planned |
+| 7 | BFA Robustness & Audio Gates | Zero silent failures, audio quality validation | v2 | ✅ Complete 2026-05-31 |
 | 8 | Vocabulary by Image Exercise | Image → student speaks word → phoneme feedback | v2 | 📋 Planned |
 | 9 | Listen & Answer Exercise | Audio prompt → student answers → semantic score | v2 | 📋 Planned |
+| 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
+| 11 | Frontend React MUI Refactor | Standardize UI architecture and components with Material UI | v2 | 📋 Planned |
 
 ---
 
@@ -282,6 +284,71 @@
 
 ---
 
+### Phase 10: Azure Pronunciation Assessment Engine
+
+**Goal:** Replace Groq ASR + espeak G2P scoring in bfa-service with Azure Pronunciation Assessment REST API.
+Delivers real per-phoneme timestamps from forced acoustic alignment and acoustically-calibrated accuracy scores.
+All audio gates (Phase 7), NestJS BfaService, and frontend unchanged — same DTO shapes.
+**Mode:** mvp
+**Depends on:** Phase 5, Phase 7
+
+**Why now:** Phase 8 (Vocabulary) and Phase 9 (Listen & Answer) both rely on phoneme feedback quality.
+Azure PA gives higher accuracy than text-based G2P comparison before those exercises ship.
+
+**Comparison: Groq+espeak (current) vs Azure PA (new)**
+
+| Dimension | Groq+espeak | Azure PA |
+|-----------|-------------|----------|
+| Phoneme scores | Text edit-distance heuristic | Acoustic model (actual audio) |
+| Timestamps | Estimated (evenly distributed) | Real forced alignment |
+| Phonetic similarity | Custom `_SIMILAR_PAIRS` list | AccuracyScore 50–79 |
+| Cost | ~$0.01/hr Groq | ~$1/hr Azure |
+| Dependencies | phonemizer + espeak-ng | requests only (REST) |
+
+**Requirements:**
+- BFA-11: Azure PA REST API replaces Groq ASR + espeak G2P; per-phoneme AccuracyScore maps to correct/similar/substituted/missing
+- BFA-12: All 5 audio gates (BFA-06 through BFA-10) preserved unchanged
+- BFA-13: DTO shapes for /analyze, /analyze-speaking, /transcribe unchanged — NestJS and frontend zero changes
+
+**Success Criteria:**
+1. Student says "cat" correctly — all phoneme chips green; score ≥ 80 from Azure acoustic model.
+2. Student says "cap" for "cat" — `t` phoneme chip shows yellow or red based on Azure score; score < 80.
+3. All 5 audio gate errors still fire (too short, too long, noisy, not detected, wrong language).
+4. `cd bfa-service && pytest test_bfa.py` passes with mocked Azure calls.
+5. `GROQ_API_KEY` removed from bfa-service; `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` added.
+
+**Plans:**
+- [x] 10-01-PLAN.md — bfa-service: Azure PA REST client + score mapping + remove Groq/espeak + update tests
+
+---
+
+### Phase 11: Frontend Refactor with React MUI
+
+**Goal:** Refactor frontend UI layer to a standardized React + Material UI architecture for consistency, maintainability, and faster feature delivery across teacher, student, and admin surfaces.
+**Mode:** mvp
+**Depends on:** Phase 3, Phase 4, Phase 6
+
+**Requirements:**
+- FE-01: Introduce shared Material UI theme (palette, typography, spacing, component variants) and apply globally
+- FE-02: Replace ad-hoc core UI primitives (buttons, inputs, dialogs, tables, badges) with reusable MUI-based shared components
+- FE-03: Refactor key teacher flows (homework creation, assignment, dashboard tables) to MUI components without behavior regressions
+- FE-04: Refactor student homework list and gameplay shell layouts to MUI while preserving current UX rules
+- FE-05: Refactor admin portal pages to MUI data-entry and table patterns with consistent validation/error states
+
+**Success Criteria:**
+1. Frontend has a single source of truth theme and no duplicated page-level styling tokens for core primitives.
+2. Existing teacher, student, and admin core flows remain functionally equivalent after migration.
+3. All migrated pages pass existing lint/build checks and manual smoke test checklist.
+4. New screens can be scaffolded from shared MUI components without introducing one-off style systems.
+
+**Plans:**
+- [ ] 11-01-PLAN.md — Theme foundation + design tokens + shared UI primitives (Button/Input/Dialog/Table/Chip) (Wave 1)
+- [ ] 11-02-PLAN.md — Teacher area migration to MUI components with regression checklist (Wave 2)
+- [ ] 11-03-PLAN.md — Student area shell/list migration to MUI with existing UX constraints preserved (Wave 3)
+- [ ] 11-04-PLAN.md — Admin portal migration to MUI forms/tables + validation/error-state normalization (Wave 4)
+
+---
+
 ## Requirement Coverage
 
 | Requirement | Phase | Status |
@@ -339,8 +406,12 @@
 | ADMIN-06 | Phase 6 | Pending |
 | ADMIN-07 | Phase 6 | Pending |
 
+| BFA-11 | Phase 10 | Pending |
+| BFA-12 | Phase 10 | Pending |
+| BFA-13 | Phase 10 | Pending |
+
 **v1 Coverage:** 26/26 requirements mapped ✓
-**v2 Coverage:** 15/15 requirements mapped ✓
+**v2 Coverage:** 18/18 requirements mapped ✓
 
 ---
 
@@ -349,4 +420,4 @@
 ---
 
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-05-23 — Added v2 milestone phases 7–9 (BFA robustness, Vocabulary by Image, Listen & Answer); updated Phase 5 plan list (07 plans); registered Phase 6 plan list*
+*Last updated: 2026-05-31 — Added Phase 11 (Frontend React MUI Refactor) to v2 roadmap*
