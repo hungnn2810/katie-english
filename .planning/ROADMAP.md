@@ -341,11 +341,11 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 3. All migrated pages pass existing lint/build checks and manual smoke test checklist.
 4. New screens can be scaffolded from shared MUI components without introducing one-off style systems.
 
-**Plans:**
-- [ ] 11-01-PLAN.md — Theme foundation + design tokens + shared UI primitives (Button/Input/Dialog/Table/Chip) (Wave 1)
-- [ ] 11-02-PLAN.md — Teacher area migration to MUI components with regression checklist (Wave 2)
-- [ ] 11-03-PLAN.md — Student area shell/list migration to MUI with existing UX constraints preserved (Wave 3)
-- [ ] 11-04-PLAN.md — Admin portal migration to MUI forms/tables + validation/error-state normalization (Wave 4)
+**Plans:** 4 plans
+- [ ] 11-01-PLAN.md — MUI install + base/student theme + root & game ThemeProviders + remove Tailwind/shadcn + delete components/ui (Wave 1)
+- [ ] 11-02-PLAN.md — Teacher area: TeacherShell + 10 teacher pages + ReadingCreationPage (dnd-kit wrapper -> Paper) + shake keyframe (Wave 2, depends 11-01)
+- [ ] 11-03-PLAN.md — Student/game area: 4 game components + 4 game pages + login DatePicker; gradients/minWidth/shake preserved (Wave 2, depends 11-01)
+- [ ] 11-04-PLAN.md — Admin area: AdminShell + admin login + 5 admin pages (Dialog/Table/Alert) + full build gate (Wave 2, depends 11-01)
 
 ---
 
