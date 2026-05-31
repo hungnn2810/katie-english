@@ -1,4 +1,3 @@
-import difflib
 import json
 import logging
 import math
@@ -22,33 +21,16 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 app = FastAPI()
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "whisper-large-v3-turbo")
-GROQ_URL = "https://api.groq.com/openai/v1/audio/transcriptions"
+AZURE_SPEECH_KEY = os.getenv("AZURE_SPEECH_KEY", "")
+AZURE_SPEECH_REGION = os.getenv("AZURE_SPEECH_REGION", "eastus")
+AZURE_PHONEME_CORRECT_THRESHOLD = int(os.getenv("AZURE_PHONEME_CORRECT_THRESHOLD", "80"))
+AZURE_PHONEME_SIMILAR_THRESHOLD = int(os.getenv("AZURE_PHONEME_SIMILAR_THRESHOLD", "50"))
 
 MAX_UPLOAD_BYTES = int(os.getenv("BFA_MAX_UPLOAD_BYTES", str(20 * 1024 * 1024)))
 MIN_WORD_SCORE = int(os.getenv("BFA_MIN_WORD_SCORE", "70"))
 AUDIO_MIN_DURATION_S = float(os.getenv("BFA_MIN_DURATION_S", "0.5"))
 AUDIO_MAX_DURATION_S = float(os.getenv("BFA_MAX_DURATION_S", "15.0"))
 ENERGY_THRESHOLD_DB  = float(os.getenv("BFA_ENERGY_THRESHOLD_DB", "-50.0"))
-
-# Phonetically similar pairs (ARPAbet-ish symbols)
-_SIMILAR_PAIRS = {
-    frozenset(["r", "l"]),
-    frozenset(["b", "p"]),
-    frozenset(["d", "t"]),
-    frozenset(["g", "k"]),
-    frozenset(["v", "f"]),
-    frozenset(["z", "s"]),
-    frozenset(["dʒ", "tʃ"]),
-    frozenset(["ð", "θ"]),
-    frozenset(["æ", "ɛ"]),
-    frozenset(["ɪ", "iː"]),
-    frozenset(["ʊ", "uː"]),
-    frozenset(["ɒ", "ɔː"]),
-    frozenset(["m", "n"]),
-    frozenset(["n", "ŋ"]),
-}
 
 
 def _safe_suffix(filename: Optional[str]) -> str:
@@ -85,113 +67,93 @@ def _rms_dbfs(wav_path: Path) -> float:
     return 20 * math.log10(rms / 32768)
 
 
-def _groq_transcribe(wav_path: Path, prompt: Optional[str] = None) -> dict:
-    """Call Groq Whisper API. Returns {text, words[{word, start, end}]}."""
-    if not GROQ_API_KEY:
-        raise RuntimeError("GROQ_API_KEY not set")
+def _azure_pa_assess(wav_path: Path, reference_text: str) -> dict:
+    """Call Azure Pronunciation Assessment REST API. Returns parsed JSON response."""
+    if not AZURE_SPEECH_KEY:
+        raise RuntimeError("AZURE_SPEECH_KEY not set")
+    url = (
+        f"https://{AZURE_SPEECH_REGION}.stt.speech.microsoft.com"
+        "/speech/recognition/conversation/cognitiveservices/v1"
+    )
+    params = {
+        "language": "en-US",
+        "format": "detailed",
+        "pronunciation.referenceText": reference_text,
+        "pronunciation.granularity": "Phoneme",
+        "pronunciation.gradingSystem": "HundredMark",
+        "pronunciation.enableMiscue": "True",
+    }
+    headers = {
+        "Ocp-Apim-Subscription-Key": AZURE_SPEECH_KEY,
+        "Content-Type": "audio/wav; codecs=audio/pcm; samplerate=16000",
+        "Accept": "application/json",
+    }
     with open(wav_path, "rb") as f:
-        data = {
-            "model": GROQ_MODEL,
-            "language": "en",
-            "response_format": "verbose_json",
-            "timestamp_granularities[]": "word",
-        }
-        if prompt:
-            data["prompt"] = prompt
-        resp = requests.post(
-            GROQ_URL,
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
-            files={"file": ("audio.wav", f, "audio/wav")},
-            data=data,
-            timeout=30,
-        )
+        wav_bytes = f.read()
+    resp = requests.post(url, params=params, headers=headers, data=wav_bytes, timeout=30)
     if not resp.ok:
-        raise RuntimeError(f"Groq API error {resp.status_code}: {resp.text}")
+        raise RuntimeError(f"Azure PA error {resp.status_code}: {resp.text}")
     return resp.json()
 
 
-def _g2p(text: str) -> List[str]:
-    """Convert text to phoneme sequence using espeak via phonemizer."""
-    try:
-        from phonemizer import phonemize
-        phonemes_str = phonemize(
-            text.lower().strip(),
-            backend="espeak",
-            language="en-us",
-            with_stress=False,
-            preserve_punctuation=False,
-            njobs=1,
-        )
-        return [p for p in re.split(r'\s+', phonemes_str.strip()) if p]
-    except Exception as e:
-        logger.warning(f"G2P failed for '{text}': {e}")
-        return list(text.lower().replace(" ", ""))
+def _azure_stt(wav_path: Path) -> dict:
+    """Call Azure STT only (no pronunciation assessment). Returns parsed JSON."""
+    if not AZURE_SPEECH_KEY:
+        raise RuntimeError("AZURE_SPEECH_KEY not set")
+    url = (
+        f"https://{AZURE_SPEECH_REGION}.stt.speech.microsoft.com"
+        "/speech/recognition/conversation/cognitiveservices/v1"
+    )
+    params = {"language": "en-US", "format": "detailed"}
+    headers = {
+        "Ocp-Apim-Subscription-Key": AZURE_SPEECH_KEY,
+        "Content-Type": "audio/wav; codecs=audio/pcm; samplerate=16000",
+        "Accept": "application/json",
+    }
+    with open(wav_path, "rb") as f:
+        wav_bytes = f.read()
+    resp = requests.post(url, params=params, headers=headers, data=wav_bytes, timeout=30)
+    if not resp.ok:
+        raise RuntimeError(f"Azure STT error {resp.status_code}: {resp.text}")
+    return resp.json()
 
 
-def _is_similar(a: str, b: str) -> bool:
-    return frozenset([a, b]) in _SIMILAR_PAIRS
-
-
-def _score_phonemes(expected: List[str], actual: List[str]) -> List[dict]:
+def _map_phoneme_ops(word_data: dict) -> List[dict]:
+    """Map Azure word result to our PhonemeOp list."""
+    error_type = word_data.get("PronunciationAssessment", {}).get("ErrorType", "None")
+    phonemes = word_data.get("Phonemes", [])
     ops = []
-    matcher = difflib.SequenceMatcher(None, expected, actual, autojunk=False)
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        if tag == "equal":
-            for k in range(i2 - i1):
-                ops.append({"status": "correct", "expected": expected[i1 + k], "aligned": actual[j1 + k]})
-        elif tag == "replace":
-            exp_chunk = expected[i1:i2]
-            act_chunk = actual[j1:j2]
-            max_len = max(len(exp_chunk), len(act_chunk))
-            for k in range(max_len):
-                e = exp_chunk[k] if k < len(exp_chunk) else None
-                a = act_chunk[k] if k < len(act_chunk) else None
-                if e and a:
-                    status = "similar" if _is_similar(e, a) else "substituted"
-                    ops.append({"status": status, "expected": e, "aligned": a})
-                elif e:
-                    ops.append({"status": "missing", "expected": e, "aligned": None})
-                else:
-                    ops.append({"status": "extra", "expected": None, "aligned": a})
-        elif tag == "delete":
-            for e in expected[i1:i2]:
-                ops.append({"status": "missing", "expected": e, "aligned": None})
-        elif tag == "insert":
-            for a in actual[j1:j2]:
-                ops.append({"status": "extra", "expected": None, "aligned": a})
-    return ops
+    for p in phonemes:
+        symbol = p.get("Phoneme", "")
+        score = p.get("PronunciationAssessment", {}).get("AccuracyScore", 0.0)
+        offset_ticks = p.get("Offset", 0)
+        duration_ticks = p.get("Duration", 0)
+        start = round(offset_ticks / 10_000_000, 4)
+        dur = round(duration_ticks / 10_000_000, 4)
 
-
-def _distribute_timestamps(word_start: float, word_end: float, phoneme_ops: List[dict]) -> List[dict]:
-    present = [op for op in phoneme_ops if op["status"] != "missing"]
-    if not present:
-        return phoneme_ops
-    dur = (word_end - word_start) / len(present)
-    result = []
-    idx = 0
-    for op in phoneme_ops:
-        if op["status"] == "missing":
-            result.append({**op, "start": None, "end": None, "duration": None})
+        if error_type == "Omission":
+            status = "missing"
+        elif score >= AZURE_PHONEME_CORRECT_THRESHOLD:
+            status = "correct"
+        elif score >= AZURE_PHONEME_SIMILAR_THRESHOLD:
+            status = "similar"
         else:
-            start = word_start + idx * dur
-            result.append({**op, "start": round(start, 4), "end": round(start + dur, 4), "duration": round(dur, 4)})
-            idx += 1
-    return result
+            status = "substituted"
 
-
-def _calc_score(ops: List[dict]) -> int:
-    if not ops:
-        return 0
-    scored = [op for op in ops if op["status"] != "extra"]
-    if not scored:
-        return 0
-    correct = sum(1 for op in scored if op["status"] in ("correct", "similar"))
-    return round(correct / len(scored) * 100)
+        ops.append({
+            "status": status,
+            "expected": symbol,
+            "aligned": None if status == "missing" else symbol,
+            "start": None if status == "missing" else start,
+            "end": None if status == "missing" else round(start + dur, 4),
+            "duration": None if status == "missing" else dur,
+        })
+    return ops
 
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "groq_key_set": bool(GROQ_API_KEY)}
+    return {"status": "ok", "azure_key_set": bool(AZURE_SPEECH_KEY)}
 
 
 @app.post("/analyze")
@@ -236,16 +198,22 @@ async def analyze(
                 "message": "Mic quá ồn — tìm chỗ yên tĩnh hơn nhé",
             })
 
+        # Azure PA: ASR + phoneme scoring in one call
         try:
-            groq_result = _groq_transcribe(wav_path, prompt=word)
+            pa_result = _azure_pa_assess(wav_path, word)
         except Exception as e:
-            logger.warning(f"Groq ASR failed: {e}")
-            groq_result = {"text": "", "words": []}
+            logger.warning(f"Azure PA failed: {e}")
+            return JSONResponse(status_code=200, content={
+                "success": False,
+                "error": "speech_not_detected",
+                "message": "Không nghe rõ — nói to hơn nhé",
+            })
 
-        transcript = groq_result.get("text", "").strip()
+        rec_status = pa_result.get("RecognitionStatus", "")
+        transcript = pa_result.get("DisplayText", "").strip().rstrip(".")
 
         # D-04: ASR confidence gate
-        if not transcript or re.search(r'[a-zA-Z]', transcript) is None:
+        if rec_status != "Success" or not transcript or re.search(r'[a-zA-Z]', transcript) is None:
             return JSONResponse(status_code=200, content={
                 "success": False,
                 "error": "speech_not_detected",
@@ -266,24 +234,20 @@ async def analyze(
             except Exception as e:
                 logger.warning(f"langdetect failed: {e}")
 
-        groq_words = groq_result.get("words", [])
-        word_start = groq_words[0].get("start", 0.0) if groq_words else 0.0
-        word_end = groq_words[-1].get("end", 1.0) if groq_words else 1.0
+        nbest = pa_result.get("NBest", [{}])[0]
+        word_data_list = nbest.get("Words", [])
+        word_data = word_data_list[0] if word_data_list else {}
+        word_pa = word_data.get("PronunciationAssessment", {})
+        score = int(round(word_pa.get("AccuracyScore", 0)))
 
-        expected_ph = _g2p(word)
-        actual_ph = _g2p(transcript) if transcript else []
-
-        raw_ops = _score_phonemes(expected_ph, actual_ph)
-        ops = _distribute_timestamps(word_start, word_end, raw_ops)
-        score = _calc_score(ops)
-
+        ops = _map_phoneme_ops(word_data)
         phonemes = [
             {
-                "symbol": op["expected"] or op["aligned"],
-                "ipa": op["expected"] or op["aligned"],
-                "start": op.get("start") or 0.0,
-                "end": op.get("end") or 0.0,
-                "duration": op.get("duration") or 0.0,
+                "symbol": op["expected"],
+                "ipa": op["expected"],
+                "start": op["start"] or 0.0,
+                "end": op["end"] or 0.0,
+                "duration": op["duration"] or 0.0,
             }
             for op in ops if op["status"] != "missing"
         ]
@@ -342,70 +306,107 @@ async def analyze_speaking(
                 "message": "Mic quá ồn — tìm chỗ yên tĩnh hơn nhé",
             })
 
-        prompt = target_text if mode == "SCRIPT_MATCH" else None
-        try:
-            groq_result = _groq_transcribe(wav_path, prompt=prompt)
-        except Exception as e:
-            logger.warning(f"Groq ASR failed: {e}")
-            groq_result = {"text": "", "words": []}
-
-        transcript = groq_result.get("text", "").strip()
-
-        # D-04: ASR confidence gate
-        if not transcript or re.search(r'[a-zA-Z]', transcript) is None:
-            return JSONResponse(status_code=200, content={
-                "success": False,
-                "error": "speech_not_detected",
-                "message": "Không nghe rõ — nói to hơn nhé",
-            })
-
-        # D-05: language mixing detection (skip if < 3 words)
-        if len(transcript.split()) >= 3:
+        if mode == "SCRIPT_MATCH":
+            # Azure PA with referenceText for pronunciation scoring
             try:
-                langs = detect_langs(transcript)
-                top = langs[0] if langs else None
-                if top is None or top.lang != 'en' or top.prob <= 0.5:
-                    return JSONResponse(status_code=200, content={
-                        "success": False,
-                        "error": "wrong_language",
-                        "message": "Please speak in English",
-                    })
+                pa_result = _azure_pa_assess(wav_path, target_text)
             except Exception as e:
-                logger.warning(f"langdetect failed: {e}")
+                logger.warning(f"Azure PA failed: {e}")
+                return JSONResponse(status_code=200, content={
+                    "success": False,
+                    "error": "speech_not_detected",
+                    "message": "Không nghe rõ — nói to hơn nhé",
+                })
 
-        groq_words = groq_result.get("words", [])
+            rec_status = pa_result.get("RecognitionStatus", "")
+            transcript = pa_result.get("DisplayText", "").strip().rstrip(".")
 
-        target_words = target_text.split()
-        word_results = []
-        for i, tw in enumerate(target_words):
-            gw = groq_words[i] if i < len(groq_words) else None
-            w_start = gw.get("start", i * 0.5) if gw else i * 0.5
-            w_end = gw.get("end", w_start + 0.4) if gw else w_start + 0.4
-            actual_word = gw.get("word", "").strip(".,!?").lower() if gw else ""
+            if rec_status != "Success" or not transcript or re.search(r'[a-zA-Z]', transcript) is None:
+                return JSONResponse(status_code=200, content={
+                    "success": False,
+                    "error": "speech_not_detected",
+                    "message": "Không nghe rõ — nói to hơn nhé",
+                })
 
-            exp_ph = _g2p(tw)
-            act_ph = _g2p(actual_word) if actual_word else []
-            raw_ops = _score_phonemes(exp_ph, act_ph)
-            ops = _distribute_timestamps(w_start, w_end, raw_ops)
-            word_score = _calc_score(ops)
-            phonemes = [
-                {"symbol": op["expected"] or op["aligned"], "ipa": op["expected"] or op["aligned"],
-                 "start": op.get("start") or 0.0, "end": op.get("end") or 0.0, "duration": op.get("duration") or 0.0}
-                for op in ops if op["status"] != "missing"
-            ]
-            word_results.append({"word": tw, "phonemes": phonemes, "score": word_score, "feedback": ops})
+            if len(transcript.split()) >= 3:
+                try:
+                    langs = detect_langs(transcript)
+                    top = langs[0] if langs else None
+                    if top is None or top.lang != 'en' or top.prob <= 0.5:
+                        return JSONResponse(status_code=200, content={
+                            "success": False,
+                            "error": "wrong_language",
+                            "message": "Please speak in English",
+                        })
+                except Exception as e:
+                    logger.warning(f"langdetect failed: {e}")
 
-        matched = sum(1 for w in word_results if w["score"] >= MIN_WORD_SCORE)
-        overall = _calc_score([op for wr in word_results for op in wr["feedback"]])
+            nbest = pa_result.get("NBest", [{}])[0]
+            overall_score = int(round(nbest.get("PronunciationAssessment", {}).get("AccuracyScore", 0)))
+            azure_words = nbest.get("Words", [])
 
-        return {
-            "success": True,
-            "transcription": {"text": transcript},
-            "words": word_results,
-            "overall_score": overall,
-            "matched_words": matched,
-            "total_words": len(target_words),
-        }
+            target_words = target_text.split()
+            word_results = []
+            for i, tw in enumerate(target_words):
+                aw = azure_words[i] if i < len(azure_words) else {}
+                w_score = int(round(aw.get("PronunciationAssessment", {}).get("AccuracyScore", 0)))
+                ops = _map_phoneme_ops(aw)
+                phonemes = [
+                    {"symbol": op["expected"], "ipa": op["expected"],
+                     "start": op["start"] or 0.0, "end": op["end"] or 0.0,
+                     "duration": op["duration"] or 0.0}
+                    for op in ops if op["status"] != "missing"
+                ]
+                word_results.append({"word": tw, "phonemes": phonemes, "score": w_score, "feedback": ops})
+
+            matched = sum(1 for w in word_results if w["score"] >= MIN_WORD_SCORE)
+            return {
+                "success": True,
+                "transcription": {"text": transcript},
+                "words": word_results,
+                "overall_score": overall_score,
+                "matched_words": matched,
+                "total_words": len(target_words),
+            }
+
+        else:
+            # FREE_SPEAK: STT only, no per-word phoneme feedback
+            try:
+                stt_result = _azure_stt(wav_path)
+            except Exception as e:
+                logger.warning(f"Azure STT failed: {e}")
+                return JSONResponse(status_code=200, content={
+                    "success": False,
+                    "error": "speech_not_detected",
+                    "message": "Không nghe rõ — nói to hơn nhé",
+                })
+
+            rec_status = stt_result.get("RecognitionStatus", "")
+            transcript = stt_result.get("DisplayText", "").strip().rstrip(".")
+
+            if rec_status != "Success" or not transcript:
+                return JSONResponse(status_code=200, content={
+                    "success": False,
+                    "error": "speech_not_detected",
+                    "message": "Không nghe rõ — nói to hơn nhé",
+                })
+
+            nbest = stt_result.get("NBest", [{}])[0]
+            azure_words_raw = nbest.get("Words", [])
+            target_words = target_text.split()
+            word_results = []
+            for i, tw in enumerate(target_words):
+                aw = azure_words_raw[i] if i < len(azure_words_raw) else {}
+                word_results.append({"word": tw, "phonemes": [], "score": 100, "feedback": []})
+
+            return {
+                "success": True,
+                "transcription": {"text": transcript},
+                "words": word_results,
+                "overall_score": 100,
+                "matched_words": len(target_words),
+                "total_words": len(target_words),
+            }
 
 
 @app.post("/transcribe")
@@ -424,17 +425,28 @@ async def transcribe(audio: UploadFile = File(...)):
         _to_wav(in_path, wav_path)
 
         try:
-            groq_result = _groq_transcribe(wav_path)
+            stt_result = _azure_stt(wav_path)
         except Exception as e:
-            logger.warning(f"Groq transcribe failed: {e}")
+            logger.warning(f"Azure STT failed: {e}")
             return {"text": "", "words": []}
 
+        rec_status = stt_result.get("RecognitionStatus", "")
+        if rec_status != "Success":
+            return {"text": "", "words": []}
+
+        transcript = stt_result.get("DisplayText", "").strip().rstrip(".")
+        nbest = stt_result.get("NBest", [{}])[0]
+        azure_words = nbest.get("Words", [])
         words = [
-            {"word": w.get("word", ""), "start": w.get("start", 0.0),
-             "end": w.get("end", 0.0), "score": 1.0}
-            for w in groq_result.get("words", [])
+            {
+                "word": w.get("Word", ""),
+                "start": round(w.get("Offset", 0) / 10_000_000, 4),
+                "end": round((w.get("Offset", 0) + w.get("Duration", 0)) / 10_000_000, 4),
+                "score": 1.0,
+            }
+            for w in azure_words
         ]
-        return {"text": groq_result.get("text", "").strip(), "words": words}
+        return {"text": transcript, "words": words}
 
 
 @app.post("/align")
