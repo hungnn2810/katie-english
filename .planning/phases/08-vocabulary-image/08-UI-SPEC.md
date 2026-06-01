@@ -47,7 +47,7 @@ created: 2026-06-01
 | divider | `#E2E8F0` |
 | shape.borderRadius | 4px |
 | Button textTransform | none |
-| Button fontWeight | 600 |
+| Button fontWeight | 700 |
 
 ### Student Theme (Student Game UI)
 
@@ -76,18 +76,21 @@ MUI spacing unit = 8px (MUI default). All `sx={{ ... }}` spacing uses MUI theme 
 |-----------|--------|-------|
 | 0.5 | 4px | Chip gaps, tight icon spacing |
 | 1 | 8px | Compact element spacing |
-| 1.5 | 12px | Dense row padding |
 | 2 | 16px | Default element spacing |
 | 3 | 24px | Card/section padding |
 | 4 | 32px | Page side padding |
-| 5 | 40px | Major section breaks |
 | 6 | 48px | Page vertical padding |
 
 **Exceptions:**
-- Image upload grid cells: 160px × 160px (fixed, not scale-derived) — enforced by image aspect ratio constraint
-- Record button (student game): 96px diameter circle (matches existing speaking homework mic button)
-- Progress bar dots: 8px height × 32px width (matches existing phonics game pattern)
-- Touch target minimum: 44px height for all interactive controls (student game only)
+
+| Value | MUI | Justification |
+|-------|-----|---------------|
+| 12px | 1.5 | Dense row padding inside VocabItemCard — 8px is too tight for the three-column flex layout (drag handle + image zone + word field), 16px creates too much visual weight at the card level |
+| 40px | 5 | Major section break between the item list and the save button — 32px blends the two zones visually; 48px (page padding) would imply page-level separation which overstates the relationship |
+| 160px × 160px | n/a | Image upload grid cells — fixed by image aspect ratio constraint, not scale-derived |
+| 96px diameter | n/a | Record button circle — matches existing speaking homework mic button |
+| 8px × 32px | n/a | Progress bar dots — matches existing phonics game pattern |
+| 44px min height | n/a | Touch target minimum for all interactive controls in student game |
 
 ---
 
@@ -95,16 +98,18 @@ MUI spacing unit = 8px (MUI default). All `sx={{ ... }}` spacing uses MUI theme 
 
 Uses MUI typography system. All `fontSize` values in `sx` prop are pixels as numbers or strings.
 
+**Declared weights: 400 (body/secondary) and 700 (headings, labels, CTAs, display). No other weights are used.**
+
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
-| Body | 16px (studentTheme base) / 14px (baseTheme) | 400 | 1.5 | Secondary text, labels, captions |
-| Label / UI | 14px | 600 | 1.4 | Type badges, section headers, button labels |
+| Body | 16px (studentTheme base) / 14px (baseTheme) | 400 | 1.5 | Secondary text, captions |
+| Label / UI | 14px | 700 | 1.4 | Type badges, section headers, button labels, score badges |
 | Heading | 20–24px | 700 | 1.3 | Dialog titles, page headings, card headings |
-| Display | 30px | 900 | 1.2 | Game "Ready?" screen heading, "Homework Complete!" |
+| Display | 30px | 700 | 1.2 | Game "Ready?" screen heading, "Homework Complete!" |
 
-**Student game word display (during recording):** 48–72px, weight 900, matches existing phonics word display.
+**Student game word display (during recording):** 48–72px, weight 700 — size carries visual impact; weight matches the unified scale.
 
-**Score display:** 72px, weight 900, `fontVariantNumeric: 'tabular-nums'`, color from `scoreHexColor()`.
+**Score display:** 72px, weight 700, `fontVariantNumeric: 'tabular-nums'`, color from `scoreHexColor()` — the outsized size provides the display hierarchy; no extra weight needed.
 
 **Phoneme chip labels:** `fontFamily: 'monospace'`, weight 700, size small (MUI Chip size="small").
 
@@ -220,7 +225,7 @@ When VOCABULARY selected: show redirect panel (same dashed-border pattern as REA
      - Uploaded: `<img>` fill zone, `objectFit: 'cover'`, remove overlay on hover
    - **Word label field** — MUI `TextField`, label `"Word"`, `size="small"`, placeholder `"e.g. apple"`, max 32 chars
    - **Remove button** — MUI `IconButton`, X icon (16px), `size="small"`, `color: 'error'` — right edge
-   - Card: MUI `Paper`, `elevation: 1`, `sx: { p: 2, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }`
+   - Card: MUI `Paper`, `elevation: 1`, `sx: { p: 1.5, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }` (p: 1.5 = 12px dense padding — see Spacing Exceptions)
 
 6. **Add item button** — `Button variant="outlined"`, `startIcon={<Plus size={16} />}`, `"Add Image"`, disabled when item count = 10, full width.
 
@@ -368,7 +373,7 @@ When VOCABULARY selected: show redirect panel (same dashed-border pattern as REA
 | Results heading | `"Homework Complete!"` |
 | Results save confirmation | `"Your recording has been saved"` |
 | Results save error | `"Recording could not be saved"` |
-| Finish button | `"Finish"` |
+| Finish button | `"Finish Session"` |
 | Mic denied heading | `"Microphone Required"` |
 | Mic denied body | `"Microphone access is required. Please allow access and reload."` |
 | Mic denied retry button | `"Try Again"` |
