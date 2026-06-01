@@ -1,5 +1,5 @@
 ﻿'use client';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   getStudents, createStudent, deleteStudent, updateStudent, getClasses,
@@ -370,8 +370,12 @@ export default function StudentsPage() {
     getStudents(cid).then(setStudents).catch(() => {});
   }, []);
 
-  const loadPending = () => getPendingStudents().then(setPending).catch(() => {});
-  const loadResets = () => getPasswordResetRequests().then(setResetRequests).catch(() => {});
+  const loadPending = useCallback(() => {
+    getPendingStudents().then(setPending).catch(() => {});
+  }, []);
+  const loadResets = useCallback(() => {
+    getPasswordResetRequests().then(setResetRequests).catch(() => {});
+  }, []);
 
   useEffect(() => {
     getClasses().then(setClasses);
@@ -383,7 +387,12 @@ export default function StudentsPage() {
     load(classFilter ? Number(classFilter) : undefined);
   }, [classFilter, load]);
 
-  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000); }
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function showToast(msg: string) {
+    setToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
+  }
 
   const filtered = students.filter((s) => s.fullname.toLowerCase().includes(search.toLowerCase()));
   const activeClassName = classes.find((c) => String(c.id) === classFilter)?.name;
@@ -545,7 +554,7 @@ export default function StudentsPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                           <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Sure?</Typography>
                           <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 12, borderRadius: 2, color: 'text.secondary', minWidth: 0, px: 1 }}>No</Button>
-                          <Button size="small" variant="contained" onClick={async () => { await deleteStudent(s.id); setDeletingId(null); load(classFilter ? Number(classFilter) : undefined); showToast('Student removed.'); }}
+                          <Button size="small" variant="contained" onClick={async () => { try { await deleteStudent(s.id); setDeletingId(null); load(classFilter ? Number(classFilter) : undefined); showToast('Student removed.'); } catch { setDeletingId(null); } }}
                             sx={{ fontSize: 12, borderRadius: 2, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 1 }}>Yes</Button>
                         </Box>
                       ) : (
@@ -555,7 +564,7 @@ export default function StudentsPage() {
                             <Pencil size={12} /> Edit
                           </Button>
                           <Button size="small" onClick={() => setDeletingId(s.id)}
-                            sx={{ fontSize: 12, fontWeight: 600, borderRadius: 2, color: 'error.main', gap: 0.5, minWidth: 0, px: 1, '&:hover': { bgcolor: 'error.50' } }}>
+                            sx={{ fontSize: 12, fontWeight: 600, borderRadius: 2, color: 'error.main', gap: 0.5, minWidth: 0, px: 1, '&:hover': { bgcolor: '#FEF2F2' } }}>
                             <UserMinus size={12} /> Delete
                           </Button>
                         </Box>

@@ -24,7 +24,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     const u = getUser();
     if (!u || u.role !== 'TEACHER') { router.replace('/login'); return; }
     setUser(u);
-  }, []);
+  }, [router]);
 
   if (user === undefined) return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 1280 }}>

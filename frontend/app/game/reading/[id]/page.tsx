@@ -485,43 +485,19 @@ export default function ReadingGamePage() {
     setActivityStates((prev) => prev.map((s, i) => (i === idx ? updater(s) : s)));
   }
 
-  const computeTotals = useCallback(() => {
-    let total = 0;
-    let correct = 0;
-    setActivityStates((prev) => {
-      for (const a of prev) {
-        if (a.type === 'MATCH') {
-          total += a.pairs.length;
-          correct += a.pairs.filter((p) => p.status === 'locked').length;
-        } else {
-          total += a.items.length;
-          correct += a.items.filter((it) => it.correct === true).length;
-        }
-      }
-      return prev; // no-op update to read current state
-    });
-    return { total, correct };
-  }, []);
-
-  const finishSession = useCallback(async () => {
+  const finishSession = useCallback(async (snapshot: ActivityState[]) => {
     setPageState('submitting');
-    // Capture current state snapshot for totals
     let total = 0;
     let correct = 0;
-    setActivityStates((prev) => {
-      for (const a of prev) {
-        if (a.type === 'MATCH') {
-          total += a.pairs.length;
-          correct += a.pairs.filter((p) => p.status === 'locked').length;
-        } else {
-          total += a.items.length;
-          correct += a.items.filter((it) => it.correct === true).length;
-        }
+    for (const a of snapshot) {
+      if (a.type === 'MATCH') {
+        total += a.pairs.length;
+        correct += a.pairs.filter((p) => p.status === 'locked').length;
+      } else {
+        total += a.items.length;
+        correct += a.items.filter((it) => it.correct === true).length;
       }
-      return prev;
-    });
-    // Small delay to let state settle
-    await new Promise((r) => setTimeout(r, 50));
+    }
     try {
       await saveReadingResult(sessionId, { correctItems: correct, totalItems: total });
       const completed = await completeSession(sessionId);
@@ -531,6 +507,14 @@ export default function ReadingGamePage() {
     }
     setPageState('results');
   }, [sessionId]);
+
+  const advanceActivity = useCallback(() => {
+    if (currentActivityIndex + 1 >= activityStates.length) {
+      finishSession(activityStates);
+    } else {
+      setCurrentActivityIndex((i) => i + 1);
+    }
+  }, [currentActivityIndex, activityStates, finishSession]);
 
   useEffect(() => {
     fetchSession(sessionId)
@@ -584,14 +568,6 @@ export default function ReadingGamePage() {
           );
 
         // playing state
-        const advanceActivity = () => {
-          if (currentActivityIndex + 1 >= activityStates.length) {
-            finishSession();
-          } else {
-            setCurrentActivityIndex(currentActivityIndex + 1);
-          }
-        };
-
         const cur = activityStates[currentActivityIndex];
 
         return (

@@ -22,7 +22,7 @@ export default function AuthGate({ requiredRole, children }: Props) {
       return;
     }
     setUser(u);
-  }, []);
+  }, [router, requiredRole]);
 
   if (user === undefined) return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

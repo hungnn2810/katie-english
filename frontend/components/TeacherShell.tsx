@@ -1,6 +1,6 @@
 ﻿'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { clearAuth, changePassword, AuthUser } from '@/lib/auth';
 import Box from '@mui/material/Box';
@@ -57,6 +57,11 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
+  const pwTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => { if (pwTimerRef.current) clearTimeout(pwTimerRef.current); };
+  }, []);
 
   function logout() { clearAuth(); router.push('/login'); }
 
@@ -66,6 +71,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
   }
 
   function handleMenuClose() {
+    if (pwTimerRef.current) { clearTimeout(pwTimerRef.current); pwTimerRef.current = null; }
     setAnchorEl(null);
     setShowPwForm(false);
   }
@@ -77,7 +83,8 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
       await changePassword(currentPw, newPw);
       setPwSuccess(true);
       setCurrentPw(''); setNewPw('');
-      setTimeout(() => { setShowPwForm(false); setPwSuccess(false); handleMenuClose(); }, 1800);
+      if (pwTimerRef.current) clearTimeout(pwTimerRef.current);
+      pwTimerRef.current = setTimeout(() => { setShowPwForm(false); setPwSuccess(false); handleMenuClose(); }, 1800);
     } catch (err: unknown) {
       setPwError(err instanceof Error ? err.message : 'Failed');
     } finally { setPwLoading(false); }
@@ -193,13 +200,16 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
             <Box sx={{ position: 'relative', flexShrink: 0, mt: 0.5 }}>
               <IconButton
                 onClick={handleMenuOpen}
+                aria-label="Open account menu"
+                aria-haspopup="true"
+                aria-expanded={showUserMenu}
                 sx={{
                   width: 36, height: 36, borderRadius: '50%', bgcolor: ACCENT,
                   color: 'white', fontWeight: 700, fontSize: 14,
                   '&:hover': { bgcolor: ACCENT, opacity: 0.8 },
                 }}
               >
-                {user.upn[0].toUpperCase()}
+                {(user.upn?.[0] ?? '?').toUpperCase()}
               </IconButton>
 
               <Menu
@@ -218,7 +228,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                       justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'white',
                       flexShrink: 0, bgcolor: ACCENT,
                     }}>
-                      {user.upn[0].toUpperCase()}
+                      {(user.upn?.[0] ?? '?').toUpperCase()}
                     </Box>
                     <Box>
                       <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -227,7 +237,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                       <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Teacher</Typography>
                     </Box>
                   </Box>
-                  <IconButton size="small" onClick={handleMenuClose} sx={{ color: 'text.secondary' }}>
+                  <IconButton size="small" onClick={handleMenuClose} aria-label="Close menu" sx={{ color: 'text.secondary' }}>
                     <X size={14} />
                   </IconButton>
                 </Box>

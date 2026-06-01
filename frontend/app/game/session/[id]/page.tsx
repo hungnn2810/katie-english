@@ -370,6 +370,7 @@ export default function SessionPage() {
         }
       } catch (err) {
         console.error(`[score] item="${item.text}"`, err);
+        setSaveError(true);
       }
     }
 

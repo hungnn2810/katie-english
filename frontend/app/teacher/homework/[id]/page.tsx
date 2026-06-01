@@ -40,6 +40,7 @@ export default function TeacherHomeworkDetailPage() {
   const hwId = Number(id);
   const router = useRouter();
   const [hw, setHw] = useState<HomeworkDetail | null>(null);
+  const [deletingAssignmentId, setDeletingAssignmentId] = useState<number | null>(null);
 
   const load = () => getHomework(hwId).then(setHw).catch(() => {});
   useEffect(() => { load(); }, [hwId]);
@@ -191,15 +192,21 @@ export default function TeacherHomeworkDetailPage() {
                       <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Due {formatDate(a.endDate)}</Typography>
                     </Box>
                   </Box>
-                  <Box
-                    component="button"
-                    onClick={async () => {
-                      if (confirm('Remove this assignment?')) { await deleteAssignment(a.id); load(); }
-                    }}
-                    sx={{ fontSize: 12, fontWeight: 600, color: '#FF7B7B', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, '&:hover': { opacity: 0.7 } }}
-                  >
-                    Remove
-                  </Box>
+                  {deletingAssignmentId === a.id ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Remove?</Typography>
+                      <Button size="small" onClick={() => setDeletingAssignmentId(null)} sx={{ fontSize: 12, borderRadius: 2, color: 'text.secondary', minWidth: 0, px: 1 }}>Cancel</Button>
+                      <Button size="small" variant="contained" onClick={async () => { try { await deleteAssignment(a.id); setDeletingAssignmentId(null); load(); } catch { setDeletingAssignmentId(null); } }} sx={{ fontSize: 12, borderRadius: 2, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 1 }}>Yes</Button>
+                    </Box>
+                  ) : (
+                    <Box
+                      component="button"
+                      onClick={() => setDeletingAssignmentId(a.id)}
+                      sx={{ fontSize: 12, fontWeight: 600, color: '#FF7B7B', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, '&:hover': { opacity: 0.7 } }}
+                    >
+                      Remove
+                    </Box>
+                  )}
                 </Box>
 
                 {/* Sessions list */}

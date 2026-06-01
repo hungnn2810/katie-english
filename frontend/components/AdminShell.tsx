@@ -131,9 +131,12 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
             <Box sx={{ flexShrink: 0, mt: 0.5 }}>
               <IconButton
                 onClick={(e) => setAnchorEl(e.currentTarget)}
+                aria-label="Open account menu"
+                aria-haspopup="true"
+                aria-expanded={Boolean(anchorEl)}
                 sx={{ width: 36, height: 36, bgcolor: ACCENT, color: 'white', fontSize: 14, fontWeight: 700, borderRadius: '50%', '&:hover': { bgcolor: ACCENT, opacity: 0.8 } }}
               >
-                {user.email[0].toUpperCase()}
+                {(user.email?.[0] ?? '?').toUpperCase()}
               </IconButton>
               <Menu
                 anchorEl={anchorEl}
@@ -145,7 +148,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
               >
                 <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1.5, borderBottom: '1px solid', borderColor: 'divider', mb: 1 }}>
                   <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'white', flexShrink: 0 }}>
-                    {user.email[0].toUpperCase()}
+                    {(user.email?.[0] ?? '?').toUpperCase()}
                   </Box>
                   <Box sx={{ overflow: 'hidden' }}>
                     <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>{user.email}</Typography>

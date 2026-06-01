@@ -609,9 +609,11 @@ export default function HomeworkPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [toast, setToast] = useState('');
 
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showToast(msg: string) {
     setToast(msg);
-    setTimeout(() => setToast(''), 3000);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
   }
 
   const load = () => getHomeworkList().then(setList).catch(() => {});
@@ -847,7 +849,7 @@ export default function HomeworkPage() {
                       Assign
                     </Button>
                     <Button size="small" onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
-                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'primary.main', '&:hover': { bgcolor: 'primary.50' } }}>
+                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'primary.main', '&:hover': { bgcolor: '#EFF6FF' } }}>
                       Edit
                     </Button>
                     <Box component={Link} href={`/teacher/homework/${h.id}/try`}
@@ -855,7 +857,7 @@ export default function HomeworkPage() {
                       Try
                     </Box>
                     <Button size="small" onClick={() => setDeletingId(h.id)}
-                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'error.main', '&:hover': { bgcolor: 'error.50' } }}>
+                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'error.main', '&:hover': { bgcolor: '#FEF2F2' } }}>
                       Delete
                     </Button>
                   </>

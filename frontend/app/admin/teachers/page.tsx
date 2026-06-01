@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   getTeachers, createTeacher, updateTeacher, disableTeacher, enableTeacher,
   TeacherItem, CreateTeacherInput, UpdateTeacherInput,
@@ -218,9 +218,11 @@ export default function TeachersPage() {
 
   useEffect(() => { loadTeachers(); }, []);
 
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showToast(msg: string) {
     setToast(msg);
-    setTimeout(() => setToast(''), 3000);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
   }
 
   return (

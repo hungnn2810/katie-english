@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const u = getAdminUser();
     if (!u || u.role !== 'ADMIN') { router.replace('/admin/login'); return; }
     setUser(u);
-  }, [pathname]);
+  }, [pathname, router]);
 
   // Login page — render children directly, no AdminShell
   if (pathname === '/admin/login') return <>{children}</>;

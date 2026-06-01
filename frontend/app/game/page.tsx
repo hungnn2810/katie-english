@@ -23,7 +23,6 @@ export default function GamePage() {
   const [error, setError] = useState('');
 
   const loadWord = useCallback(async (lvl: number) => {
-    console.log('Loading word for level', lvl);
     setState('loading');
     setSelected([]);
     setResult(null);
@@ -40,7 +39,7 @@ export default function GamePage() {
 
   useEffect(() => {
     loadWord(level);
-  }, []);
+  }, [loadWord, level]);
 
   const playAudio = (url: string) => {
     const audio = new Audio(url);

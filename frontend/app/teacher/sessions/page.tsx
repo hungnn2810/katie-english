@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   getSessionResults, getSession, getStudents, getHomeworkList,
@@ -45,14 +45,7 @@ export default function SessionsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    getStudents().then(setStudents).catch(() => {});
-    getHomeworkList().then(setHomeworks).catch(() => {});
-    doSearch();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function doSearch() {
+  const doSearch = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -67,7 +60,16 @@ export default function SessionsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [assignmentFilter, studentFilter, dateFrom, dateTo]);
+
+  useEffect(() => {
+    getStudents().then(setStudents).catch(() => {});
+    getHomeworkList().then(setHomeworks).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    doSearch();
+  }, [doSearch]);
 
   const toggleExpand = async (id: number) => {
     if (expanded === id) { setExpanded(null); return; }

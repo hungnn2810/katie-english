@@ -1,6 +1,5 @@
 'use client';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 
 interface Props {
   symbol: string;
@@ -17,36 +16,43 @@ export default function PhonemeButton({ symbol, audioUrl, selected, onClick }: P
   };
 
   return (
-    <Button
-      onClick={onClick}
-      sx={{
-        position: 'relative',
-        width: 80,
-        height: 80,
-        minWidth: 80,
-        borderRadius: 4,
-        fontSize: '1.5rem',
-        fontWeight: 700,
-        border: '2px solid',
-        transition: 'all 0.15s',
-        userSelect: 'none',
-        ...(selected
-          ? {
-              bgcolor: 'primary.main',
-              color: 'white',
-              borderColor: '#3B8AEA',
-              transform: 'scale(0.95)',
-            }
-          : {
-              bgcolor: 'white',
-              color: 'primary.main',
-              borderColor: 'primary.light',
-              '&:hover': { borderColor: 'primary.main', bgcolor: 'primary.50' },
-              boxShadow: 3,
-            }),
-      }}
-    >
-      {symbol}
+    <Box sx={{ position: 'relative', width: 80, height: 80, flexShrink: 0 }}>
+      <Box
+        component="button"
+        onClick={onClick}
+        sx={{
+          width: '100%',
+          height: '100%',
+          minWidth: 80,
+          borderRadius: 4,
+          fontSize: '1.5rem',
+          fontWeight: 700,
+          border: '2px solid',
+          transition: 'all 0.15s',
+          userSelect: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          ...(selected
+            ? {
+                bgcolor: 'primary.main',
+                color: 'white',
+                borderColor: '#3B8AEA',
+                transform: 'scale(0.95)',
+                background: undefined,
+              }
+            : {
+                bgcolor: 'white',
+                color: 'primary.main',
+                borderColor: 'primary.light',
+                '&:hover': { borderColor: 'primary.main', bgcolor: '#EFF6FF' },
+                boxShadow: 3,
+              }),
+        }}
+      >
+        {symbol}
+      </Box>
       <Box
         component="button"
         onClick={playAudio}
@@ -68,9 +74,10 @@ export default function PhonemeButton({ symbol, audioUrl, selected, onClick }: P
           boxShadow: 1,
         }}
         title="Play sound"
+        aria-label="Play phoneme sound"
       >
         ▶
       </Box>
-    </Button>
+    </Box>
   );
 }

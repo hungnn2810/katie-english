@@ -495,25 +495,20 @@ export default function TeacherTryHomeworkPage() {
 
   const backUrl = `/teacher/homework/${hwId}`;
 
+  function renderContent() {
   // ── Loading ────────────────────────────────────────────────────────────────
   if (pageState === 'loading') {
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Loading…</Typography>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
   // ── Error ─────────────────────────────────────────────────────────────────
   if (pageState === 'error') {
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
             <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Failed to load homework.</Typography>
             <Box
@@ -524,8 +519,6 @@ export default function TeacherTryHomeworkPage() {
               ← Back
             </Box>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
@@ -535,8 +528,7 @@ export default function TeacherTryHomeworkPage() {
     const mins = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
     const secs = String(recordingSeconds % 60).padStart(2, '0');
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 5, gap: 3, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <PreviewBanner />
             <Box
@@ -642,22 +634,17 @@ export default function TeacherTryHomeworkPage() {
               </Box>
             </Box>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
   // ── Speaking: uploading ────────────────────────────────────────────────────
   if (pageState === 'speak_uploading') {
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: '#7BD88F' }} />
             <Typography sx={{ color: '#7BD88F', fontWeight: 700 }}>Scoring…</Typography>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
@@ -665,8 +652,7 @@ export default function TeacherTryHomeworkPage() {
   if (pageState === 'speak_results' && speakResult) {
     const isFreespeak = speakResult.speakingMode === 'FREE_SPEAK';
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ minHeight: '100vh', py: 6, px: 4, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <Box sx={{ maxWidth: 576, mx: 'auto' }}>
               <PreviewBanner />
@@ -715,8 +701,6 @@ export default function TeacherTryHomeworkPage() {
               </Box>
             </Box>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
@@ -724,8 +708,7 @@ export default function TeacherTryHomeworkPage() {
   if (pageState === 'phonics_word_select') {
     const allWords = (hw?.parts ?? []).flatMap((p) => p.words);
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 5, gap: 3, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <PreviewBanner />
             <Box
@@ -761,8 +744,6 @@ export default function TeacherTryHomeworkPage() {
               </Box>
             </Box>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
@@ -771,8 +752,7 @@ export default function TeacherTryHomeworkPage() {
     const mins = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
     const secs = String(recordingSeconds % 60).padStart(2, '0');
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 5, gap: 3, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <PreviewBanner />
             <Box
@@ -866,30 +846,24 @@ export default function TeacherTryHomeworkPage() {
               </Box>
             </Box>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
   // ── Phonics: uploading ─────────────────────────────────────────────────────
   if (pageState === 'phonics_uploading') {
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: '#7BD88F' }} />
             <Typography sx={{ color: '#7BD88F', fontWeight: 700 }}>Analyzing pronunciation…</Typography>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
   // ── Phonics: results ───────────────────────────────────────────────────────
   if (pageState === 'phonics_results' && phonicsResult) {
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ minHeight: '100vh', py: 6, px: 4, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <Box sx={{ maxWidth: 576, mx: 'auto' }}>
               <PreviewBanner />
@@ -943,8 +917,6 @@ export default function TeacherTryHomeworkPage() {
               </Box>
             </Box>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
@@ -952,8 +924,7 @@ export default function TeacherTryHomeworkPage() {
   if (pageState === 'reading_playing') {
     const cur = activityStates[currentActivityIndex];
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 1024 }} style={{ background: gradients.gameBgAlt }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 4, py: 2, flexShrink: 0 }}>
               <Box
@@ -994,8 +965,6 @@ export default function TeacherTryHomeworkPage() {
               ) : null}
             </Box>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
@@ -1014,8 +983,7 @@ export default function TeacherTryHomeworkPage() {
     }
     const score = total > 0 ? Math.round((correct / total) * 100) : 0;
     return (
-      <AuthGate requiredRole="TEACHER">
-        {() => (
+
           <Box sx={{ minHeight: '100vh', py: 6, px: 4, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <Box sx={{ maxWidth: 576, mx: 'auto' }}>
               <PreviewBanner />
@@ -1052,10 +1020,15 @@ export default function TeacherTryHomeworkPage() {
               </Box>
             </Box>
           </Box>
-        )}
-      </AuthGate>
     );
   }
 
   return null;
+  } // end renderContent
+
+  return (
+    <AuthGate requiredRole="TEACHER">
+      {() => renderContent()}
+    </AuthGate>
+  );
 }

@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
 import { colors } from '@/lib/colors';
@@ -223,10 +223,15 @@ export default function ClassesPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [toast, setToast] = useState('');
 
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const load = () => getClasses().then(setClasses).catch(() => {});
   useEffect(() => { load(); }, []);
 
-  function showToast(msg: string) { setToast(msg); setTimeout(() => setToast(''), 3000); }
+  function showToast(msg: string) {
+    setToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
+  }
 
   function openCreate() { setEditing(null); setInitialForm(emptyForm()); setShowModal(true); }
   function openEdit(c: ClassItem) {
@@ -378,7 +383,7 @@ export default function ClassesPage() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography sx={{ fontSize: 12, color: 'text.secondary', flex: 1 }}>Delete class?</Typography>
                     <Button size="small" onClick={() => setDeletingId(null)} sx={{ borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>Cancel</Button>
-                    <Button size="small" variant="contained" onClick={async () => { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); }}
+                    <Button size="small" variant="contained" onClick={async () => { try { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); } catch { setDeletingId(null); } }}
                       sx={{ borderRadius: 2, fontSize: 12, fontWeight: 600, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' } }}>Delete</Button>
                   </Box>
                 ) : (

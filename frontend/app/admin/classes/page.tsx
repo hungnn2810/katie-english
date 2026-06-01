@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   getAdminClasses,
   getTeachers,
@@ -308,12 +308,14 @@ export default function ClassesPage() {
   const [confirmDelete, setConfirmDelete] = useState<AdminClassItem | null>(null);
   const [toast, setToast] = useState('');
 
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showToast(msg: string) {
     setToast(msg);
-    setTimeout(() => setToast(''), 3000);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
   }
 
-  async function loadClasses(filter: string) {
+  const loadClasses = useCallback(async (filter: string) => {
     setLoading(true);
     setError('');
     try {
@@ -324,7 +326,7 @@ export default function ClassesPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   // Load teachers once on mount
   useEffect(() => {
@@ -336,7 +338,7 @@ export default function ClassesPage() {
   // Reload classes whenever filter changes (including on mount)
   useEffect(() => {
     loadClasses(teacherFilter);
-  }, [teacherFilter]);
+  }, [teacherFilter, loadClasses]);
 
   return (
     <Box>
