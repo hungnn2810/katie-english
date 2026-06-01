@@ -3,7 +3,18 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { clearAdminAuth, AdminUser } from '@/lib/admin-auth';
-import { LayoutDashboard, Users, School, GraduationCap, FileText, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Users, School, GraduationCap, FileText, LogOut } from 'lucide-react';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
 
 const ACCENT = '#4F9DFF';
 const ACCENT_BG = 'rgba(79, 157, 255, 0.12)';
@@ -32,144 +43,129 @@ interface Props {
 export default function AdminShell({ user, children, title, subtitle }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   function logout() { clearAdminAuth(); router.push('/admin/login'); }
 
   return (
-    <div className="flex h-screen bg-background" style={{ minWidth: 1280 }}>
+    <Box sx={{ display: 'flex', height: '100vh', minWidth: 1280 }}>
       {/* Sidebar */}
-      <aside
-        className="w-60 flex-shrink-0 flex flex-col"
-        style={{ background: '#0C1220', boxShadow: '1px 0 0 rgba(255,255,255,0.05)' }}
-      >
+      <Box sx={{ width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', bgcolor: '#0C1220', boxShadow: '1px 0 0 rgba(255,255,255,0.05)' }}>
         {/* Logo */}
-        <div className="px-5 pt-7 pb-6">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
-              style={{ background: ACCENT }}
-            >
-              <span className="text-white font-black text-sm">K</span>
-            </div>
-            <div>
-              <div className="text-white font-bold text-sm leading-tight tracking-tight">Katie English</div>
-              <div className="text-slate-500 text-[10px] tracking-wide mt-0.5">Admin Portal</div>
-            </div>
-          </div>
-        </div>
+        <Box sx={{ px: 2.5, pt: 3.5, pb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            <Box sx={{ width: 36, height: 36, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: ACCENT, boxShadow: 3 }}>
+              <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 14 }}>K</Typography>
+            </Box>
+            <Box>
+              <Typography sx={{ color: 'white', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>Katie English</Typography>
+              <Typography sx={{ color: '#475569', fontSize: 10, letterSpacing: '0.05em', mt: 0.25 }}>Admin Portal</Typography>
+            </Box>
+          </Box>
+        </Box>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 overflow-y-auto">
+        <Box sx={{ flex: 1, px: 1.5, overflowY: 'auto' }}>
           {NAV_GROUPS.map((group, gi) => (
-            <div key={gi} className={gi > 0 ? 'mt-5' : ''}>
+            <Box key={gi} mt={gi > 0 ? 2.5 : 0}>
               {group.label && (
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 px-3 mb-1.5">
+                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#475569', px: 1.5, mb: 0.5, display: 'block' }}>
                   {group.label}
-                </p>
+                </Typography>
               )}
-              <div className="space-y-0.5">
+              <List dense disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
                 {group.items.map((item) => {
                   const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
                   return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
-                        active ? '' : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.05]'
-                      }`}
-                      style={active ? { background: ACCENT_BG, color: ACCENT_TEXT } : {}}
-                    >
-                      {active && (
-                        <span
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full"
-                          style={{ background: ACCENT }}
-                        />
-                      )}
-                      <item.icon className="w-[15px] h-[15px] shrink-0" />
-                      <span className={active ? 'font-bold' : ''}>{item.label}</span>
-                    </Link>
+                    <ListItem key={item.href} disablePadding>
+                      <ListItemButton
+                        component={Link}
+                        href={item.href}
+                        selected={active}
+                        sx={{
+                          borderRadius: 3, py: 1.25,
+                          '&.Mui-selected': { bgcolor: ACCENT_BG, color: ACCENT_TEXT },
+                          '&.Mui-selected:hover': { bgcolor: ACCENT_BG },
+                          '&:not(.Mui-selected)': { color: '#94A3B8' },
+                          '&:not(.Mui-selected):hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#E2E8F0' },
+                        }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
+                          <item.icon size={15} />
+                        </ListItemIcon>
+                        <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 14, fontWeight: active ? 700 : 500 }} />
+                      </ListItemButton>
+                    </ListItem>
                   );
                 })}
-              </div>
-            </div>
+              </List>
+            </Box>
           ))}
-        </nav>
+        </Box>
 
         {/* Sidebar footer */}
-        <div className="px-5 pb-5 pt-3">
-          <div className="border-t border-white/[0.07] mb-3" />
-          <p className="text-[10px] text-slate-600 text-center">© Katie English</p>
-        </div>
-      </aside>
+        <Box sx={{ px: 2.5, pb: 2.5, pt: 1.5 }}>
+          <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mb: 1.5 }} />
+          <Typography variant="caption" sx={{ color: '#475569', display: 'block', textAlign: 'center' }}>
+            © Katie English
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto">
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Box component="main" sx={{ flex: 1, overflowY: 'auto' }}>
           {/* Page header */}
-          <div className="px-8 pt-8 pb-6 flex items-start justify-between">
-            <div>
-              <p className="text-xs text-textSecondary mb-2 flex items-center gap-1.5">
+          <Box sx={{ px: 4, pt: 4, pb: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1 }}>
                 Admin Portal
-                <span className="text-textSecondary/40 mx-0.5">›</span>
-                <span className="text-textPrimary/50 font-medium">{title}</span>
-              </p>
-              <h1 className="text-[26px] font-bold text-textPrimary tracking-tight leading-none">{title}</h1>
-              {subtitle && <p className="text-sm text-textSecondary mt-1.5">{subtitle}</p>}
-            </div>
+                <Box component="span" sx={{ opacity: 0.4, mx: 0.25 }}>›</Box>
+                <Box component="span" sx={{ opacity: 0.5, fontWeight: 500 }}>{title}</Box>
+              </Typography>
+              <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1, letterSpacing: '-0.02em' }}>{title}</Typography>
+              {subtitle && <Typography variant="body2" color="text.secondary" mt={0.75}>{subtitle}</Typography>}
+            </Box>
 
             {/* User avatar */}
-            <div className="relative flex-shrink-0 mt-1">
-              <button
-                onClick={() => setShowUserMenu((v) => !v)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white transition-all hover:opacity-80"
-                style={{ background: ACCENT }}
+            <Box sx={{ flexShrink: 0, mt: 0.5 }}>
+              <IconButton
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                sx={{ width: 36, height: 36, bgcolor: ACCENT, color: 'white', fontSize: 14, fontWeight: 700, borderRadius: '50%', '&:hover': { bgcolor: ACCENT, opacity: 0.8 } }}
               >
                 {user.email[0].toUpperCase()}
-              </button>
-
-              {showUserMenu && (
-                <div className="absolute right-0 top-11 w-72 bg-white rounded-2xl shadow-card-hover border border-border z-50 p-4 animate-slide-up">
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-border">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                        style={{ background: ACCENT }}
-                      >
-                        {user.email[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="text-textPrimary text-sm font-semibold truncate max-w-[160px]">{user.email}</div>
-                        <div className="text-textSecondary text-xs">Administrator</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowUserMenu(false)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-textSecondary hover:bg-background transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    Sign out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={() => setAnchorEl(null)}
+                PaperProps={{ sx: { width: 288, borderRadius: 3, p: 1 } }}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              >
+                <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1.5, borderBottom: '1px solid', borderColor: 'divider', mb: 1 }}>
+                  <Box sx={{ width: 36, height: 36, borderRadius: '50%', bgcolor: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                    {user.email[0].toUpperCase()}
+                  </Box>
+                  <Box sx={{ overflow: 'hidden' }}>
+                    <Typography variant="body2" fontWeight={600} noWrap>{user.email}</Typography>
+                    <Typography variant="caption" color="text.secondary">Administrator</Typography>
+                  </Box>
+                </Box>
+                <MenuItem onClick={logout} sx={{ color: 'error.main', borderRadius: 2, gap: 1 }}>
+                  <LogOut size={14} />
+                  Sign out
+                </MenuItem>
+              </Menu>
+            </Box>
+          </Box>
 
           {/* Content */}
-          <div className="px-8 pb-8">
+          <Box sx={{ px: 4, pb: 4 }}>
             {children}
-          </div>
-        </main>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
