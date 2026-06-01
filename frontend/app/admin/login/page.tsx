@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
         <Box>
           {/* Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 8 }}>
-            <Box sx={{ width: 40, height: 40, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: ACCENT, flexShrink: 0, boxShadow: 3 }}>
+            <Box sx={{ width: 40, height: 40, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: ACCENT, flexShrink: 0, boxShadow: 3 }}>
               <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 16 }}>K</Typography>
             </Box>
             <Typography sx={{ color: 'white', fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>Katie English</Typography>
@@ -66,7 +66,7 @@ export default function AdminLoginPage() {
             const Icon = f.icon;
             return (
               <Box key={f.text} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ width: 32, height: 32, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: 'rgba(79,157,255,0.15)' }}>
+                <Box sx={{ width: 32, height: 32, borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: 'rgba(79,157,255,0.15)' }}>
                   <Icon style={{ width: 16, height: 16, color: ACCENT }} />
                 </Box>
                 <Typography sx={{ color: '#94A3B8', fontSize: 14 }}>{f.text}</Typography>
@@ -96,7 +96,7 @@ export default function AdminLoginPage() {
               autoComplete="email"
               fullWidth
               size="small"
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
             />
 
             <Box>
@@ -111,9 +111,9 @@ export default function AdminLoginPage() {
                 autoComplete="current-password"
                 fullWidth
                 size="small"
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
               />
-              {error && <Alert severity="error" sx={{ mt: 1, borderRadius: 2 }}>{error}</Alert>}
+              {error && <Alert severity="error" sx={{ mt: 1, borderRadius: 1 }}>{error}</Alert>}
             </Box>
 
             <Button
@@ -121,7 +121,7 @@ export default function AdminLoginPage() {
               variant="contained"
               disabled={loading}
               fullWidth
-              sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 600, color: 'white', borderRadius: 3, py: 1.5 }}
+              sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 600, color: 'white', borderRadius: 1, py: 1.5 }}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>

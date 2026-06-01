@@ -87,7 +87,7 @@ export default function LoginPage() {
         <Box>
           {/* Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 8 }}>
-            <Box sx={{ width: 40, height: 40, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3, flexShrink: 0, background: ACCENT }}>
+            <Box sx={{ width: 40, height: 40, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3, flexShrink: 0, background: ACCENT }}>
               <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 16 }}>K</Typography>
             </Box>
             <Typography sx={{ color: 'white', fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>Katie English</Typography>
@@ -138,12 +138,12 @@ export default function LoginPage() {
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = '#E2E8F0')}
                   sx={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                    p: 4, bgcolor: '#F7F9FC', borderRadius: 4, border: '2px solid #E2E8F0',
+                    p: 4, bgcolor: '#F7F9FC', borderRadius: 2, border: '2px solid #E2E8F0',
                     cursor: 'pointer', transition: 'all 0.2s', background: 'none',
                     '&:hover': { boxShadow: 4 },
                   }}
                 >
-                  <Box sx={{ width: 56, height: 56, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFF2EF', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.1)' } }}>
+                  <Box sx={{ width: 56, height: 56, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFF2EF', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.1)' } }}>
                     <GraduationCap size={28} color={ACCENT} />
                   </Box>
                   <Box>
@@ -159,12 +159,12 @@ export default function LoginPage() {
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = '#E2E8F0')}
                   sx={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                    p: 4, bgcolor: '#F7F9FC', borderRadius: 4, border: '2px solid #E2E8F0',
+                    p: 4, bgcolor: '#F7F9FC', borderRadius: 2, border: '2px solid #E2E8F0',
                     cursor: 'pointer', transition: 'all 0.2s', background: 'none',
                     '&:hover': { boxShadow: 4 },
                   }}
                 >
-                  <Box sx={{ width: 56, height: 56, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F3FF', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.1)' } }}>
+                  <Box sx={{ width: 56, height: 56, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F3FF', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.1)' } }}>
                     <User size={28} color="#A78BFA" />
                   </Box>
                   <Box>
@@ -196,7 +196,7 @@ export default function LoginPage() {
               </Button>
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 1, background: role === 'TEACHER' ? '#FFF2EF' : '#F5F3FF' }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 1, background: role === 'TEACHER' ? '#FFF2EF' : '#F5F3FF' }}>
                   {role === 'TEACHER'
                     ? <GraduationCap size={24} color={ACCENT} />
                     : <User size={24} color="#A78BFA" />}
@@ -218,7 +218,7 @@ export default function LoginPage() {
               {mode === 'forgot' && (
                 <Box>
                   {forgotDone ? (
-                    <Box sx={{ borderRadius: 3, border: '1px solid #bbf7d0', bgcolor: '#f0fdf4', p: 3, textAlign: 'center' }}>
+                    <Box sx={{ borderRadius: 1, border: '1px solid #bbf7d0', bgcolor: '#f0fdf4', p: 3, textAlign: 'center' }}>
                       <CheckCircle2 size={40} color="#22c55e" style={{ margin: '0 auto 12px' }} />
                       <Typography sx={{ fontWeight: 700, color: '#0F172A', mb: 0.5 }}>Request sent!</Typography>
                       <Typography sx={{ color: '#64748B', fontSize: 14 }}>Your teacher has been notified. They will set a new password and share it with you.</Typography>
@@ -240,15 +240,15 @@ export default function LoginPage() {
                         value={forgotUpn}
                         onChange={(e) => setForgotUpn(e.target.value)}
                         required
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                       />
-                      {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
+                      {error && <Alert severity="error" sx={{ borderRadius: 1 }}>{error}</Alert>}
                       <Button
                         type="submit"
                         variant="contained"
                         disabled={loading}
                         fullWidth
-                        sx={{ py: 1.5, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 600, fontSize: 15, textTransform: 'none' }}
+                        sx={{ py: 1.5, borderRadius: 1, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 600, fontSize: 15, textTransform: 'none' }}
                       >
                         {loading ? 'Sending...' : 'Request Password Reset'}
                       </Button>
@@ -270,7 +270,7 @@ export default function LoginPage() {
                       value={upn}
                       onChange={(e) => setUpn(e.target.value)}
                       required
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                     />
                   )}
 
@@ -284,7 +284,7 @@ export default function LoginPage() {
                         value={reg.fullname}
                         onChange={(e) => setReg((r) => ({ ...r, fullname: e.target.value }))}
                         required
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                       />
                       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
                         <FormControl size="small" fullWidth>
@@ -293,7 +293,7 @@ export default function LoginPage() {
                             value={reg.sex}
                             label="Sex"
                             onChange={(e) => setReg((r) => ({ ...r, sex: e.target.value as 'MALE' | 'FEMALE' }))}
-                            sx={{ borderRadius: 3 }}
+                            sx={{ borderRadius: 1 }}
                           >
                             <MenuItem value="MALE">Male</MenuItem>
                             <MenuItem value="FEMALE">Female</MenuItem>
@@ -311,7 +311,7 @@ export default function LoginPage() {
                           />
                         </LocalizationProvider>
                       </Box>
-                      <Box sx={{ borderRadius: 3, border: '1px solid #E2E8F0', p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      <Box sx={{ borderRadius: 1, border: '1px solid #E2E8F0', p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                         <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           Parent / Guardian
                         </Typography>
@@ -322,7 +322,7 @@ export default function LoginPage() {
                             value={reg.parents[0].name}
                             onChange={(e) => setParentField(0, 'name', e.target.value)}
                             required
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                           />
                           <TextField
                             size="small"
@@ -330,7 +330,7 @@ export default function LoginPage() {
                             value={reg.parents[0].phoneNumber}
                             onChange={(e) => setParentField(0, 'phoneNumber', e.target.value)}
                             required
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                           />
                           <FormControl size="small" sx={{ gridColumn: '1 / -1' }}>
                             <InputLabel>Relation</InputLabel>
@@ -338,7 +338,7 @@ export default function LoginPage() {
                               value={reg.parents[0].type}
                               label="Relation"
                               onChange={(e) => setParentField(0, 'type', e.target.value)}
-                              sx={{ borderRadius: 2 }}
+                              sx={{ borderRadius: 1 }}
                             >
                               <MenuItem value="FATHER">Father</MenuItem>
                               <MenuItem value="MOTHER">Mother</MenuItem>
@@ -359,11 +359,11 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                   />
 
-                  {notice && <Alert severity="success" sx={{ borderRadius: 3 }}>{notice}</Alert>}
-                  {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
+                  {notice && <Alert severity="success" sx={{ borderRadius: 1 }}>{notice}</Alert>}
+                  {error && <Alert severity="error" sx={{ borderRadius: 1 }}>{error}</Alert>}
 
                   <Button
                     type="submit"
@@ -371,7 +371,7 @@ export default function LoginPage() {
                     disabled={loading}
                     fullWidth
                     sx={{
-                      py: 1.5, borderRadius: 3, fontSize: 15, fontWeight: 600,
+                      py: 1.5, borderRadius: 1, fontSize: 15, fontWeight: 600,
                       bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 },
                       textTransform: 'none',
                       '&.Mui-disabled': { opacity: 0.6, color: 'white', bgcolor: ACCENT },

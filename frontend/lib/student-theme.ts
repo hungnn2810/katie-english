@@ -10,5 +10,5 @@ export const studentTheme = createTheme(baseTheme, {
   typography: {
     fontSize: 16, // slightly larger base (default is 14)
   },
-  shape: { borderRadius: 16 }, // rounder corners for kids
+  shape: { borderRadius: 6 }, // rounder corners for kids
 });

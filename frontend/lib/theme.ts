@@ -33,7 +33,7 @@ export const baseTheme = createTheme({
   typography: {
     fontFamily: 'var(--font-inter), system-ui, sans-serif',
   },
-  shape: { borderRadius: 12 },
+  shape: { borderRadius: 4 },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
