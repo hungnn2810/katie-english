@@ -147,64 +147,52 @@ export class BfaService {
     return this.analyze(audioBuffer, mimeType, word, expectedPhonemes);
   }
 
-  async analyzeSpeaking(audioBuffer: Buffer, mimeType: string, targetText: string, mode: 'SCRIPT_MATCH' | 'FREE_SPEAK' = 'SCRIPT_MATCH'): Promise<BfaSpeakingResult> {
+  async analyzeSpeaking(audioBuffer: Buffer, mimeType: string, targetText: string): Promise<BfaSpeakingResult> {
     let wavBuffer: Buffer;
     try {
       wavBuffer = toWav(audioBuffer, mimeType);
     } catch (err) {
       this.logger.warn(`[analyzeSpeaking] ffmpeg failed: ${(err as Error).message}`);
-      return { success: false, transcription: { text: '' }, words: [], overall_score: 0, matched_words: 0, total_words: 0 };
+      const targetWords = targetText.trim().split(/\s+/).filter(Boolean);
+      return { success: false, transcription: { text: '' }, words: [], overall_score: 0, matched_words: 0, total_words: targetWords.length };
     }
 
     const targetWords = targetText.trim().split(/\s+/).filter(Boolean);
 
-    if (mode === 'SCRIPT_MATCH') {
-      let paResult: Record<string, any>;
-      try {
-        paResult = await this.azurePA(wavBuffer, targetText);
-      } catch (err) {
-        this.logger.warn(`[analyzeSpeaking SCRIPT_MATCH] Azure PA failed: ${(err as Error).message}`);
-        return { success: false, transcription: { text: '' }, words: [], overall_score: 0, matched_words: 0, total_words: targetWords.length };
-      }
-
-      if (paResult.RecognitionStatus !== 'Success') {
-        return { success: false, transcription: { text: '' }, words: [], overall_score: 0, matched_words: 0, total_words: targetWords.length };
-      }
-
-      const transcript = ((paResult.DisplayText as string) ?? '').replace(/\.$/, '').trim();
-      const nbest = ((paResult.NBest as any[]) ?? [{}])[0] ?? {};
-      const overallScore = Math.round((nbest.PronunciationAssessment?.AccuracyScore as number) ?? 0);
-      const azureWords: any[] = (nbest.Words as any[]) ?? [];
-
-      const wordResults = targetWords.map((tw, i) => {
-        const aw = azureWords[i] ?? {};
-        const wScore = Math.round((aw.PronunciationAssessment?.AccuracyScore as number) ?? 0);
-        const ops = mapPhonemeOps(aw);
-        const phonemes = ops
-          .filter((op) => op.status !== 'missing')
-          .map((op) => ({ symbol: op.expected ?? '', ipa: op.expected ?? '', start: op.start ?? 0, end: op.end ?? 0, duration: op.duration ?? 0 }));
-        return { word: tw, phonemes, score: wScore, feedback: ops };
-      });
-
-      const matched = wordResults.filter((w) => w.score >= MIN_WORD_SCORE).length;
-      return { success: true, transcription: { text: transcript }, words: wordResults, overall_score: overallScore, matched_words: matched, total_words: targetWords.length };
-    } else {
-      let sttResult: Record<string, any>;
-      try {
-        sttResult = await this.azureSTT(wavBuffer);
-      } catch (err) {
-        this.logger.warn(`[analyzeSpeaking FREE_SPEAK] Azure STT failed: ${(err as Error).message}`);
-        return { success: false, transcription: { text: '' }, words: [], overall_score: 0, matched_words: 0, total_words: targetWords.length };
-      }
-
-      if (sttResult.RecognitionStatus !== 'Success') {
-        return { success: false, transcription: { text: '' }, words: [], overall_score: 0, matched_words: 0, total_words: targetWords.length };
-      }
-
-      const transcript = ((sttResult.DisplayText as string) ?? '').replace(/\.$/, '').trim();
-      const wordResults = targetWords.map((tw) => ({ word: tw, phonemes: [], score: 100, feedback: [] }));
-      return { success: true, transcription: { text: transcript }, words: wordResults, overall_score: 100, matched_words: targetWords.length, total_words: targetWords.length };
+    let paResult: Record<string, any>;
+    try {
+      paResult = await this.azurePA(wavBuffer, targetText);
+    } catch (err) {
+      this.logger.warn(`[analyzeSpeaking] Azure PA failed: ${(err as Error).message}`);
+      return { success: false, transcription: { text: '' }, words: [], overall_score: 0, matched_words: 0, total_words: targetWords.length };
     }
+
+    if (paResult.RecognitionStatus !== 'Success') {
+      return { success: false, transcription: { text: '' }, words: [], overall_score: 0, matched_words: 0, total_words: targetWords.length };
+    }
+
+    const transcript = ((paResult.DisplayText as string) ?? '').replace(/\.$/, '').trim();
+    const nbest = ((paResult.NBest as any[]) ?? [{}])[0] ?? {};
+    const overallScore = Math.round((nbest.PronunciationAssessment?.AccuracyScore as number) ?? 0);
+    const azureWords: any[] = (nbest.Words as any[]) ?? [];
+
+    // Filter student insertions so positional index aligns with targetWords
+    const alignedWords = azureWords.filter(
+      (w: any) => (w.PronunciationAssessment?.ErrorType ?? 'None') !== 'Insertion',
+    );
+
+    const wordResults = targetWords.map((tw, i) => {
+      const aw = alignedWords[i] ?? {};
+      const wScore = Math.round((aw.PronunciationAssessment?.AccuracyScore as number) ?? 0);
+      const ops = mapPhonemeOps(aw);
+      const phonemes = ops
+        .filter((op) => op.status !== 'missing')
+        .map((op) => ({ symbol: op.expected ?? '', ipa: op.expected ?? '', start: op.start ?? 0, end: op.end ?? 0, duration: op.duration ?? 0 }));
+      return { word: tw, phonemes, score: wScore, feedback: ops };
+    });
+
+    const matched = wordResults.filter((w) => w.score >= MIN_WORD_SCORE).length;
+    return { success: true, transcription: { text: transcript }, words: wordResults, overall_score: overallScore, matched_words: matched, total_words: targetWords.length };
   }
 
   async transcribe(audioBuffer: Buffer, mimeType: string): Promise<WhisperXResult> {

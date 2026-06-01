@@ -18,19 +18,6 @@ function tokenize(text: string): string[] {
     .filter(Boolean);
 }
 
-export function calcScore(transcribed: string, target: string): number {
-  const b = target.toLowerCase().trim();
-  if (!b) return 0;
-  const words = tokenize(transcribed);
-  if (words.length === 0) return 0;
-  if (words.includes(b)) return 100;
-  const bestSim = words.reduce((max, w) => {
-    const sim = 1 - levenshtein(w, b) / Math.max(w.length, b.length);
-    return Math.max(max, sim);
-  }, 0);
-  return Math.max(0, Math.round(bestSim * 100));
-}
-
 export function calcSpeakingScore(
   transcribed: string,
   expected: string,

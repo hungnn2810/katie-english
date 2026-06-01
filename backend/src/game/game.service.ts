@@ -61,7 +61,6 @@ export class GameService {
             audioBuffer,
             mimeType ?? 'audio/webm',
             hw.speakingText,
-            'SCRIPT_MATCH',
           );
           transcribedText = bfaResult.transcription?.text ?? '';
           score = bfaResult.overall_score;
@@ -117,21 +116,46 @@ export class GameService {
     if (hw.type !== 'SPEAKING') throw new BadRequestException('Homework is not a SPEAKING type');
     if (!hw.speakingText) throw new BadRequestException('Homework has no speaking text');
 
+    const speakingMode = hw.speakingMode ?? 'SCRIPT_MATCH';
     let transcribedText = '';
+    let score = 0;
+    let matchedWords = 0;
+    let totalWords = hw.speakingText.trim().split(/\s+/).filter(Boolean).length;
+
     if (audioBuffer && audioBuffer.length > 0) {
-      try {
-        const result = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
-        transcribedText = result.text;
-        this.logger.log(`[try-speak hw=${hwId}] WhisperX: "${transcribedText}"`);
-      } catch (err) {
-        this.logger.warn(`[try-speak hw=${hwId}] WhisperX error: ${(err as Error).message}`);
+      if (speakingMode === 'FREE_SPEAK') {
+        try {
+          const result = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
+          transcribedText = result.text;
+          this.logger.log(`[try-speak hw=${hwId}] FREE_SPEAK transcription: "${transcribedText}"`);
+        } catch (err) {
+          this.logger.warn(`[try-speak hw=${hwId}] WhisperX error: ${(err as Error).message}`);
+        }
+        const scored = calcFreeSpeak(transcribedText, hw.speakingText);
+        score = scored.score; matchedWords = scored.matchedWords; totalWords = scored.totalWords;
+      } else {
+        try {
+          const bfaResult = await this.bfa.analyzeSpeaking(audioBuffer, mimeType ?? 'audio/webm', hw.speakingText);
+          transcribedText = bfaResult.transcription?.text ?? '';
+          score = bfaResult.overall_score;
+          matchedWords = bfaResult.matched_words;
+          totalWords = bfaResult.total_words;
+          this.logger.log(`[try-speak hw=${hwId}] SCRIPT_MATCH score=${score} matched=${matchedWords}/${totalWords}`);
+        } catch (err) {
+          this.logger.warn(`[try-speak hw=${hwId}] BFA analyzeSpeaking error: ${(err as Error).message} — falling back to transcribe`);
+          try {
+            const result = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
+            transcribedText = result.text;
+            const scored = calcSpeakingScore(transcribedText, hw.speakingText);
+            score = scored.score; matchedWords = scored.matchedWords; totalWords = scored.totalWords;
+          } catch (transcribeErr) {
+            this.logger.warn(`[try-speak hw=${hwId}] Fallback transcribe error: ${(transcribeErr as Error).message}`);
+          }
+        }
       }
     }
 
-    const { score, matchedWords, totalWords } = hw.speakingMode === 'FREE_SPEAK'
-      ? calcFreeSpeak(transcribedText, hw.speakingText)
-      : calcSpeakingScore(transcribedText, hw.speakingText);
-    this.logger.log(`[try-speak hw=${hwId}] score=${score} matched=${matchedWords}/${totalWords} mode=${hw.speakingMode ?? 'SCRIPT_MATCH'}`);
+    this.logger.log(`[try-speak hw=${hwId}] score=${score} matched=${matchedWords}/${totalWords} mode=${speakingMode}`);
 
     return {
       score,

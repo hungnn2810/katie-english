@@ -6,7 +6,7 @@ import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { WordRepository } from '../word/word.repository';
 import { PrismaService } from '../prisma/prisma.service';
-import { calcScore, levenshtein, calcSpeakingScore, calcFreeSpeak } from './game.scoring';
+import { levenshtein, calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 import { SaveReadingResultDto } from './game.dto';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -154,24 +154,6 @@ describe('levenshtein', () => {
   it('returns 1 for single insertion', () => expect(levenshtein('cat', 'cats')).toBe(1));
   it('returns 1 for single deletion', () => expect(levenshtein('cats', 'cat')).toBe(1));
   it('handles empty strings', () => expect(levenshtein('', '')).toBe(0));
-});
-
-// ── calcScore ─────────────────────────────────────────────────────────────────
-
-describe('calcScore', () => {
-  it('returns 100 for exact match', () => expect(calcScore('cat', 'cat')).toBe(100));
-  it('returns 100 when target word appears in sentence', () => expect(calcScore('I said cat loudly', 'cat')).toBe(100));
-  it('returns 100 for case-insensitive match', () => expect(calcScore('CAT', 'cat')).toBe(100));
-  it('returns 0 for empty transcription', () => expect(calcScore('', 'cat')).toBe(0));
-  it('returns 0 for empty target', () => expect(calcScore('cat', '')).toBe(0));
-  it('scores close words higher than distant words', () => {
-    expect(calcScore('bat', 'cat')).toBeGreaterThan(calcScore('dog', 'cat'));
-  });
-  it('scores partial match proportionally', () => {
-    const score = calcScore('bat', 'cat');
-    expect(score).toBeGreaterThan(0);
-    expect(score).toBeLessThan(100);
-  });
 });
 
 // ── calcSpeakingScore ─────────────────────────────────────────────────────────
@@ -780,7 +762,7 @@ describe('GameService.trySpeakingHomework', () => {
           },
         },
         { provide: StorageService, useValue: { upload: jest.fn(), getObject: jest.fn() } },
-        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn() } },
+        { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
         { provide: PrismaService, useValue: prisma },
       ],
@@ -824,17 +806,39 @@ describe('GameService.trySpeakingHomework', () => {
     expect(r.speakingPictureUrl).toBe('https://example.com/p.jpg');
   });
 
-  it('returns SCRIPT_MATCH score from calcSpeakingScore', async () => {
+  it('returns SCRIPT_MATCH score from analyzeSpeaking (Azure PA)', async () => {
     prisma.homework.findUnique.mockResolvedValue({
       type: 'SPEAKING', speakingMode: 'SCRIPT_MATCH',
       speakingText: 'hello world', speakingPictureUrl: null,
     });
-    bfa.transcribe.mockResolvedValue({ text: 'hello world', words: [] } as any);
+    bfa.analyzeSpeaking.mockResolvedValue({
+      success: true,
+      transcription: { text: 'hello world' },
+      words: [],
+      overall_score: 100,
+      matched_words: 2,
+      total_words: 2,
+    } as any);
     const r = await service.trySpeakingHomework(1, Buffer.from('audio'), 'audio/webm');
+    expect(bfa.analyzeSpeaking).toHaveBeenCalledWith(expect.any(Buffer), 'audio/webm', 'hello world');
+    expect(bfa.transcribe).not.toHaveBeenCalled();
     expect(r.matchedWords).toBe(2);
     expect(r.totalWords).toBe(2);
     expect(r.score).toBe(100);
     expect(r.speakingMode).toBe('SCRIPT_MATCH');
+  });
+
+  it('falls back to transcribe+calcSpeakingScore when SCRIPT_MATCH analyzeSpeaking throws', async () => {
+    prisma.homework.findUnique.mockResolvedValue({
+      type: 'SPEAKING', speakingMode: 'SCRIPT_MATCH',
+      speakingText: 'hello world', speakingPictureUrl: null,
+    });
+    bfa.analyzeSpeaking.mockRejectedValue(new Error('BFA down'));
+    bfa.transcribe.mockResolvedValue({ text: 'hello world', words: [] } as any);
+    const r = await service.trySpeakingHomework(1, Buffer.from('audio'), 'audio/webm');
+    expect(bfa.transcribe).toHaveBeenCalled();
+    expect(r.score).toBe(100);
+    expect(r.matchedWords).toBe(2);
   });
 
   it('returns score=0 when no audio buffer is provided', async () => {
