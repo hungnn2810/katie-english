@@ -5,7 +5,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "copy-vad-assets": "mkdir -p public && cp node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js public/ && cp node_modules/@ricky0123/vad-web/dist/silero_vad_legacy.onnx public/ && cp node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm public/",
+    "copy-vad-assets": "if not exist public mkdir public && copy node_modules\\@ricky0123\\vad-web\\dist\\vad.worklet.bundle.min.js public\\ && copy node_modules\\@ricky0123\\vad-web\\dist\\silero_vad_legacy.onnx public\\ && copy node_modules\\onnxruntime-web\\dist\\ort-wasm-simd-threaded.wasm public\\",
     "postinstall": "npm run copy-vad-assets"
   },
   "dependencies": {

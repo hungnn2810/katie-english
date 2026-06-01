@@ -1,33 +1,35 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import {
   getTeachers, createTeacher, updateTeacher, disableTeacher, enableTeacher,
   TeacherItem, CreateTeacherInput, UpdateTeacherInput,
 } from '@/lib/admin-portal-api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog';
 import { CheckCircle2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import FormLabel from '@mui/material/FormLabel';
+import Chip from '@mui/material/Chip';
+import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TableContainer from '@mui/material/TableContainer';
+import Paper from '@mui/material/Paper';
+import CloseIcon from '@mui/icons-material/Close';
 
 const ACCENT = '#4F9DFF';
 
-function Spinner() {
-  return (
-    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-      <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// ─── Teacher Modal (Create / Edit) ───────────────────────────────────────────
+// â”€â”€â”€ Teacher Modal (Create / Edit) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TeacherModal({ editing, onClose, onSaved }: {
   editing: TeacherItem | null;
@@ -65,104 +67,62 @@ function TeacherModal({ editing, onClose, onSaved }: {
   }
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-md rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-8 pt-7 pb-5 border-b border-border gap-0">
-          <div>
-            <DialogTitle className="text-xl font-black text-textPrimary">
-              {editing ? 'Edit Teacher' : 'Create Teacher'}
-            </DialogTitle>
-            <p className="text-xs text-textSecondary mt-1">
-              {editing ? 'Update teacher details.' : 'Add a new teacher account.'}
-            </p>
-          </div>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
-            className="text-textSecondary hover:bg-gray-100 rounded-xl">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </Button>
-        </DialogHeader>
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
+      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Box>
+          <Typography variant="h6" fontWeight={900}>{editing ? 'Edit Teacher' : 'Create Teacher'}</Typography>
+          <Typography variant="caption" color="text.secondary">{editing ? 'Update teacher details.' : 'Add a new teacher account.'}</Typography>
+        </Box>
+        <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: -0.5 }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
 
-        <form onSubmit={handleSubmit} className="px-8 py-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="teacher-name">Name</Label>
-            <Input
-              id="teacher-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full name"
-              required
-              className="border-border"
-            />
-          </div>
+      <Box component="form" onSubmit={handleSubmit}>
+        <DialogContent sx={{ px: 4, py: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box>
+            <FormLabel htmlFor="teacher-name" sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', display: 'block', mb: 0.5 }}>Name</FormLabel>
+            <TextField id="teacher-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" required fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+          </Box>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="teacher-email">Email</Label>
-            <Input
-              id="teacher-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="teacher@example.com"
-              required
-              disabled={!!editing}
-              className="border-border disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-          </div>
+          <Box>
+            <FormLabel htmlFor="teacher-email" sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', display: 'block', mb: 0.5 }}>Email</FormLabel>
+            <TextField id="teacher-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teacher@example.com" required fullWidth size="small" disabled={!!editing} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+          </Box>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="teacher-phone">Phone</Label>
-            <Input
-              id="teacher-phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Phone number"
-              required
-              className="border-border"
-            />
-          </div>
+          <Box>
+            <FormLabel htmlFor="teacher-phone" sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', display: 'block', mb: 0.5 }}>Phone</FormLabel>
+            <TextField id="teacher-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone number" required fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+          </Box>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="teacher-password">
+          <Box>
+            <FormLabel htmlFor="teacher-password" sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', display: 'block', mb: 0.5 }}>
               {editing ? 'New Password' : 'Password'}
-            </Label>
-            <Input
-              id="teacher-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={editing ? 'Leave blank to keep current' : 'Password'}
-              required={!editing}
-              className="border-border"
-            />
-          </div>
+            </FormLabel>
+            <TextField id="teacher-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editing ? 'Leave blank to keep current' : 'Password'} required={!editing} fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+          </Box>
 
-          {error && (
-            <p className="text-sm text-red-500 mt-1">{error}</p>
-          )}
+          {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
+        </DialogContent>
 
-          <div className="flex gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1 rounded-xl">
-              Keep teacher
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white hover:opacity-90 disabled:opacity-60 gap-2"
-              style={{ background: ACCENT }}
-            >
-              {loading && <Spinner />}
-              {loading ? 'Saving...' : editing ? 'Save Changes' : 'Create Teacher'}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
+        <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
+          <Button type="button" variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Keep teacher</Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
+            sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 700 }}
+          >
+            {loading ? 'Saving...' : editing ? 'Save Changes' : 'Create Teacher'}
+          </Button>
+        </DialogActions>
+      </Box>
     </Dialog>
   );
 }
 
-// ─── Disable / Enable Confirm Dialog ─────────────────────────────────────────
+// â”€â”€â”€ Disable / Enable Confirm Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ConfirmDialog({ target, onClose, onConfirmed }: {
   target: TeacherItem;
@@ -191,61 +151,48 @@ function ConfirmDialog({ target, onClose, onConfirmed }: {
   }
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-sm rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="px-8 pt-7 pb-4 border-b border-border">
-          <DialogTitle className="text-lg font-black text-textPrimary">
-            {isDisabling ? 'Disable teacher?' : 'Enable teacher?'}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="px-8 py-5">
-          <p className="text-sm text-textSecondary">
-            {isDisabling
-              ? `Disable teacher? ${target.name ?? target.upn} will no longer be able to log in until re-enabled.`
-              : `Enable teacher? ${target.name ?? target.upn} will be able to log in again.`}
-          </p>
-          {error && <p className="text-sm text-red-500 mt-3">{error}</p>}
-        </div>
-
-        <DialogFooter className="px-8 pb-7 flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 rounded-xl"
-          >
-            Keep teacher
-          </Button>
-          {isDisabling ? (
-            <Button
-              type="button"
-              disabled={loading}
-              onClick={handleConfirm}
-              className="flex-1 rounded-xl text-white disabled:opacity-60 gap-2 bg-destructive hover:bg-destructive/90"
-            >
-              {loading && <Spinner />}
-              {loading ? 'Disabling...' : 'Disable account'}
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              disabled={loading}
-              onClick={handleConfirm}
-              className="flex-1 rounded-xl text-white disabled:opacity-60 gap-2"
-              style={{ background: ACCENT }}
-            >
-              {loading && <Spinner />}
-              {loading ? 'Enabling...' : 'Enable account'}
-            </Button>
-          )}
-        </DialogFooter>
+    <Dialog open onClose={onClose} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
+      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Typography variant="h6" fontWeight={900}>{isDisabling ? 'Disable teacher?' : 'Enable teacher?'}</Typography>
+      </DialogTitle>
+      <DialogContent sx={{ px: 4, py: 3 }}>
+        <Typography variant="body2" color="text.secondary">
+          {isDisabling
+            ? `Disable teacher? ${target.name ?? target.upn} will no longer be able to log in until re-enabled.`
+            : `Enable teacher? ${target.name ?? target.upn} will be able to log in again.`}
+        </Typography>
+        {error && <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>{error}</Alert>}
       </DialogContent>
+      <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
+        <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Keep teacher</Button>
+        {isDisabling ? (
+          <Button
+            variant="contained"
+            color="error"
+            disabled={loading}
+            onClick={handleConfirm}
+            startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
+            sx={{ flex: 1, borderRadius: 3, fontWeight: 700 }}
+          >
+            {loading ? 'Disabling...' : 'Disable account'}
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            disabled={loading}
+            onClick={handleConfirm}
+            startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
+            sx={{ flex: 1, borderRadius: 3, fontWeight: 700, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 } }}
+          >
+            {loading ? 'Enabling...' : 'Enable account'}
+          </Button>
+        )}
+      </DialogActions>
     </Dialog>
   );
 }
 
-// ─── Teachers Page ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Teachers Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
@@ -277,7 +224,7 @@ export default function TeachersPage() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <Box>
       {/* Modals */}
       {(creating || editing) && (
         <TeacherModal
@@ -297,100 +244,79 @@ export default function TeachersPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-textPrimary text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl animate-slide-up flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-400" /> {toast}
-        </div>
+        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1500, bgcolor: '#0F172A', color: 'white', fontSize: 14, fontWeight: 600, px: 2.5, py: 1.5, borderRadius: 4, boxShadow: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CheckCircle2 style={{ width: 16, height: 16, color: '#4ADE80' }} /> {toast}
+        </Box>
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between mb-5">
-        <p className="text-sm text-textSecondary">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.5 }}>
+        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
           {loading ? 'Loading...' : `${teachers.length} teacher${teachers.length !== 1 ? 's' : ''}`}
-        </p>
+        </Typography>
         <Button
           onClick={() => setCreating(true)}
-          className="text-white font-bold rounded-xl px-5 h-auto py-2.5 hover:opacity-90"
-          style={{ background: ACCENT }}
+          variant="contained"
+          sx={{ color: 'white', fontWeight: 700, borderRadius: 3, px: 2.5, py: 1.25, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 } }}
         >
           Create Teacher
         </Button>
-      </div>
+      </Box>
 
       {/* Error */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
 
       {/* Table */}
       {!loading && teachers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <h3 className="text-lg font-bold text-textPrimary mb-2">No teachers yet</h3>
-          <p className="text-sm text-textSecondary">
-            Create the first teacher account to get started.
-          </p>
-        </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
+          <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No teachers yet</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Create the first teacher account to get started.</Typography>
+        </Box>
       ) : (
-        <div className="rounded-2xl border border-border bg-white overflow-hidden">
+        <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
           <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50">
-                <TableHead className="px-5 py-3 text-xs font-semibold text-textSecondary uppercase tracking-wide">Name</TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-textSecondary uppercase tracking-wide">Email</TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-textSecondary uppercase tracking-wide">Phone</TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-textSecondary uppercase tracking-wide">Status</TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-textSecondary uppercase tracking-wide">Actions</TableHead>
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'grey.50' }}>
+                {['Name', 'Email', 'Phone', 'Status', 'Actions'].map((h) => (
+                  <TableCell key={h} sx={{ px: 2.5, py: 1.5, fontSize: 12, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</TableCell>
+                ))}
               </TableRow>
-            </TableHeader>
+            </TableHead>
             <TableBody>
               {teachers.map((t) => (
-                <TableRow
-                  key={t.id}
-                  className={`hover:bg-slate-50 ${t.disabled ? 'text-slate-400' : ''}`}
-                >
-                  <TableCell className="px-5 py-3 font-medium">
-                    {t.name ?? <span className="text-textSecondary italic">No name</span>}
+                <TableRow key={t.id} sx={{ '&:hover': { bgcolor: 'grey.50' } }}>
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontWeight: 500, color: t.disabled ? 'text.disabled' : 'text.primary' }}>
+                    {t.name ?? <Box component="span" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>No name</Box>}
                   </TableCell>
-                  <TableCell className="px-5 py-3">{t.upn}</TableCell>
-                  <TableCell className="px-5 py-3">
-                    {t.phone ?? <span className="text-textSecondary italic">—</span>}
+                  <TableCell sx={{ px: 2.5, py: 1.5, color: t.disabled ? 'text.disabled' : 'text.primary' }}>{t.upn}</TableCell>
+                  <TableCell sx={{ px: 2.5, py: 1.5, color: t.disabled ? 'text.disabled' : 'text.primary' }}>
+                    {t.phone ?? <Box component="span" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>â€”</Box>}
                   </TableCell>
-                  <TableCell className="px-5 py-3">
+                  <TableCell sx={{ px: 2.5, py: 1.5 }}>
                     {t.disabled
-                      ? <Badge className="bg-slate-100 text-slate-500">Disabled</Badge>
-                      : <Badge className="bg-emerald-50 text-emerald-700">Active</Badge>}
+                      ? <Chip label="Disabled" size="small" sx={{ bgcolor: 'grey.100', color: '#64748B' }} />
+                      : <Chip label="Active" size="small" sx={{ bgcolor: '#F0FDF4', color: '#15803D' }} />}
                   </TableCell>
-                  <TableCell className="px-5 py-3">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditing(t)}
-                        className="h-auto py-1.5 px-3 text-xs font-semibold rounded-lg hover:bg-slate-100"
-                      >
+                  <TableCell sx={{ px: 2.5, py: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Button variant="text" size="small" onClick={() => setEditing(t)}
+                        sx={{ fontSize: 12, fontWeight: 600, borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0 }}>
                         Edit
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setConfirmTarget(t)}
-                        className={`h-auto py-1.5 px-3 text-xs font-semibold rounded-lg ${
-                          t.disabled
-                            ? 'text-emerald-700 hover:bg-emerald-50'
-                            : 'text-red-500 hover:bg-red-50'
-                        }`}
-                      >
+                      <Button variant="text" size="small" onClick={() => setConfirmTarget(t)}
+                        sx={{ fontSize: 12, fontWeight: 600, borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0,
+                          color: t.disabled ? 'success.main' : 'error.main',
+                          '&:hover': { bgcolor: t.disabled ? '#F0FDF4' : '#FEF2F2' } }}>
                         {t.disabled ? 'Enable' : 'Disable'}
                       </Button>
-                    </div>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
+        </TableContainer>
       )}
-    </div>
+    </Box>
   );
 }

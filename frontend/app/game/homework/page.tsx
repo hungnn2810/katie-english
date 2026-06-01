@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthGate from '@/components/AuthGate';
@@ -105,7 +105,7 @@ function PageContent({ user }: { user: AuthUser }) {
 
       {/* Change Password Dialog */}
       <Dialog open={showPwModal} onClose={closePwModal} maxWidth="xs" fullWidth
-        PaperProps={{ sx: { borderRadius: 4 } }}>
+        slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
         <DialogTitle sx={{
           px: 3.5, pt: 3, pb: 2,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -135,7 +135,7 @@ function PageContent({ user }: { user: AuthUser }) {
                 label="Current Password"
                 size="small"
                 fullWidth
-                placeholder="••••••••"
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                 value={currentPw}
                 onChange={(e) => setCurrentPw(e.target.value)}
                 required
@@ -336,7 +336,7 @@ function PageContent({ user }: { user: AuthUser }) {
                       )}
                       {hw.type === 'SPEAKING' && hw.speakingText && (
                         <Box component="span" sx={{ bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                          {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? '…' : ''}
+                          {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? 'â€¦' : ''}
                         </Box>
                       )}
                       {hw.type === 'READING' && (

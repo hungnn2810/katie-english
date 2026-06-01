@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { getHomework, deleteAssignment, HomeworkDetail, HomeworkType } from '@/lib/admin-api';
 import { gradients, colors } from '@/lib/colors';
 import { Hash, Mic, BookOpen, Eye, Users, CheckCircle2, Clock, BarChart3 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
 import { formatDate, parseApiDateTime } from '@/lib/datetime';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
@@ -42,7 +44,9 @@ export default function TeacherHomeworkDetailPage() {
   const load = () => getHomework(hwId).then(setHw).catch(() => {});
   useEffect(() => { load(); }, [hwId]);
 
-  if (!hw) return <div className="text-textSecondary py-16 text-center">Loading...</div>;
+  if (!hw) return (
+    <Typography sx={{ color: 'text.secondary', py: 8, textAlign: 'center' }}>Loading...</Typography>
+  );
 
   const meta = TYPE_META[hw.type];
   const now = new Date();
@@ -61,92 +65,94 @@ export default function TeacherHomeworkDetailPage() {
   });
 
   return (
-    <div className="max-w-2xl animate-fade-in">
+    <Box sx={{ maxWidth: 672 }}>
       {/* Breadcrumb + action */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2 text-sm">
-          <Link href="/teacher/homework" className="text-textSecondary hover:text-textPrimary transition-colors">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14 }}>
+          <Box component={Link} href="/teacher/homework" sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'text.primary' }, transition: 'color 0.15s' }}>
             Homework
-          </Link>
-          <span className="text-border">/</span>
-          <span className="text-textPrimary font-medium">{hw.name || meta.label}</span>
-        </div>
+          </Box>
+          <Typography sx={{ color: 'divider' }}>/</Typography>
+          <Typography sx={{ color: 'text.primary', fontWeight: 500, fontSize: 14 }}>{hw.name || meta.label}</Typography>
+        </Box>
         <Button
           onClick={() => router.push(`/teacher/homework/${hwId}/try`)}
-          className="flex items-center gap-1.5 h-auto px-4 py-2 rounded-xl text-sm font-semibold text-white"
-          style={{ background: gradients.primaryPurple }}>
-          <Eye className="w-4 h-4" /> Try
+          variant="contained"
+          startIcon={<Eye style={{ width: 16, height: 16 }} />}
+          sx={{ px: 2, py: 1, borderRadius: 3, fontSize: 14, fontWeight: 600, color: 'white', background: gradients.primaryPurple, '&:hover': { background: gradients.primaryPurple, opacity: 0.9 } }}
+        >
+          Try
         </Button>
-      </div>
+      </Box>
 
       {/* Homework info card */}
-      <div className="bg-white rounded-2xl border border-border shadow-sm p-5 mb-4">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: meta.bg }}>
-            <meta.icon className="w-6 h-6" style={{ color: meta.color }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Badge className="text-xs font-bold px-2.5 py-1 rounded-full h-auto border-0"
-                style={{ background: meta.bg, color: meta.color }}>
-                {meta.label}
-              </Badge>
-              {hw.name && <span className="text-sm font-bold text-textPrimary">{hw.name}</span>}
-            </div>
-            <p className="text-xs text-textSecondary">Created {new Date(hw.createdAt).toLocaleDateString()}</p>
+      <Box sx={{ bgcolor: 'white', borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 1, p: 2.5, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'start', gap: 2 }}>
+          <Box sx={{ width: 48, height: 48, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: meta.bg }}>
+            <meta.icon style={{ width: 24, height: 24, color: meta.color }} />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+              <Chip
+                label={meta.label}
+                size="small"
+                sx={{ fontSize: 12, fontWeight: 700, px: 0.5, bgcolor: meta.bg, color: meta.color, border: 'none', height: 'auto', py: 0.5 }}
+              />
+              {hw.name && <Typography sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary' }}>{hw.name}</Typography>}
+            </Box>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Created {new Date(hw.createdAt).toLocaleDateString()}</Typography>
             {hw.type === 'PHONICS' && (hw.parts ?? []).length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
                 {(hw.parts ?? []).map((part) => (
-                  <Badge key={part.id} className="text-xs px-2 py-0.5 rounded-lg font-bold h-auto border-0"
-                    style={{ background: meta.bg, color: meta.color }}>
-                    {part.name} ({part.words.length})
-                  </Badge>
+                  <Chip key={part.id} label={`${part.name} (${part.words.length})`} size="small"
+                    sx={{ fontSize: 12, fontWeight: 700, bgcolor: meta.bg, color: meta.color, border: 'none', height: 'auto', py: 0.5 }} />
                 ))}
-              </div>
+              </Box>
             )}
             {hw.type === 'SPEAKING' && hw.speakingText && (
-              <p className="text-sm text-textSecondary italic mt-1 line-clamp-2">"{hw.speakingText}"</p>
+              <Typography sx={{ fontSize: 14, color: 'text.secondary', fontStyle: 'italic', mt: 0.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                &quot;{hw.speakingText}&quot;
+              </Typography>
             )}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Stats bar */}
       {hw.assignments.length > 0 && (
-        <div className="grid grid-cols-4 gap-3 mb-6">
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1.5, mb: 3 }}>
           {([
             { icon: BarChart3,    label: 'Assignments', value: hw.assignments.length, color: colors.primary },
             { icon: Clock,        label: 'Active',      value: activeAssignments.length, color: '#10B981' },
             { icon: Users,        label: 'Enrolled',    value: totalEnrolled, color: colors.purple },
             { icon: CheckCircle2, label: 'Submitted',   value: submittedCount, color: '#22C55E' },
           ] as const).map(({ icon: Icon, label, value, color }) => (
-            <div key={label} className="bg-white rounded-2xl border border-border shadow-sm p-3 text-center">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center mx-auto mb-1.5"
-                style={{ background: color + '18' }}>
-                <Icon className="w-4 h-4" style={{ color }} />
-              </div>
-              <div className="text-xl font-black text-textPrimary">{value}</div>
-              <div className="text-[10px] font-semibold text-textSecondary uppercase tracking-wide">{label}</div>
-            </div>
+            <Box key={label} sx={{ bgcolor: 'white', borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 1, p: 1.5, textAlign: 'center' }}>
+              <Box sx={{ width: 32, height: 32, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 0.75, bgcolor: color + '18' }}>
+                <Icon style={{ width: 16, height: 16, color }} />
+              </Box>
+              <Typography sx={{ fontSize: 22, fontWeight: 900, color: 'text.primary' }}>{value}</Typography>
+              <Typography sx={{ fontSize: 10, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</Typography>
+            </Box>
           ))}
-        </div>
+        </Box>
       )}
 
       {/* Assignments */}
-      <h2 className="text-base font-bold text-textPrimary mb-3">
+      <Typography sx={{ fontSize: 16, fontWeight: 700, color: 'text.primary', mb: 1.5 }}>
         Assignments{' '}
-        <span className="text-textSecondary font-normal">({hw.assignments.length})</span>
-      </h2>
+        <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>({hw.assignments.length})</Box>
+      </Typography>
 
       {hw.assignments.length === 0 ? (
-        <div className="text-textSecondary text-sm py-12 text-center bg-white rounded-2xl border border-border">
-          <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <Users className="w-6 h-6 text-slate-400" />
-          </div>
+        <Box sx={{ color: 'text.secondary', fontSize: 14, py: 6, textAlign: 'center', bgcolor: 'white', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+          <Box sx={{ width: 48, height: 48, bgcolor: 'grey.100', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>
+            <Users style={{ width: 24, height: 24, color: '#94A3B8' }} />
+          </Box>
           No assignments yet. Click &quot;Assign&quot; on the homework list to assign this to a class.
-        </div>
+        </Box>
       ) : (
-        <div className="space-y-4 mb-6">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
           {hw.assignments.map((a) => {
             const endDate = parseApiDateTime(a.endDate);
             const isOpen = endDate ? endDate >= now : false;
@@ -161,98 +167,101 @@ export default function TeacherHomeworkDetailPage() {
             const ringColor = aPct >= 80 ? '#22C55E' : aPct >= 40 ? '#F59E0B' : '#EF4444';
 
             return (
-              <div key={a.id} className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+              <Box key={a.id} sx={{ bgcolor: 'white', borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 1, overflow: 'hidden' }}>
                 {/* Assignment header */}
-                <div className="flex items-center gap-4 px-5 py-4 border-b border-border">
-                  <div className="relative shrink-0">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 2.5, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+                  <Box sx={{ position: 'relative', flexShrink: 0 }}>
                     <ProgressRing pct={aPct} size={52} stroke={5} color={ringColor} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs font-black" style={{ color: ringColor }}>{aPct}%</span>
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${isOpen ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-textSecondary'}`}>
-                        {isOpen ? 'Open' : 'Closed'}
-                      </span>
-                      <span className="text-sm font-bold text-textPrimary truncate">{classNames}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-textSecondary">
-                      <span>{submittedStudentIds.size} / {aEnrolled} submitted</span>
-                      <span>·</span>
-                      <span>Due {formatDate(a.endDate)}</span>
-                    </div>
-                  </div>
-                  <button
+                    <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Typography sx={{ fontSize: 12, fontWeight: 900, color: ringColor }}>{aPct}%</Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Chip
+                        label={isOpen ? 'Open' : 'Closed'}
+                        size="small"
+                        sx={{ fontSize: 12, fontWeight: 600, bgcolor: isOpen ? '#ECFDF5' : 'grey.100', color: isOpen ? '#059669' : 'text.secondary' }}
+                      />
+                      <Typography sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{classNames}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontSize: 12, color: 'text.secondary' }}>
+                      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{submittedStudentIds.size} / {aEnrolled} submitted</Typography>
+                      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>·</Typography>
+                      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Due {formatDate(a.endDate)}</Typography>
+                    </Box>
+                  </Box>
+                  <Box
+                    component="button"
                     onClick={async () => {
                       if (confirm('Remove this assignment?')) { await deleteAssignment(a.id); load(); }
                     }}
-                    className="text-xs font-semibold text-highlight hover:text-highlight/70 transition-colors shrink-0">
+                    sx={{ fontSize: 12, fontWeight: 600, color: '#FF7B7B', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, '&:hover': { opacity: 0.7 } }}
+                  >
                     Remove
-                  </button>
-                </div>
+                  </Box>
+                </Box>
 
                 {/* Sessions list */}
                 {sessions.length === 0 ? (
-                  <div className="px-5 py-4 text-sm text-textSecondary/60 italic">No submissions yet.</div>
+                  <Typography sx={{ px: 2.5, py: 2, fontSize: 14, color: 'rgba(100,116,139,0.6)', fontStyle: 'italic' }}>No submissions yet.</Typography>
                 ) : (
-                  <div className="divide-y divide-border">
+                  <Box sx={{ '& > *:not(:last-child)': { borderBottom: '1px solid', borderColor: 'divider' } }}>
                     {sessions.map((s) => (
-                      <Link key={s.id}
+                      <Box key={s.id}
+                        component={Link}
                         href={`/teacher/homework/${hwId}/session/${s.id}`}
-                        className="flex items-center justify-between px-5 py-3 hover:bg-background/60 transition-colors group">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white"
-                            style={{ background: colors.primary }}>
+                        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2.5, py: 1.5, textDecoration: 'none', '&:hover': { bgcolor: 'rgba(247,249,252,0.6)' }, transition: 'background-color 0.15s' }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, fontWeight: 700, color: 'white', bgcolor: colors.primary }}>
                             {(s.student?.fullname ?? `S${s.studentId}`).charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-textPrimary text-sm">
+                          </Box>
+                          <Box>
+                            <Typography sx={{ fontWeight: 600, color: 'text.primary', fontSize: 14 }}>
                               {s.student?.fullname ?? `Student #${s.studentId}`}
-                            </div>
-                            <div className="text-textSecondary text-xs">
+                            </Typography>
+                            <Typography sx={{ color: 'text.secondary', fontSize: 12 }}>
                               {s.completedAt
                                 ? `Completed ${new Date(s.completedAt).toLocaleString()}`
                                 : `Started ${new Date(s.startedAt).toLocaleString()} · in progress`}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                            </Typography>
+                          </Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                           {s.score != null ? (
-                            <span className="font-black text-lg tabular-nums" style={{ color: scoreColor(s.score) }}>
+                            <Typography sx={{ fontWeight: 900, fontSize: 18, fontVariantNumeric: 'tabular-nums', color: scoreColor(s.score) }}>
                               {Math.round(s.score)}%
-                            </span>
+                            </Typography>
                           ) : (
-                            <span className="text-textSecondary/50 text-sm">—</span>
+                            <Typography sx={{ color: 'rgba(100,116,139,0.5)', fontSize: 14 }}>—</Typography>
                           )}
-                          <span className="text-textSecondary/40 text-xs group-hover:text-textSecondary/70 transition-colors">›</span>
-                        </div>
-                      </Link>
+                          <Typography sx={{ color: 'rgba(100,116,139,0.4)', fontSize: 12 }}>›</Typography>
+                        </Box>
+                      </Box>
                     ))}
-                  </div>
+                  </Box>
                 )}
 
                 {/* Not-submitted chips */}
                 {notSubmitted.length > 0 && (
-                  <div className="px-5 py-3 border-t border-border bg-background/40">
-                    <p className="text-[10px] font-bold text-textSecondary uppercase tracking-wide mb-2">
+                  <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'rgba(247,249,252,0.4)' }}>
+                    <Typography sx={{ fontSize: 10, fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1 }}>
                       Not submitted ({notSubmitted.length})
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                       {notSubmitted.map((s) => (
-                        <span key={s.id}
-                          className="text-xs px-2.5 py-1 rounded-full font-medium bg-slate-100 text-textSecondary">
-                          {s.fullname}
-                        </span>
+                        <Chip key={s.id} label={s.fullname} size="small"
+                          sx={{ fontSize: 12, fontWeight: 500, bgcolor: 'grey.100', color: 'text.secondary' }} />
                       ))}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
-              </div>
+              </Box>
             );
           })}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

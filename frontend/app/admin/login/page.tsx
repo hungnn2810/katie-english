@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminLogin } from '@/lib/admin-auth';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Shield, Lock } from 'lucide-react';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
 
 const ACCENT = '#4F9DFF';
 
@@ -34,104 +36,98 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex font-sans" style={{ minWidth: 1024 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', minWidth: 1024 }}>
       {/* Left panel — dark navy */}
-      <div
-        className="w-[420px] flex-shrink-0 flex flex-col justify-between p-12"
-        style={{ background: '#0C1220' }}
-      >
-        <div>
+      <Box sx={{ width: 420, flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 6, bgcolor: '#0C1220' }}>
+        <Box>
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-16">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0"
-              style={{ background: ACCENT }}
-            >
-              <span className="text-white font-black text-base">K</span>
-            </div>
-            <span className="text-white text-lg font-bold tracking-tight">Katie English</span>
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 8 }}>
+            <Box sx={{ width: 40, height: 40, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: ACCENT, flexShrink: 0, boxShadow: 3 }}>
+              <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 16 }}>K</Typography>
+            </Box>
+            <Typography sx={{ color: 'white', fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>Katie English</Typography>
+          </Box>
 
-          <h1 className="text-4xl font-black text-white leading-[1.15] mb-4 tracking-tight">
+          <Typography sx={{ fontSize: 36, fontWeight: 900, color: 'white', lineHeight: 1.15, mb: 2, letterSpacing: '-0.02em' }}>
             Admin Login<br />
-            <span style={{ color: ACCENT }}>portal access</span>
-          </h1>
-          <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
+            <Box component="span" sx={{ color: ACCENT }}>portal access</Box>
+          </Typography>
+          <Typography sx={{ color: '#94A3B8', fontSize: 14, lineHeight: 1.6, maxWidth: 280 }}>
             Manage teachers, classes, students, and review platform-wide statistics.
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Feature list */}
-        <div className="space-y-4">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {[
             { icon: Shield, text: 'Secure administrator access' },
             { icon: Lock, text: 'Rate-limited login protection' },
           ].map((f) => {
             const Icon = f.icon;
             return (
-              <div key={f.text} className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'rgba(79, 157, 255, 0.15)' }}
-                >
-                  <Icon className="w-4 h-4" style={{ color: ACCENT }} />
-                </div>
-                <span className="text-slate-400 text-sm">{f.text}</span>
-              </div>
+              <Box key={f.text} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ width: 32, height: 32, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: 'rgba(79,157,255,0.15)' }}>
+                  <Icon style={{ width: 16, height: 16, color: ACCENT }} />
+                </Box>
+                <Typography sx={{ color: '#94A3B8', fontSize: 14 }}>{f.text}</Typography>
+              </Box>
             );
           })}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Right panel */}
-      <div className="flex-1 bg-white flex items-center justify-center p-12">
-        <div className="w-full max-w-md animate-fade-in">
-          <div className="mb-10">
-            <h2 className="text-2xl font-black text-textPrimary mb-2 tracking-tight">Admin Login</h2>
-            <p className="text-textSecondary text-sm">Platform administrator access</p>
-          </div>
+      <Box sx={{ flex: 1, bgcolor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 6 }}>
+        <Box sx={{ width: '100%', maxWidth: 448 }}>
+          <Box sx={{ mb: 5 }}>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: 'text.primary', mb: 1, letterSpacing: '-0.02em' }}>Admin Login</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>Platform administrator access</Typography>
+          </Box>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@katie.com"
-                required
-                autoComplete="email"
-                className="rounded-xl"
-              />
-            </div>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <TextField
+              id="email"
+              type="email"
+              label="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@katie.com"
+              required
+              autoComplete="email"
+              fullWidth
+              size="small"
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+            />
 
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
+            <Box>
+              <TextField
                 id="password"
                 type="password"
+                label="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
-                className="rounded-xl"
+                fullWidth
+                size="small"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
               />
-              {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-            </div>
+              {error && <Alert severity="error" sx={{ mt: 1, borderRadius: 2 }}>{error}</Alert>}
+            </Box>
 
             <Button
               type="submit"
+              variant="contained"
               disabled={loading}
-              className="w-full font-semibold text-white disabled:opacity-50"
-              style={{ background: ACCENT }}
+              fullWidth
+              sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 600, color: 'white', borderRadius: 3, py: 1.5 }}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
-          </form>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }

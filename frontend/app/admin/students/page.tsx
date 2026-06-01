@@ -1,39 +1,42 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import {
   getAdminStudents, getStudentResults, deleteAdminSession,
   AdminStudentItem, AdminStudentResultItem,
 } from '@/lib/admin-portal-api';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
 import { CheckCircle2 } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TableContainer from '@mui/material/TableContainer';
+import Paper from '@mui/material/Paper';
 
-function Spinner() {
-  return (
-    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-      <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// ─── ScoreBadge ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ ScoreBadge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ScoreBadge({ score }: { score?: number | null }) {
-  if (score === null || score === undefined) return <span className="text-textSecondary">—</span>;
+  if (score === null || score === undefined) return <Typography component="span" sx={{ color: 'text.secondary' }}>â€”</Typography>;
   const pct = Math.round(score);
-  const cls = pct >= 80
-    ? 'bg-green-100 text-green-700'
+  const sx = pct >= 80
+    ? { bgcolor: '#DCFCE7', color: '#15803D' }
     : pct >= 50
-      ? 'bg-yellow-100 text-yellow-700'
-      : 'bg-red-100 text-red-700';
-  return <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${cls}`}>{pct}%</span>;
+      ? { bgcolor: '#FEF9C3', color: '#92400E' }
+      : { bgcolor: '#FEE2E2', color: '#991B1B' };
+  return <Chip label={`${pct}%`} size="small" sx={{ ...sx, fontWeight: 700 }} />;
 }
 
-// ─── StudentsTable ────────────────────────────────────────────────────────────
+// â”€â”€â”€ StudentsTable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function StudentsTable({ onViewResults }: { onViewResults: (s: AdminStudentItem) => void }) {
   const [students, setStudents] = useState<AdminStudentItem[]>([]);
@@ -52,71 +55,55 @@ function StudentsTable({ onViewResults }: { onViewResults: (s: AdminStudentItem)
   }, []);
 
   if (error) {
-    return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-        {error}
-      </div>
-    );
+    return <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>;
   }
 
   if (!loading && students.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <h3 className="text-lg font-bold text-textPrimary mb-2">No students yet</h3>
-        <p className="text-sm text-textSecondary">Students are added to classes by teachers.</p>
-      </div>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
+        <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No students yet</Typography>
+        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Students are added to classes by teachers.</Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-border overflow-hidden">
+    <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
       <Table>
-        <TableHeader>
-          <TableRow className="bg-slate-50 sticky top-0">
-            <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-              Student Name
-            </TableHead>
-            <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-              Class
-            </TableHead>
-            <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-              Teacher
-            </TableHead>
-            <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-              Homeworks
-            </TableHead>
-            <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-              Actions
-            </TableHead>
+        <TableHead>
+          <TableRow sx={{ bgcolor: 'grey.50', position: 'sticky', top: 0 }}>
+            {['Student Name', 'Class', 'Teacher', 'Homeworks', 'Actions'].map((h) => (
+              <TableCell key={h} sx={{ px: 2.5, py: 1.5, fontSize: 12, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</TableCell>
+            ))}
           </TableRow>
-        </TableHeader>
+        </TableHead>
         <TableBody>
           {loading
             ? Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i} aria-label="Loading...">
-                  <TableCell colSpan={5} className="px-5 py-3">
-                    <div className="h-4 bg-slate-100 rounded animate-pulse w-full" />
+                  <TableCell colSpan={5} sx={{ px: 2.5, py: 1.5 }}>
+                    <Box sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 2, width: '100%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
                   </TableCell>
                 </TableRow>
               ))
             : students.map((s) => (
-                <TableRow key={s.id} className="hover:bg-slate-50">
-                  <TableCell className="px-5 py-3 font-medium text-sm">{s.fullname}</TableCell>
-                  <TableCell className="px-5 py-3 text-sm">
-                    {s.class ? s.class.name : '—'}
+                <TableRow key={s.id} sx={{ '&:hover': { bgcolor: 'grey.50' } }}>
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontWeight: 500, fontSize: 14 }}>{s.fullname}</TableCell>
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>
+                    {s.class ? s.class.name : 'â€”'}
                   </TableCell>
-                  <TableCell className="px-5 py-3 text-sm">
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>
                     {s.class?.teacher
                       ? (s.class.teacher.name ?? s.class.teacher.upn)
-                      : '—'}
+                      : 'â€”'}
                   </TableCell>
-                  <TableCell className="px-5 py-3 text-sm">{s._count.sessions}</TableCell>
-                  <TableCell className="px-5 py-3">
+                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>{s._count.sessions}</TableCell>
+                  <TableCell sx={{ px: 2.5, py: 1.5 }}>
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      variant="text"
+                      size="small"
                       onClick={() => onViewResults(s)}
-                      className="h-auto py-1.5 px-3 text-xs font-semibold rounded-lg hover:bg-slate-100"
+                      sx={{ fontSize: 12, fontWeight: 600, borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0 }}
                     >
                       View Results
                     </Button>
@@ -125,11 +112,11 @@ function StudentsTable({ onViewResults }: { onViewResults: (s: AdminStudentItem)
               ))}
         </TableBody>
       </Table>
-    </div>
+    </TableContainer>
   );
 }
 
-// ─── StudentResults ───────────────────────────────────────────────────────────
+// â”€â”€â”€ StudentResults â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function StudentResults({
   student,
@@ -177,132 +164,107 @@ function StudentResults({
   }, [student.id]);
 
   return (
-    <div className="animate-fade-in">
+    <Box>
       {/* Delete session confirm dialog */}
       {confirmDelete !== null && (
-        <Dialog open onOpenChange={(open) => { if (!open) setConfirmDelete(null); }}>
-          <DialogContent className="max-w-md rounded-3xl p-0" showCloseButton={false}>
-            <DialogHeader className="px-8 pt-7 pb-5 border-b border-border">
-              <DialogTitle className="text-xl font-black text-textPrimary">Delete session?</DialogTitle>
-            </DialogHeader>
-            <div className="px-8 py-5">
-              <p className="text-sm text-textSecondary">
-                Delete session? This will permanently remove the student&apos;s submission and score.
-              </p>
-            </div>
-            <DialogFooter className="px-8 pb-7 pt-2 gap-3 flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50"
-              >
-                Keep session
-              </Button>
-              <Button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={deleting}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold bg-destructive text-white hover:opacity-90 disabled:opacity-60 gap-2"
-              >
-                {deleting && <Spinner />}
-                {deleting ? 'Deleting...' : 'Delete session'}
-              </Button>
-            </DialogFooter>
+        <Dialog open onClose={() => setConfirmDelete(null)} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
+          <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight={900}>Delete session?</Typography>
+          </DialogTitle>
+          <DialogContent sx={{ px: 4, py: 3 }}>
+            <Typography variant="body2" color="text.secondary">
+              Delete session? This will permanently remove the student&apos;s submission and score.
+            </Typography>
           </DialogContent>
+          <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
+            <Button variant="outlined" onClick={() => setConfirmDelete(null)} sx={{ flex: 1, borderRadius: 3, fontWeight: 600 }}>
+              Keep session
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              disabled={deleting}
+              onClick={handleConfirmDelete}
+              startIcon={deleting ? <CircularProgress size={14} color="inherit" /> : undefined}
+              sx={{ flex: 1, borderRadius: 3, fontWeight: 700 }}
+            >
+              {deleting ? 'Deleting...' : 'Delete session'}
+            </Button>
+          </DialogActions>
         </Dialog>
       )}
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-textPrimary text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl animate-slide-up flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-400" /> {toast}
-        </div>
+        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1500, bgcolor: '#0F172A', color: 'white', fontSize: 14, fontWeight: 600, px: 2.5, py: 1.5, borderRadius: 4, boxShadow: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CheckCircle2 style={{ width: 16, height: 16, color: '#4ADE80' }} /> {toast}
+        </Box>
       )}
 
       {/* Back link */}
-      <button
-        type="button"
+      <Box
+        component="button"
         onClick={onBack}
-        className="text-sm text-textSecondary hover:text-textPrimary flex items-center gap-1.5 mb-6"
+        sx={{ fontSize: 14, color: 'text.secondary', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.75, mb: 3, p: 0, '&:hover': { color: 'text.primary' } }}
       >
-        ← Back to Students
-      </button>
+        â† Back to Students
+      </Box>
 
       {/* Heading */}
-      <h1
-        className="font-bold leading-none mb-6"
-        style={{ fontSize: 26 }}
-      >
-        {student.fullname} — Homework Results
-      </h1>
+      <Typography sx={{ fontWeight: 700, lineHeight: 1, mb: 3, fontSize: 26 }}>
+        {student.fullname} â€” Homework Results
+      </Typography>
 
       {/* Error */}
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 mb-4">
-          {error}
-        </div>
-      )}
+      {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{error}</Alert>}
 
       {/* Empty state */}
       {!loading && !error && results.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-sm text-textSecondary">No homework submissions yet.</p>
-        </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>No homework submissions yet.</Typography>
+        </Box>
       )}
 
       {/* Results table */}
       {(loading || results.length > 0) && (
-        <div className="bg-white rounded-2xl border border-border overflow-hidden">
+        <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
           <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50">
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Homework
-                </TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Score
-                </TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Started
-                </TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Completed
-                </TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Actions
-                </TableHead>
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'grey.50' }}>
+                {['Homework', 'Score', 'Started', 'Completed', 'Actions'].map((h) => (
+                  <TableCell key={h} sx={{ px: 2.5, py: 1.5, fontSize: 12, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</TableCell>
+                ))}
               </TableRow>
-            </TableHeader>
+            </TableHead>
             <TableBody>
               {loading
                 ? Array.from({ length: 3 }).map((_, i) => (
                     <TableRow key={i} aria-label="Loading...">
-                      <TableCell colSpan={5} className="px-5 py-3">
-                        <div className="h-4 bg-slate-100 rounded animate-pulse w-full" />
+                      <TableCell colSpan={5} sx={{ px: 2.5, py: 1.5 }}>
+                        <Box sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 2, width: '100%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
                       </TableCell>
                     </TableRow>
                   ))
                 : results.map((r) => (
-                    <TableRow key={r.id} className="hover:bg-slate-50">
-                      <TableCell className="px-5 py-3 text-sm font-medium">
+                    <TableRow key={r.id} sx={{ '&:hover': { bgcolor: 'grey.50' } }}>
+                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14, fontWeight: 500 }}>
                         {r.assignment.homework.name ?? r.assignment.homework.type}
                       </TableCell>
-                      <TableCell className="px-5 py-3 text-sm">
+                      <TableCell sx={{ px: 2.5, py: 1.5 }}>
                         <ScoreBadge score={r.score} />
                       </TableCell>
-                      <TableCell className="px-5 py-3 text-sm">
+                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>
                         {new Date(r.startedAt).toLocaleString()}
                       </TableCell>
-                      <TableCell className="px-5 py-3 text-sm">
-                        {r.completedAt ? new Date(r.completedAt).toLocaleString() : '—'}
+                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>
+                        {r.completedAt ? new Date(r.completedAt).toLocaleString() : 'â€”'}
                       </TableCell>
-                      <TableCell className="px-5 py-3">
+                      <TableCell sx={{ px: 2.5, py: 1.5 }}>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant="text"
+                          size="small"
                           onClick={() => setConfirmDelete(r)}
-                          className="text-xs font-semibold text-red-500 hover:bg-red-50 h-auto py-1.5 px-3 rounded-lg"
+                          sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}
                         >
                           Delete
                         </Button>
@@ -311,13 +273,13 @@ function StudentResults({
                   ))}
             </TableBody>
           </Table>
-        </div>
+        </TableContainer>
       )}
-    </div>
+    </Box>
   );
 }
 
-// ─── StudentsPage (two-view) ──────────────────────────────────────────────────
+// â”€â”€â”€ StudentsPage (two-view) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function StudentsPage() {
   const [selectedStudent, setSelectedStudent] = useState<AdminStudentItem | null>(null);
@@ -332,15 +294,12 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <Box>
       {/* Page heading */}
-      <h1
-        className="font-bold leading-none mb-6"
-        style={{ fontSize: 26 }}
-      >
+      <Typography sx={{ fontWeight: 700, lineHeight: 1, mb: 3, fontSize: 26 }}>
         Students
-      </h1>
+      </Typography>
       <StudentsTable onViewResults={setSelectedStudent} />
-    </div>
+    </Box>
   );
 }

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -50,7 +50,7 @@ const emptyApprove = (): ApproveForm => ({ fullname: '', sex: 'MALE', dateOfBirt
 
 function Modal({ title, subtitle, onClose, children }: { title: React.ReactNode; subtitle?: React.ReactNode; onClose: () => void; children: React.ReactNode }) {
   return (
-    <Dialog open onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 4, maxHeight: '90vh' } }}>
+    <Dialog open onClose={onClose} maxWidth="md" fullWidth slotProps={{ paper: { sx: { borderRadius: 4, maxHeight: '90vh' } } }}>
       <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 900 }}>{title}</Typography>
@@ -168,7 +168,7 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
               <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Adding…' : 'Add Student'}
+                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Addingâ€¦' : 'Add Student'}
               </Button>
             </Box>
           </DialogActions>
@@ -231,7 +231,7 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
               <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Saving…' : 'Save Changes'}
+                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Savingâ€¦' : 'Save Changes'}
               </Button>
             </Box>
           </DialogActions>
@@ -269,7 +269,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent sx={{ px: 4, py: 3 }}>
             <Alert severity="warning" sx={{ borderRadius: 3, mb: 2, fontSize: 13 }}>
-              <strong>Login:</strong> {pending.upn} · Registered {new Date(pending.createdAt).toLocaleDateString()}
+              <strong>Login:</strong> {pending.upn} Â· Registered {new Date(pending.createdAt).toLocaleDateString()}
             </Alert>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
               <Box sx={{ gridColumn: '1/-1' }}>
@@ -304,7 +304,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
               <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: '#10B981', '&:hover': { bgcolor: '#059669' }, gap: 1 }}>
-                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Approving…' : 'Confirm Approval'}
+                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Approvingâ€¦' : 'Confirm Approval'}
               </Button>
             </Box>
           </DialogActions>
@@ -343,7 +343,7 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Updating…' : 'Set Password'}
+              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Updatingâ€¦' : 'Set Password'}
             </Button>
           </Box>
         </DialogActions>
@@ -400,7 +400,7 @@ export default function StudentsPage() {
 
       {/* Toolbar */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
-        <TextField size="small" placeholder="Search students…" value={search} onChange={(e) => setSearch(e.target.value)}
+        <TextField size="small" placeholder="Search studentsâ€¦" value={search} onChange={(e) => setSearch(e.target.value)}
           sx={{ flex: 1, minWidth: 192, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
           InputProps={{ startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> }} />
         <FormControl size="small" sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
@@ -412,7 +412,7 @@ export default function StudentsPage() {
         {students.length > 0 && (
           <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 500 }}>
             {filtered.length} of {students.length}
-            {activeClassName && <Box component="span" sx={{ ml: 0.5, color: 'primary.main', fontWeight: 600 }}>· {activeClassName}</Box>}
+            {activeClassName && <Box component="span" sx={{ ml: 0.5, color: 'primary.main', fontWeight: 600 }}>Â· {activeClassName}</Box>}
           </Typography>
         )}
         <Button variant="contained" onClick={() => setModal({ kind: 'create' })} sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: 3, gap: 1 }}>
@@ -438,7 +438,7 @@ export default function StudentsPage() {
               <Paper key={p.id} variant="outlined" sx={{ borderRadius: 3, px: 2, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderColor: '#FDE68A' }}>
                 <Box>
                   <Typography sx={{ fontWeight: 600, color: 'text.primary', fontSize: 14 }}>{p.registrationData?.fullname ?? p.upn}</Typography>
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.25 }}>{p.upn} · {new Date(p.createdAt).toLocaleString()}</Typography>
+                  <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.25 }}>{p.upn} Â· {new Date(p.createdAt).toLocaleString()}</Typography>
                 </Box>
                 <Button size="small" variant="contained" onClick={() => setModal({ kind: 'approve', pending: p })}
                   sx={{ fontSize: 12, fontWeight: 700, borderRadius: 3, bgcolor: '#10B981', '&:hover': { bgcolor: '#059669' } }}>
@@ -526,7 +526,7 @@ export default function StudentsPage() {
                     <TableCell>
                       {s.class
                         ? <Chip label={s.class.name} size="small" sx={{ bgcolor: '#EDE9FE', color: colors.purple, fontWeight: 600 }} />
-                        : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>—</Typography>}
+                        : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>â€”</Typography>}
                     </TableCell>
                     <TableCell>
                       {s.parents.length > 0
@@ -534,11 +534,11 @@ export default function StudentsPage() {
                             {s.parents.map((p) => (
                               <Typography key={p.id} sx={{ fontSize: 12, color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.75 }}>
                                 <User size={12} style={{ flexShrink: 0 }} />
-                                {p.type === 'FATHER' ? 'Father' : 'Mother'}: {p.name} · {p.phoneNumber}
+                                {p.type === 'FATHER' ? 'Father' : 'Mother'}: {p.name} Â· {p.phoneNumber}
                               </Typography>
                             ))}
                           </Box>
-                        : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>—</Typography>}
+                        : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>â€”</Typography>}
                     </TableCell>
                     <TableCell>
                       {isDeleting ? (

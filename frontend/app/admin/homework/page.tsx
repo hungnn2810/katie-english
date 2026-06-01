@@ -1,29 +1,28 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import {
   getAdminHomework,
   deleteAdminHomework,
   AdminHomeworkItem,
 } from '@/lib/admin-portal-api';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CheckCircle2 } from 'lucide-react';
-
-const TYPE_BADGE: Record<string, string> = {
-  PHONICS: 'bg-slate-100 text-slate-700',
-  SPEAKING: 'bg-slate-100 text-slate-700',
-  READING: 'bg-slate-100 text-slate-700',
-};
-
-function Spinner() {
-  return (
-    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-      <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-    </svg>
-  );
-}
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TableContainer from '@mui/material/TableContainer';
+import Paper from '@mui/material/Paper';
 
 export default function HomeworkPage() {
   const [homeworks, setHomeworks] = useState<AdminHomeworkItem[]>([]);
@@ -65,118 +64,90 @@ export default function HomeworkPage() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <Box>
       {/* Delete confirm dialog */}
       {confirmDelete !== null && (
-        <Dialog open onOpenChange={(open) => { if (!open) setConfirmDelete(null); }}>
-          <DialogContent className="max-w-md rounded-3xl p-0" showCloseButton={false}>
-            <DialogHeader className="px-8 pt-7 pb-5 border-b border-border">
-              <DialogTitle className="text-xl font-black text-textPrimary">Delete homework?</DialogTitle>
-            </DialogHeader>
-            <div className="px-8 py-5">
-              <p className="text-sm text-textSecondary">
-                Delete homework? This will permanently remove the homework template and every assignment, session, and result derived from it.
-              </p>
-            </div>
-            <DialogFooter className="px-8 pb-7 pt-2 gap-3 flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setConfirmDelete(null)}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50"
-              >
-                Keep homework
-              </Button>
-              <Button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={deleting}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold bg-destructive text-white hover:opacity-90 disabled:opacity-60 gap-2"
-              >
-                {deleting && <Spinner />}
-                {deleting ? 'Deleting...' : 'Delete homework'}
-              </Button>
-            </DialogFooter>
+        <Dialog open onClose={() => setConfirmDelete(null)} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
+          <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight={900}>Delete homework?</Typography>
+          </DialogTitle>
+          <DialogContent sx={{ px: 4, py: 3 }}>
+            <Typography variant="body2" color="text.secondary">
+              Delete homework? This will permanently remove the homework template and every assignment, session, and result derived from it.
+            </Typography>
           </DialogContent>
+          <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
+            <Button variant="outlined" onClick={() => setConfirmDelete(null)} sx={{ flex: 1, borderRadius: 3, fontWeight: 600 }}>
+              Keep homework
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              disabled={deleting}
+              onClick={handleConfirmDelete}
+              startIcon={deleting ? <CircularProgress size={14} color="inherit" /> : undefined}
+              sx={{ flex: 1, borderRadius: 3, fontWeight: 700 }}
+            >
+              {deleting ? 'Deleting...' : 'Delete homework'}
+            </Button>
+          </DialogActions>
         </Dialog>
       )}
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-textPrimary text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl animate-slide-up flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-400" /> {toast}
-        </div>
+        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1500, bgcolor: '#0F172A', color: 'white', fontSize: 14, fontWeight: 600, px: 2.5, py: 1.5, borderRadius: 4, boxShadow: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CheckCircle2 style={{ width: 16, height: 16, color: '#4ADE80' }} /> {toast}
+        </Box>
       )}
 
       {/* Error */}
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 mb-4">
-          {error}
-        </div>
-      )}
+      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
 
       {/* Empty state */}
       {!loading && homeworks.length === 0 && !error && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <h3 className="text-lg font-bold text-textPrimary mb-2">No homework yet</h3>
-          <p className="text-sm text-textSecondary">Homework templates are created by teachers from their dashboard.</p>
-        </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
+          <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No homework yet</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Homework templates are created by teachers from their dashboard.</Typography>
+        </Box>
       )}
 
       {/* Table */}
       {(loading || homeworks.length > 0) && (
-        <div className="bg-white rounded-2xl border border-border overflow-hidden">
+        <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
           <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50 sticky top-0">
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Name
-                </TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Type
-                </TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Assignments
-                </TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Submissions
-                </TableHead>
-                <TableHead className="px-5 py-3 text-xs font-semibold text-slate-600 uppercase tracking-widest">
-                  Actions
-                </TableHead>
+            <TableHead>
+              <TableRow sx={{ bgcolor: 'grey.50', position: 'sticky', top: 0 }}>
+                {['Name', 'Type', 'Assignments', 'Submissions', 'Actions'].map((h) => (
+                  <TableCell key={h} sx={{ px: 2.5, py: 1.5, fontSize: 12, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</TableCell>
+                ))}
               </TableRow>
-            </TableHeader>
+            </TableHead>
             <TableBody>
               {loading
                 ? Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i} aria-label="Loading...">
-                      <TableCell colSpan={5} className="px-5 py-3">
-                        <div className="h-4 bg-slate-100 rounded animate-pulse w-full" />
+                      <TableCell colSpan={5} sx={{ px: 2.5, py: 1.5 }}>
+                        <Box sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 2, width: '100%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
                       </TableCell>
                     </TableRow>
                   ))
                 : homeworks.map((h) => (
-                    <TableRow key={h.id} className="hover:bg-slate-50">
-                      <TableCell className="px-5 py-3 font-medium text-sm">
-                        {h.name ?? '—'}
+                    <TableRow key={h.id} sx={{ '&:hover': { bgcolor: 'grey.50' } }}>
+                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14, fontWeight: 500 }}>
+                        {h.name ?? 'â€”'}
                       </TableCell>
-                      <TableCell className="px-5 py-3 text-sm">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${TYPE_BADGE[h.type] ?? 'bg-slate-100 text-slate-700'}`}>
-                          {h.type}
-                        </span>
+                      <TableCell sx={{ px: 2.5, py: 1.5 }}>
+                        <Chip label={h.type} size="small" sx={{ bgcolor: 'grey.100', color: '#475569', fontWeight: 600, fontSize: 12 }} />
                       </TableCell>
-                      <TableCell className="px-5 py-3 text-sm">
-                        {h._count.assignments}
-                      </TableCell>
-                      <TableCell className="px-5 py-3 text-sm">
-                        {h.submissionCount}
-                      </TableCell>
-                      <TableCell className="px-5 py-3">
+                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>{h._count.assignments}</TableCell>
+                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>{h.submissionCount}</TableCell>
+                      <TableCell sx={{ px: 2.5, py: 1.5 }}>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          variant="text"
+                          size="small"
                           onClick={() => setConfirmDelete(h)}
-                          className="text-xs font-semibold text-red-500 hover:bg-red-50 h-auto py-1.5 px-3 rounded-lg"
+                          sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}
                         >
                           Delete
                         </Button>
@@ -185,8 +156,8 @@ export default function HomeworkPage() {
                   ))}
             </TableBody>
           </Table>
-        </div>
+        </TableContainer>
       )}
-    </div>
+    </Box>
   );
 }

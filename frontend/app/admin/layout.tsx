@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getAdminUser, AdminUser } from '@/lib/admin-auth';
 import AdminShell from '@/components/AdminShell';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const TITLES: Record<string, string> = {
   '/admin': 'Dashboard',
@@ -30,9 +32,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Loading spinner while checking auth
   if (user === undefined) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ minWidth: 1280 }}>
-      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 1280 }}>
+      <CircularProgress size={32} />
+    </Box>
   );
 
   // Null while redirect is in flight

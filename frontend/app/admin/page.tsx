@@ -2,7 +2,9 @@
 import { useEffect, useState } from 'react';
 import { getAdminStats, AdminStats } from '@/lib/admin-portal-api';
 import { Users, School, GraduationCap, Video } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 const ACCENT = '#4F9DFF';
 
@@ -36,59 +38,53 @@ export default function AdminDashboard() {
   const allZero = !loading && stats.teachers === 0 && stats.classes === 0 && stats.students === 0 && stats.submissions === 0;
 
   return (
-    <div className="animate-fade-in">
+    <Box>
       {error && (
-        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center justify-between gap-3">
-          <div className="text-sm text-red-600">Something went wrong. Please try again.</div>
+        <Box sx={{ mb: 2.5, borderRadius: 3, border: '1px solid #FCA5A5', bgcolor: '#FEF2F2', px: 2, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+          <Typography sx={{ fontSize: 14, color: '#DC2626' }}>Something went wrong. Please try again.</Typography>
           <Button
             onClick={loadDashboard}
-            size="sm"
-            className="text-xs font-semibold text-white"
-            style={{ background: ACCENT }}
+            size="small"
+            variant="contained"
+            sx={{ fontSize: 12, fontWeight: 600, color: 'white', bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: 2, flexShrink: 0 }}
           >
             Retry
           </Button>
-        </div>
+        </Box>
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-4 gap-5 mb-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2.5, mb: 3 }}>
         {STAT_CARDS.map((card) => {
           const Icon = card.icon;
           return (
-            <div
-              key={card.key}
-              className="bg-white rounded-2xl border border-border shadow-card p-6"
-            >
-              <div className="flex items-start justify-between mb-5">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: 'rgba(79, 157, 255, 0.08)' }}>
-                  <Icon className="w-5 h-5" style={{ color: ACCENT }} />
-                </div>
-              </div>
-              <div
-                className="text-[28px] font-bold tracking-tight mb-1"
-                style={{ color: ACCENT }}
-              >
+            <Box key={card.key} sx={{ bgcolor: 'white', borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 1, p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', mb: 2.5 }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(79,157,255,0.08)' }}>
+                  <Icon style={{ width: 20, height: 20, color: ACCENT }} />
+                </Box>
+              </Box>
+              <Typography sx={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.02em', mb: 0.5, color: ACCENT }}>
                 {loading
-                  ? <div className="h-8 w-10 bg-slate-100 rounded-lg animate-pulse" />
+                  ? <Box component="span" sx={{ display: 'block', height: 32, width: 40, bgcolor: 'grey.100', borderRadius: 2 }} />
                   : stats[card.key]
                 }
-              </div>
-              <div className="text-sm text-textSecondary">{card.label}</div>
-            </div>
+              </Typography>
+              <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{card.label}</Typography>
+            </Box>
           );
         })}
-      </div>
+      </Box>
 
       {/* Empty state */}
       {allZero && (
-        <div className="text-center py-16">
-          <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Users className="w-6 h-6 text-slate-400" />
-          </div>
-          <p className="text-textPrimary font-semibold text-sm">No data yet. Create teacher accounts to get started.</p>
-        </div>
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Box sx={{ width: 56, height: 56, bgcolor: 'grey.100', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+            <Users style={{ width: 24, height: 24, color: '#94A3B8' }} />
+          </Box>
+          <Typography sx={{ color: 'text.primary', fontWeight: 600, fontSize: 14 }}>No data yet. Create teacher accounts to get started.</Typography>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

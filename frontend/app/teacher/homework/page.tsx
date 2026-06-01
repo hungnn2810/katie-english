@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -33,7 +33,7 @@ const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; 
   READING:  { label: 'Reading',  icon: BookOpen, color: '#6ED6C1', bg: '#6ED6C118' },
 };
 
-// ── Homework form modal ───────────────────────────────────────────────────────
+// â”€â”€ Homework form modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function HomeworkModal({
   editingId, form, setForm, onClose, onSaved, onNavigateToReading,
@@ -161,18 +161,18 @@ function HomeworkModal({
 
   return (
     <Dialog open onClose={onClose} maxWidth="md" fullWidth
-      PaperProps={{ sx: { borderRadius: 4, maxHeight: '90vh' } }}>
+      slotProps={{ paper: { sx: { borderRadius: 4, maxHeight: '90vh' } } }}>
       <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="h6" fontWeight={900} sx={{ lineHeight: 1.3 }}>
               <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                {editingId !== null ? 'Edit · ' : 'New · '}
+                {editingId !== null ? 'Edit Â· ' : 'New Â· '}
               </Box>
               <Box component="span" sx={{ color: meta.color }}>{headingName}</Box>
             </Typography>
             <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-              Reusable template — assign to classes separately.
+              Reusable template â€” assign to classes separately.
             </Typography>
           </Box>
           <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: 0.5 }}>
@@ -185,7 +185,7 @@ function HomeworkModal({
         <DialogContent sx={{ px: 4, py: 3 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 
-            {/* Type selector — create mode only */}
+            {/* Type selector â€” create mode only */}
             {editingId === null && (
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1.5, display: 'block' }}>
@@ -327,7 +327,7 @@ function HomeworkModal({
                             {/* Add word */}
                             <Box sx={{ display: 'flex', gap: 1 }}>
                               <TextField size="small" sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 3, fontSize: 14 } }}
-                                placeholder={`Add word (e.g. paper) — Enter to add`}
+                                placeholder={`Add word (e.g. paper) â€” Enter to add`}
                                 value={newWordTexts[pIdx] ?? ''}
                                 onChange={(e) => setNewWordTexts((prev) => ({ ...prev, [pIdx]: e.target.value }))}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
@@ -409,7 +409,7 @@ function HomeworkModal({
                       <Box component="button" type="button" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
                         sx={{ width: '100%', borderRadius: 3, border: '2px dashed', borderColor: meta.color + '55', background: meta.bg, py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.75, cursor: 'pointer', '&:disabled': { opacity: 0.6 }, '&:hover': { opacity: 0.8 } }}>
                         {speakUploading
-                          ? <Typography variant="caption" fontWeight={600} sx={{ color: meta.color }}>Uploading…</Typography>
+                          ? <Typography variant="caption" fontWeight={600} sx={{ color: meta.color }}>Uploadingâ€¦</Typography>
                           : <>
                             <ImageIcon size={20} style={{ color: meta.color }} />
                             <Typography variant="caption" fontWeight={600} sx={{ color: meta.color }}>Click to upload picture</Typography>
@@ -428,7 +428,7 @@ function HomeworkModal({
                   <TextField multiline rows={3} fullWidth size="small"
                     placeholder={(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK'
                       ? 'e.g. cat, sits, mat, fluffy'
-                      : 'Enter the sentence the student should say…'}
+                      : 'Enter the sentence the student should sayâ€¦'}
                     value={form.speakingText ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, speakingText: e.target.value }))}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
@@ -454,7 +454,7 @@ function HomeworkModal({
               <Button type="submit" variant="contained" disabled={loading}
                 sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
                 {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-                {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
+                {loading ? 'Savingâ€¦' : editingId !== null ? 'Update' : 'Create'}
               </Button>
             )}
           </Box>
@@ -464,7 +464,7 @@ function HomeworkModal({
   );
 }
 
-// ── Assign modal ──────────────────────────────────────────────────────────────
+// â”€â”€ Assign modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function AssignModal({
   homework, classes, onClose, onSaved,
@@ -505,16 +505,16 @@ function AssignModal({
   }
 
   const meta = TYPE_META[homework.type];
-  const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? '…' : '') : meta.label);
+  const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? 'â€¦' : '') : meta.label);
 
   return (
     <Dialog open onClose={onClose} maxWidth="md" fullWidth
-      PaperProps={{ sx: { borderRadius: 4 } }}>
+      slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
       <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="h6" fontWeight={900} sx={{ lineHeight: 1.3 }}>
-              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign · </Box>
+              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign Â· </Box>
               <Box component="span" sx={{ color: meta.color }}>{assignHeading}</Box>
             </Typography>
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
@@ -583,7 +583,7 @@ function AssignModal({
             <Button type="submit" variant="contained" disabled={loading}
               sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
               {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-              {loading ? 'Assigning…' : 'Assign'}
+              {loading ? 'Assigningâ€¦' : 'Assign'}
             </Button>
           </Box>
         </DialogActions>
@@ -592,7 +592,7 @@ function AssignModal({
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const emptyForm = (): CreateHomeworkInput => ({ type: 'PHONICS', speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingPictureUrl: '', speakingText: '' });
 
@@ -664,7 +664,7 @@ export default function HomeworkPage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5, flexWrap: 'wrap' }}>
         <TextField
           size="small"
-          placeholder="Search homework…"
+          placeholder="Search homeworkâ€¦"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}

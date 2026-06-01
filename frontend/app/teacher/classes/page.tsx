@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
@@ -93,7 +93,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Dialog open onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
+      <Dialog open onClose={onClose} maxWidth="md" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
         <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 900 }}>
@@ -205,7 +205,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
             <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
               {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-              {loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
+              {loading ? (editing ? 'Updatingâ€¦' : 'Creatingâ€¦') : (editing ? 'Update Class' : 'Create Class')}
             </Button>
           </DialogActions>
         </Box>
@@ -275,7 +275,7 @@ export default function ClassesPage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
         <TextField
           size="small"
-          placeholder="Search classes…"
+          placeholder="Search classesâ€¦"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ maxWidth: 240, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
@@ -350,13 +350,13 @@ export default function ClassesPage() {
               <Box sx={{ px: 2.5, pb: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 12, color: 'text.secondary', pt: 1.5 }}>
                   <Calendar size={14} style={{ flexShrink: 0 }} />
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{formatDate(c.startDate)} – {formatDate(c.endDate)}</Typography>
+                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{formatDate(c.startDate)} â€“ {formatDate(c.endDate)}</Typography>
                 </Box>
                 {activeDays.length > 0 && (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {activeDays.map((day) => {
                       const slot = slots.find((s) => s.day === day)!;
-                      const durationLabel = slot.duration ? ` · ${slot.duration}h` : '';
+                      const durationLabel = slot.duration ? ` Â· ${slot.duration}h` : '';
                       return (
                         <Chip key={day} label={`${DAY_LABELS[day]}${slot.time ? ` ${slot.time}` : ''}${durationLabel}`} size="small"
                           sx={{ bgcolor: '#FFF2EF', color: ACCENT, fontWeight: 600, height: 22, fontSize: 11 }} />

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -165,7 +165,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
         <Box sx={{ px: 2.5, pb: 2.5, pt: 1.5 }}>
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mb: 1.5 }} />
           <Typography sx={{ fontSize: 10, color: '#475569', textAlign: 'center' }}>
-            © Katie English
+            Â© Katie English
           </Typography>
         </Box>
       </Box>
@@ -178,7 +178,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
             <Box>
               <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
                 Teacher Portal
-                <Box component="span" sx={{ opacity: 0.4, mx: 0.25 }}>›</Box>
+                <Box component="span" sx={{ opacity: 0.4, mx: 0.25 }}>â€º</Box>
                 <Box component="span" sx={{ color: 'text.primary', opacity: 0.5, fontWeight: 500 }}>{title}</Box>
               </Typography>
               <Typography sx={{ fontSize: 26, fontWeight: 900, color: 'text.primary', letterSpacing: '-0.03em', lineHeight: 1 }}>
@@ -206,7 +206,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                 anchorEl={anchorEl}
                 open={showUserMenu}
                 onClose={handleMenuClose}
-                PaperProps={{ sx: { width: 288, borderRadius: 3, p: 1, mt: 1 } }}
+                slotProps={{ paper: { sx: { width: 288, borderRadius: 3, p: 1, mt: 1 } } }}
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
               >
