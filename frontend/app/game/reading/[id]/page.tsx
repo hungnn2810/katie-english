@@ -301,7 +301,7 @@ function MatchingActivityRenderer({
                   <Check className="w-6 h-6 text-brand-green" />
                 </div>
               )}
-            </button>
+            </Box>
           );
         })}
       </div>
@@ -313,19 +313,23 @@ function MatchingActivityRenderer({
           if (!p) return null;
           const isLocked = p.status === 'locked';
           const isShaking = p.status === 'shaking';
-          let cls = 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40';
-          if (isLocked) cls = 'bg-brand-green/20 text-brand-green border-brand-green cursor-default';
-          else if (isShaking) cls = 'border-highlight text-white animate-shake';
 
           return (
-            <button
+            <Button
               key={pairId}
               onClick={() => handleWordClick(pairId)}
               disabled={isLocked}
-              className={`px-6 py-3 rounded-full text-sm font-bold border-2 transition-all ${cls}`}
+              sx={{
+                px: 3, py: 1.5, borderRadius: '9999px', fontSize: 14, fontWeight: 700,
+                border: '2px solid', transition: 'all 0.15s',
+                animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',
+                ...(isLocked
+                  ? { bgcolor: 'rgba(123,216,143,0.2)', color: '#7BD88F', borderColor: '#7BD88F' }
+                  : { bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' } }),
+              }}
             >
               {p.pair.word}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -422,20 +426,29 @@ function FillBlankActivityRenderer({
         {currentItem.blank.choices.map((c) => {
           const isChosen = currentItem.chosenChoiceId === c.id;
           const answered = currentItem.chosenChoiceId !== null;
-          let cls = 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40';
-          if (isChosen && currentItem.correct === true) cls = 'bg-brand-green/20 text-brand-green border-brand-green';
-          else if (isChosen && currentItem.correct === false) cls = 'animate-shake border-highlight text-white';
-          else if (answered) cls = 'opacity-40 cursor-not-allowed bg-white/10 text-white border-white/20';
+          const isRight = isChosen && currentItem.correct === true;
+          const isWrong = isChosen && currentItem.correct === false;
 
           return (
-            <button
+            <Button
               key={c.id}
               onClick={() => handleChoiceClick(c)}
               disabled={answered}
-              className={`px-6 py-3 rounded-full text-sm font-bold border-2 transition-all ${cls}`}
+              sx={{
+                px: 3, py: 1.5, borderRadius: '9999px', fontSize: 14, fontWeight: 700,
+                border: '2px solid', transition: 'all 0.15s',
+                animation: isWrong ? `${shake} 0.4s ease-in-out` : 'none',
+                ...(isRight
+                  ? { bgcolor: 'rgba(123,216,143,0.2)', color: '#7BD88F', borderColor: '#7BD88F' }
+                  : isWrong
+                  ? { bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: '#FF7B7B' }
+                  : answered
+                  ? { opacity: 0.4, cursor: 'not-allowed', bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }
+                  : { bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' } }),
+              }}
             >
               {c.word}
-            </button>
+            </Button>
           );
         })}
       </div>

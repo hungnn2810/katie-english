@@ -3,7 +3,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { login, register, forgotPassword, RegisterInput } from '@/lib/auth';
 import { BookOpen, Mic, BarChart2, CheckCircle2, GraduationCap, User } from 'lucide-react';
-import { DatePicker } from '@/components/ui/date-picker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import TextField from '@mui/material/TextField';
 
 const ACCENT = '#F0623A';
 
@@ -275,7 +278,16 @@ export default function LoginPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-textSecondary mb-1.5">Date of Birth *</label>
-                          <DatePicker value={reg.dateOfBirth} onChange={(v) => setReg((r) => ({ ...r, dateOfBirth: v }))} />
+                          <LocalizationProvider dateAdapter={AdapterDateFns}>
+                            <DatePicker
+                              value={reg.dateOfBirth ? new Date(reg.dateOfBirth) : null}
+                              onChange={(newValue: Date | null) => {
+                                const iso = newValue ? newValue.toISOString().split('T')[0] : '';
+                                setReg((r) => ({ ...r, dateOfBirth: iso }));
+                              }}
+                              slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                            />
+                          </LocalizationProvider>
                         </div>
                       </div>
                       <div className="rounded-xl border border-border p-4 space-y-3">
