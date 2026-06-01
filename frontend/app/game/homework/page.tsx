@@ -5,8 +5,19 @@ import AuthGate from '@/components/AuthGate';
 import { getAvailableHomework, startSession, AssignmentItem, HomeworkType } from '@/lib/admin-api';
 import { AuthUser, clearAuth, changePassword } from '@/lib/auth';
 import { cardGradients, gradients } from '@/lib/colors';
-import { Hash, Mic, BookOpen, Lock, CheckCircle2, Loader2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap } from 'lucide-react';
+import { Hash, Mic, BookOpen, Lock, CheckCircle2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap } from 'lucide-react';
 import { parseApiDateTime } from '@/lib/datetime';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import TextField from '@mui/material/TextField';
+import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType }> = {
   PHONICS:  { label: 'Phonics',  icon: Hash },
@@ -38,6 +49,14 @@ function PageContent({ user }: { user: AuthUser }) {
     } catch (err: unknown) {
       setPwError(err instanceof Error ? err.message : 'Failed to change password');
     } finally { setPwLoading(false); }
+  }
+
+  function closePwModal() {
+    setShowPwModal(false);
+    setPwError('');
+    setPwSuccess(false);
+    setCurrentPw('');
+    setNewPw('');
   }
 
   useEffect(() => {
@@ -73,9 +92,9 @@ function PageContent({ user }: { user: AuthUser }) {
   const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: gradients.gameBg, minWidth: 1024 }}>
+    <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: gradients.gameBg, minWidth: 1024 }}>
       {/* Quizizz-style decorative arcs */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.07 }} xmlns="http://www.w3.org/2000/svg">
+      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.07 }} xmlns="http://www.w3.org/2000/svg">
         <circle cx="-80" cy="400" r="380" fill="none" stroke="white" strokeWidth="1"/>
         <circle cx="-80" cy="400" r="500" fill="none" stroke="white" strokeWidth="1"/>
         <circle cx="-80" cy="400" r="620" fill="none" stroke="white" strokeWidth="1"/>
@@ -83,111 +102,168 @@ function PageContent({ user }: { user: AuthUser }) {
         <circle cx="1360" cy="400" r="500" fill="none" stroke="white" strokeWidth="1"/>
         <circle cx="1360" cy="400" r="620" fill="none" stroke="white" strokeWidth="1"/>
       </svg>
-      {showPwModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-7 animate-slide-up">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-black text-textPrimary text-lg flex items-center gap-2"><Lock className="w-5 h-5" /> Change Password</h3>
-              <button onClick={() => { setShowPwModal(false); setPwError(''); setPwSuccess(false); setCurrentPw(''); setNewPw(''); }}
-                className="text-textSecondary hover:text-textPrimary transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            {pwSuccess ? (
-              <div className="text-center py-6">
-                <div className="flex justify-center mb-3"><CheckCircle2 className="w-12 h-12 text-emerald-500" /></div>
-                <div className="font-black text-textPrimary text-lg">Password updated!</div>
-              </div>
-            ) : (
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-textSecondary mb-1.5">Current Password</label>
-                  <input type="password" className="input-base" placeholder="••••••••" value={currentPw}
-                    onChange={(e) => setCurrentPw(e.target.value)} required />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-textSecondary mb-1.5">New Password</label>
-                  <input type="password" className="input-base" placeholder="Min 6 characters" value={newPw}
-                    onChange={(e) => setNewPw(e.target.value)} required minLength={6} />
-                </div>
-                {pwError && <div className="text-highlight text-sm bg-highlight/10 border border-highlight/20 px-3 py-2.5 rounded-xl">{pwError}</div>}
-                <button type="submit" disabled={pwLoading}
-                  className="btn-primary w-full py-3 rounded-2xl font-black text-base disabled:opacity-60"
-                  style={{ background: gradients.pinkHighlight }}>
-                  {pwLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Updating...</> : <><CheckCircle2 className="w-4 h-4" /> Update Password</>}
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
 
-      <header className="relative z-10 px-10 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-primary font-black text-xl">K</span>
-          </div>
-          <span className="text-white text-xl font-black">Katie English</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-white/10 rounded-2xl px-4 py-2">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white"
-              style={{ background: gradients.pinkHighlight }}>
+      {/* Change Password Dialog */}
+      <Dialog open={showPwModal} onClose={closePwModal} maxWidth="xs" fullWidth
+        PaperProps={{ sx: { borderRadius: 4 } }}>
+        <DialogTitle sx={{
+          px: 3.5, pt: 3, pb: 2,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          borderBottom: '1px solid', borderColor: 'divider',
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 900, fontSize: 18 }}>
+            <Lock size={20} /> Change Password
+          </Box>
+          <IconButton size="small" onClick={closePwModal} sx={{ color: 'text.secondary' }}>
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ px: 3.5, py: 3 }}>
+          {pwSuccess ? (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
+                <CheckCircle2 size={48} color="#10b981" />
+              </Box>
+              <Typography sx={{ fontWeight: 900, fontSize: 18 }}>Password updated!</Typography>
+            </Box>
+          ) : (
+            <Box component="form" onSubmit={handleChangePassword} sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <TextField
+                type="password"
+                label="Current Password"
+                size="small"
+                fullWidth
+                placeholder="••••••••"
+                value={currentPw}
+                onChange={(e) => setCurrentPw(e.target.value)}
+                required
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              />
+              <TextField
+                type="password"
+                label="New Password"
+                size="small"
+                fullWidth
+                placeholder="Min 6 characters"
+                value={newPw}
+                onChange={(e) => setNewPw(e.target.value)}
+                required
+                inputProps={{ minLength: 6 }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+              />
+              {pwError && <Alert severity="error" sx={{ borderRadius: 3 }}>{pwError}</Alert>}
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={pwLoading}
+                fullWidth
+                sx={{ py: 1.5, borderRadius: 4, fontWeight: 900, background: gradients.pinkHighlight, '&:hover': { opacity: 0.9, background: gradients.pinkHighlight } }}
+              >
+                {pwLoading
+                  ? <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><CircularProgress size={16} color="inherit" /> Updating...</Box>
+                  : <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><CheckCircle2 size={16} /> Update Password</Box>}
+              </Button>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Header */}
+      <Box component="header" sx={{ position: 'relative', zIndex: 10, px: 5, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ width: 48, height: 48, bgcolor: 'white', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3 }}>
+            <Typography sx={{ color: 'primary.main', fontWeight: 900, fontSize: 20 }}>K</Typography>
+          </Box>
+          <Typography sx={{ color: 'white', fontSize: 20, fontWeight: 900 }}>Katie English</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2, py: 1 }}>
+            <Box sx={{
+              width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 14, fontWeight: 900, color: 'white',
+              background: gradients.pinkHighlight,
+            }}>
               {user.upn[0].toUpperCase()}
-            </div>
-            <span className="text-white/90 text-sm font-semibold">{displayName}</span>
-          </div>
-          <button onClick={() => setShowPwModal(true)}
-            className="flex items-center gap-1.5 text-white/60 hover:text-white/90 text-sm font-medium transition-colors px-3 py-2 rounded-xl hover:bg-white/10">
-            <Lock className="w-3.5 h-3.5" /> Password
-          </button>
-          <button onClick={() => { clearAuth(); router.push('/login'); }}
-            className="text-white/60 hover:text-white/90 text-sm font-medium transition-colors px-3 py-2 rounded-xl hover:bg-white/10">
+            </Box>
+            <Typography sx={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 600 }}>{displayName}</Typography>
+          </Box>
+          <Button
+            onClick={() => setShowPwModal(true)}
+            sx={{
+              display: 'flex', alignItems: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)',
+              '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },
+              fontSize: 14, fontWeight: 500, px: 1.5, py: 1, borderRadius: 3, textTransform: 'none', minWidth: 0,
+            }}
+          >
+            <Lock size={14} /> Password
+          </Button>
+          <Button
+            onClick={() => { clearAuth(); router.push('/login'); }}
+            sx={{
+              color: 'rgba(255,255,255,0.6)',
+              '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },
+              fontSize: 14, fontWeight: 500, px: 1.5, py: 1, borderRadius: 3, textTransform: 'none', minWidth: 0,
+            }}
+          >
             Sign out
-          </button>
-        </div>
-      </header>
+          </Button>
+        </Box>
+      </Box>
 
-      <main className="relative z-10 px-10 py-8">
-        <div className="mb-10">
-          <h1 className="text-5xl font-black text-white mb-3">
+      {/* Main */}
+      <Box component="main" sx={{ position: 'relative', zIndex: 10, px: 5, py: 4 }}>
+        <Box sx={{ mb: 5 }}>
+          <Typography variant="h3" sx={{ fontWeight: 900, color: 'white', mb: 1.5 }}>
             Hi, {displayName}!
-          </h1>
-          <p className="text-white/80 text-lg font-semibold">Ready to learn something awesome today?</p>
-        </div>
+          </Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 18, fontWeight: 600 }}>
+            Ready to learn something awesome today?
+          </Typography>
+        </Box>
 
         {loading && (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <BookOpen className="w-12 h-12 text-white/70 animate-bounce" />
-            <p className="text-white/70 text-lg font-semibold">Loading your homework...</p>
-          </div>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 12, gap: 2 }}>
+            <BookOpen size={48} color="rgba(255,255,255,0.7)" />
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 18, fontWeight: 600 }}>
+              Loading your homework...
+            </Typography>
+          </Box>
         )}
 
         {!user.studentId && !loading && (
-          <div className="bg-white/10 rounded-3xl p-10 text-center max-w-md mx-auto">
-            <div className="flex justify-center mb-5"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><School className="w-8 h-8 text-white" /></div></div>
-            <h2 className="text-white font-black text-2xl mb-3">Account not linked</h2>
-            <p className="text-white/70">Your account hasn&apos;t been linked to a student profile yet. Please ask your teacher!</p>
-          </div>
+          <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 6, p: 5, textAlign: 'center', maxWidth: 448, mx: 'auto' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
+              <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <School size={32} color="white" />
+              </Box>
+            </Box>
+            <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 24, mb: 1.5 }}>Account not linked</Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>Your account hasn&apos;t been linked to a student profile yet. Please ask your teacher!</Typography>
+          </Box>
         )}
 
         {error && (
-          <div className="bg-highlight/20 border border-highlight/50 rounded-2xl px-6 py-4 text-white font-semibold mb-6">
-            <AlertTriangle className="w-4 h-4 inline mr-1" />{error}
-          </div>
+          <Box sx={{ bgcolor: 'rgba(255,123,123,0.2)', border: '1px solid rgba(255,123,123,0.5)', borderRadius: 3, px: 3, py: 2, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AlertTriangle size={16} color="white" />
+            <Typography sx={{ color: 'white', fontWeight: 600 }}>{error}</Typography>
+          </Box>
         )}
 
         {!loading && user.studentId && assignments.length === 0 && !error && (
-          <div className="text-center py-24">
-            <div className="flex justify-center mb-5"><div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center"><PartyPopper className="w-10 h-10 text-white" /></div></div>
-            <p className="text-white font-black text-2xl mb-2">All done! No homework right now!</p>
-            <p className="text-white/60 text-base mt-2">Check back later when your teacher assigns something.</p>
-          </div>
+          <Box sx={{ textAlign: 'center', py: 12 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
+              <Box sx={{ width: 80, height: 80, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <PartyPopper size={40} color="white" />
+              </Box>
+            </Box>
+            <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 24, mb: 1 }}>All done! No homework right now!</Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, mt: 1 }}>Check back later when your teacher assigns something.</Typography>
+          </Box>
         )}
 
-        <div className="grid grid-cols-3 gap-7">
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3.5 }}>
           {assignments.map((a, i) => {
             const g = cardGradients[i % cardGradients.length];
             const hw = a.homework;
@@ -200,64 +276,101 @@ function PageContent({ user }: { user: AuthUser }) {
               : null;
 
             return (
-              <div key={a.id}
-                className="rounded-3xl overflow-hidden shadow-2xl transition-all hover:scale-105 cursor-pointer"
+              <Box
+                key={a.id}
                 onClick={() => handleStart(a.id)}
-                style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}>
-                <div className="p-7">
-                  <div className="flex items-start justify-between mb-5">
-                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                      {bestScore !== null ? <Star className="w-6 h-6 text-white" /> : <meta.icon className="w-6 h-6 text-white" />}
-                    </div>
+                sx={{
+                  borderRadius: 6, overflow: 'hidden', boxShadow: 8,
+                  transition: 'transform 0.15s', '&:hover': { transform: 'scale(1.05)' },
+                  cursor: 'pointer', background: `linear-gradient(135deg, ${g.from}, ${g.to})`,
+                }}
+              >
+                <Box sx={{ p: 3.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5 }}>
+                    <Box sx={{ width: 48, height: 48, bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {bestScore !== null ? <Star size={24} color="white" /> : <meta.icon size={24} color="white" />}
+                    </Box>
                     {bestScore !== null ? (
-                      <span className="flex items-center gap-1 text-sm font-black px-4 py-1.5 rounded-full bg-brand-green text-white">
-                        <Trophy className="w-3.5 h-3.5" /> Best: {bestScore}%
-                      </span>
+                      <Chip
+                        icon={<Trophy size={14} color="white" />}
+                        label={`Best: ${bestScore}%`}
+                        size="small"
+                        sx={{ bgcolor: '#7BD88F', color: 'white', fontWeight: 900, fontSize: 14, height: 'auto', py: 0.75, px: 1 }}
+                      />
                     ) : (
-                      <span className={`flex items-center gap-1 text-sm font-black px-4 py-1.5 rounded-full ${daysLeft <= 1 ? 'bg-highlight text-white' : 'bg-white/25 text-white'}`}>
-                        {daysLeft < 0 ? <><AlertTriangle className="w-3.5 h-3.5" /> Overdue</> : daysLeft === 0 ? <><Calendar className="w-3.5 h-3.5" /> Due today</> : daysLeft === 1 ? <><Zap className="w-3.5 h-3.5" /> 1 day left</> : <><Calendar className="w-3.5 h-3.5" /> {daysLeft} days left</>}
-                      </span>
+                      <Chip
+                        size="small"
+                        label={
+                          daysLeft < 0 ? 'Overdue'
+                          : daysLeft === 0 ? 'Due today'
+                          : daysLeft === 1 ? '1 day left'
+                          : `${daysLeft} days left`
+                        }
+                        icon={
+                          daysLeft < 0 ? <AlertTriangle size={14} color="white" />
+                          : daysLeft <= 1 ? <Zap size={14} color="white" />
+                          : <Calendar size={14} color="white" />
+                        }
+                        sx={{
+                          bgcolor: daysLeft <= 1 ? '#FF7B7B' : 'rgba(255,255,255,0.25)',
+                          color: 'white', fontWeight: 900, fontSize: 14, height: 'auto', py: 0.75, px: 1,
+                        }}
+                      />
                     )}
-                  </div>
+                  </Box>
 
-                  <div className="mb-5">
-                    <div className="flex items-center gap-1.5 text-white font-black text-sm mb-2 uppercase tracking-wide">
-                      <meta.icon className="w-4 h-4" /> {meta.label}
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
+                  <Box sx={{ mb: 2.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'white', fontWeight: 900, fontSize: 14, mb: 1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <meta.icon size={16} /> {meta.label}
+                    </Box>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                       {hw.type === 'PHONICS' && (hw.parts ?? []).slice(0, 4).map((part) => (
-                        <span key={part.id} className="bg-white/25 text-white text-sm px-3 py-1 rounded-xl font-bold">
+                        <Box key={part.id} component="span" sx={{ bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700 }}>
                           {part.name} ({part.words.length})
-                        </span>
+                        </Box>
                       ))}
                       {hw.type === 'PHONICS' && (hw.parts ?? []).length > 4 && (
-                        <span className="bg-white/15 text-white text-sm px-3 py-1 rounded-xl font-semibold">+{hw.parts.length - 4} more</span>
+                        <Box component="span" sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 600 }}>
+                          +{hw.parts.length - 4} more
+                        </Box>
                       )}
                       {hw.type === 'SPEAKING' && hw.speakingText && (
-                        <span className="bg-white/25 text-white text-sm px-3 py-1 rounded-xl font-bold truncate max-w-[200px]">
+                        <Box component="span" sx={{ bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
                           {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? '…' : ''}
-                        </span>
+                        </Box>
                       )}
                       {hw.type === 'READING' && (
-                        <span className="flex items-center gap-1 bg-white/25 text-white text-sm px-3 py-1 rounded-xl font-bold">
-                          <BookOpen className="w-3.5 h-3.5" /> {(hw.readingActivities ?? []).length} activit{(hw.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}
-                        </span>
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700 }}>
+                          <BookOpen size={14} /> {(hw.readingActivities ?? []).length} activit{(hw.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}
+                        </Box>
                       )}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
 
-                  <button
+                  <Button
                     disabled={starting === a.id}
-                    className="flex items-center justify-center gap-2 w-full bg-white/25 hover:bg-white/35 text-white font-black text-base px-5 py-3 rounded-2xl transition-all disabled:opacity-60">
-                    {starting === a.id ? <><Loader2 className="w-4 h-4 animate-spin" /> Starting...</> : bestScore !== null ? <><RefreshCw className="w-4 h-4" /> Try Again</> : <><Play className="w-4 h-4" /> Let&apos;s Go!</>}
-                  </button>
-                </div>
-              </div>
+                    fullWidth
+                    sx={{
+                      display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(255,255,255,0.25)',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
+                      color: 'white', fontWeight: 900, fontSize: 16, px: 2.5, py: 1.5, borderRadius: 3,
+                      '&.Mui-disabled': { opacity: 0.6, color: 'white' },
+                      textTransform: 'none',
+                    }}
+                  >
+                    {starting === a.id
+                      ? <><CircularProgress size={16} color="inherit" /> Starting...</>
+                      : bestScore !== null
+                        ? <><RefreshCw size={16} /> Try Again</>
+                        : <><Play size={16} /> Let&apos;s Go!</>}
+                  </Button>
+                </Box>
+              </Box>
             );
           })}
-        </div>
-      </main>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 

@@ -6,7 +6,15 @@ import { BookOpen, Mic, BarChart2, CheckCircle2, GraduationCap, User } from 'luc
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Alert from '@mui/material/Alert';
 
 const ACCENT = '#F0623A';
 
@@ -73,298 +81,335 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex font-sans" style={{ minWidth: 1024 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex' }} style={{ minWidth: 1024 }}>
       {/* Left panel — dark navy */}
-      <div
-        className="w-[420px] flex-shrink-0 flex flex-col justify-between p-12"
-        style={{ background: '#0C1220' }}
-      >
-        <div>
+      <Box sx={{ width: 420, flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 6, background: '#0C1220' }}>
+        <Box>
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-16">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0"
-              style={{ background: ACCENT }}
-            >
-              <span className="text-white font-black text-base">K</span>
-            </div>
-            <span className="text-white text-lg font-bold tracking-tight">Katie English</span>
-          </div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 8 }}>
+            <Box sx={{ width: 40, height: 40, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3, flexShrink: 0, background: ACCENT }}>
+              <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 16 }}>K</Typography>
+            </Box>
+            <Typography sx={{ color: 'white', fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>Katie English</Typography>
+          </Box>
 
-          <h1 className="text-4xl font-black text-white leading-[1.15] mb-4 tracking-tight">
+          <Typography variant="h4" sx={{ fontWeight: 900, color: 'white', lineHeight: 1.15, mb: 2, letterSpacing: '-0.02em' }}>
             Learn English<br />
-            <span style={{ color: ACCENT }}>the fun way</span>
-          </h1>
-          <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
+            <Box component="span" sx={{ color: ACCENT }}>the fun way</Box>
+          </Typography>
+          <Typography sx={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.7, maxWidth: 320 }}>
             Blend phonemes, complete homework, and track your progress with interactive lessons.
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Feature list */}
-        <div className="space-y-4">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {FEATURES.map((f) => {
             const Icon = f.icon;
             return (
-              <div key={f.text} className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'rgba(240, 98, 58, 0.15)' }}
-                >
-                  <Icon className="w-4 h-4" style={{ color: ACCENT }} />
-                </div>
-                <span className="text-slate-400 text-sm">{f.text}</span>
-              </div>
+              <Box key={f.text} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ width: 32, height: 32, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: 'rgba(240,98,58,0.15)' }}>
+                  <Icon size={16} color={ACCENT} />
+                </Box>
+                <Typography sx={{ color: '#94a3b8', fontSize: 14 }}>{f.text}</Typography>
+              </Box>
             );
           })}
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       {/* Right panel */}
-      <div className="flex-1 bg-white flex items-center justify-center p-12">
-        <div className="w-full max-w-md animate-fade-in">
+      <Box sx={{ flex: 1, bgcolor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 6 }}>
+        <Box sx={{ width: '100%', maxWidth: 448 }}>
 
           {/* Role picker */}
           {!role && (
-            <div>
-              <div className="mb-10">
-                <h2 className="text-2xl font-black text-textPrimary mb-2 tracking-tight">Welcome back</h2>
-                <p className="text-textSecondary text-sm">Who are you signing in as?</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <button
+            <Box>
+              <Box sx={{ mb: 5 }}>
+                <Typography variant="h5" sx={{ fontWeight: 900, color: '#0F172A', mb: 1, letterSpacing: '-0.02em' }}>Welcome back</Typography>
+                <Typography sx={{ color: '#64748B', fontSize: 14 }}>Who are you signing in as?</Typography>
+              </Box>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                {/* Teacher card */}
+                <Box
+                  component="button"
                   onClick={() => { setRole('TEACHER'); setMode('login'); }}
-                  className="group flex flex-col items-center gap-4 p-8 bg-background rounded-2xl border-2 border-border hover:shadow-card-hover transition-all duration-200"
-                  style={{ '--tw-border-opacity': 1 } as React.CSSProperties}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = ACCENT)}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = ACCENT)}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = '#E2E8F0')}
+                  sx={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                    p: 4, bgcolor: '#F7F9FC', borderRadius: 4, border: '2px solid #E2E8F0',
+                    cursor: 'pointer', transition: 'all 0.2s', background: 'none',
+                    '&:hover': { boxShadow: 4 },
+                  }}
                 >
-                  <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
-                    style={{ background: '#FFF2EF' }}
-                  >
-                    <GraduationCap className="w-7 h-7" style={{ color: ACCENT }} />
-                  </div>
-                  <div>
-                    <div className="font-bold text-textPrimary">Teacher</div>
-                    <div className="text-textSecondary text-sm">Manage classes</div>
-                  </div>
-                </button>
-                <button
+                  <Box sx={{ width: 56, height: 56, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFF2EF', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.1)' } }}>
+                    <GraduationCap size={28} color={ACCENT} />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontWeight: 700, color: '#0F172A', textAlign: 'center' }}>Teacher</Typography>
+                    <Typography sx={{ color: '#64748B', fontSize: 14, textAlign: 'center' }}>Manage classes</Typography>
+                  </Box>
+                </Box>
+                {/* Student card */}
+                <Box
+                  component="button"
                   onClick={() => { setRole('STUDENT'); setMode('login'); }}
-                  className="group flex flex-col items-center gap-4 p-8 bg-background rounded-2xl border-2 border-border hover:shadow-card-hover transition-all duration-200"
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#A78BFA')}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = '#A78BFA')}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = '#E2E8F0')}
+                  sx={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                    p: 4, bgcolor: '#F7F9FC', borderRadius: 4, border: '2px solid #E2E8F0',
+                    cursor: 'pointer', transition: 'all 0.2s', background: 'none',
+                    '&:hover': { boxShadow: 4 },
+                  }}
                 >
-                  <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
-                    style={{ background: '#F5F3FF' }}
-                  >
-                    <User className="w-7 h-7" style={{ color: '#A78BFA' }} />
-                  </div>
-                  <div>
-                    <div className="font-bold text-textPrimary">Student</div>
-                    <div className="text-textSecondary text-sm">Do homework</div>
-                  </div>
-                </button>
-              </div>
-            </div>
+                  <Box sx={{ width: 56, height: 56, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F3FF', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.1)' } }}>
+                    <User size={28} color="#A78BFA" />
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontWeight: 700, color: '#0F172A', textAlign: 'center' }}>Student</Typography>
+                    <Typography sx={{ color: '#64748B', fontSize: 14, textAlign: 'center' }}>Do homework</Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
           )}
 
           {/* Form */}
           {role && (
-            <div className="animate-slide-up">
-              <button
+            <Box>
+              <Button
                 onClick={() => {
                   if (mode === 'forgot') { setMode('login'); setForgotDone(false); setForgotUpn(''); setError(''); }
                   else { setRole(null); setError(''); setNotice(''); }
                 }}
-                className="text-textSecondary text-sm hover:text-textPrimary mb-8 flex items-center gap-1.5 transition-colors"
+                sx={{
+                  color: '#64748B', fontSize: 14, mb: 4, display: 'flex', alignItems: 'center', gap: 0.75,
+                  '&:hover': { color: '#0F172A' }, textTransform: 'none', minWidth: 0, p: 0,
+                }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 Back
-              </button>
+              </Button>
 
-              <div className="flex items-center gap-3 mb-8">
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
-                  style={{ background: role === 'TEACHER' ? '#FFF2EF' : '#F5F3FF' }}
-                >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 1, background: role === 'TEACHER' ? '#FFF2EF' : '#F5F3FF' }}>
                   {role === 'TEACHER'
-                    ? <GraduationCap className="w-6 h-6" style={{ color: ACCENT }} />
-                    : <User className="w-6 h-6" style={{ color: '#A78BFA' }} />}
-                </div>
-                <div>
-                  <div className="font-black text-xl text-textPrimary tracking-tight">
+                    ? <GraduationCap size={24} color={ACCENT} />
+                    : <User size={24} color="#A78BFA" />}
+                </Box>
+                <Box>
+                  <Typography sx={{ fontWeight: 900, fontSize: 20, color: '#0F172A', letterSpacing: '-0.02em' }}>
                     {role === 'TEACHER' ? 'Teacher' : 'Student'}{' '}
                     {mode === 'register' ? 'Registration' : mode === 'forgot' ? 'Forgot Password' : 'Sign In'}
-                  </div>
-                  <div className="text-textSecondary text-sm">
+                  </Typography>
+                  <Typography sx={{ color: '#64748B', fontSize: 14 }}>
                     {mode === 'register' ? 'Create account — teacher will approve'
                       : mode === 'forgot' ? 'Your teacher will be notified to reset your password'
                       : 'Enter your credentials to continue'}
-                  </div>
-                </div>
-              </div>
+                  </Typography>
+                </Box>
+              </Box>
 
               {/* Forgot password */}
               {mode === 'forgot' && (
-                <div className="animate-slide-up">
+                <Box>
                   {forgotDone ? (
-                    <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
-                      <CheckCircle2 className="w-10 h-10 text-green-500 mx-auto mb-3" />
-                      <div className="font-bold text-textPrimary mb-1">Request sent!</div>
-                      <div className="text-textSecondary text-sm">Your teacher has been notified. They will set a new password and share it with you.</div>
-                      <button
+                    <Box sx={{ borderRadius: 3, border: '1px solid #bbf7d0', bgcolor: '#f0fdf4', p: 3, textAlign: 'center' }}>
+                      <CheckCircle2 size={40} color="#22c55e" style={{ margin: '0 auto 12px' }} />
+                      <Typography sx={{ fontWeight: 700, color: '#0F172A', mb: 0.5 }}>Request sent!</Typography>
+                      <Typography sx={{ color: '#64748B', fontSize: 14 }}>Your teacher has been notified. They will set a new password and share it with you.</Typography>
+                      <Button
                         onClick={() => { setMode('login'); setForgotDone(false); setForgotUpn(''); }}
-                        className="mt-4 text-sm font-semibold hover:underline"
-                        style={{ color: ACCENT }}
+                        sx={{ mt: 2, fontSize: 14, fontWeight: 600, color: ACCENT, '&:hover': { textDecoration: 'underline' }, textTransform: 'none', p: 0, minWidth: 0 }}
                       >
                         Back to sign in
-                      </button>
-                    </div>
+                      </Button>
+                    </Box>
                   ) : (
-                    <form onSubmit={handleForgot} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-textSecondary mb-1.5">Phone Number</label>
-                        <input type="text" className="input-base" placeholder="Your phone number" value={forgotUpn}
-                          onChange={(e) => setForgotUpn(e.target.value)} required />
-                      </div>
-                      {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm font-medium">{error}</div>}
-                      <button type="submit" disabled={loading} className="btn-primary w-full py-3 disabled:opacity-60 text-white hover:opacity-90"
-                        style={{ background: ACCENT }}>
+                    <Box component="form" onSubmit={handleForgot} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <TextField
+                        type="text"
+                        label="Phone Number"
+                        size="small"
+                        fullWidth
+                        placeholder="Your phone number"
+                        value={forgotUpn}
+                        onChange={(e) => setForgotUpn(e.target.value)}
+                        required
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                      />
+                      {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={loading}
+                        fullWidth
+                        sx={{ py: 1.5, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 600, fontSize: 15, textTransform: 'none' }}
+                      >
                         {loading ? 'Sending...' : 'Request Password Reset'}
-                      </button>
-                    </form>
+                      </Button>
+                    </Box>
                   )}
-                </div>
+                </Box>
               )}
 
               {/* Login / Register */}
               {mode !== 'forgot' && (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {(role === 'TEACHER' || mode === 'login') && (
-                    <div>
-                      <label className="block text-sm font-semibold text-textSecondary mb-1.5">
-                        {role === 'TEACHER' ? 'Email' : 'Phone Number'}
-                      </label>
-                      <input
-                        type="text"
-                        className="input-base"
-                        placeholder={role === 'TEACHER' ? 'teacher@email.com' : 'phone number'}
-                        value={upn}
-                        onChange={(e) => setUpn(e.target.value)}
-                        required
-                      />
-                    </div>
+                    <TextField
+                      type="text"
+                      label={role === 'TEACHER' ? 'Email' : 'Phone Number'}
+                      size="small"
+                      fullWidth
+                      placeholder={role === 'TEACHER' ? 'teacher@email.com' : 'phone number'}
+                      value={upn}
+                      onChange={(e) => setUpn(e.target.value)}
+                      required
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                    />
                   )}
 
                   {role === 'STUDENT' && mode === 'register' && (
                     <>
-                      <div>
-                        <label className="block text-sm font-semibold text-textSecondary mb-1.5">Student Full Name *</label>
-                        <input className="input-base" placeholder="Student's full name" value={reg.fullname}
-                          onChange={(e) => setReg((r) => ({ ...r, fullname: e.target.value }))} required />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-semibold text-textSecondary mb-1.5">Sex</label>
-                          <select className="input-base" value={reg.sex}
-                            onChange={(e) => setReg((r) => ({ ...r, sex: e.target.value as 'MALE' | 'FEMALE' }))}>
-                            <option value="MALE">Male</option>
-                            <option value="FEMALE">Female</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-textSecondary mb-1.5">Date of Birth *</label>
-                          <LocalizationProvider dateAdapter={AdapterDateFns}>
-                            <DatePicker
-                              value={reg.dateOfBirth ? new Date(reg.dateOfBirth) : null}
-                              onChange={(newValue: Date | null) => {
-                                const iso = newValue ? newValue.toISOString().split('T')[0] : '';
-                                setReg((r) => ({ ...r, dateOfBirth: iso }));
-                              }}
-                              slotProps={{ textField: { size: 'small', fullWidth: true } }}
-                            />
-                          </LocalizationProvider>
-                        </div>
-                      </div>
-                      <div className="rounded-xl border border-border p-4 space-y-3">
-                        <label className="block text-xs font-bold text-textSecondary uppercase tracking-wide">Parent / Guardian</label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input className="input-base" placeholder="Parent name *"
-                            value={reg.parents[0].name} onChange={(e) => setParentField(0, 'name', e.target.value)} required />
-                          <input className="input-base" placeholder="Phone number *"
-                            value={reg.parents[0].phoneNumber} onChange={(e) => setParentField(0, 'phoneNumber', e.target.value)} required />
-                          <select className="input-base col-span-2" value={reg.parents[0].type}
-                            onChange={(e) => setParentField(0, 'type', e.target.value)}>
-                            <option value="FATHER">Father</option>
-                            <option value="MOTHER">Mother</option>
-                          </select>
-                        </div>
-                        <p className="text-xs text-textSecondary">Parent&apos;s phone will be used as the login.</p>
-                      </div>
+                      <TextField
+                        label="Student Full Name *"
+                        size="small"
+                        fullWidth
+                        placeholder="Student's full name"
+                        value={reg.fullname}
+                        onChange={(e) => setReg((r) => ({ ...r, fullname: e.target.value }))}
+                        required
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                      />
+                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+                        <FormControl size="small" fullWidth>
+                          <InputLabel>Sex</InputLabel>
+                          <Select
+                            value={reg.sex}
+                            label="Sex"
+                            onChange={(e) => setReg((r) => ({ ...r, sex: e.target.value as 'MALE' | 'FEMALE' }))}
+                            sx={{ borderRadius: 3 }}
+                          >
+                            <MenuItem value="MALE">Male</MenuItem>
+                            <MenuItem value="FEMALE">Female</MenuItem>
+                          </Select>
+                        </FormControl>
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                          <DatePicker
+                            label="Date of Birth *"
+                            value={reg.dateOfBirth ? new Date(reg.dateOfBirth) : null}
+                            onChange={(newValue: Date | null) => {
+                              const iso = newValue ? newValue.toISOString().split('T')[0] : '';
+                              setReg((r) => ({ ...r, dateOfBirth: iso }));
+                            }}
+                            slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                          />
+                        </LocalizationProvider>
+                      </Box>
+                      <Box sx={{ borderRadius: 3, border: '1px solid #E2E8F0', p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Parent / Guardian
+                        </Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                          <TextField
+                            size="small"
+                            label="Parent name *"
+                            value={reg.parents[0].name}
+                            onChange={(e) => setParentField(0, 'name', e.target.value)}
+                            required
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                          />
+                          <TextField
+                            size="small"
+                            label="Phone number *"
+                            value={reg.parents[0].phoneNumber}
+                            onChange={(e) => setParentField(0, 'phoneNumber', e.target.value)}
+                            required
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                          />
+                          <FormControl size="small" sx={{ gridColumn: '1 / -1' }}>
+                            <InputLabel>Relation</InputLabel>
+                            <Select
+                              value={reg.parents[0].type}
+                              label="Relation"
+                              onChange={(e) => setParentField(0, 'type', e.target.value)}
+                              sx={{ borderRadius: 2 }}
+                            >
+                              <MenuItem value="FATHER">Father</MenuItem>
+                              <MenuItem value="MOTHER">Mother</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </Box>
+                        <Typography sx={{ fontSize: 12, color: '#64748B' }}>Parent&apos;s phone will be used as the login.</Typography>
+                      </Box>
                     </>
                   )}
 
-                  <div>
-                    <label className="block text-sm font-semibold text-textSecondary mb-1.5">Password</label>
-                    <input
-                      type="password"
-                      className="input-base"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
+                  <TextField
+                    type="password"
+                    label="Password"
+                    size="small"
+                    fullWidth
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                  />
 
-                  {notice && (
-                    <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm font-medium">{notice}</div>
-                  )}
-                  {error && (
-                    <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm font-medium">{error}</div>
-                  )}
+                  {notice && <Alert severity="success" sx={{ borderRadius: 3 }}>{notice}</Alert>}
+                  {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
 
-                  <button
+                  <Button
                     type="submit"
+                    variant="contained"
                     disabled={loading}
-                    className="btn-primary w-full py-3 text-[15px] disabled:opacity-60 text-white hover:opacity-90"
-                    style={{ background: ACCENT }}
+                    fullWidth
+                    sx={{
+                      py: 1.5, borderRadius: 3, fontSize: 15, fontWeight: 600,
+                      bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 },
+                      textTransform: 'none',
+                      '&.Mui-disabled': { opacity: 0.6, color: 'white', bgcolor: ACCENT },
+                    }}
                   >
                     {loading
                       ? (mode === 'register' ? 'Creating account...' : 'Signing in...')
                       : (mode === 'register' ? 'Create Account' : 'Sign In')}
-                  </button>
+                  </Button>
 
                   {role === 'STUDENT' && (
                     <>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setNotice(''); }}
-                        className="w-full text-sm text-textSecondary hover:text-textPrimary transition-colors py-1"
+                        fullWidth
+                        sx={{ fontSize: 14, color: '#64748B', '&:hover': { color: '#0F172A' }, textTransform: 'none', py: 0.5 }}
                       >
                         {mode === 'login' ? 'Create a student account' : 'Back to sign in'}
-                      </button>
+                      </Button>
                       {mode === 'login' && (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => { setMode('forgot'); setError(''); setForgotDone(false); }}
-                          className="w-full text-sm font-medium transition-colors py-1 hover:opacity-70"
-                          style={{ color: ACCENT }}
+                          fullWidth
+                          sx={{ fontSize: 14, fontWeight: 500, color: ACCENT, '&:hover': { opacity: 0.7 }, textTransform: 'none', py: 0.5 }}
                         >
                           Forgot password?
-                        </button>
+                        </Button>
                       )}
                     </>
                   )}
-                </form>
+                </Box>
               )}
-            </div>
+            </Box>
           )}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }

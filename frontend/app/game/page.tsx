@@ -6,6 +6,11 @@ import { fetchRandomWord, submitAnswer, WordData, SubmitResult } from '@/lib/api
 import PhonemeButton from '@/components/PhonemeButton';
 import SelectedPhonemes from '@/components/SelectedPhonemes';
 import ResultBanner from '@/components/ResultBanner';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 
 type GameState = 'loading' | 'playing' | 'submitted';
 
@@ -75,39 +80,49 @@ export default function GamePage() {
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <main className="max-w-2xl mx-auto px-4 py-10">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-primary">Phonics Blending</h1>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Level</span>
+        <Box component="main" sx={{ maxWidth: 672, mx: 'auto', px: 2, py: 5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
+              Phonics Blending
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>Level</Typography>
               {[1, 2, 3].map((l) => (
-                <button
+                <Button
                   key={l}
                   onClick={() => { setLevel(l); loadWord(l); }}
-                  className={`w-8 h-8 rounded-full text-sm font-bold transition-colors ${
-                    level === l ? 'bg-primary text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  }`}
+                  sx={{
+                    width: 32, height: 32, minWidth: 32, borderRadius: '50%',
+                    fontSize: 14, fontWeight: 700, p: 0,
+                    ...(level === l
+                      ? { bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }
+                      : { bgcolor: 'grey.200', color: 'grey.600', '&:hover': { bgcolor: 'grey.300' } }),
+                  }}
                 >
                   {l}
-                </button>
+                </Button>
               ))}
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm">{error}</div>
+            <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>
           )}
 
           {state === 'loading' && (
-            <div className="text-center py-20 text-gray-400">Loading...</div>
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
+              <CircularProgress />
+            </Box>
           )}
 
           {word && state !== 'loading' && (
-            <div className="space-y-6">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Phoneme palette */}
-              <section>
-                <p className="text-sm font-medium text-gray-500 mb-3">Available phonemes — click to add, ▶ to hear</p>
-                <div className="flex flex-wrap gap-4 justify-center">
+              <Box component="section">
+                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary', mb: 1.5 }}>
+                  Available phonemes — click to add, ▶ to hear
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
                   {word.phonemes.map((p) => (
                     <PhonemeButton
                       key={p.symbol}
@@ -117,43 +132,48 @@ export default function GamePage() {
                       onClick={() => handlePhonemeClick(p.symbol)}
                     />
                   ))}
-                </div>
-              </section>
+                </Box>
+              </Box>
 
               {/* Answer area */}
-              <section>
-                <p className="text-sm font-medium text-gray-500 mb-3">Your answer — click a tile to remove it</p>
+              <Box component="section">
+                <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary', mb: 1.5 }}>
+                  Your answer — click a tile to remove it
+                </Typography>
                 <SelectedPhonemes selected={selected} onRemove={handleRemove} />
-              </section>
+              </Box>
 
               {/* Actions */}
-              <section className="flex gap-3 justify-center flex-wrap">
-                <button
+              <Box component="section" sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Button
                   onClick={handleBlend}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors"
+                  variant="contained"
+                  sx={{ px: 3, py: 1.5, bgcolor: '#7C3AED', '&:hover': { bgcolor: '#6D28D9' }, borderRadius: 3 }}
                 >
                   Blend
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSubmit}
                   disabled={selected.length === 0 || state === 'submitted'}
-                  className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  variant="contained"
+                  sx={{ px: 3, py: 1.5, bgcolor: '#16A34A', '&:hover': { bgcolor: '#15803D' }, borderRadius: 3 }}
                 >
                   Submit
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleNext}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  variant="contained"
+                  sx={{ px: 3, py: 1.5, bgcolor: 'grey.200', color: 'grey.700', '&:hover': { bgcolor: 'grey.300' }, borderRadius: 3 }}
                 >
                   Next Word
-                </button>
-              </section>
+                </Button>
+              </Box>
 
               {/* Result */}
               {result && <ResultBanner isCorrect={result.isCorrect} correctAnswer={result.correctAnswer} />}
-            </div>
+            </Box>
           )}
-        </main>
+        </Box>
       )}
     </AuthGate>
   );

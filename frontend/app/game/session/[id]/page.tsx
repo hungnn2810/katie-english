@@ -7,6 +7,10 @@ import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, Bf
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
 import PhonemeChips from './_components/PhonemeChips';
 import { School, Mic, Hash, PartyPopper, CheckCircle2, ImageIcon } from 'lucide-react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 
 type ItemKind = 'speaking' | 'phonics';
 type ItemState = 'waiting' | 'recording' | 'done';
@@ -54,13 +58,13 @@ function CircleTimer({ seconds, total }: { seconds: number; total: number }) {
   const dash = circ * progress;
   const color = timerHexColor(seconds);
   return (
-    <svg width="140" height="140" viewBox="0 0 120 120" className="-rotate-90">
+    <svg width="140" height="140" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }}>
       <circle cx="60" cy="60" r={r} fill="none" stroke="#ffffff15" strokeWidth="8" />
       <circle cx="60" cy="60" r={r} fill="none" stroke={color} strokeWidth="8"
         strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
         style={{ transition: 'stroke-dasharray 0.9s linear, stroke 0.3s' }} />
       <text x="60" y="66" textAnchor="middle" dominantBaseline="middle"
-        fill={color} fontSize="28" fontWeight="900" className="rotate-90"
+        fill={color} fontSize="28" fontWeight="900"
         style={{ transform: 'rotate(90deg)', transformOrigin: '60px 60px', fontVariantNumeric: 'tabular-nums' }}>
         {seconds}
       </text>
@@ -463,95 +467,133 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10 gap-6" style={{ background: gradients.gameBg }}>
-            <button onClick={() => router.push('/game/homework')} className="self-start text-white/60 hover:text-white text-sm">← Back</button>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 5, gap: 3, background: gradients.gameBg }}>
+            <Button onClick={() => router.push('/game/homework')}
+              sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
+              ← Back
+            </Button>
 
-            <div className="w-full max-w-sm flex flex-col items-center gap-6">
-              <div className="text-center">
-                <div className="flex justify-center mb-3">
-                  <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center">
-                    {isFreespeak ? <ImageIcon className="w-7 h-7 text-white" /> : <Mic className="w-7 h-7 text-white" />}
-                  </div>
-                </div>
-                <h2 className="text-white text-2xl font-black mb-1">{isFreespeak ? 'Free Speak' : 'Script Match'}</h2>
-                <p className="text-white/60 text-sm">Record your answer below</p>
-              </div>
+            <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
+                  <Box sx={{ width: 56, height: 56, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isFreespeak ? <ImageIcon size={28} color="white" /> : <Mic size={28} color="white" />}
+                  </Box>
+                </Box>
+                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>
+                  {isFreespeak ? 'Free Speak' : 'Script Match'}
+                </Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Record your answer below</Typography>
+              </Box>
 
               {isFreespeak && speakHw.speakingPictureUrl && (
-                <div className="rounded-2xl overflow-hidden border-4 border-white/20 max-w-xs w-full">
+                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(255,255,255,0.2)', maxWidth: 320, width: '100%' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={speakHw.speakingPictureUrl} alt="Speaking prompt" className="w-full object-contain" />
-                </div>
+                  <img src={speakHw.speakingPictureUrl} alt="Speaking prompt" style={{ width: '100%', objectFit: 'contain' }} />
+                </Box>
               )}
 
               {!isFreespeak && speakHw.speakingText && (
-                <div className="bg-white/10 rounded-2xl px-6 py-5 w-full text-center">
-                  <p className="text-white text-xl font-bold leading-relaxed">{speakHw.speakingText}</p>
-                </div>
+                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 4, px: 3, py: 2.5, width: '100%', textAlign: 'center' }}>
+                  <Typography sx={{ color: 'white', fontSize: 20, fontWeight: 700, lineHeight: 1.6 }}>{speakHw.speakingText}</Typography>
+                </Box>
               )}
 
               {isFreespeak && speakHw.speakingText && (
-                <div className="bg-white/10 rounded-xl px-4 py-3 w-full">
-                  <p className="text-white/60 text-xs font-semibold uppercase tracking-wide mb-1">Talk about:</p>
-                  <p className="text-white/80 text-sm">{speakHw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</p>
-                </div>
+                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2, py: 1.5, width: '100%' }}>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.5 }}>Talk about:</Typography>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>{speakHw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</Typography>
+                </Box>
               )}
 
               {/* Recording controls */}
-              <div className="flex flex-col items-center gap-4 w-full">
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%' }}>
                 {recordState === 'idle' && (
                   <>
-                    <button
+                    <Box
+                      component="button"
                       onClick={startSpeakRecording}
-                      className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-white/30 hover:border-white/60 hover:scale-105 transition-all"
-                      style={{ background: 'rgba(255,255,255,0.1)' }}>
-                      <Mic className="w-10 h-10 text-white" />
-                    </button>
-                    <p className="text-white/60 text-sm">Tap to start recording</p>
+                      sx={{
+                        width: 96, height: 96, borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: '4px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(255,255,255,0.1)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                        '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
+                      }}
+                    >
+                      <Mic size={40} color="white" />
+                    </Box>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Tap to start recording</Typography>
                   </>
                 )}
 
                 {recordState === 'recording' && (
                   <>
-                    <div className="relative flex items-center justify-center">
-                      <div className="absolute w-24 h-24 rounded-full animate-ping opacity-25" style={{ background: '#ef4444' }} />
-                      <button
+                    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Box sx={{
+                        position: 'absolute', width: 96, height: 96, borderRadius: '50%',
+                        background: '#ef4444', opacity: 0.25,
+                        animation: 'ping 1s cubic-bezier(0,0,0.2,1) infinite',
+                        '@keyframes ping': { '75%,100%': { transform: 'scale(2)', opacity: 0 } },
+                      }} />
+                      <Box
+                        component="button"
                         onClick={stopSpeakRecording}
-                        className="relative w-24 h-24 rounded-full flex items-center justify-center border-4 border-red-500"
-                        style={{ background: 'rgba(239,68,68,0.2)' }}>
-                        <div className="w-8 h-8 rounded-sm bg-red-400" />
-                      </button>
-                    </div>
-                    <div className="text-white font-mono text-3xl font-black tabular-nums">{mins}:{secs}</div>
-                    <p className="text-red-400 text-sm font-semibold animate-pulse">Recording… tap to stop</p>
+                        sx={{
+                          position: 'relative', width: 96, height: 96, borderRadius: '50%',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: '4px solid #ef4444', background: 'rgba(239,68,68,0.2)',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: '#f87171' }} />
+                      </Box>
+                    </Box>
+                    <Typography sx={{ color: 'white', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600 }}>Recording… tap to stop</Typography>
                   </>
                 )}
 
                 {recordState === 'recorded' && (
                   <>
-                    <div className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-emerald-400/50"
-                      style={{ background: 'rgba(52,211,153,0.15)' }}>
-                      <CheckCircle2 className="w-10 h-10 text-emerald-400" />
-                    </div>
-                    <p className="text-white/60 text-sm">Recorded: {mins}:{secs}</p>
-                    <div className="flex gap-3 w-full">
-                      <button
+                    <Box sx={{
+                      width: 96, height: 96, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      border: '4px solid rgba(52,211,153,0.5)', background: 'rgba(52,211,153,0.15)',
+                    }}>
+                      <CheckCircle2 size={40} color="#34d399" />
+                    </Box>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
+                    <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
+                      <Button
                         onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
-                        className="flex-1 py-3 rounded-2xl text-white font-bold text-sm border border-white/20 hover:bg-white/10 transition-colors">
+                        sx={{
+                          flex: 1, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, fontSize: 14,
+                          border: '1px solid rgba(255,255,255,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+                          textTransform: 'none',
+                        }}
+                      >
                         Re-record
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={handleSpeakingUpload}
-                        className="flex-1 py-3 rounded-2xl text-white font-black text-sm hover:scale-[1.02] transition-transform"
-                        style={{ background: gradients.primaryPurple }}>
+                        sx={{
+                          flex: 1, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 900, fontSize: 14,
+                          background: gradients.primaryPurple,
+                          '&:hover': { transform: 'scale(1.02)', background: gradients.primaryPurple },
+                          textTransform: 'none',
+                        }}
+                      >
                         Submit
-                      </button>
-                    </div>
+                      </Button>
+                    </Box>
                   </>
                 )}
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -561,10 +603,12 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
-            <div className="w-12 h-12 border-4 border-white/70 border-t-transparent rounded-full animate-spin" />
-            <p className="text-white/70 text-sm">{pageState === 'cam-check' ? 'Requesting microphone access…' : 'Loading…'}</p>
-          </div>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+            <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
+              {pageState === 'cam-check' ? 'Requesting microphone access…' : 'Loading…'}
+            </Typography>
+          </Box>
         )}
       </AuthGate>
     );
@@ -574,17 +618,31 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-8" style={{ background: gradients.gameBg }}>
-            <div className="flex justify-center"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><Mic className="w-8 h-8 text-white" /></div></div>
-            <div className="text-center">
-              <h2 className="text-white text-2xl font-black mb-2">Microphone Required</h2>
-              <p className="text-white/70 text-sm max-w-sm">Microphone access is required. Please allow access and reload.</p>
-            </div>
-            <button onClick={requestCamera} className="px-6 py-3 rounded-xl text-white font-bold" style={{ background: gradients.pinkHighlight }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: 4, background: gradients.gameBg }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Mic size={32} color="white" />
+              </Box>
+            </Box>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Microphone Required</Typography>
+              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, maxWidth: 384 }}>
+                Microphone access is required. Please allow access and reload.
+              </Typography>
+            </Box>
+            <Button
+              onClick={requestCamera}
+              sx={{ px: 3, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, background: gradients.pinkHighlight, '&:hover': { opacity: 0.9, background: gradients.pinkHighlight }, textTransform: 'none' }}
+            >
               Try Again
-            </button>
-            <button onClick={() => router.push('/game/homework')} className="text-white/60 text-sm hover:text-white">← Back to Homework</button>
-          </div>
+            </Button>
+            <Button
+              onClick={() => router.push('/game/homework')}
+              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
+            >
+              ← Back to Homework
+            </Button>
+          </Box>
         )}
       </AuthGate>
     );
@@ -594,10 +652,13 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
-            <p className="text-highlight text-lg font-bold">Session not found.</p>
-            <button onClick={() => router.push('/game/homework')} className="text-white/60 text-sm hover:text-white">← Back</button>
-          </div>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+            <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Session not found.</Typography>
+            <Button onClick={() => router.push('/game/homework')}
+              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
+              ← Back
+            </Button>
+          </Box>
         )}
       </AuthGate>
     );
@@ -607,10 +668,10 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
-            <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-            <p className="text-accent font-semibold">Scoring and saving…</p>
-          </div>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+            <CircularProgress size={48} sx={{ color: '#FFD166' }} />
+            <Typography sx={{ color: '#FFD166', fontWeight: 600 }}>Scoring and saving…</Typography>
+          </Box>
         )}
       </AuthGate>
     );
@@ -624,88 +685,103 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <div className="min-h-screen py-12 px-8" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-            <div className="max-w-xl mx-auto">
-              <div className="text-center mb-10">
-                <div className="flex justify-center mb-4"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><PartyPopper className="w-8 h-8 text-white" /></div></div>
-                <h1 className="text-white text-3xl font-black mb-2">Homework Complete!</h1>
+          <Box sx={{ minHeight: '100vh', py: 6, px: 4, background: gradients.gameBg, minWidth: 1024 }}>
+            <Box sx={{ maxWidth: 560, mx: 'auto' }}>
+              <Box sx={{ textAlign: 'center', mb: 5 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <PartyPopper size={32} color="white" />
+                  </Box>
+                </Box>
+                <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mb: 1 }}>Homework Complete!</Typography>
                 {items.length > 0 && (
-                  <div className="text-7xl font-black mt-4" style={{ color: scoreColor }}>{finalScore}%</div>
+                  <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums' }}>
+                    {finalScore}%
+                  </Typography>
                 )}
                 {saveError
-                  ? <p className="text-red-400 mt-1 text-sm">Recording could not be saved</p>
-                  : <p className="text-white/70 mt-1 text-sm">Your recording has been saved</p>
+                  ? <Typography sx={{ color: '#f87171', mt: 0.5, fontSize: 14 }}>Recording could not be saved</Typography>
+                  : <Typography sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5, fontSize: 14 }}>Your recording has been saved</Typography>
                 }
-              </div>
+              </Box>
 
-              <div className="space-y-3 mb-8">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
                 {items.map((item, idx) => (
-                  <div key={idx} className="bg-white bg-opacity-10 rounded-2xl px-5 py-4">
+                  <Box key={idx} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2.5, py: 2 }}>
                     {item.kind === 'phonics' ? (
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center gap-1 text-white/60 text-xs font-semibold uppercase mb-1"><Hash className="w-3.5 h-3.5" /> Phonics</div>
-                            <div className="text-white font-bold text-lg">{item.text}</div>
-                            <div className="text-white/70 text-sm mt-0.5">
-                              You said: <span className="text-white italic">"{item.transcribed || '—'}"</span>
-                            </div>
-                          </div>
-                          <div className="text-2xl font-black tabular-nums" style={{ color: scoreHexColor(item.score) }}>
+                      <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', mb: 0.5 }}>
+                              <Hash size={14} /> Phonics
+                            </Box>
+                            <Typography sx={{ color: 'white', fontWeight: 700, fontSize: 18 }}>{item.text}</Typography>
+                            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 0.5 }}>
+                              You said: <Box component="span" sx={{ color: 'white', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
+                            </Typography>
+                          </Box>
+                          <Typography sx={{ fontSize: 24, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: scoreHexColor(item.score) }}>
                             {item.score}%
-                          </div>
-                        </div>
+                          </Typography>
+                        </Box>
                         {item.bfaError && (
-                          <div className="mt-2 text-sm font-semibold text-amber-400">
+                          <Typography sx={{ mt: 1, fontSize: 14, fontWeight: 600, color: '#fbbf24' }}>
                             {BFA_ERROR_MESSAGES[item.bfaError] ?? 'Có lỗi — thử lại nhé'}
-                          </div>
+                          </Typography>
                         )}
                         {!item.bfaError && item.bfa?.success && item.bfa.feedback.length > 0 && (
                           <PhonemeChips feedback={item.bfa.feedback} />
                         )}
-                      </div>
+                      </Box>
                     ) : (
-                      <div>
-                        <div className="text-white/60 text-xs font-bold uppercase mb-2">
+                      <Box>
+                        <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', mb: 1 }}>
                           🎤 Speaking{speakHw?.speakingMode === 'FREE_SPEAK' ? ' · Free Speak' : speakHw?.speakingMode === 'SCRIPT_MATCH' ? ' · Script Match' : ''}
-                        </div>
+                        </Typography>
                         {speakHw?.speakingMode === 'FREE_SPEAK' && item.pictureUrl && (
-                          <div className="rounded-xl overflow-hidden mb-3 max-h-40">
+                          <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 1.5, maxHeight: 160 }}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={item.pictureUrl} alt="Speaking prompt" className="w-full object-contain" />
-                          </div>
+                            <img src={item.pictureUrl} alt="Speaking prompt" style={{ width: '100%', objectFit: 'contain' }} />
+                          </Box>
                         )}
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+                          <Box sx={{ flex: 1 }}>
                             {speakHw?.speakingMode !== 'FREE_SPEAK' && (
-                              <div className="text-white font-medium text-sm mb-1">{item.text}</div>
+                              <Typography sx={{ color: 'white', fontWeight: 500, fontSize: 14, mb: 0.5 }}>{item.text}</Typography>
                             )}
-                            <div className="text-white/70 text-sm">
-                              You said: <span className="text-white italic">"{item.transcribed || '—'}"</span>
-                            </div>
+                            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
+                              You said: <Box component="span" sx={{ color: 'white', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
+                            </Typography>
                             {speakHw?.speakingMode === 'FREE_SPEAK' && item.matchedWords !== undefined && item.totalWords !== undefined && (
-                              <div className="text-white/70 text-sm mt-1">
+                              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 0.5 }}>
                                 Keywords matched: {item.matchedWords}/{item.totalWords}
-                              </div>
+                              </Typography>
                             )}
-                          </div>
-                          <div className="text-2xl font-black tabular-nums shrink-0" style={{ color: scoreHexColor(item.score) }}>
+                          </Box>
+                          <Typography sx={{ fontSize: 24, fontWeight: 900, fontVariantNumeric: 'tabular-nums', flexShrink: 0, color: scoreHexColor(item.score) }}>
                             {item.score}%
-                          </div>
-                        </div>
-                      </div>
+                          </Typography>
+                        </Box>
+                      </Box>
                     )}
-                  </div>
+                  </Box>
                 ))}
-              </div>
+              </Box>
 
-              <button onClick={() => router.push('/game/homework')}
-                className="w-full py-4 rounded-2xl text-white font-black text-lg"
-                style={{ background: gradients.primaryPurple }}>
+              <Button
+                onClick={() => router.push('/game/homework')}
+                fullWidth
+                sx={{
+                  py: 2, borderRadius: 3, color: 'white', fontWeight: 900, fontSize: 18,
+                  background: gradients.primaryPurple,
+                  '&:hover': { opacity: 0.9, background: gradients.primaryPurple },
+                  textTransform: 'none',
+                }}
+              >
                 Finish
-              </button>
-            </div>
-          </div>
+              </Button>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -717,105 +793,133 @@ export default function SessionPage() {
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <div className="h-screen flex flex-col overflow-hidden" style={{ background: gradients.gameBgAlt, minWidth: 1024 }}>
-          <div className="flex items-center justify-between px-8 py-4 flex-shrink-0">
-            <button onClick={() => router.push('/game/homework')} className="text-white/60 hover:text-white text-sm transition-colors">← Back</button>
-            <div className="flex items-center gap-3">
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: gradients.gameBgAlt, minWidth: 1024 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 4, py: 2, flexShrink: 0 }}>
+            <Button onClick={() => router.push('/game/homework')}
+              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
+              ← Back
+            </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               {items.map((item, i) => (
-                <div key={i} className="h-2 w-8 rounded-full transition-all"
-                  style={{
-                    background: item.state === 'done' ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#A78BFA' : '#ffffff20',
-                  }} />
+                <Box key={i} sx={{
+                  height: 8, width: 32, borderRadius: '9999px',
+                  transition: 'all 0.15s',
+                  background: item.state === 'done' ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#A78BFA' : '#ffffff20',
+                }} />
               ))}
-            </div>
-            <div className="text-white/70 text-sm font-semibold">
+            </Box>
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600 }}>
               {pageState === 'playing' ? `${doneCount + 1} / ${items.length}` : `${items.length} item${items.length !== 1 ? 's' : ''}`}
-            </div>
-          </div>
+            </Typography>
+          </Box>
 
-          <div className="flex-1 flex gap-6 px-8 pb-8 min-h-0">
-            <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto">
+          <Box sx={{ flex: 1, display: 'flex', gap: 3, px: 4, pb: 4, minHeight: 0 }}>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
               {pageState === 'ready' && (
-                <div className="text-center">
-                  <div className="flex justify-center mb-6"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><School className="w-8 h-8 text-white" /></div></div>
-                  <h2 className="text-white text-3xl font-black mb-3">Ready?</h2>
-                  <p className="text-white/60 text-sm mb-10">Say each item clearly when it appears</p>
-                  <div className="flex flex-wrap gap-2 justify-center mb-10">
+                <Box sx={{ textAlign: 'center' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                    <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <School size={32} color="white" />
+                    </Box>
+                  </Box>
+                  <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mb: 1.5 }}>Ready?</Typography>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mb: 5 }}>Say each item clearly when it appears</Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mb: 5 }}>
                     {items.map((item, i) => (
-                      <span key={i} className="bg-white bg-opacity-10 text-white/80 text-sm px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5">
-                        {item.kind === 'speaking' ? <Mic className="w-3 h-3 opacity-60" /> : <Hash className="w-3 h-3 opacity-60" />}
+                      <Box key={i} component="span" sx={{
+                        bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)',
+                        fontSize: 14, px: 1.5, py: 0.75, borderRadius: 2, fontWeight: 600,
+                        display: 'flex', alignItems: 'center', gap: 0.75,
+                      }}>
+                        {item.kind === 'speaking' ? <Mic size={12} style={{ opacity: 0.6 }} /> : <Hash size={12} style={{ opacity: 0.6 }} />}
                         {item.kind === 'speaking'
                           ? `${item.text.slice(0, 24)}${item.text.length > 24 ? '…' : ''}`
                           : item.text}
-                      </span>
+                      </Box>
                     ))}
-                  </div>
-                  <button onClick={handleStart}
-                    className="px-10 py-4 rounded-2xl text-white font-black text-xl shadow-2xl hover:scale-105 transition-transform"
-                    style={{ background: gradients.primaryPurple }}>
+                  </Box>
+                  <Button
+                    onClick={handleStart}
+                    sx={{
+                      px: 5, py: 2, borderRadius: 3, color: 'white', fontWeight: 900, fontSize: 20,
+                      boxShadow: 8, '&:hover': { transform: 'scale(1.05)' },
+                      background: gradients.primaryPurple, textTransform: 'none',
+                      transition: 'transform 0.15s',
+                    }}
+                  >
                     Start Recording
-                  </button>
-                </div>
+                  </Button>
+                </Box>
               )}
 
               {pageState === 'playing' && current && (
-                <div className="text-center w-full">
-                  <div className="flex justify-center mb-6">
+                <Box sx={{ textAlign: 'center', width: '100%' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
                     <CircleTimer seconds={timeLeft} total={totalTime} />
-                  </div>
+                  </Box>
 
                   {current.kind === 'speaking' ? (
                     <>
-                      <div className="flex items-center justify-center gap-1.5 text-white/60 text-sm font-semibold uppercase tracking-wide mb-3"><Mic className="w-4 h-4" /> Read aloud</div>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
+                        <Mic size={16} /> Read aloud
+                      </Box>
                       {current.pictureUrl && (
-                        <div className="mb-4 rounded-2xl overflow-hidden max-h-48 max-w-xs mx-auto">
+                        <Box sx={{ mb: 2, borderRadius: 3, overflow: 'hidden', maxHeight: 192, maxWidth: 320, mx: 'auto' }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={current.pictureUrl} alt="Speaking prompt" className="w-full h-full object-contain" />
-                        </div>
+                          <img src={current.pictureUrl} alt="Speaking prompt" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                        </Box>
                       )}
-                      <div className="text-2xl font-bold text-white mb-4 leading-relaxed max-w-lg mx-auto"
-                        style={{ textShadow: '0 0 20px rgba(255,155,210,0.4)' }}>
+                      <Typography sx={{ fontSize: 24, fontWeight: 700, color: 'white', mb: 2, lineHeight: 1.6, maxWidth: 512, mx: 'auto', textShadow: '0 0 20px rgba(255,155,210,0.4)' }}>
                         {current.text}
-                      </div>
+                      </Typography>
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center justify-center gap-1.5 text-white/60 text-sm font-semibold uppercase tracking-wide mb-3"><Hash className="w-4 h-4" /> Say this sound</div>
-                      <div className="text-7xl font-black text-white mb-4 tracking-widest"
-                        style={{ textShadow: '0 0 40px rgba(167,139,250,0.6)' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
+                        <Hash size={16} /> Say this sound
+                      </Box>
+                      <Typography sx={{ fontSize: 72, fontWeight: 900, color: 'white', mb: 2, letterSpacing: '0.1em', textShadow: '0 0 40px rgba(167,139,250,0.6)' }}>
                         {current.text}
-                      </div>
+                      </Typography>
                     </>
                   )}
 
-                  <div className="min-h-12 mb-8">
+                  <Box sx={{ minHeight: 48, mb: 4 }}>
                     {transcript
-                      ? <p className="text-white/80 text-2xl italic font-medium">"{transcript}"</p>
-                      : <p className="text-white/40 text-lg animate-pulse">Listening…</p>
+                      ? <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 24, fontStyle: 'italic', fontWeight: 500 }}>"{transcript}"</Typography>
+                      : <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}>Listening…</Typography>
                     }
-                  </div>
+                  </Box>
 
-                  <button onClick={handleSubmitItem}
-                    className="px-8 py-3 rounded-2xl text-white font-bold text-lg hover:scale-105 transition-transform"
-                    style={{ background: gradients.greenSecondary }}>
+                  <Button
+                    onClick={handleSubmitItem}
+                    sx={{
+                      px: 4, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, fontSize: 18,
+                      background: gradients.greenSecondary, '&:hover': { transform: 'scale(1.05)', background: gradients.greenSecondary },
+                      textTransform: 'none', transition: 'transform 0.15s',
+                    }}
+                  >
                     Next →
-                  </button>
+                  </Button>
 
                   {doneCount > 0 && (
-                    <div className="flex gap-2 justify-center mt-8 flex-wrap">
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: 4, flexWrap: 'wrap' }}>
                       {items.filter((w) => w.state === 'done').map((item, i) => (
-                        <span key={i} className="text-xs px-3 py-1 rounded-full font-bold"
-                          style={{ background: '#ffffff15', color: '#ffffffcc' }}>
-                          {item.kind === 'phonics' ? <><Hash className="w-3 h-3" /> {item.text}</> : <Mic className="w-3 h-3" />}
-                        </span>
+                        <Box key={i} component="span" sx={{
+                          fontSize: 12, px: 1.5, py: 0.5, borderRadius: '9999px', fontWeight: 700,
+                          background: '#ffffff15', color: '#ffffffcc',
+                          display: 'flex', alignItems: 'center', gap: 0.5,
+                        }}>
+                          {item.kind === 'phonics' ? <><Hash size={12} /> {item.text}</> : <Mic size={12} />}
+                        </Box>
                       ))}
-                    </div>
+                    </Box>
                   )}
-                </div>
+                </Box>
               )}
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Box>
       )}
     </AuthGate>
   );
