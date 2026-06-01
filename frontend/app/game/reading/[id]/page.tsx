@@ -17,6 +17,7 @@ import { shake } from '@/lib/theme';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import { PartyPopper, ImageIcon, Check, PenLine } from 'lucide-react';
 
 // ── Constants & helpers ────────────────────────────────────────────────────────
@@ -64,13 +65,13 @@ function LoadingState() {
 
 function ErrorState({ kind, onBack }: { kind: ErrorKind; onBack: () => void }) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-      <p className="text-highlight text-lg font-bold">Homework not found</p>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg, minWidth: 1024 }}>
+      <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Homework not found</Typography>
       {kind === 'no-activities' && (
-        <p className="text-white/70 text-sm text-center max-w-xs">This reading homework has no activities yet.</p>
+        <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, textAlign: 'center', maxWidth: 320 }}>This reading homework has no activities yet.</Typography>
       )}
-      <button onClick={onBack} className="text-white/60 text-sm hover:text-white">← Back to Homework</button>
-    </div>
+      <Button onClick={onBack} sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>← Back to Homework</Button>
+    </Box>
   );
 }
 
@@ -96,16 +97,20 @@ function ResultsState({
 }) {
   const score = session?.score ?? 0;
   return (
-    <div className="min-h-screen py-12 px-8" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-      <div className="max-w-xl mx-auto text-center mb-10">
-        <div className="flex justify-center mb-4"><div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center"><PartyPopper className="w-8 h-8 text-white" /></div></div>
-        <div className="text-white text-2xl font-black mb-2">Homework Complete!</div>
-        <div className="text-7xl font-black mt-4" style={{ color: scoreHexColor(score) }}>{score}%</div>
-        <div className="text-white/70 text-sm mt-2">Your score has been saved</div>
-        {saveError && <div className="text-highlight text-xs mt-2">{saveError}</div>}
-      </div>
+    <Box sx={{ minHeight: '100vh', py: 6, px: 4, background: gradients.gameBg, minWidth: 1024 }}>
+      <Box sx={{ maxWidth: 560, mx: 'auto', textAlign: 'center', mb: 5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <PartyPopper size={32} color="white" />
+          </Box>
+        </Box>
+        <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Homework Complete!</Typography>
+        <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2, color: scoreHexColor(score), fontVariantNumeric: 'tabular-nums' }}>{score}%</Typography>
+        <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 1 }}>Your score has been saved</Typography>
+        {saveError && <Typography sx={{ color: '#FF7B7B', fontSize: 12, mt: 1 }}>{saveError}</Typography>}
+      </Box>
 
-      <div className="max-w-xl mx-auto space-y-3 mb-8">
+      <Box sx={{ maxWidth: 560, mx: 'auto', display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
         {activityStates.map((act, idx) => {
           let correct = 0;
           let total = 0;
@@ -124,27 +129,32 @@ function ResultsState({
           }
           const activityPct = total > 0 ? Math.round((correct / total) * 100) : 0;
           return (
-            <div key={idx} className="bg-white/10 rounded-2xl px-5 py-4">
-              <div className="text-white/60 text-xs font-bold uppercase mb-2">{typeTag}</div>
-              <div className="flex items-center justify-between">
-                <div className="text-white/70 text-sm">{label}</div>
-                <div className="text-lg font-black tabular-nums" style={{ color: scoreHexColor(activityPct) }}>
+            <Box key={idx} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2.5, py: 2 }}>
+              <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', mb: 1 }}>{typeTag}</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{label}</Typography>
+                <Typography sx={{ fontSize: 18, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: scoreHexColor(activityPct) }}>
                   {activityPct}%
-                </div>
-              </div>
-            </div>
+                </Typography>
+              </Box>
+            </Box>
           );
         })}
-      </div>
+      </Box>
 
-      <button
+      <Button
         onClick={onFinish}
-        className="w-full max-w-xl mx-auto block py-4 rounded-2xl text-white font-black text-lg"
-        style={{ background: gradients.primaryPurple }}
+        fullWidth
+        sx={{
+          display: 'block', maxWidth: 560, mx: 'auto', py: 2, borderRadius: 3,
+          color: 'white', fontWeight: 900, fontSize: 18,
+          background: gradients.primaryPurple, '&:hover': { opacity: 0.9, background: gradients.primaryPurple },
+          textTransform: 'none',
+        }}
       >
         Finish
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 }
 
@@ -160,15 +170,15 @@ function PlayingShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ background: gradients.gameBgAlt, minWidth: 1024 }}>
-      <div className="flex items-center justify-between px-8 py-4 flex-shrink-0">
-        <button onClick={onBack} className="text-white/60 hover:text-white text-sm">← Back</button>
-        <div className="flex items-center gap-3">
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: gradients.gameBgAlt, minWidth: 1024 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 4, py: 2, flexShrink: 0 }}>
+        <Button onClick={onBack} sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>← Back</Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           {activityStates.map((_, i) => (
-            <div
+            <Box
               key={i}
-              className="w-8 h-2 rounded-full transition-all"
-              style={{
+              sx={{
+                width: 32, height: 8, borderRadius: '9999px', transition: 'all 0.15s',
                 background:
                   i < currentActivityIndex
                     ? 'rgba(255,255,255,0.5)'
@@ -178,15 +188,15 @@ function PlayingShell({
               }}
             />
           ))}
-        </div>
-        <div className="text-white/70 text-sm font-bold">
+        </Box>
+        <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 700 }}>
           Activity {currentActivityIndex + 1} of {activityStates.length}
-        </div>
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center px-8 pb-8 overflow-auto">
+        </Typography>
+      </Box>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 4, pb: 4, overflowY: 'auto' }}>
         {children}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -264,13 +274,13 @@ function MatchingActivityRenderer({
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full">
-      <div className="text-white/60 text-xs font-bold uppercase tracking-wide mb-8 text-center">
-        <ImageIcon className="w-4 h-4 inline mr-1" />Match each image to its word
-      </div>
+    <Box sx={{ maxWidth: 768, mx: 'auto', width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 4 }}>
+        <ImageIcon size={16} />Match each image to its word
+      </Box>
 
       {/* Image row */}
-      <div className="flex gap-6 justify-center mb-8">
+      <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', mb: 4 }}>
         {state.pairs.map((p) => {
           const isSelected = state.selectedImageId === p.pair.id;
           const isLocked = p.status === 'locked';
@@ -295,19 +305,19 @@ function MatchingActivityRenderer({
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.pair.imageUrl} alt={p.pair.word} className="w-full h-full object-cover" />
+              <img src={p.pair.imageUrl} alt={p.pair.word} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               {isLocked && (
-                <div className="absolute inset-0 flex items-center justify-center bg-brand-green/30">
-                  <Check className="w-6 h-6 text-brand-green" />
-                </div>
+                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(123,216,143,0.3)' }}>
+                  <Check size={24} color="#7BD88F" />
+                </Box>
               )}
             </Box>
           );
         })}
-      </div>
+      </Box>
 
       {/* Word row (shuffled) */}
-      <div className="flex flex-wrap gap-3 justify-center">
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
         {state.shuffledWords.map((pairId) => {
           const p = state.pairs.find((x) => x.pair.id === pairId);
           if (!p) return null;
@@ -332,8 +342,8 @@ function MatchingActivityRenderer({
             </Button>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -385,14 +395,14 @@ function FillBlankActivityRenderer({
   const parts = currentItem.blank.sentence.split('___');
 
   return (
-    <div className="max-w-xl mx-auto w-full">
+    <Box sx={{ maxWidth: 560, mx: 'auto', width: '100%' }}>
       {/* Item progress dots */}
-      <div className="flex gap-2 justify-center mb-6">
+      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 3 }}>
         {state.items.map((it, i) => (
-          <div
+          <Box
             key={i}
-            className="w-2.5 h-2.5 rounded-full transition-all"
-            style={{
+            sx={{
+              width: 10, height: 10, borderRadius: '50%', transition: 'all 0.15s',
               background:
                 it.correct === true
                   ? '#7BD88F'
@@ -404,25 +414,26 @@ function FillBlankActivityRenderer({
             }}
           />
         ))}
-      </div>
+      </Box>
 
       {/* Sentence display */}
-      <div className="text-center mb-8" style={{ lineHeight: 2 }}>
+      <Box sx={{ textAlign: 'center', mb: 4, lineHeight: 2 }}>
         {parts.flatMap((part, idx, arr) =>
           idx < arr.length - 1
             ? [
-                <span key={`t${idx}`} className="text-white text-2xl font-black">{part}</span>,
-                <span
+                <Box component="span" key={`t${idx}`} sx={{ color: 'white', fontSize: 24, fontWeight: 900 }}>{part}</Box>,
+                <Box
+                  component="span"
                   key={`b${idx}`}
-                  className="inline-block w-24 h-8 rounded-lg border-2 border-white/40 bg-white/10 align-middle mx-1"
+                  sx={{ display: 'inline-block', width: 96, height: 32, borderRadius: 2, border: '2px solid rgba(255,255,255,0.4)', bgcolor: 'rgba(255,255,255,0.1)', verticalAlign: 'middle', mx: 0.5 }}
                 />,
               ]
-            : [<span key={`t${idx}`} className="text-white text-2xl font-black">{part}</span>]
+            : [<Box component="span" key={`t${idx}`} sx={{ color: 'white', fontSize: 24, fontWeight: 900 }}>{part}</Box>]
         )}
-      </div>
+      </Box>
 
       {/* Choices */}
-      <div className="flex flex-wrap gap-3 justify-center">
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
         {currentItem.blank.choices.map((c) => {
           const isChosen = currentItem.chosenChoiceId === c.id;
           const answered = currentItem.chosenChoiceId !== null;
@@ -451,8 +462,8 @@ function FillBlankActivityRenderer({
             </Button>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
