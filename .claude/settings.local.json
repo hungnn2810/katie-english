@@ -133,7 +133,14 @@
       "Read(//Users/hung/.claude/**)",
       "Bash(npx --prefix backend prisma migrate status)",
       "Bash(2>&1)",
-      "Bash(ffmpeg -version)"
+      "Bash(ffmpeg -version)",
+      "PowerShell(cd \"J:\\\\sources\\\\katie-english\"; git merge-base --is-ancestor 80aa156 HEAD; echo \"Exit: $LASTEXITCODE\")",
+      "PowerShell(cd \"J:\\\\sources\\\\katie-english\"; git merge-base --is-ancestor bca3a6a HEAD; echo \"Exit: $LASTEXITCODE\")",
+      "PowerShell(git worktree *)",
+      "PowerShell(git *)",
+      "PowerShell(cd \"J:\\\\sources\\\\katie-english\\\\frontend\"; \\(Select-String 'className=' app\\\\teacher\\\\homework\\\\page.tsx\\).Count)",
+      "PowerShell(cd \"J:\\\\sources\\\\katie-english\\\\frontend\"; $files = @\\(\"app\\\\teacher\\\\homework\\\\[id]\\\\page.tsx\", \"app\\\\teacher\\\\homework\\\\[id]\\\\edit\\\\page.tsx\", \"app\\\\teacher\\\\homework\\\\[id]\\\\session\\\\[sessionId]\\\\page.tsx\", \"app\\\\teacher\\\\homework\\\\create\\\\reading\\\\page.tsx\"\\); foreach \\($f in $files\\) { $c = \\(Select-String 'className=' $f -ErrorAction SilentlyContinue\\).Count; Write-Host \"$f : $c className\" })",
+      "PowerShell(cd \"J:\\\\sources\\\\katie-english\\\\frontend\"; $f1 = \\(Select-String 'className=|@/components/ui' \"app\\\\teacher\\\\homework\\\\page.tsx\" -ErrorAction SilentlyContinue\\).Count; $f2 = \\(Select-String 'className=|@/components/ui' \"app\\\\teacher\\\\homework\\\\_components\\\\ReadingCreationPage.tsx\" -ErrorAction SilentlyContinue\\).Count; $dnd = \\(Select-String 'DndContext' \"app\\\\teacher\\\\homework\\\\_components\\\\ReadingCreationPage.tsx\"\\).Count; $paper = \\(Select-String 'Paper' \"app\\\\teacher\\\\homework\\\\_components\\\\ReadingCreationPage.tsx\"\\).Count; Write-Host \"homework/page.tsx issues: $f1\"; Write-Host \"ReadingCreationPage issues: $f2 \\(DndContext: $dnd, Paper: $paper\\)\")"
     ]
   },
   "enableAllProjectMcpServers": true,
