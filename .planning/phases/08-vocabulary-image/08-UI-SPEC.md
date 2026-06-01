@@ -102,14 +102,19 @@ Uses MUI typography system. All `fontSize` values in `sx` prop are pixels as num
 
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
-| Body | 16px (studentTheme base) / 14px (baseTheme) | 400 | 1.5 | Secondary text, captions |
-| Label / UI | 14px | 700 | 1.4 | Type badges, section headers, button labels, score badges |
-| Heading | 20–24px | 700 | 1.3 | Dialog titles, page headings, card headings |
+| Body | 16px | 400 | 1.5 | Secondary text, captions, student game base size |
+| Label | 14px | 700 | 1.4 | Type badges, section headers, button labels, score badges |
+| Heading | 24px | 700 | 1.3 | Dialog titles, page headings, card headings |
 | Display | 30px | 700 | 1.2 | Game "Ready?" screen heading, "Homework Complete!" |
 
-**Student game word display (during recording):** 48–72px, weight 700 — size carries visual impact; weight matches the unified scale.
+**Component-local size overrides (outside type scale — excluded from the 4-size count above):**
 
-**Score display:** 72px, weight 700, `fontVariantNumeric: 'tabular-nums'`, color from `scoreHexColor()` — the outsized size provides the display hierarchy; no extra weight needed.
+These values are single-component one-off sizes driven by visual impact requirements. They are NOT part of the global type scale and must not be counted against the 4-size maximum.
+
+| Component | Size | Weight | Notes |
+|-----------|------|--------|-------|
+| Student game word display (during recording) | 48px | 700 | Large size carries visual impact for word recognition; applies only to the hint chip text during active recording state |
+| Score display (results screen) | 72px | 700 | `fontVariantNumeric: 'tabular-nums'`, color from `scoreHexColor()` — outsized size provides display hierarchy on results screen only |
 
 **Phoneme chip labels:** `fontFamily: 'monospace'`, weight 700, size small (MUI Chip size="small").
 
@@ -224,7 +229,7 @@ When VOCABULARY selected: show redirect panel (same dashed-border pattern as REA
      - Idle: ImageIcon (32px, `text.disabled`) centered + `"Upload image"` caption
      - Uploaded: `<img>` fill zone, `objectFit: 'cover'`, remove overlay on hover
    - **Word label field** — MUI `TextField`, label `"Word"`, `size="small"`, placeholder `"e.g. apple"`, max 32 chars
-   - **Remove button** — MUI `IconButton`, X icon (16px), `size="small"`, `color: 'error'` — right edge
+   - **Remove button** — MUI `IconButton`, X icon (16px), `size="small"`, `color: 'error'`, `aria-label="Remove item {N}"` — right edge
    - Card: MUI `Paper`, `elevation: 1`, `sx: { p: 1.5, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }` (p: 1.5 = 12px dense padding — see Spacing Exceptions)
 
 6. **Add item button** — `Button variant="outlined"`, `startIcon={<Plus size={16} />}`, `"Add Image"`, disabled when item count = 10, full width.
@@ -281,7 +286,7 @@ When VOCABULARY selected: show redirect panel (same dashed-border pattern as REA
 [ phoneme feedback — shown after scoring ]
   PhonemeChips component (reuse as-is)
 
-[ "Next" button / "Done" button — shown after phoneme chips appear ]
+[ "Next" button / "View Results" button — shown after phoneme chips appear ]
   gradient: gradients.greenSecondary
   px: 4, py: 1.5, borderRadius: 3, fontWeight: 700, fontSize: 18, color: white
 ```
@@ -369,7 +374,7 @@ When VOCABULARY selected: show redirect panel (same dashed-border pattern as REA
 | Scoring state | `"Scoring…"` (below button area) |
 | Word hint label above chip | (none — chip is the word itself) |
 | Next button | `"Next →"` |
-| Final item done button | `"Done"` |
+| Final item done button | `"View Results"` |
 | Results heading | `"Homework Complete!"` |
 | Results save confirmation | `"Your recording has been saved"` |
 | Results save error | `"Recording could not be saved"` |
@@ -436,7 +441,7 @@ When VOCABULARY selected: show redirect panel (same dashed-border pattern as REA
 - **Idle:** Click starts recording
 - **Recording:** Click stops recording, triggers BFA analyze call
 - **Analyzing:** Button disabled, `CircularProgress` shown, `"Scoring…"` text
-- **After result:** Phoneme chips appear below image, Next/Done button appears
+- **After result:** Phoneme chips appear below image, Next/View Results button appears
 - **Re-record on BFA error:** "Try Again" button replaces Next button; re-record resets state for this item
 
 ### Progress Dots (Student Game)
@@ -459,6 +464,7 @@ When VOCABULARY selected: show redirect panel (same dashed-border pattern as REA
 ## Accessibility
 
 - All image upload zones: `role="button"`, `aria-label="Upload image for item {N}"`
+- Remove item button: `aria-label="Remove item {N}"` — applied to the X IconButton on each VocabItemCard
 - Record button: `aria-label="Start recording"` / `"Stop recording"` toggled on state
 - Phoneme chips: `data-status` attribute (already on PhonemeChips component)
 - Image thumbnails in teacher results: `alt="{word}"` (word label as alt text)
