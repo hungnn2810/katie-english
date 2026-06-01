@@ -32,6 +32,15 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -158,33 +167,32 @@ function MatchingActivityEditor({
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-bold text-textSecondary">{pairs.length} / 6 pairs</span>
-      </div>
+    <Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+        <Typography variant="caption" fontWeight={700} color="text.secondary">{pairs.length} / 6 pairs</Typography>
+      </Box>
 
       {pairs.length === 0 ? (
-        <p className="text-xs text-textSecondary italic mb-3">No pairs yet — click &quot;+ Add pair&quot; to start.</p>
+        <Typography variant="caption" color="text.secondary" fontStyle="italic" display="block" mb={1.5}>
+          No pairs yet — click &quot;+ Add pair&quot; to start.
+        </Typography>
       ) : (
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5, mb: 2 }}>
           {pairs.map((pair, i) => (
-            <div key={i} className="bg-background rounded-xl border border-border p-3">
+            <Box key={i} sx={{ bgcolor: 'background.default', borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 1.5 }}>
               {pair.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={pair.imageUrl}
                   alt={pair.word}
-                  className="w-20 h-20 rounded-lg object-cover mb-2 mx-auto"
+                  style={{ width: 80, height: 80, borderRadius: 8, objectFit: 'cover', marginBottom: 8, display: 'block', margin: '0 auto 8px' }}
                 />
               ) : (
-                <label className="flex flex-col items-center justify-center w-20 h-20 rounded-lg border-2 border-dashed border-secondary/40 bg-secondary/5 mb-2 mx-auto cursor-pointer hover:bg-secondary/10 relative">
+                <Box component="label" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 80, height: 80, borderRadius: 2, border: '2px dashed', borderColor: 'secondary.light', bgcolor: 'secondary.50', mb: 1, mx: 'auto', cursor: 'pointer', '&:hover': { bgcolor: 'secondary.100' }, position: 'relative' }}>
                   {uploadingIdx === i ? (
-                    <svg className="w-5 h-5 animate-spin text-secondary" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-                      <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                    </svg>
+                    <CircularProgress size={20} color="secondary" />
                   ) : (
-                    <svg className="w-6 h-6 text-textSecondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                    <svg style={{ width: 24, height: 24, color: '#64748B' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                   )}
                   <input
                     type="file"
@@ -195,43 +203,52 @@ function MatchingActivityEditor({
                       e.currentTarget.value = '';
                     }}
                   />
-                </label>
+                </Box>
               )}
-              <input
-                className="input-base text-sm py-2"
+              <TextField
+                size="small"
+                fullWidth
                 placeholder="Word label"
                 value={pair.word}
                 onChange={(e) => updatePairWord(i, e.target.value)}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 14 } }}
               />
-              <button
+              <Button
                 type="button"
+                size="small"
                 onClick={() => removePair(i)}
                 aria-label="Remove pair"
-                className="block text-center mt-1 text-xs text-highlight hover:text-red-600 w-full"
+                fullWidth
+                sx={{ mt: 0.5, fontSize: 12, color: 'error.light', '&:hover': { color: 'error.main', bgcolor: 'error.50' } }}
               >
                 ✕
-              </button>
-            </div>
+              </Button>
+            </Box>
           ))}
-        </div>
+        </Box>
       )}
 
       {pairs.length < 6 ? (
-        <button
+        <Button
           type="button"
+          size="small"
           onClick={addPair}
-          className="text-sm font-bold text-secondary hover:underline"
+          sx={{ fontSize: 14, fontWeight: 700, color: 'secondary.main', '&:hover': { textDecoration: 'underline' }, px: 0 }}
         >
           + Add pair
-        </button>
+        </Button>
       ) : (
-        <span className="text-xs font-bold text-textSecondary opacity-60">Maximum 6 pairs reached</span>
+        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ opacity: 0.6 }}>
+          Maximum 6 pairs reached
+        </Typography>
       )}
 
       {pairs.length === 1 && (
-        <p className="text-xs text-highlight mt-2">Add at least 2 image-word pairs.</p>
+        <Typography variant="caption" color="error.main" display="block" mt={1}>
+          Add at least 2 image-word pairs.
+        </Typography>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -268,81 +285,86 @@ function FillInBlankActivityEditor({
     .sort((a, b) => (a.blankIndex ?? 0) - (b.blankIndex ?? 0));
 
   return (
-    <div>
+    <Box>
       {/* Sentence textarea */}
-      <div className="mb-3">
-        <label className="block text-xs font-bold text-textSecondary uppercase tracking-wide mb-1">
+      <Box mb={1.5}>
+        <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.5 }}>
           Sentence
-        </label>
+        </Typography>
         {hasExistingBlanks && (
-          <p className="text-xs text-amber-600 mb-1">
+          <Typography variant="caption" sx={{ color: '#d97706', display: 'block', mb: 0.5 }}>
             Editing the sentence will clear existing blanks.
-          </p>
+          </Typography>
         )}
-        <textarea
+        <TextField
+          multiline
           rows={2}
-          className="input-base resize-none"
+          fullWidth
+          size="small"
           placeholder="Type a sentence, then click words below to mark them as blanks"
           value={sentenceText}
           onChange={(e) => setSentence(e.target.value)}
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
         />
-      </div>
+      </Box>
 
       {/* Word chips */}
       {segments.length > 0 && (
-        <div className="mb-4">
-          <div className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">
+        <Box mb={2}>
+          <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>
             Click a word to make it a blank
-          </div>
-          <div className="flex flex-wrap gap-1.5">
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
             {segments.map((s, i) => {
               if (s.text.trim() === '') {
-                // Whitespace token — render as non-interactive spacer
-                return <span key={i} className="inline-block w-2" aria-hidden />;
+                return <Box key={i} component="span" sx={{ display: 'inline-block', width: 8 }} aria-hidden />;
               }
               if (s.blank) {
                 return (
-                  <button
+                  <Button
                     key={i}
                     type="button"
+                    size="small"
                     onClick={() => toggleSegmentBlank(i)}
-                    className="bg-primary text-white px-2.5 py-1 rounded-lg text-sm font-semibold flex items-center gap-1"
                     aria-label={`Remove blank for "${s.text}"`}
+                    sx={{ bgcolor: 'primary.main', color: 'white', px: 1.25, py: 0.5, borderRadius: 2, fontSize: 14, fontWeight: 600, gap: 0.5, minWidth: 0, '&:hover': { bgcolor: 'primary.dark' } }}
                   >
                     ___
-                    <span className="text-xs opacity-80">×</span>
-                  </button>
+                    <Box component="span" sx={{ fontSize: 12, opacity: 0.8 }}>×</Box>
+                  </Button>
                 );
               }
               return (
-                <button
+                <Button
                   key={i}
                   type="button"
+                  size="small"
                   onClick={() => toggleSegmentBlank(i)}
-                  className="bg-gray-100 text-textPrimary px-2.5 py-1 rounded-lg text-sm hover:bg-primary/10 cursor-pointer"
                   aria-label={`Make "${s.text}" a blank`}
+                  sx={{ bgcolor: 'grey.100', color: 'text.primary', px: 1.25, py: 0.5, borderRadius: 2, fontSize: 14, cursor: 'pointer', minWidth: 0, '&:hover': { bgcolor: 'primary.50' } }}
                 >
                   {s.text}
-                </button>
+                </Button>
               );
             })}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {/* Distractor inputs — one row per blank */}
       {blanks.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-1">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.5 }}>
             Distractors per blank
-          </div>
+          </Typography>
           {blanks.map((b) => (
-            <div key={b.blankIndex} className="flex items-center gap-2">
-              <span className="text-xs font-mono text-textSecondary shrink-0 w-24">
+            <Box key={b.blankIndex} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary', flexShrink: 0, width: 96 }}>
                 Blank {(b.blankIndex ?? 0) + 1}: &quot;{b.correctWord}&quot;
-              </span>
-              <input
-                className="flex-1 px-3 py-1.5 rounded-lg border border-border text-sm"
+              </Typography>
+              <TextField
+                size="small"
+                fullWidth
                 value={(b.distractors ?? []).join(', ')}
                 onChange={(e) =>
                   updateDistractors(
@@ -354,18 +376,19 @@ function FillInBlankActivityEditor({
                   )
                 }
                 placeholder="Comma-separated distractors (e.g. dog, bird)"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 14 } }}
               />
-            </div>
+            </Box>
           ))}
-        </div>
+        </Box>
       )}
 
       {segments.length === 0 && (
-        <p className="text-xs text-textSecondary italic">
+        <Typography variant="caption" color="text.secondary" fontStyle="italic">
           Type a sentence above to get started.
-        </p>
+        </Typography>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -394,51 +417,62 @@ function SortableActivityCard({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="card overflow-hidden bg-white rounded-2xl border border-border shadow-card">
-      <div className="flex items-center gap-3 px-5 py-3 border-b border-border bg-background/50">
-        <button
+    <Paper
+      ref={setNodeRef}
+      style={style}
+      elevation={isDragging ? 4 : 1}
+      sx={{
+        borderRadius: 3,
+        overflow: 'hidden',
+        border: '1px solid',
+        borderColor: isDragging ? 'primary.main' : 'divider',
+        cursor: isDragging ? 'grabbing' : 'default',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2.5, py: 1.5, borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
+        <IconButton
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
           type="button"
           aria-label="Drag to reorder"
-          className="cursor-grab active:cursor-grabbing p-3 rounded-lg hover:bg-gray-100"
+          size="small"
+          sx={{ cursor: 'grab', '&:active': { cursor: 'grabbing' }, borderRadius: 2, color: 'text.secondary' }}
         >
-          <svg className="w-5 h-5 text-textSecondary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <svg style={{ width: 20, height: 20 }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" strokeWidth="2" />
           </svg>
-        </button>
+        </IconButton>
 
         {activity.type === 'MATCH' ? (
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-secondary/15 text-secondary">
-            Matching
-          </span>
+          <Chip label="Matching" size="small" sx={{ bgcolor: 'secondary.50', color: 'secondary.main', fontWeight: 700 }} />
         ) : (
-          <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-accent/20 text-amber-700">
-            Fill in the Blank
-          </span>
+          <Chip label="Fill in the Blank" size="small" sx={{ bgcolor: '#FFF8E1', color: '#B45309', fontWeight: 700 }} />
         )}
 
-        <span className="text-xs font-bold text-textSecondary ml-auto">Activity {index + 1}</span>
+        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 'auto' }}>
+          Activity {index + 1}
+        </Typography>
 
-        <button
+        <Button
           type="button"
+          size="small"
           onClick={onRemove}
           aria-label="Remove activity"
-          className="text-xs font-bold text-highlight hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50"
+          sx={{ fontSize: 12, fontWeight: 700, color: 'error.light', '&:hover': { color: 'error.main', bgcolor: 'error.50' }, minWidth: 0, px: 1 }}
         >
           Remove
-        </button>
-      </div>
+        </Button>
+      </Box>
 
-      <div className="px-5 py-4">
+      <Box sx={{ px: 2.5, py: 2 }}>
         {activity.type === 'MATCH' ? (
           <MatchingActivityEditor activity={activity} onUpdate={onUpdate} onUploadError={onUploadError} />
         ) : (
           <FillInBlankActivityEditor activity={activity} onUpdate={onUpdate} />
         )}
-      </div>
-    </div>
+      </Box>
+    </Paper>
   );
 }
 
@@ -600,96 +634,87 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
   // Show loading placeholder while fetching existing homework in edit mode
   if (initialLoading) {
     return (
-      <div className="animate-fade-in max-w-3xl mx-auto px-8 py-8 flex items-center justify-center min-h-64">
-        <div className="flex items-center gap-3 text-textSecondary">
-          <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-            <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-          </svg>
-          <span className="text-sm">Loading…</span>
-        </div>
-      </div>
+      <Box sx={{ maxWidth: 768, mx: 'auto', px: 4, py: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 256 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
+          <CircularProgress size={20} color="inherit" />
+          <Typography variant="body2">Loading…</Typography>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="animate-fade-in max-w-3xl mx-auto px-8 py-8">
+    <Box sx={{ maxWidth: 768, mx: 'auto', px: 4, py: 4 }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <Link href="/teacher/homework" className="text-sm text-textSecondary hover:text-textPrimary">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+        <Box>
+          <Box component={Link} href="/teacher/homework" sx={{ fontSize: 14, color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'text.primary' } }}>
             ← Back
-          </Link>
-          <h1 className="text-2xl font-black text-textPrimary mt-1">
+          </Box>
+          <Typography variant="h5" fontWeight={900} mt={0.5}>
             {editMode ? 'Edit Reading Homework' : 'New Reading Homework'}
-          </h1>
-        </div>
-        <div className="flex items-center gap-3">
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           {editMode && editId && (
-            <button
+            <Button
               type="button"
+              variant="contained"
               onClick={() => router.push(`/teacher/homework/${editId}/try`)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white"
-              style={{ background: '#F0623A' }}
+              sx={{ borderRadius: 3, gap: 0.75, bgcolor: '#F0623A', '&:hover': { bgcolor: '#F0623A', opacity: 0.9 } }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> Try
-            </button>
+              <svg style={{ width: 16, height: 16 }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              Try
+            </Button>
           )}
-          <button
+          <Button
             type="button"
+            variant="contained"
             onClick={handleSave}
             disabled={loading}
-            className="btn-primary flex items-center gap-2 shrink-0 disabled:opacity-60"
-            style={{ background: gradients.greenSecondary }}
+            sx={{ borderRadius: 3, gap: 1, flexShrink: 0, background: gradients.greenSecondary, '&:hover': { background: gradients.greenSecondary, opacity: 0.9 }, '&:disabled': { opacity: 0.6 } }}
           >
-            {loading && (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-                <path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-              </svg>
-            )}
+            {loading && <CircularProgress size={16} sx={{ color: 'white' }} />}
             {loading ? 'Saving…' : editMode ? 'Update' : 'Create'}
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Box>
+      </Box>
 
       {/* Homework name */}
-      <div className="mb-6">
-        <label className="block text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">
+      <Box mb={3}>
+        <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>
           Homework Name
-        </label>
-        <input
-          className="input-base"
+        </Typography>
+        <TextField
+          fullWidth
+          size="small"
           placeholder="e.g. Animals – Unit 3 Reading"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
         />
-      </div>
+      </Box>
 
       {/* Error display */}
-      {error && (
-        <div className="text-sm bg-highlight/10 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4">
-          {error}
-        </div>
-      )}
-      {uploadError && (
-        <div className="text-sm bg-highlight/10 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-4">
-          {uploadError}
-        </div>
-      )}
+      {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{error}</Alert>}
+      {uploadError && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{uploadError}</Alert>}
 
       {/* Activities section */}
-      <div>
-        <div className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-3">Activities</div>
+      <Box>
+        <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1.5 }}>
+          Activities
+        </Typography>
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={activities.map((a) => a.clientId)} strategy={verticalListSortingStrategy}>
             {activities.length === 0 ? (
-              <div className="rounded-xl border-2 border-dashed border-border bg-background/50 py-12 text-center text-sm text-textSecondary">
-                No activities yet. Use the buttons below to add a Matching or Fill-in-blank activity.
-              </div>
+              <Box sx={{ borderRadius: 3, border: '2px dashed', borderColor: 'divider', bgcolor: 'background.default', py: 6, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  No activities yet. Use the buttons below to add a Matching or Fill-in-blank activity.
+                </Typography>
+              </Box>
             ) : (
-              <div className="space-y-4">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {activities.map((a, idx) => (
                   <SortableActivityCard
                     key={a.clientId}
@@ -701,29 +726,31 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
                     onUploadError={setUploadError}
                   />
                 ))}
-              </div>
+              </Box>
             )}
           </SortableContext>
         </DndContext>
 
         {/* Add activity buttons */}
-        <div className="mt-4 flex gap-3">
-          <button
+        <Box sx={{ mt: 2, display: 'flex', gap: 1.5 }}>
+          <Button
             type="button"
+            variant="outlined"
             onClick={addMatchingActivity}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 border-dashed border-secondary text-secondary hover:bg-secondary/10"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1, borderRadius: 3, fontWeight: 700, border: '2px dashed', borderColor: 'secondary.main', color: 'secondary.main', '&:hover': { bgcolor: 'secondary.50', border: '2px dashed' } }}
           >
             + Add Matching Activity
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outlined"
             onClick={addFillBlankActivity}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border-2 border-dashed border-accent text-amber-600 hover:bg-accent/10"
+            sx={{ display: 'flex', alignItems: 'center', gap: 1, borderRadius: 3, fontWeight: 700, border: '2px dashed', borderColor: 'warning.main', color: '#d97706', '&:hover': { bgcolor: 'warning.50', border: '2px dashed' } }}
           >
             + Add Fill-in-blank Activity
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
 }

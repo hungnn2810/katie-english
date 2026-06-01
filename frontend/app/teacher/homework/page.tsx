@@ -9,14 +9,21 @@ import {
   CreateAssignmentInput, HomeworkType, SpeakingMode, CreatePartInput,
 } from '@/lib/admin-api';
 import { cardGradients, colors } from '@/lib/colors';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardFooter } from '@/components/ui/card';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Chip from '@mui/material/Chip';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import InputAdornment from '@mui/material/InputAdornment';
 import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2 } from 'lucide-react';
 import { parseApiDateTime } from '@/lib/datetime';
 
@@ -153,147 +160,151 @@ function HomeworkModal({
   const headingName = editingId !== null ? (form.name || meta.label) : meta.label;
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-8 pt-7 pb-5 border-b border-border gap-0">
-          <div>
-            <DialogTitle className="text-xl font-black text-textPrimary">
-              <span className="text-textSecondary font-semibold">{editingId !== null ? 'Edit · ' : 'New · '}</span>
-              <span style={{ color: meta.color }}>{headingName}</span>
-            </DialogTitle>
-            <p className="text-xs text-textSecondary mt-1">Reusable template — assign to classes separately.</p>
-          </div>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
-            className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
-            <X className="w-4 h-4" />
-          </Button>
-        </DialogHeader>
+    <Dialog open onClose={onClose} maxWidth="md" fullWidth
+      PaperProps={{ sx: { borderRadius: 4, maxHeight: '90vh' } }}>
+      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h6" fontWeight={900} sx={{ lineHeight: 1.3 }}>
+              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                {editingId !== null ? 'Edit · ' : 'New · '}
+              </Box>
+              <Box component="span" sx={{ color: meta.color }}>{headingName}</Box>
+            </Typography>
+            <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+              Reusable template — assign to classes separately.
+            </Typography>
+          </Box>
+          <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: 0.5 }}>
+            <X size={16} />
+          </IconButton>
+        </Box>
+      </DialogTitle>
 
-        <form onSubmit={handleSubmit}>
-          <div className="px-8 py-6 space-y-6">
+      <form onSubmit={handleSubmit}>
+        <DialogContent sx={{ px: 4, py: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 
             {/* Type selector — create mode only */}
             {editingId === null && (
-              <div>
-                <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-3">Type</p>
-                <div className="grid grid-cols-3 gap-3">
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1.5, display: 'block' }}>
+                  Type
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
                   {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
                     const m = TYPE_META[t];
                     const active = form.type === t;
                     return (
-                      <button key={t} type="button"
+                      <Button key={t} type="button"
                         onClick={() => setForm((f) => ({ ...f, type: t, speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingText: '', speakingPictureUrl: '' }))}
-                        className="flex flex-col items-center gap-2 py-4 rounded-2xl border-2 text-sm font-bold transition-all"
-                        style={active
-                          ? { background: m.color, color: 'white', borderColor: m.color }
-                          : { background: m.bg, color: m.color, borderColor: m.color + '40' }}>
-                        <m.icon className="w-5 h-5" />
+                        sx={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                          py: 2, borderRadius: 3, border: '2px solid', fontSize: 14, fontWeight: 700,
+                          ...(active
+                            ? { background: m.color, color: 'white', borderColor: m.color }
+                            : { background: m.bg, color: m.color, borderColor: m.color + '40' }),
+                        }}>
+                        <m.icon size={20} />
                         {m.label}
-                      </button>
+                      </Button>
                     );
                   })}
-                </div>
-              </div>
+                </Box>
+              </Box>
             )}
 
             {/* READING redirect */}
             {form.type === 'READING' && (
-              <div className="flex flex-col items-center gap-4 py-10 rounded-2xl border-2 border-dashed"
-                style={{ borderColor: meta.color + '55', background: meta.bg }}>
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                  style={{ background: meta.color + '22' }}>
-                  <BookOpen className="w-7 h-7" style={{ color: meta.color }} />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-bold text-textPrimary">Reading homework uses a dedicated editor</p>
-                  <p className="text-xs text-textSecondary mt-1">Build activities, set sequences, and preview inline.</p>
-                </div>
-                <Button type="button"
-                  className="px-6 py-2.5 h-auto rounded-xl text-sm font-bold text-white"
-                  style={{ background: meta.color }}
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 5, borderRadius: 3, border: '2px dashed', borderColor: meta.color + '55', background: meta.bg }}>
+                <Box sx={{ width: 56, height: 56, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', background: meta.color + '22' }}>
+                  <BookOpen size={28} style={{ color: meta.color }} />
+                </Box>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="body2" fontWeight={700}>Reading homework uses a dedicated editor</Typography>
+                  <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>Build activities, set sequences, and preview inline.</Typography>
+                </Box>
+                <Button type="button" variant="contained"
+                  sx={{ px: 3, borderRadius: 3, fontWeight: 700, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}
                   onClick={() => { onClose(); onNavigateToReading(); }}>
                   Open Reading Editor
                 </Button>
-              </div>
+              </Box>
             )}
 
             {/* PHONICS form */}
             {form.type === 'PHONICS' && (
-              <div className="space-y-5">
-                <div>
-                  <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                <Box>
+                  <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
                     Homework Name
-                  </Label>
-                  <Input type="text" className="input-base"
+                  </Typography>
+                  <TextField size="small" fullWidth type="text"
                     placeholder="e.g. er, r, ou"
                     value={form.name ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
-                </div>
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+                </Box>
 
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-bold text-textSecondary uppercase tracking-wide">
-                      Parts
-                      <span className="ml-1.5 normal-case font-normal" style={{ color: meta.color }}>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
+                      Parts{' '}
+                      <Box component="span" sx={{ fontWeight: 400, textTransform: 'none', color: meta.color }}>
                         ({parts.length} part{parts.length !== 1 ? 's' : ''}, {parts.reduce((s, p) => s + p.words.length, 0)} words)
-                      </span>
-                    </p>
-                  </div>
+                      </Box>
+                    </Typography>
+                  </Box>
 
                   {/* Parts list */}
                   {parts.length > 0 && (
-                    <div className="space-y-3 mb-3">
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 1.5 }}>
                       {parts.map((part, pIdx) => (
-                        <div key={pIdx} className="rounded-2xl border border-border overflow-hidden"
-                          style={{ background: meta.bg + '50' }}>
+                        <Box key={pIdx} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden', background: meta.bg + '50' }}>
                           {/* Part header */}
-                          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/60">
-                            <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white shrink-0"
-                              style={{ background: meta.color }}>
-                              {part.name}
-                            </span>
-                            <span className="text-xs text-textSecondary flex-1">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                            <Chip label={part.name} size="small" sx={{ bgcolor: meta.color, color: 'white', fontWeight: 700, borderRadius: '999px' }} />
+                            <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
                               {part.words.length} word{part.words.length !== 1 ? 's' : ''}
-                            </span>
-                            <Button type="button" variant="ghost" size="sm" onClick={() => removePart(pIdx)}
-                              className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 h-auto px-2 py-1 shrink-0">
+                            </Typography>
+                            <Button type="button" size="small" onClick={() => removePart(pIdx)}
+                              sx={{ fontSize: 12, color: 'error.light', '&:hover': { color: 'error.main', bgcolor: 'error.50' }, minWidth: 0, px: 1 }}>
                               Remove
                             </Button>
-                          </div>
+                          </Box>
 
                           {/* Words */}
-                          <div className="px-4 py-3">
+                          <Box sx={{ px: 2, py: 1.5 }}>
                             {part.words.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mb-3">
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
                                 {part.words.map((word, wIdx) => {
                                   const uploadKey = `${pIdx}-${wIdx}`;
                                   return (
-                                    <div key={wIdx}
-                                      className="flex items-center gap-1.5 bg-white rounded-xl px-3 py-1.5 border border-border">
+                                    <Box key={wIdx} sx={{ display: 'flex', alignItems: 'center', gap: 0.75, bgcolor: 'white', borderRadius: 3, px: 1.5, py: 0.75, border: '1px solid', borderColor: 'divider' }}>
                                       {word.imageUrl ? (
-                                        <div className="relative">
+                                        <Box sx={{ position: 'relative' }}>
                                           {/* eslint-disable-next-line @next/next/no-img-element */}
                                           <img src={word.imageUrl} alt={word.text}
-                                            className="w-6 h-6 rounded-md object-cover border border-border" />
-                                          <button type="button"
+                                            style={{ width: 24, height: 24, borderRadius: 8, objectFit: 'cover', border: '1px solid #E2E8F0' }} />
+                                          <Box component="button" type="button"
                                             onClick={() => setParts((prev) => prev.map((p, i) =>
                                               i !== pIdx ? p : { ...p, words: p.words.map((w, j) => j !== wIdx ? w : { ...w, imageUrl: '' }) }
                                             ))}
-                                            className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 text-white flex items-center justify-center">
-                                            <X className="w-2 h-2" />
-                                          </button>
-                                        </div>
+                                            sx={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', bgcolor: 'error.main', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', p: 0 }}>
+                                            <X size={8} />
+                                          </Box>
+                                        </Box>
                                       ) : (
                                         <>
-                                          <Button type="button" variant="ghost" size="icon-xs"
+                                          <IconButton size="small"
                                             onClick={() => wordFileRefs.current[uploadKey]?.click()}
                                             disabled={wordUploading === uploadKey}
-                                            className="w-5 h-5 rounded text-textSecondary/50 hover:text-textSecondary p-0">
+                                            sx={{ width: 20, height: 20, color: 'text.disabled', p: 0 }}>
                                             {wordUploading === uploadKey
-                                              ? <Loader2 className="w-3 h-3 animate-spin" />
-                                              : <ImageIcon className="w-3 h-3" />}
-                                          </Button>
-                                          <input type="file" accept="image/*" className="hidden"
+                                              ? <CircularProgress size={12} />
+                                              : <ImageIcon size={12} />}
+                                          </IconButton>
+                                          <input type="file" accept="image/*" hidden
                                             ref={(el) => { wordFileRefs.current[uploadKey] = el; }}
                                             onChange={(e) => {
                                               const file = e.target.files?.[0];
@@ -302,155 +313,153 @@ function HomeworkModal({
                                             }} />
                                         </>
                                       )}
-                                      <span className="text-sm font-semibold text-textPrimary">{word.text}</span>
-                                      <button type="button" onClick={() => removeWord(pIdx, wIdx)}
-                                        className="text-textSecondary/40 hover:text-red-500 transition-colors ml-0.5">
-                                        <X className="w-3 h-3" />
-                                      </button>
-                                    </div>
+                                      <Typography variant="body2" fontWeight={600}>{word.text}</Typography>
+                                      <Box component="button" type="button" onClick={() => removeWord(pIdx, wIdx)}
+                                        sx={{ border: 'none', background: 'none', cursor: 'pointer', p: 0, color: 'text.disabled', display: 'flex', '&:hover': { color: 'error.main' } }}>
+                                        <X size={12} />
+                                      </Box>
+                                    </Box>
                                   );
                                 })}
-                              </div>
+                              </Box>
                             )}
 
                             {/* Add word */}
-                            <div className="flex gap-2">
-                              <Input type="text" className="input-base flex-1 text-sm py-1.5 h-auto"
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <TextField size="small" sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 3, fontSize: 14 } }}
                                 placeholder={`Add word (e.g. paper) — Enter to add`}
                                 value={newWordTexts[pIdx] ?? ''}
                                 onChange={(e) => setNewWordTexts((prev) => ({ ...prev, [pIdx]: e.target.value }))}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
-                              <Button type="button" onClick={() => addWord(pIdx)}
-                                className="px-3 py-1.5 h-auto rounded-xl text-sm font-bold text-white shrink-0"
-                                style={{ background: meta.color }}>
+                              <Button type="button" variant="contained" onClick={() => addWord(pIdx)}
+                                sx={{ borderRadius: 3, fontWeight: 700, flexShrink: 0, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}>
                                 + Add
                               </Button>
-                            </div>
-                          </div>
-                        </div>
+                            </Box>
+                          </Box>
+                        </Box>
                       ))}
-                    </div>
+                    </Box>
                   )}
 
                   {/* Add part row */}
-                  <div className="flex gap-2">
-                    <Input type="text" className="input-base flex-1"
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <TextField size="small" sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                       placeholder="New part name (e.g. er)"
                       value={newPartName}
                       onChange={(e) => setNewPartName(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPart(); } }} />
-                    <Button type="button" onClick={addPart}
-                      className="px-4 py-2 h-auto rounded-xl text-sm font-bold text-white shrink-0"
-                      style={{ background: meta.color }}>
+                    <Button type="button" variant="contained" onClick={addPart}
+                      sx={{ borderRadius: 3, fontWeight: 700, flexShrink: 0, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}>
                       + Part
                     </Button>
-                  </div>
-                  {uploadError && <p className="text-xs text-highlight mt-2">{uploadError}</p>}
-                </div>
-              </div>
+                  </Box>
+                  {uploadError && <Typography variant="caption" color="error.main" display="block" mt={1}>{uploadError}</Typography>}
+                </Box>
+              </Box>
             )}
 
             {/* SPEAKING form */}
             {form.type === 'SPEAKING' && (
-              <div className="space-y-5">
-                <div>
-                  <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">Mode</p>
-                  <div className="flex gap-3">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                <Box>
+                  <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
+                    Mode
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1.5 }}>
                     {([
                       { value: 'SCRIPT_MATCH' as SpeakingMode, label: 'Script Match', desc: 'Student reads target text' },
                       { value: 'FREE_SPEAK' as SpeakingMode, label: 'Free Speak', desc: 'Student speaks from image prompt' },
                     ]).map(({ value, label, desc }) => {
                       const active = (form.speakingMode ?? 'SCRIPT_MATCH') === value;
                       return (
-                        <button key={value} type="button"
+                        <Button key={value} type="button"
                           onClick={() => setForm((f) => ({ ...f, speakingMode: value }))}
-                          className="flex-1 py-3 px-4 rounded-2xl border-2 text-left transition-all"
-                          style={active
-                            ? { background: meta.color, borderColor: meta.color, color: 'white' }
-                            : { background: meta.bg, borderColor: meta.color + '40', color: '#6B7280' }}>
-                          <div className="text-xs font-bold">{label}</div>
-                          <div className="text-[10px] mt-0.5 opacity-80">{desc}</div>
-                        </button>
+                          sx={{
+                            flex: 1, py: 1.5, px: 2, borderRadius: 3, border: '2px solid',
+                            textAlign: 'left', flexDirection: 'column', alignItems: 'flex-start',
+                            ...(active
+                              ? { background: meta.color, borderColor: meta.color, color: 'white' }
+                              : { background: meta.bg, borderColor: meta.color + '40', color: 'text.secondary' }),
+                          }}>
+                          <Typography variant="caption" fontWeight={700} display="block">{label}</Typography>
+                          <Typography variant="caption" sx={{ fontSize: 10, opacity: 0.8 }}>{desc}</Typography>
+                        </Button>
                       );
                     })}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
                 {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' && (
-                  <div>
-                    <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2">
-                      Image Prompt <span className="font-normal normal-case">(optional)</span>
-                    </p>
+                  <Box>
+                    <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
+                      Image Prompt <Box component="span" sx={{ fontWeight: 400, textTransform: 'none' }}>(optional)</Box>
+                    </Typography>
                     {form.speakingPictureUrl ? (
-                      <div className="relative rounded-xl overflow-hidden border border-border" style={{ maxHeight: 160 }}>
+                      <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', maxHeight: 160 }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={form.speakingPictureUrl} alt="Speaking picture" className="w-full object-cover" style={{ maxHeight: 160 }} />
-                        <Button type="button" variant="ghost" size="icon-sm"
+                        <img src={form.speakingPictureUrl} alt="Speaking picture" style={{ width: '100%', objectFit: 'cover', maxHeight: 160 }} />
+                        <IconButton size="small"
                           onClick={() => setForm((f) => ({ ...f, speakingPictureUrl: '' }))}
-                          className="absolute top-2 right-2 bg-black/60 text-white hover:bg-black/80 rounded-lg">
-                          <X className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
+                          sx={{ position: 'absolute', top: 8, right: 8, bgcolor: 'rgba(0,0,0,0.6)', color: 'white', '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' }, borderRadius: 2 }}>
+                          <X size={14} />
+                        </IconButton>
+                      </Box>
                     ) : (
-                      <button type="button" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
-                        className="w-full h-auto rounded-2xl border-2 border-dashed py-6 flex flex-col items-center gap-1.5 disabled:opacity-60 transition-colors hover:opacity-80"
-                        style={{ borderColor: meta.color + '55', background: meta.bg }}>
+                      <Box component="button" type="button" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
+                        sx={{ width: '100%', borderRadius: 3, border: '2px dashed', borderColor: meta.color + '55', background: meta.bg, py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.75, cursor: 'pointer', '&:disabled': { opacity: 0.6 }, '&:hover': { opacity: 0.8 } }}>
                         {speakUploading
-                          ? <span className="text-xs font-semibold" style={{ color: meta.color }}>Uploading…</span>
+                          ? <Typography variant="caption" fontWeight={600} sx={{ color: meta.color }}>Uploading…</Typography>
                           : <>
-                            <ImageIcon className="w-5 h-5" style={{ color: meta.color }} />
-                            <span className="text-xs font-semibold" style={{ color: meta.color }}>Click to upload picture</span>
+                            <ImageIcon size={20} style={{ color: meta.color }} />
+                            <Typography variant="caption" fontWeight={600} sx={{ color: meta.color }}>Click to upload picture</Typography>
                           </>}
-                      </button>
+                      </Box>
                     )}
-                    <input ref={speakFileRef} type="file" accept="image/*" className="hidden" onChange={handleSpeakFile} />
-                    {uploadError && <p className="text-xs text-highlight mt-1">{uploadError}</p>}
-                  </div>
+                    <input ref={speakFileRef} type="file" accept="image/*" hidden onChange={handleSpeakFile} />
+                    {uploadError && <Typography variant="caption" color="error.main" display="block" mt={0.5}>{uploadError}</Typography>}
+                  </Box>
                 )}
 
-                <div>
-                  <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">
+                <Box>
+                  <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
                     {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' ? 'Keywords (comma-separated)' : 'Target Text'}
-                  </Label>
-                  <textarea className="input-base resize-none" rows={3}
+                  </Typography>
+                  <TextField multiline rows={3} fullWidth size="small"
                     placeholder={(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK'
                       ? 'e.g. cat, sits, mat, fluffy'
                       : 'Enter the sentence the student should say…'}
                     value={form.speakingText ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, speakingText: e.target.value }))} />
+                    onChange={(e) => setForm((f) => ({ ...f, speakingText: e.target.value }))}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                   {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' && (
-                    <p className="text-[10px] text-textSecondary mt-1">
+                    <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
                       Student gets credit for each keyword found in their recording.
-                    </p>
+                    </Typography>
                   )}
-                </div>
-              </div>
+                </Box>
+              </Box>
             )}
-          </div>
+          </Box>
+        </DialogContent>
 
-          <div className="px-8 pb-7 pt-5 border-t border-border">
-            {error && (
-              <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">
-                {error}
-              </div>
-            )}
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">
-                Cancel
+        <DialogActions sx={{ px: 4, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
+          {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 1.5 }}>{error}</Alert>}
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Button type="button" variant="outlined" onClick={onClose}
+              sx={{ flex: 1, borderRadius: 3, color: 'text.secondary', borderColor: 'divider' }}>
+              Cancel
+            </Button>
+            {form.type !== 'READING' && (
+              <Button type="submit" variant="contained" disabled={loading}
+                sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
+                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
+                {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
               </Button>
-              {form.type !== 'READING' && (
-                <Button type="submit" disabled={loading}
-                  className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
-                  style={{ background: colors.teacherAccent }}>
-                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
-                </Button>
-              )}
-            </div>
-          </div>
-        </form>
-      </DialogContent>
+            )}
+          </Box>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }
@@ -499,76 +508,86 @@ function AssignModal({
   const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? '…' : '') : meta.label);
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-2xl rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-8 pt-7 pb-5 border-b border-border gap-0">
-          <div>
-            <DialogTitle className="text-xl font-black text-textPrimary">
-              <span className="text-textSecondary font-semibold">Assign · </span>
-              <span style={{ color: meta.color }}>{assignHeading}</span>
-            </DialogTitle>
-            <p className="text-xs text-textSecondary mt-1">
-              <span className="inline-flex items-center gap-1" style={{ color: meta.color }}>
-                <meta.icon className="w-3.5 h-3.5" /> {meta.label}
-              </span>
-            </p>
-          </div>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
-            className="text-textSecondary hover:text-textPrimary hover:bg-gray-100 rounded-xl">
-            <X className="w-4 h-4" />
-          </Button>
-        </DialogHeader>
+    <Dialog open onClose={onClose} maxWidth="md" fullWidth
+      PaperProps={{ sx: { borderRadius: 4 } }}>
+      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h6" fontWeight={900} sx={{ lineHeight: 1.3 }}>
+              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign · </Box>
+              <Box component="span" sx={{ color: meta.color }}>{assignHeading}</Box>
+            </Typography>
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+              <meta.icon size={14} style={{ color: meta.color }} />
+              <Typography variant="caption" sx={{ color: meta.color }}>{meta.label}</Typography>
+            </Box>
+          </Box>
+          <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: 0.5 }}>
+            <X size={16} />
+          </IconButton>
+        </Box>
+      </DialogTitle>
 
-        <form onSubmit={handleSubmit}>
-          <div className="px-8 py-6 space-y-6">
-            <div>
-              <p className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-3">Classes</p>
+      <form onSubmit={handleSubmit}>
+        <DialogContent sx={{ px: 4, py: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box>
+              <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1.5, display: 'block' }}>
+                Classes
+              </Typography>
               {classes.length === 0
-                ? <p className="text-sm text-textSecondary/60 italic">No classes found.</p>
-                : <div className="flex flex-wrap gap-3">
+                ? <Typography variant="body2" color="text.disabled" fontStyle="italic">No classes found.</Typography>
+                : <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                   {classes.map((c) => {
                     const active = selectedClassIds.includes(c.id);
                     return (
-                      <Button key={c.id} type="button" variant="outline" size="sm"
+                      <Button key={c.id} type="button" variant="outlined" size="small"
                         onClick={() => toggleClass(c.id)}
-                        className="px-3.5 py-1.5 h-auto rounded-xl text-sm font-semibold border-2 transition-all"
-                        style={active
-                          ? { background: colors.primary, color: 'white', borderColor: colors.primary }
-                          : { background: 'white', color: colors.textSecondary, borderColor: colors.border }}>
+                        sx={{
+                          px: 1.75, py: 0.75, borderRadius: 3, fontWeight: 600, border: '2px solid',
+                          ...(active
+                            ? { bgcolor: colors.primary, color: 'white', borderColor: colors.primary }
+                            : { bgcolor: 'white', color: colors.textSecondary, borderColor: colors.border }),
+                        }}>
                         {c.name}
                       </Button>
                     );
                   })}
-                </div>
+                </Box>
               }
-            </div>
-            <div>
-              <Label className="text-xs font-bold text-textSecondary uppercase tracking-wide mb-2 block">End Date</Label>
-              <Input
+            </Box>
+            <Box>
+              <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
+                End Date
+              </Typography>
+              <TextField
                 type="datetime-local"
                 required
-                className="input-base h-auto w-full"
+                fullWidth
+                size="small"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
               />
-            </div>
-          </div>
+            </Box>
+          </Box>
+        </DialogContent>
 
-          <div className="px-8 pb-7 pt-5 border-t border-border">
-            {error && <div className="text-sm bg-highlight/8 border border-highlight/25 text-highlight px-4 py-3 rounded-xl mb-3">{error}</div>}
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
-              <Button type="submit" disabled={loading}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white disabled:opacity-60 gap-2"
-                style={{ background: colors.teacherAccent }}>
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {loading ? 'Assigning…' : 'Assign'}
-              </Button>
-            </div>
-          </div>
-        </form>
-      </DialogContent>
+        <DialogActions sx={{ px: 4, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
+          {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 1.5 }}>{error}</Alert>}
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Button type="button" variant="outlined" onClick={onClose}
+              sx={{ flex: 1, borderRadius: 3, color: 'text.secondary', borderColor: 'divider' }}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="contained" disabled={loading}
+              sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
+              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
+              {loading ? 'Assigning…' : 'Assign'}
+            </Button>
+          </Box>
+        </DialogActions>
+      </form>
     </Dialog>
   );
 }
@@ -628,7 +647,7 @@ export default function HomeworkPage() {
   });
 
   return (
-    <div className="animate-fade-in">
+    <Box>
       {showModal && (
         <HomeworkModal
           editingId={editingId}
@@ -642,57 +661,71 @@ export default function HomeworkPage() {
       {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={() => { load(); showToast('Homework assigned!'); }} />}
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-5 flex-wrap">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-textSecondary/50 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search homework…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="input-base pl-8 pr-3 py-2 h-auto text-sm w-52" />
-        </div>
-        <div className="flex gap-1.5">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5, flexWrap: 'wrap' }}>
+        <TextField
+          size="small"
+          placeholder="Search homework…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={14} style={{ color: colors.textSecondary, opacity: 0.5 }} />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Box sx={{ display: 'flex', gap: 0.75 }}>
           {([
             { key: 'ALL', label: 'All', icon: null },
             { key: 'PHONICS', label: 'Phonics', icon: AlignLeft },
             { key: 'SPEAKING', label: 'Speaking', icon: Mic },
             { key: 'READING', label: 'Reading', icon: null },
           ] as const).map((t) => (
-            <Button key={t.key} variant="outline" size="sm" onClick={() => setTypeFilter(t.key)}
-              className="px-3.5 py-2 h-auto rounded-xl text-xs font-semibold border transition-all gap-1.5"
-              style={typeFilter === t.key
-                ? { background: '#F0F9FF', color: colors.primary, borderColor: colors.primary }
-                : { background: 'white', color: colors.textSecondary, borderColor: colors.border }}>
-              {t.icon && <t.icon className="w-3.5 h-3.5" />}
+            <Button key={t.key} variant="outlined" size="small" onClick={() => setTypeFilter(t.key)}
+              sx={{
+                px: 1.75, py: 1, borderRadius: 3, fontSize: 12, fontWeight: 600, border: '1px solid', gap: 0.75,
+                ...(typeFilter === t.key
+                  ? { bgcolor: '#F0F9FF', color: colors.primary, borderColor: colors.primary }
+                  : { bgcolor: 'white', color: colors.textSecondary, borderColor: colors.border }),
+              }}>
+              {t.icon && <t.icon size={14} />}
               {t.label}
-              <span className="ml-0.5 opacity-60">({counts[t.key]})</span>
+              <Box component="span" sx={{ opacity: 0.6 }}>({counts[t.key]})</Box>
             </Button>
           ))}
-        </div>
-        <div className="flex-1" />
-        <Button onClick={openCreate}
-          className="btn-primary flex items-center gap-2 shrink-0 h-auto"
-          style={{ background: colors.teacherAccent }}>
-          <Plus className="w-4 h-4" />
+        </Box>
+        <Box sx={{ flex: 1 }} />
+        <Button variant="contained" onClick={openCreate}
+          sx={{ bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, borderRadius: 3, gap: 1, flexShrink: 0 }}>
+          <Plus size={16} />
           New Homework
         </Button>
-      </div>
+      </Box>
 
       {/* Grid */}
-      <div className="grid grid-cols-3 gap-4">
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
         {list.length === 0 && (
-          <div className="col-span-3 text-center py-20 text-textSecondary">
-            <div className="flex justify-center mb-3"><div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center"><BookOpen className="w-8 h-8 text-slate-400" /></div></div>
-            <div className="font-medium">No homework yet</div>
-            <div className="text-sm mt-1">Create a reusable homework template</div>
-          </div>
+          <Box sx={{ gridColumn: '1 / -1', textAlign: 'center', py: 10, color: 'text.secondary' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
+              <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BookOpen size={32} style={{ color: '#94A3B8' }} />
+              </Box>
+            </Box>
+            <Typography fontWeight={500}>No homework yet</Typography>
+            <Typography variant="body2" mt={0.5}>Create a reusable homework template</Typography>
+          </Box>
         )}
         {list.length > 0 && filtered.length === 0 && (
-          <div className="col-span-3 text-center py-16 text-textSecondary">
-            <div className="flex justify-center mb-3"><div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center"><Search className="w-8 h-8 text-slate-400" /></div></div>
-            <div className="font-medium">No homework matches filter</div>
-          </div>
+          <Box sx={{ gridColumn: '1 / -1', textAlign: 'center', py: 8, color: 'text.secondary' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
+              <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Search size={32} style={{ color: '#94A3B8' }} />
+              </Box>
+            </Box>
+            <Typography fontWeight={500}>No homework matches filter</Typography>
+          </Box>
         )}
         {filtered.map((h, i) => {
           const g = cardGradients[i % cardGradients.length];
@@ -714,137 +747,133 @@ export default function HomeworkPage() {
           );
 
           return (
-            <Card key={h.id} className="overflow-hidden hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-0 py-0 rounded-2xl border-border shadow-card">
-              <div className="h-1 shrink-0" style={{ background: `linear-gradient(90deg, ${g.from}, ${g.to})` }} />
+            <Card key={h.id} sx={{ overflow: 'hidden', borderRadius: 4, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', transition: 'all 0.2s', boxShadow: 1, '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' } }}>
+              <Box sx={{ height: 4, flexShrink: 0, background: `linear-gradient(90deg, ${g.from}, ${g.to})` }} />
 
-              <Link href={`/teacher/homework/${h.id}`} className="block p-5 pb-3 flex-1">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0 pr-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full h-auto border-0"
-                        style={{ background: meta.bg, color: meta.color }}>
-                        <meta.icon className="w-3.5 h-3.5" /> {meta.label}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-textSecondary mt-1">
+              <Box component={Link} href={`/teacher/homework/${h.id}`} sx={{ display: 'block', p: 2.5, pb: 1.5, flex: 1, textDecoration: 'none', color: 'inherit' }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
+                  <Box sx={{ flex: 1, minWidth: 0, pr: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Chip
+                        icon={<meta.icon size={14} style={{ color: meta.color }} />}
+                        label={meta.label}
+                        size="small"
+                        sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, '& .MuiChip-icon': { ml: 0.5 } }}
+                      />
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
                       Created {new Date(h.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, flexShrink: 0 }}>
                     {activeAssignments.length > 0 ? (
-                      <Badge className="text-xs font-semibold px-2.5 py-1 rounded-full h-auto bg-emerald-50 text-emerald-600 border-0">
-                        {activeAssignments.length} active
-                      </Badge>
+                      <Chip label={`${activeAssignments.length} active`} size="small" sx={{ bgcolor: '#ecfdf5', color: '#059669', fontWeight: 600, border: 0 }} />
                     ) : (
-                      <Badge variant="secondary" className="text-xs font-semibold px-2.5 py-1 rounded-full h-auto border-0">
-                        Unassigned
-                      </Badge>
+                      <Chip label="Unassigned" size="small" variant="outlined" sx={{ fontWeight: 600 }} />
                     )}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
 
-                <div className="mb-3">
+                <Box sx={{ mb: 1.5 }}>
                   {h.type === 'PHONICS' && (
-                    <div className="space-y-1">
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       {h.name && (
-                        <p className="text-xs font-bold" style={{ color: meta.color }}>{h.name}</p>
+                        <Typography variant="caption" fontWeight={700} sx={{ color: meta.color }}>{h.name}</Typography>
                       )}
-                      <div className="flex flex-wrap gap-1">
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {(h.parts ?? []).slice(0, 4).map((part) => (
-                          <Badge key={part.id} className="text-xs px-2 py-0.5 rounded-lg font-bold h-auto border-0"
-                            style={{ background: meta.bg, color: meta.color }}>
-                            {part.name} ({part.words.length})
-                          </Badge>
+                          <Chip key={part.id} label={`${part.name} (${part.words.length})`} size="small"
+                            sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2 }} />
                         ))}
                         {(h.parts ?? []).length > 4 && (
-                          <Badge variant="secondary" className="text-xs px-2 py-0.5 rounded-lg h-auto border-0">
-                            +{h.parts.length - 4}
-                          </Badge>
+                          <Chip label={`+${h.parts.length - 4}`} size="small" variant="outlined" sx={{ borderRadius: 2 }} />
                         )}
                         {(h.parts ?? []).length === 0 && (
-                          <span className="text-xs text-textSecondary/60 italic">No parts yet</span>
+                          <Typography variant="caption" color="text.disabled" fontStyle="italic">No parts yet</Typography>
                         )}
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   )}
                   {h.type === 'SPEAKING' && (
-                    <p className="text-sm text-textSecondary line-clamp-2 italic">
-                      {h.speakingText || <span className="text-textSecondary/60">No text set</span>}
-                    </p>
+                    <Typography variant="body2" color="text.secondary" fontStyle="italic"
+                      sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {h.speakingText || <Box component="span" sx={{ opacity: 0.6 }}>No text set</Box>}
+                    </Typography>
                   )}
                   {h.type === 'READING' && (
-                    <div className="space-y-1">
-                      {h.name && (<p className="text-xs font-bold" style={{ color: meta.color }}>{h.name}</p>)}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      {h.name && (<Typography variant="caption" fontWeight={700} sx={{ color: meta.color }}>{h.name}</Typography>)}
                       {(h.readingActivities ?? []).length === 0 ? (
-                        <span className="text-xs text-textSecondary/60 italic">No activities yet</span>
+                        <Typography variant="caption" color="text.disabled" fontStyle="italic">No activities yet</Typography>
                       ) : (
-                        <Badge className="text-xs px-2 py-0.5 rounded-lg font-bold h-auto border-0" style={{ background: meta.bg, color: meta.color }}>
-                          {(h.readingActivities ?? []).length} activit{(h.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}
-                        </Badge>
+                        <Chip label={`${(h.readingActivities ?? []).length} activit${(h.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}`}
+                          size="small" sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2, alignSelf: 'flex-start' }} />
                       )}
-                    </div>
+                    </Box>
                   )}
-                </div>
+                </Box>
 
                 {h.assignments.length > 0 && (
-                  <Badge className={`text-xs font-semibold px-2.5 py-1 rounded-full h-auto border-0 ${submittedStudents > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-500'}`}>
-                    {submittedStudents} / {totalEnrolled} submitted
-                  </Badge>
+                  <Chip
+                    label={`${submittedStudents} / ${totalEnrolled} submitted`}
+                    size="small"
+                    sx={{ fontWeight: 600, border: 0, borderRadius: '999px', ...(submittedStudents > 0 ? { bgcolor: '#ecfdf5', color: '#059669' } : { bgcolor: 'grey.100', color: 'text.secondary' }) }}
+                  />
                 )}
-              </Link>
+              </Box>
 
-              <CardFooter className="px-5 py-3 bg-background/50 border-t border-border flex items-center gap-1 rounded-none">
+              <CardActions sx={{ px: 2.5, py: 1.5, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', gap: 0.5, borderRadius: 0 }}>
                 {deletingId === h.id ? (
-                  <div className="flex-1 flex items-center justify-between gap-2">
-                    <span className="text-xs text-textSecondary">Delete homework?</span>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => setDeletingId(null)}
-                        className="px-3 py-1 h-auto rounded-lg text-xs font-semibold text-textSecondary hover:bg-gray-100">
+                  <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                    <Typography variant="caption" color="text.secondary">Delete homework?</Typography>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Button size="small" onClick={() => setDeletingId(null)}
+                        sx={{ px: 1.5, py: 0.5, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>
                         Cancel
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={async () => {
+                      <Button size="small" variant="contained" color="error" onClick={async () => {
                         await deleteHomework(h.id);
                         setDeletingId(null);
                         load();
                         showToast('Homework deleted.');
                       }}
-                        className="px-3 py-1 h-auto rounded-lg text-xs font-semibold text-white bg-red-500 hover:bg-red-600">
+                        sx={{ px: 1.5, py: 0.5, borderRadius: 2, fontSize: 12, fontWeight: 600 }}>
                         Delete
                       </Button>
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 ) : (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => setAssigningHw(h)}
-                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-emerald-600 hover:bg-emerald-50">
+                    <Button size="small" onClick={() => setAssigningHw(h)}
+                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: '#059669', '&:hover': { bgcolor: '#ecfdf5' } }}>
                       Assign
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
-                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-primary hover:bg-primary/8">
+                    <Button size="small" onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
+                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'primary.main', '&:hover': { bgcolor: 'primary.50' } }}>
                       Edit
                     </Button>
-                    <Link href={`/teacher/homework/${h.id}/try`}
-                      className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center text-purple-500 hover:bg-purple-500/8 transition-colors">
+                    <Box component={Link} href={`/teacher/homework/${h.id}/try`}
+                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, textAlign: 'center', color: '#A855F7', textDecoration: 'none', display: 'block', '&:hover': { bgcolor: '#F5F3FF' } }}>
                       Try
-                    </Link>
-                    <Button variant="ghost" size="sm" onClick={() => setDeletingId(h.id)}
-                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8">
+                    </Box>
+                    <Button size="small" onClick={() => setDeletingId(h.id)}
+                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'error.main', '&:hover': { bgcolor: 'error.50' } }}>
                       Delete
                     </Button>
                   </>
                 )}
-              </CardFooter>
+              </CardActions>
             </Card>
           );
         })}
-      </div>
+      </Box>
 
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-white border border-border rounded-2xl shadow-lg px-4 py-3 text-sm font-semibold text-textPrimary animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'white', border: '1px solid', borderColor: 'divider', borderRadius: 4, boxShadow: 4, px: 2, py: 1.5, fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
+          <CheckCircle2 size={16} style={{ color: '#10b981' }} />
           {toast}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
