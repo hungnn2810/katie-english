@@ -204,7 +204,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
             <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
               {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-              {loading ? (editing ? 'Updatingâ€¦' : 'Creatingâ€¦') : (editing ? 'Update Class' : 'Create Class')}
+              {loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
             </Button>
           </DialogActions>
         </Box>
@@ -274,7 +274,7 @@ export default function ClassesPage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
         <TextField
           size="small"
-          placeholder="Search classesâ€¦"
+          placeholder="Search classes…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ maxWidth: 240, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}

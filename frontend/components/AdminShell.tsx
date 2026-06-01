@@ -107,7 +107,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
         <Box sx={{ px: 2.5, pb: 2.5, pt: 1.5 }}>
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mb: 1.5 }} />
           <Typography variant="caption" sx={{ color: '#475569', display: 'block', textAlign: 'center' }}>
-            Â© Katie English
+            © Katie English
           </Typography>
         </Box>
       </Box>
@@ -120,7 +120,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
             <Box>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1 }}>
                 Admin Portal
-                <Box component="span" sx={{ opacity: 0.4, mx: 0.25 }}>â€º</Box>
+                <Box component="span" sx={{ opacity: 0.4, mx: 0.25 }}>›</Box>
                 <Box component="span" sx={{ opacity: 0.5, fontWeight: 500 }}>{title}</Box>
               </Typography>
               <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1, letterSpacing: '-0.02em' }}>{title}</Typography>

@@ -69,9 +69,9 @@ function StudentsTable({ onViewResults }: { onViewResults: (s: AdminStudentItem)
 
   return (
     <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
-      <Table>
+      <Table stickyHeader>
         <TableHead>
-          <TableRow sx={{ bgcolor: 'grey.50', position: 'sticky', top: 0 }}>
+          <TableRow sx={{ bgcolor: 'grey.50' }}>
             {['Student Name', 'Class', 'Teacher', 'Homeworks', 'Actions'].map((h) => (
               <TableCell key={h} sx={{ px: 2.5, py: 1.5, fontSize: 12, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</TableCell>
             ))}

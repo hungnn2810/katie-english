@@ -34,8 +34,10 @@ import IconButton from '@mui/material/IconButton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -401,9 +403,10 @@ export default function ClassesPage() {
           )}
         </Box>
       ) : (
-        <Table>
+        <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
+        <Table stickyHeader>
           <TableHead>
-            <TableRow sx={{ position: 'sticky', top: 0, bgcolor: 'white' }}>
+            <TableRow sx={{ bgcolor: 'grey.50' }}>
               {['Class Name', 'Teacher', 'Students', 'Status', 'Actions'].map((h) => (
                 <TableCell key={h} sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</TableCell>
               ))}
@@ -444,6 +447,7 @@ export default function ClassesPage() {
             })}
           </TableBody>
         </Table>
+        </TableContainer>
       )}
     </Box>
   );

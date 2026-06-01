@@ -168,7 +168,7 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
               <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Addingâ€¦' : 'Add Student'}
+                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Adding…' : 'Add Student'}
               </Button>
             </Box>
           </DialogActions>
@@ -231,7 +231,7 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
               <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Savingâ€¦' : 'Save Changes'}
+                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Saving…' : 'Save Changes'}
               </Button>
             </Box>
           </DialogActions>
@@ -304,7 +304,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
               <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: '#10B981', '&:hover': { bgcolor: '#059669' }, gap: 1 }}>
-                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Approvingâ€¦' : 'Confirm Approval'}
+                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Approving…' : 'Confirm Approval'}
               </Button>
             </Box>
           </DialogActions>
@@ -343,7 +343,7 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Updatingâ€¦' : 'Set Password'}
+              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}{loading ? 'Updating…' : 'Set Password'}
             </Button>
           </Box>
         </DialogActions>
@@ -400,7 +400,7 @@ export default function StudentsPage() {
 
       {/* Toolbar */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
-        <TextField size="small" placeholder="Search studentsâ€¦" value={search} onChange={(e) => setSearch(e.target.value)}
+        <TextField size="small" placeholder="Search students…" value={search} onChange={(e) => setSearch(e.target.value)}
           sx={{ flex: 1, minWidth: 192, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> } }} />
         <FormControl size="small" sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>

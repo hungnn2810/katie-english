@@ -135,7 +135,7 @@ function PageContent({ user }: { user: AuthUser }) {
                 label="Current Password"
                 size="small"
                 fullWidth
-                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                placeholder="••••••••"
                 value={currentPw}
                 onChange={(e) => setCurrentPw(e.target.value)}
                 required
@@ -336,7 +336,7 @@ function PageContent({ user }: { user: AuthUser }) {
                       )}
                       {hw.type === 'SPEAKING' && hw.speakingText && (
                         <Box component="span" sx={{ bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                          {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? 'â€¦' : ''}
+                          {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? '…' : ''}
                         </Box>
                       )}
                       {hw.type === 'READING' && (

@@ -409,7 +409,7 @@ function HomeworkModal({
                       <Box component="button" type="button" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
                         sx={{ width: '100%', borderRadius: 3, border: '2px dashed', borderColor: meta.color + '55', background: meta.bg, py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.75, cursor: 'pointer', '&:disabled': { opacity: 0.6 }, '&:hover': { opacity: 0.8 } }}>
                         {speakUploading
-                          ? <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>Uploadingâ€¦</Typography>
+                          ? <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>Uploading…</Typography>
                           : <>
                             <ImageIcon size={20} style={{ color: meta.color }} />
                             <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>Click to upload picture</Typography>
@@ -428,7 +428,7 @@ function HomeworkModal({
                   <TextField multiline rows={3} fullWidth size="small"
                     placeholder={(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK'
                       ? 'e.g. cat, sits, mat, fluffy'
-                      : 'Enter the sentence the student should sayâ€¦'}
+                      : 'Enter the sentence the student should say…'}
                     value={form.speakingText ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, speakingText: e.target.value }))}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
@@ -454,7 +454,7 @@ function HomeworkModal({
               <Button type="submit" variant="contained" disabled={loading}
                 sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
                 {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-                {loading ? 'Savingâ€¦' : editingId !== null ? 'Update' : 'Create'}
+                {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
               </Button>
             )}
           </Box>
@@ -505,7 +505,7 @@ function AssignModal({
   }
 
   const meta = TYPE_META[homework.type];
-  const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? 'â€¦' : '') : meta.label);
+  const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? '…' : '') : meta.label);
 
   return (
     <Dialog open onClose={onClose} maxWidth="md" fullWidth
@@ -583,7 +583,7 @@ function AssignModal({
             <Button type="submit" variant="contained" disabled={loading}
               sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
               {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-              {loading ? 'Assigningâ€¦' : 'Assign'}
+              {loading ? 'Assigning…' : 'Assign'}
             </Button>
           </Box>
         </DialogActions>
@@ -664,7 +664,7 @@ export default function HomeworkPage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5, flexWrap: 'wrap' }}>
         <TextField
           size="small"
-          placeholder="Search homeworkâ€¦"
+          placeholder="Search homework…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
