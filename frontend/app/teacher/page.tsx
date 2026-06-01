@@ -2,7 +2,12 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getClasses, getStudents, getHomeworkList, getPendingStudents, getPasswordResetRequests, ClassItem, ScheduleSlot } from '@/lib/admin-api';
-import { Button } from '@/components/ui/button';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
+import Paper from '@mui/material/Paper';
+import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRight, RefreshCw, School, Users, BookOpen, Video, ChevronRight, AlertTriangle } from 'lucide-react';
 
 const ACCENT = '#F0623A';
@@ -93,167 +98,158 @@ export default function TeacherDashboard() {
   const todayCount = upcomingClasses.filter((c) => c.nextAt.toDateString() === new Date().toDateString()).length;
 
   return (
-    <div className="animate-fade-in">
+    <Box>
       {error && (
-        <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center justify-between gap-3">
-          <div className="text-sm text-red-600">{error}</div>
-          <Button onClick={loadDashboard} size="sm" className="text-xs font-semibold text-white" style={{ background: ACCENT }}>
-            <RefreshCw className="w-3.5 h-3.5" />
-            Retry
-          </Button>
-        </div>
+        <Alert
+          severity="error"
+          sx={{ mb: 2.5, borderRadius: 3 }}
+          action={
+            <Button onClick={loadDashboard} size="small" variant="contained"
+              sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontSize: 12, gap: 0.5 }}>
+              <RefreshCw size={14} />
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
       )}
 
       {/* Pending actions banner */}
       {(pendingCount > 0 || resetCount > 0) && (
-        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center gap-3">
-          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-          <div className="flex-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-amber-700">
+        <Box sx={{ mb: 2.5, borderRadius: 3, border: '1px solid #FCD34D', bgcolor: '#FFFBEB', px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <AlertTriangle size={16} color="#F59E0B" style={{ flexShrink: 0 }} />
+          <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
             {pendingCount > 0 && (
-              <Link href="/teacher/students" className="font-semibold hover:underline">
+              <Link href="/teacher/students" style={{ color: '#92400E', fontWeight: 600, fontSize: 14 }}>
                 {pendingCount} pending registration approval{pendingCount !== 1 ? 's' : ''}
               </Link>
             )}
             {resetCount > 0 && (
-              <Link href="/teacher/students" className="font-semibold hover:underline">
+              <Link href="/teacher/students" style={{ color: '#92400E', fontWeight: 600, fontSize: 14 }}>
                 {resetCount} password reset request{resetCount !== 1 ? 's' : ''}
               </Link>
             )}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-5 mb-6">
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 2.5, mb: 3 }}>
         {STAT_CARDS.map((card) => {
           const Icon = card.icon;
           return (
-            <Link
-              key={card.key}
-              href={card.href}
-              className="group bg-white rounded-2xl border border-border shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 p-6"
-            >
-              <div className="flex items-start justify-between mb-5">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: card.bg }}>
-                  <Icon className="w-5 h-5" style={{ color: card.color }} />
-                </div>
-                <ArrowRight className="w-4 h-4 text-textSecondary/25 group-hover:text-textSecondary/50 group-hover:translate-x-0.5 transition-all" />
-              </div>
-              <div className="text-3xl font-black tracking-tight mb-1" style={{ color: loading ? undefined : card.color }}>
-                {loading ? <div className="h-8 w-10 bg-slate-100 rounded-lg animate-pulse" /> : stats[card.key]}
-              </div>
-              <div className="text-sm text-textSecondary font-medium">{card.label}</div>
+            <Link key={card.key} href={card.href} style={{ textDecoration: 'none' }}>
+              <Paper variant="outlined" sx={{ borderRadius: 4, p: 3, cursor: 'pointer', transition: 'all 0.2s', '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' } }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5 }}>
+                  <Box sx={{ width: 44, height: 44, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: card.bg }}>
+                    <Icon size={20} color={card.color} />
+                  </Box>
+                  <ArrowRight size={16} color="#94A3B8" />
+                </Box>
+                <Typography sx={{ fontSize: 30, fontWeight: 900, letterSpacing: '-0.03em', mb: 0.5, color: loading ? 'text.disabled' : card.color }}>
+                  {loading ? '—' : stats[card.key]}
+                </Typography>
+                <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 500 }}>{card.label}</Typography>
+              </Paper>
             </Link>
           );
         })}
-      </div>
+      </Box>
 
       {/* Body: upcoming classes + quick links */}
-      <div className="grid grid-cols-3 gap-5">
-        {/* Upcoming classes — 2 cols wide */}
-        <div className="col-span-2 bg-white rounded-2xl border border-border shadow-card">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div>
-              <h3 className="font-bold text-textPrimary text-sm">Upcoming Classes</h3>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 2.5 }}>
+        {/* Upcoming classes */}
+        <Paper variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Box>
+              <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: 14 }}>Upcoming Classes</Typography>
               {!loading && (
-                <p className="text-xs text-textSecondary mt-0.5">{todayCount} class{todayCount !== 1 ? 'es' : ''} today</p>
+                <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.25 }}>{todayCount} class{todayCount !== 1 ? 'es' : ''} today</Typography>
               )}
-            </div>
-            <div className="flex items-center gap-3">
-              <button onClick={loadDashboard} className="w-7 h-7 rounded-lg flex items-center justify-center text-textSecondary hover:bg-background transition-colors" title="Refresh">
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              </button>
-              <Link href="/teacher/classes" className="text-xs font-semibold hover:opacity-70 transition-opacity flex items-center gap-1" style={{ color: ACCENT }}>
-                View all <ChevronRight className="w-3 h-3" />
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Button size="small" onClick={loadDashboard} sx={{ minWidth: 28, width: 28, height: 28, p: 0, borderRadius: 2, color: 'text.secondary' }} title="Refresh">
+                <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : undefined }} />
+              </Button>
+              <Link href="/teacher/classes" style={{ fontSize: 12, fontWeight: 600, color: ACCENT, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 2 }}>
+                View all <ChevronRight size={12} />
               </Link>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="px-6 py-2">
+          <Box sx={{ px: 3, py: 1 }}>
             {loading ? (
-              <div className="space-y-3 py-3">
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, py: 1.5 }}>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center gap-3 py-2">
-                    <div className="w-9 h-9 bg-slate-100 rounded-xl animate-pulse" />
-                    <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 w-32 bg-slate-100 rounded animate-pulse" />
-                      <div className="h-3 w-20 bg-slate-100 rounded animate-pulse" />
-                    </div>
-                    <div className="h-3 w-16 bg-slate-100 rounded animate-pulse" />
-                  </div>
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
+                    <CircularProgress size={20} sx={{ color: 'grey.200' }} />
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ height: 14, width: 128, bgcolor: 'grey.100', borderRadius: 1, mb: 0.75 }} />
+                      <Box sx={{ height: 12, width: 80, bgcolor: 'grey.100', borderRadius: 1 }} />
+                    </Box>
+                    <Box sx={{ height: 12, width: 64, bgcolor: 'grey.100', borderRadius: 1 }} />
+                  </Box>
                 ))}
-              </div>
+              </Box>
             ) : upcomingClasses.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <School className="w-5 h-5 text-slate-400" />
-                </div>
-                <p className="text-sm text-textSecondary font-medium">No upcoming classes</p>
-                <p className="text-xs text-textSecondary/60 mt-1">Add schedule slots to your classes</p>
-              </div>
+              <Box sx={{ textAlign: 'center', py: 6 }}>
+                <Box sx={{ width: 48, height: 48, bgcolor: 'grey.100', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>
+                  <School size={20} color="#94A3B8" />
+                </Box>
+                <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 500 }}>No upcoming classes</Typography>
+                <Typography sx={{ fontSize: 12, color: 'text.secondary', opacity: 0.6, mt: 0.5 }}>Add schedule slots to your classes</Typography>
+              </Box>
             ) : (
-              <div>
+              <Box>
                 {upcomingClasses.slice(0, 6).map((cls, i) => {
                   const isToday = cls.nextAt.toDateString() === new Date().toDateString();
                   return (
-                    <div
-                      key={cls.id}
-                      className={`flex items-center gap-4 py-3.5 ${i < upcomingClasses.slice(0, 6).length - 1 ? 'border-b border-border/60' : ''}`}
-                    >
-                      <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ background: isToday ? '#FFF2EF' : '#F8FAFC' }}
-                      >
-                        <School className="w-4 h-4" style={{ color: isToday ? ACCENT : '#94A3B8' }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-textPrimary truncate">{cls.name}</div>
-                        <div className="text-xs text-textSecondary mt-0.5">{cls.code}</div>
-                      </div>
-                      <div
-                        className="text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0"
-                        style={isToday
-                          ? { background: '#FFF2EF', color: ACCENT }
-                          : { background: '#F1F5F9', color: '#64748B' }}
-                      >
+                    <Box key={cls.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.75, borderBottom: i < Math.min(upcomingClasses.length, 6) - 1 ? '1px solid' : 'none', borderColor: 'divider' }}>
+                      <Box sx={{ width: 36, height: 36, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: isToday ? '#FFF2EF' : '#F8FAFC' }}>
+                        <School size={16} color={isToday ? ACCENT : '#94A3B8'} />
+                      </Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: 14, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</Typography>
+                        <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.25 }}>{cls.code}</Typography>
+                      </Box>
+                      <Box sx={{ fontSize: 12, fontWeight: 700, px: 1.25, py: 0.5, borderRadius: '99px', flexShrink: 0, bgcolor: isToday ? '#FFF2EF' : '#F1F5F9', color: isToday ? ACCENT : '#64748B' }}>
                         {formatRelativeTime(cls.nextAt)}
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   );
                 })}
-              </div>
+              </Box>
             )}
-          </div>
-        </div>
+          </Box>
+        </Paper>
 
-        {/* Quick links — 1 col */}
-        <div className="bg-white rounded-2xl border border-border shadow-card">
-          <div className="px-6 py-4 border-b border-border">
-            <h3 className="font-bold text-textPrimary text-sm">Quick Links</h3>
-          </div>
-          <div className="px-4 py-3 space-y-1">
+        {/* Quick links */}
+        <Paper variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden' }}>
+          <Box sx={{ px: 3, py: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Typography sx={{ fontWeight: 700, color: 'text.primary', fontSize: 14 }}>Quick Links</Typography>
+          </Box>
+          <Box sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             {QUICK_LINKS.map((link) => {
               const Icon = link.icon;
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="group flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-background transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${link.color}18` }}>
-                    <Icon className="w-4 h-4" style={{ color: link.color }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-textPrimary truncate">{link.label}</div>
-                    <div className="text-xs text-textSecondary truncate">{link.desc}</div>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-textSecondary/30 group-hover:text-textSecondary/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1.5, borderRadius: 3, '&:hover': { bgcolor: 'background.default' }, cursor: 'pointer' }}>
+                    <Box sx={{ width: 32, height: 32, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: `${link.color}18` }}>
+                      <Icon size={16} color={link.color} />
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.label}</Typography>
+                      <Typography sx={{ fontSize: 12, color: 'text.secondary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.desc}</Typography>
+                    </Box>
+                    <ChevronRight size={14} color="#CBD5E1" style={{ flexShrink: 0 }} />
+                  </Box>
                 </Link>
               );
             })}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Paper>
+      </Box>
+    </Box>
   );
 }

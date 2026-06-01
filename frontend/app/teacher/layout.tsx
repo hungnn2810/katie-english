@@ -4,6 +4,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { getUser, AuthUser } from '@/lib/auth';
 import TeacherShell from '@/components/TeacherShell';
 import { TeacherUserContext } from './_context';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const TITLES: Record<string, string> = {
   '/teacher': 'Dashboard',
@@ -25,9 +27,9 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   }, []);
 
   if (user === undefined) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ minWidth: 1280 }}>
-      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 1280 }}>
+      <CircularProgress size={32} />
+    </Box>
   );
   if (!user) return null;
 

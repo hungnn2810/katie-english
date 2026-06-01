@@ -3,12 +3,26 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
 import { colors } from '@/lib/colors';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Plus, Calendar, Pencil, Trash2, Users, CheckCircle2 } from 'lucide-react';
-import { DatePicker } from '@/components/ui/date-picker';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import FormLabel from '@mui/material/FormLabel';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+import InputAdornment from '@mui/material/InputAdornment';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Search, Plus, Calendar, Pencil, Trash2, Users, CheckCircle2, X } from 'lucide-react';
 import { formatDate } from '@/lib/datetime';
 
 const ACCENT = '#F0623A';
@@ -35,10 +49,6 @@ const DAY_LABELS: Record<string, string> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed',
 
 const emptyForm = () => ({ name: '', code: '', startDate: '', endDate: '', status: 'PENDING' as ClassStatus, scheduleSlots: [] as ScheduleSlot[] });
 const DEFAULT_DURATION = 1.5;
-
-function Spinner() {
-  return <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" /><path d="M12 2a10 10 0 0110 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>;
-}
 
 function ClassModal({ editing, initial, onClose, onSaved }: {
   editing: ClassItem | null;
@@ -82,133 +92,125 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
   }
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-2xl rounded-3xl p-0" showCloseButton={false}>
-        <DialogHeader className="flex flex-row items-center justify-between px-8 pt-7 pb-5 border-b border-border gap-0">
-          <div>
-            <DialogTitle className="text-xl font-black text-textPrimary">
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Dialog open onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
+        <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900 }}>
               {editing
-                ? <><span className="text-textSecondary font-semibold">Edit </span><span style={{ color: ACCENT }}>{editing.name}</span></>
+                ? <><Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Edit </Box><Box component="span" sx={{ color: ACCENT }}>{editing.name}</Box></>
                 : 'New Class'}
-            </DialogTitle>
-            <p className="text-xs text-textSecondary mt-1">{editing ? 'Update class details and schedule.' : 'Create a new class for your students.'}</p>
-          </div>
-          <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}
-            className="text-textSecondary hover:bg-gray-100 rounded-xl">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </Button>
-        </DialogHeader>
+            </Typography>
+            <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>{editing ? 'Update class details and schedule.' : 'Create a new class for your students.'}</Typography>
+          </Box>
+          <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: -0.5 }}><X size={16} /></IconButton>
+        </DialogTitle>
 
-        <form onSubmit={handleSubmit}>
-          <div className="px-8 py-6 space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class Name</Label>
-                <Input className="input-base h-auto" value={form.name} onChange={(e) => setField('name', e.target.value)} required placeholder="e.g. English Beginners" />
-              </div>
-              <div>
-                <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Class Code</Label>
-                <Input className="input-base h-auto" value={form.code} onChange={(e) => setField('code', e.target.value)} required placeholder="e.g. ENG-01" />
-              </div>
-              <div>
-                <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">Start Date</Label>
-                <DatePicker value={form.startDate} onChange={(v) => setField('startDate', v)} />
-              </div>
-              <div>
-                <Label className="block text-xs font-semibold text-textSecondary mb-1.5 uppercase tracking-wide">End Date</Label>
-                <DatePicker value={form.endDate} onChange={(v) => setField('endDate', v)} />
-              </div>
-            </div>
+        <Box component="form" onSubmit={handleSubmit}>
+          <DialogContent sx={{ px: 4, py: 3 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+              <Box>
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Class Name</FormLabel>
+                <TextField size="small" fullWidth required value={form.name} onChange={(e) => setField('name', e.target.value)} placeholder="e.g. English Beginners" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+              </Box>
+              <Box>
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Class Code</FormLabel>
+                <TextField size="small" fullWidth required value={form.code} onChange={(e) => setField('code', e.target.value)} placeholder="e.g. ENG-01" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+              </Box>
+              <Box>
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Start Date</FormLabel>
+                <DatePicker
+                  value={form.startDate ? new Date(form.startDate) : null}
+                  onChange={(v: Date | null) => setField('startDate', v ? v.toISOString().split('T')[0] : '')}
+                  slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
+                />
+              </Box>
+              <Box>
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>End Date</FormLabel>
+                <DatePicker
+                  value={form.endDate ? new Date(form.endDate) : null}
+                  onChange={(v: Date | null) => setField('endDate', v ? v.toISOString().split('T')[0] : '')}
+                  slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
+                />
+              </Box>
+            </Box>
 
-            <div>
-              <Label className="block text-xs font-semibold text-textSecondary mb-2 uppercase tracking-wide">Status</Label>
-              <div className="flex gap-2">
+            <Box sx={{ mb: 3 }}>
+              <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>Status</FormLabel>
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 {(['PENDING', 'INPROGRESS', 'ENDED'] as ClassStatus[]).map((s) => {
                   const sc = STATUS_CONFIG[s];
                   const active = form.status === s;
                   return (
-                    <Button key={s} type="button" variant="outline" size="sm"
+                    <Button key={s} type="button" variant="outlined" size="small"
                       onClick={() => setField('status', s)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 h-auto rounded-xl text-xs font-semibold border-2 transition-all"
-                      style={active
-                        ? { background: sc.bg, color: sc.color, borderColor: sc.dot }
-                        : { borderColor: colors.border, color: colors.textSecondary, background: 'white' }}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: active ? sc.dot : colors.border }} />
+                      sx={{ borderRadius: 3, fontSize: 12, fontWeight: 600, gap: 0.75, border: '2px solid',
+                        ...(active ? { bgcolor: sc.bg, color: sc.color, borderColor: sc.dot, '&:hover': { bgcolor: sc.bg } }
+                          : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
+                      <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: active ? sc.dot : 'divider', display: 'inline-block' }} />
                       {sc.label}
                     </Button>
                   );
                 })}
-              </div>
-            </div>
+              </Box>
+            </Box>
 
-            <div>
-              <Label className="block text-xs font-semibold text-textSecondary mb-2 uppercase tracking-wide">Schedule</Label>
-              <div className="flex gap-2 flex-wrap mb-3">
+            <Box>
+              <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>Schedule</FormLabel>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
                 {DAYS.map((day) => {
                   const active = !!form.scheduleSlots.find((s) => s.day === day);
                   return (
-                    <Button key={day} type="button" variant="outline" size="sm"
+                    <Button key={day} type="button" variant="outlined" size="small"
                       onClick={() => toggleDay(day)}
-                      className="px-3 py-1.5 h-auto rounded-lg text-xs font-bold border-2 transition-all"
-                      style={active
-                        ? { background: '#FFF2EF', color: ACCENT, borderColor: ACCENT }
-                        : { borderColor: colors.border, color: colors.textSecondary, background: 'white' }}>
+                      sx={{ borderRadius: 2, fontSize: 12, fontWeight: 700, minWidth: 0, px: 1.5, border: '2px solid',
+                        ...(active ? { bgcolor: '#FFF2EF', color: ACCENT, borderColor: ACCENT, '&:hover': { bgcolor: '#FFF2EF' } }
+                          : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
                       {DAY_LABELS[day]}
                     </Button>
                   );
                 })}
-              </div>
+              </Box>
               {form.scheduleSlots.length > 0 && (
-                <div className="space-y-3 bg-background rounded-xl p-4 border border-border">
-                  <div className="grid grid-cols-[36px_1fr_100px] gap-2 mb-1">
-                    <span />
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-textSecondary px-1">Start time</span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-textSecondary px-1">Duration</span>
-                  </div>
+                <Paper variant="outlined" sx={{ borderRadius: 3, p: 2, bgcolor: 'background.default' }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 100px', gap: 1, mb: 1 }}>
+                    <Box />
+                    <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Start time</Typography>
+                    <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Duration</Typography>
+                  </Box>
                   {DAYS.filter((d) => form.scheduleSlots.find((s) => s.day === d)).map((day) => {
                     const slot = form.scheduleSlots.find((s) => s.day === day)!;
                     return (
-                      <div key={day} className="grid grid-cols-[36px_1fr_100px] items-center gap-2">
-                        <span className="text-xs font-bold" style={{ color: ACCENT }}>{DAY_LABELS[day]}</span>
-                        <Input type="time" required className="input-base h-auto" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} />
-                        <div className="relative">
-                          <Input
-                            type="number" required min={0.5} max={8} step={0.5}
-                            className="input-base h-auto pr-6"
-                            value={slot.duration ?? DEFAULT_DURATION}
-                            onChange={(e) => setSlotDuration(day, parseFloat(e.target.value) || DEFAULT_DURATION)}
-                          />
-                          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-textSecondary font-medium pointer-events-none">h</span>
-                        </div>
-                      </div>
+                      <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 100px', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>{DAY_LABELS[day]}</Typography>
+                        <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+                        <TextField
+                          type="number" required size="small"
+                          inputProps={{ min: 0.5, max: 8, step: 0.5 }}
+                          value={slot.duration ?? DEFAULT_DURATION}
+                          onChange={(e) => setSlotDuration(day, parseFloat(e.target.value) || DEFAULT_DURATION)}
+                          InputProps={{ endAdornment: <InputAdornment position="end">h</InputAdornment> }}
+                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                        />
+                      </Box>
                     );
                   })}
-                </div>
+                </Paper>
               )}
-            </div>
-          </div>
+            </Box>
+          </DialogContent>
 
-          <div className="px-8 pb-7 pt-5 border-t border-border">
-            {error && (
-              <div className="flex items-start gap-2 text-sm bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-3">
-                <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
-                {error}
-              </div>
-            )}
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-semibold text-textSecondary border-border hover:bg-gray-50">Cancel</Button>
-              <Button type="submit" disabled={loading}
-                className="flex-1 py-2.5 h-auto rounded-xl text-sm font-bold text-white hover:opacity-90 disabled:opacity-60 gap-2"
-                style={{ background: ACCENT }}>
-                {loading && <Spinner />}
-                {loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
-              </Button>
-            </div>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <DialogActions sx={{ px: 4, pb: 3.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', gap: 1.5 }}>
+            {error && <Alert severity="error" sx={{ borderRadius: 3, flex: 1, mr: 'auto' }}>{error}</Alert>}
+            <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
+              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
+              {loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+    </LocalizationProvider>
   );
 }
 
@@ -251,7 +253,7 @@ export default function ClassesPage() {
   ];
 
   return (
-    <div className="animate-fade-in">
+    <Box>
       {showModal && (
         <ClassModal
           editing={editing}
@@ -261,59 +263,66 @@ export default function ClassesPage() {
         />
       )}
 
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-textPrimary text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl animate-slide-up flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-400" /> {toast}
-        </div>
-      )}
+      <Snackbar
+        open={!!toast}
+        autoHideDuration={3000}
+        onClose={() => setToast('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        message={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><CheckCircle2 size={16} color="#4ade80" />{toast}</Box>}
+      />
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-textSecondary" />
-          <Input className="input-base pl-10 h-auto" placeholder="Search classes…" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
-        <div className="flex gap-1.5 flex-1">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
+        <TextField
+          size="small"
+          placeholder="Search classes…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ maxWidth: 240, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+          InputProps={{ startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> }}
+        />
+        <Box sx={{ display: 'flex', gap: 0.75, flex: 1 }}>
           {filterTabs.map((t) => {
             const active = statusFilter === t.key;
             const sc = t.key !== 'ALL' ? STATUS_CONFIG[t.key] : null;
             return (
-              <Button key={t.key} variant="outline" size="sm" onClick={() => setStatusFilter(t.key)}
-                className="flex items-center gap-1.5 px-3.5 py-2 h-auto rounded-xl text-xs font-semibold transition-all border"
-                style={active
-                  ? { background: sc ? sc.bg : '#FFF2EF', color: sc ? sc.color : ACCENT, borderColor: sc ? sc.dot : ACCENT }
-                  : { background: 'white', color: colors.textSecondary, borderColor: colors.border }}>
-                {sc && <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />}
+              <Button key={t.key} variant="outlined" size="small" onClick={() => setStatusFilter(t.key)}
+                sx={{ borderRadius: 3, fontSize: 12, fontWeight: 600, gap: 0.75, border: '1px solid',
+                  ...(active
+                    ? { bgcolor: sc ? sc.bg : '#FFF2EF', color: sc ? sc.color : ACCENT, borderColor: sc ? sc.dot : ACCENT, '&:hover': { bgcolor: sc ? sc.bg : '#FFF2EF' } }
+                    : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
+                {sc && <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: sc.dot, display: 'inline-block' }} />}
                 {t.label}
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                  style={{ background: active ? (sc ? sc.dot + '25' : '#FFF2EF') : '#F3F4F6', color: active ? (sc ? sc.color : ACCENT) : colors.textSecondary }}>
+                <Box component="span" sx={{ fontSize: 10, fontWeight: 700, px: 0.75, py: 0.25, borderRadius: '99px',
+                  bgcolor: active ? (sc ? sc.dot + '25' : '#FFF2EF') : '#F3F4F6',
+                  color: active ? (sc ? sc.color : ACCENT) : 'text.secondary' }}>
                   {counts[t.key] ?? 0}
-                </span>
+                </Box>
               </Button>
             );
           })}
-        </div>
-        <Button onClick={openCreate} className="btn-primary flex items-center gap-2 shrink-0 h-auto text-white hover:opacity-90" style={{ background: ACCENT }}>
-          <Plus className="w-4 h-4" />
+        </Box>
+        <Button variant="contained" onClick={openCreate} sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: 3, gap: 1, flexShrink: 0 }}>
+          <Plus size={16} />
           New Class
         </Button>
-      </div>
+      </Box>
 
       {/* Grid */}
-      <div className="grid grid-cols-3 gap-4">
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 2 }}>
         {classes.length === 0 && (
-          <div className="col-span-3 text-center py-20 text-textSecondary">
-            <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
-            </div>
-            <div className="font-semibold text-textPrimary">No classes yet</div>
-            <div className="text-sm mt-1">Create your first class to get started</div>
-          </div>
+          <Box sx={{ gridColumn: '1/-1', textAlign: 'center', py: 10, color: 'text.secondary' }}>
+            <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+              <svg style={{ width: 28, height: 28, color: '#94A3B8' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
+            </Box>
+            <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No classes yet</Typography>
+            <Typography sx={{ fontSize: 14, mt: 0.5 }}>Create your first class to get started</Typography>
+          </Box>
         )}
         {classes.length > 0 && filtered.length === 0 && (
-          <div className="col-span-3 text-center py-16 text-textSecondary">
-            <div className="font-medium">No classes match</div>
-          </div>
+          <Box sx={{ gridColumn: '1/-1', textAlign: 'center', py: 8, color: 'text.secondary' }}>
+            <Typography sx={{ fontWeight: 500 }}>No classes match</Typography>
+          </Box>
         )}
         {filtered.map((c) => {
           const sc = STATUS_CONFIG[c.status];
@@ -323,93 +332,74 @@ export default function ClassesPage() {
           const isDeleting = deletingId === c.id;
 
           return (
-            <div key={c.id} className="bg-white rounded-2xl border border-border shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden">
+            <Paper key={c.id} variant="outlined" sx={{ borderRadius: 4, display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'all 0.2s', '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' } }}>
               {/* Card header */}
-              <div className="px-5 pt-5 pb-4 flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: STATUS_AVATAR_BG[c.status] }}>
-                    <span className="font-black text-sm" style={{ color: STATUS_AVATAR_COLOR[c.status] }}>{initials}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-black text-textPrimary text-[15px] leading-tight truncate">{c.name}</h3>
-                    <p className="text-textSecondary text-xs font-mono tracking-wider mt-0.5">{c.code}</p>
-                  </div>
-                </div>
-                <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 mt-0.5"
-                  style={{ background: sc.bg, color: sc.color }}>
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
-                  {sc.label}
-                </span>
-              </div>
+              <Box sx={{ px: 2.5, pt: 2.5, pb: 2, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+                  <Box sx={{ width: 44, height: 44, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: STATUS_AVATAR_BG[c.status] }}>
+                    <Typography sx={{ fontWeight: 900, fontSize: 14, color: STATUS_AVATAR_COLOR[c.status] }}>{initials}</Typography>
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography sx={{ fontWeight: 900, color: 'text.primary', fontSize: 15, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</Typography>
+                    <Typography sx={{ color: 'text.secondary', fontSize: 12, fontFamily: 'monospace', letterSpacing: '0.05em', mt: 0.25 }}>{c.code}</Typography>
+                  </Box>
+                </Box>
+                <Chip label={sc.label} size="small" sx={{ bgcolor: sc.bg, color: sc.color, fontWeight: 700, height: 24, flexShrink: 0, mt: 0.25 }} />
+              </Box>
 
-              <div className="px-5 pb-4 flex-1 flex flex-col gap-3 border-t border-border/60">
-                <div className="flex items-center gap-1.5 text-xs text-textSecondary pt-3">
-                  <Calendar className="w-3.5 h-3.5 shrink-0" />
-                  {formatDate(c.startDate)} – {formatDate(c.endDate)}
-                </div>
+              <Box sx={{ px: 2.5, pb: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 12, color: 'text.secondary', pt: 1.5 }}>
+                  <Calendar size={14} style={{ flexShrink: 0 }} />
+                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{formatDate(c.startDate)} – {formatDate(c.endDate)}</Typography>
+                </Box>
                 {activeDays.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {activeDays.map((day) => {
                       const slot = slots.find((s) => s.day === day)!;
                       const durationLabel = slot.duration ? ` · ${slot.duration}h` : '';
                       return (
-                        <span key={day} className="text-xs font-semibold px-2 py-0.5 rounded-lg"
-                          style={{ background: '#FFF2EF', color: ACCENT }}>
-                          {DAY_LABELS[day]}{slot.time ? ` ${slot.time}` : ''}{durationLabel}
-                        </span>
+                        <Chip key={day} label={`${DAY_LABELS[day]}${slot.time ? ` ${slot.time}` : ''}${durationLabel}`} size="small"
+                          sx={{ bgcolor: '#FFF2EF', color: ACCENT, fontWeight: 600, height: 22, fontSize: 11 }} />
                       );
                     })}
-                  </div>
+                  </Box>
                 )}
                 {c._count && (
-                  <div className="flex items-center gap-1.5 text-xs text-textSecondary mt-auto pt-2 border-t border-border/60">
-                    <Users className="w-3.5 h-3.5" />
-                    <span className="font-semibold text-textPrimary">{c._count.students}</span> student{c._count.students !== 1 ? 's' : ''}
-                  </div>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 'auto', pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
+                    <Users size={14} color="#94A3B8" />
+                    <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
+                      <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>{c._count.students}</Box> student{c._count.students !== 1 ? 's' : ''}
+                    </Typography>
+                  </Box>
                 )}
-              </div>
+              </Box>
 
-              <div className="px-4 py-3 bg-background/60 border-t border-border">
+              <Box sx={{ px: 2, py: 1.5, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider' }}>
                 {isDeleting ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-textSecondary flex-1">Delete class?</span>
-                    <Button variant="ghost" size="sm" onClick={() => setDeletingId(null)}
-                      className="py-1.5 h-auto rounded-lg text-xs font-semibold text-textSecondary hover:bg-gray-100 px-3">
-                      Cancel
-                    </Button>
-                    <Button variant="ghost" size="sm"
-                      onClick={async () => { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); }}
-                      className="py-1.5 h-auto rounded-lg text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-3">
-                      Delete
-                    </Button>
-                  </div>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography sx={{ fontSize: 12, color: 'text.secondary', flex: 1 }}>Delete class?</Typography>
+                    <Button size="small" onClick={() => setDeletingId(null)} sx={{ borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>Cancel</Button>
+                    <Button size="small" variant="contained" onClick={async () => { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); }}
+                      sx={{ borderRadius: 2, fontSize: 12, fontWeight: 600, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' } }}>Delete</Button>
+                  </Box>
                 ) : (
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(c)}
-                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold gap-1.5"
-                      style={{ color: ACCENT }}>
-                      <Pencil className="w-3.5 h-3.5" />
-                      Edit
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Button size="small" onClick={() => openEdit(c)} sx={{ flex: 1, borderRadius: 2, fontSize: 12, fontWeight: 600, color: ACCENT, gap: 0.5 }}>
+                      <Pencil size={14} />Edit
                     </Button>
-                    <Link href={`/teacher/students?classId=${c.id}`}
-                      className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center flex items-center justify-center gap-1.5 hover:bg-background transition-colors"
-                      style={{ color: colors.purple }}>
-                      <Users className="w-3.5 h-3.5" />
-                      Students
-                    </Link>
-                    <Button variant="ghost" size="sm" onClick={() => setDeletingId(c.id)}
-                      className="flex-1 py-1.5 h-auto rounded-lg text-xs font-semibold text-highlight hover:bg-highlight/8 gap-1.5">
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Delete
+                    <Button size="small" component={Link} href={`/teacher/students?classId=${c.id}`} sx={{ flex: 1, borderRadius: 2, fontSize: 12, fontWeight: 600, color: colors.purple, gap: 0.5 }}>
+                      <Users size={14} />Students
                     </Button>
-                  </div>
+                    <Button size="small" onClick={() => setDeletingId(c.id)} sx={{ flex: 1, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'error.main', gap: 0.5 }}>
+                      <Trash2 size={14} />Delete
+                    </Button>
+                  </Box>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Paper>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
