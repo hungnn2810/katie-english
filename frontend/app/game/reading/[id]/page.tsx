@@ -13,6 +13,10 @@ import {
   FillBlankChoice,
 } from '@/lib/admin-api';
 import { gradients, scoreHexColor } from '@/lib/colors';
+import { shake } from '@/lib/theme';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import { PartyPopper, ImageIcon, Check, PenLine } from 'lucide-react';
 
 // ── Constants & helpers ────────────────────────────────────────────────────────
@@ -51,10 +55,10 @@ type ActivityState =
 
 function LoadingState() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-      <div className="w-12 h-12 border-4 border-white/70 border-t-transparent rounded-full animate-spin" />
-      <p className="text-white/70 text-sm">Loading…</p>
-    </div>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg, minWidth: 1024 }}>
+      <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
+      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Loading…</p>
+    </Box>
   );
 }
 
@@ -72,10 +76,10 @@ function ErrorState({ kind, onBack }: { kind: ErrorKind; onBack: () => void }) {
 
 function SubmittingState() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-      <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-      <p className="text-accent font-bold">Saving your score…</p>
-    </div>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg, minWidth: 1024 }}>
+      <CircularProgress size={48} sx={{ color: '#FFD166' }} />
+      <p style={{ color: '#FFD166', fontWeight: 700 }}>Saving your score…</p>
+    </Box>
   );
 }
 
@@ -271,17 +275,24 @@ function MatchingActivityRenderer({
           const isSelected = state.selectedImageId === p.pair.id;
           const isLocked = p.status === 'locked';
           const isShaking = p.status === 'shaking';
-          let borderClass = 'border-white/20 bg-white/10';
-          if (isLocked) borderClass = 'border-brand-green bg-brand-green/20 cursor-default';
-          else if (isShaking) borderClass = 'border-highlight animate-shake';
-          else if (isSelected) borderClass = 'border-primary shadow-lg scale-105';
 
           return (
-            <button
+            <Box
+              component="button"
               key={p.pair.id}
               onClick={() => handleImageClick(p.pair.id)}
-              className={`relative w-28 h-28 rounded-2xl overflow-hidden cursor-pointer border-4 transition-all ${borderClass}`}
               disabled={isLocked}
+              sx={{
+                position: 'relative', width: 112, height: 112, borderRadius: 4,
+                overflow: 'hidden', cursor: isLocked ? 'default' : 'pointer',
+                border: '4px solid', transition: 'all 0.15s', p: 0, background: 'none',
+                animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',
+                ...(isLocked
+                  ? { borderColor: '#7BD88F', bgcolor: 'rgba(123,216,143,0.2)' }
+                  : isSelected
+                  ? { borderColor: 'primary.main', boxShadow: 3, transform: 'scale(1.05)' }
+                  : { borderColor: 'rgba(255,255,255,0.2)', bgcolor: 'rgba(255,255,255,0.1)' }),
+              }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.pair.imageUrl} alt={p.pair.word} className="w-full h-full object-cover" />

@@ -1,4 +1,6 @@
 import type { PhonemeOp } from '@/lib/admin-api';
+import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
 
 type Variant = 'correct' | 'similar' | 'wrong' | 'missing';
 
@@ -16,11 +18,11 @@ function variantFor(status: PhonemeOp['status']): Variant | null {
   }
 }
 
-const VARIANT_CLASSES: Record<Variant, string> = {
-  correct: 'bg-green-100 text-green-800',
-  similar: 'bg-yellow-100 text-yellow-800',
-  wrong:   'bg-red-100 text-red-800',
-  missing: 'border-2 border-dashed border-gray-400 text-gray-400 bg-transparent',
+const VARIANT_SX: Record<Variant, object> = {
+  correct: { bgcolor: '#dcfce7', color: '#166534' },
+  similar: { bgcolor: '#fef9c3', color: '#854d0e' },
+  wrong:   { bgcolor: '#fee2e2', color: '#991b1b' },
+  missing: { border: '2px dashed #9ca3af', color: '#9ca3af', bgcolor: 'transparent' },
 };
 
 function labelFor(op: PhonemeOp): string {
@@ -30,7 +32,6 @@ function labelFor(op: PhonemeOp): string {
   if (op.status === 'extra') {
     return op.aligned ?? '?';
   }
-  // correct, similar, missing -> expected phoneme
   return op.expected ?? op.aligned ?? '?';
 }
 
@@ -46,17 +47,17 @@ export function PhonemeChips({ feedback }: PhonemeChipsProps) {
   if (chips.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-1 mt-2" data-testid="phoneme-chips">
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }} data-testid="phoneme-chips">
       {chips.map(({ op, variant, key }) => (
-        <span
+        <Chip
           key={key}
-          className={`font-mono font-bold text-sm px-2 py-1 rounded ${VARIANT_CLASSES[variant]}`}
+          label={labelFor(op)}
+          size="small"
+          sx={{ fontFamily: 'monospace', fontWeight: 700, ...VARIANT_SX[variant] }}
           data-status={op.status}
-        >
-          {labelFor(op)}
-        </span>
+        />
       ))}
-    </div>
+    </Box>
   );
 }
 
