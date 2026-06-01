@@ -2,6 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import {
   getSession, GameSession, SpeakingResult, PhonicsItemResult,
   ReadingActivityResult, MatchingItemResult, FillInBlankItemResult, SentenceSegment,
@@ -30,20 +33,25 @@ function scoreLabel(score: number) {
 
 function MatchingResultRow({ r }: { r: MatchingItemResult }) {
   return (
-    <div className="flex items-center gap-3 py-2">
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
       {r.pair?.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={r.pair.imageUrl} alt={r.pair.word}
-          className="w-9 h-9 rounded-lg object-cover border border-border shrink-0" />
+          style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', border: '1px solid #E2E8F0', flexShrink: 0 }} />
       )}
-      <div className="flex-1 text-sm text-textPrimary">
-        <span className="text-textSecondary text-xs">chose </span>
-        <span className="font-semibold">&quot;{r.studentChosenWord}&quot;</span>
-      </div>
-      <span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${r.isCorrect ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'}`}>
-        {r.isCorrect ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-      </span>
-    </div>
+      <Box sx={{ flex: 1, fontSize: 14, color: 'text.primary' }}>
+        <Box component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>chose </Box>
+        <Box component="span" sx={{ fontWeight: 600 }}>&quot;{r.studentChosenWord}&quot;</Box>
+      </Box>
+      <Box sx={{
+        width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', flexShrink: 0,
+        bgcolor: r.isCorrect ? 'rgba(209,250,229,1)' : 'rgba(254,202,202,1)',
+        color: r.isCorrect ? '#059669' : '#EF4444',
+      }}>
+        {r.isCorrect ? <Check size={14} /> : <X size={14} />}
+      </Box>
+    </Box>
   );
 }
 
@@ -52,17 +60,26 @@ function MatchingResultRow({ r }: { r: MatchingItemResult }) {
 function FillInBlankResultRow({ r }: { r: FillInBlankItemResult }) {
   const sentence = r.blank ? `Blank ${r.blank.blankIndex ?? '?'}` : '—';
   return (
-    <div className="flex items-center justify-between gap-3 py-2 text-sm">
-      <div className="flex items-center gap-2 min-w-0">
-        <span className="text-textSecondary text-xs shrink-0">{sentence}</span>
-        <span className={`font-semibold px-1.5 py-0.5 rounded-lg text-xs ${r.isCorrect ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, py: 1, fontSize: 14 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+        <Box component="span" sx={{ color: 'text.secondary', fontSize: 12, flexShrink: 0 }}>{sentence}</Box>
+        <Box component="span" sx={{ fontWeight: 600, px: 0.75, py: 0.25, borderRadius: 2, fontSize: 12 }}
+          style={{
+            background: r.isCorrect ? '#ecfdf5' : '#fef2f2',
+            color: r.isCorrect ? '#15803d' : '#b91c1c',
+          }}>
           {r.studentChosenWord}
-        </span>
-      </div>
-      <span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${r.isCorrect ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'}`}>
-        {r.isCorrect ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-      </span>
-    </div>
+        </Box>
+      </Box>
+      <Box sx={{
+        width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', flexShrink: 0,
+        bgcolor: r.isCorrect ? 'rgba(209,250,229,1)' : 'rgba(254,202,202,1)',
+        color: r.isCorrect ? '#059669' : '#EF4444',
+      }}>
+        {r.isCorrect ? <Check size={14} /> : <X size={14} />}
+      </Box>
+    </Box>
   );
 }
 
@@ -85,57 +102,68 @@ function ActivityResultCard({ activityResult }: { activityResult: ReadingActivit
       if (!seg.blank) return <span key={idx}>{seg.text}</span>;
       const result = fillByBlankIdx.get(seg.blankIndex!);
       return (
-        <span key={idx}
-          className={`font-semibold px-1.5 py-0.5 rounded-lg mx-0.5 ${result?.isCorrect ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+        <Box key={idx} component="span"
+          sx={{ fontWeight: 600, px: 0.75, py: 0.25, borderRadius: 2, mx: 0.25 }}
+          style={{
+            background: result?.isCorrect ? '#ecfdf5' : '#fef2f2',
+            color: result?.isCorrect ? '#15803d' : '#b91c1c',
+          }}>
           {result?.studentChosenWord ?? '___'}
-        </span>
+        </Box>
       );
     });
   };
 
   return (
-    <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
-      <button type="button" onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-background/60 transition-colors">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: bg }}>
-            <BookOpen className="w-3.5 h-3.5" style={{ color }} />
-          </div>
-          <span className="font-semibold text-sm text-textPrimary">{label}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="font-black text-base tabular-nums" style={{ color }}>{pct}%</span>
-          {expanded ? <ChevronDown className="w-4 h-4 text-textSecondary" /> : <ChevronRight className="w-4 h-4 text-textSecondary" />}
-        </div>
-      </button>
+    <Paper variant="outlined" sx={{ borderRadius: 4, overflow: 'hidden', boxShadow: 1 }}>
+      <Box component="button" type="button" onClick={() => setExpanded((e) => !e)}
+        sx={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          px: 2.5, py: 1.75, bgcolor: 'transparent', border: 'none', cursor: 'pointer',
+          '&:hover': { bgcolor: 'rgba(247,249,252,0.6)' }, transition: 'background-color 0.15s',
+        }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ width: 28, height: 28, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ background: bg }}>
+            <BookOpen size={14} style={{ color }} />
+          </Box>
+          <Typography sx={{ fontWeight: 600, fontSize: 14, color: 'text.primary' }}>{label}</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box component="span" sx={{ fontWeight: 900, fontSize: 16, fontVariantNumeric: 'tabular-nums' }} style={{ color }}>{pct}%</Box>
+          {expanded
+            ? <ChevronDown size={16} style={{ color: '#6B7280' }} />
+            : <ChevronRight size={16} style={{ color: '#6B7280' }} />}
+        </Box>
+      </Box>
 
       {expanded && (
-        <div className="border-t border-border px-5 py-3">
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', px: 2.5, py: 1.5 }}>
           {isMatching ? (
-            <div className="divide-y divide-border/50">
+            <Box sx={{ '& > *:not(:first-of-type)': { borderTop: '1px solid rgba(226,232,240,0.5)' } }}>
               {(activityResult.matchingResults ?? []).map((r) => (
                 <MatchingResultRow key={r.id} r={r} />
               ))}
-            </div>
+            </Box>
           ) : (
-            <div className="divide-y divide-border/50">
+            <Box sx={{ '& > *:not(:first-of-type)': { borderTop: '1px solid rgba(226,232,240,0.5)' } }}>
               {(() => {
                 const segments = (activityResult.activity as { sentenceSegments?: SentenceSegment[] })?.sentenceSegments;
                 const fillResults = activityResult.fillInBlankResults ?? [];
                 if (segments && segments.length > 0) {
                   return (
-                    <p className="text-sm text-textPrimary leading-relaxed py-1.5">
+                    <Typography component="p" sx={{ fontSize: 14, color: 'text.primary', lineHeight: 1.625, py: 0.75 }}>
                       {renderFillInBlankSegments(segments, fillResults)}
-                    </p>
+                    </Typography>
                   );
                 }
                 return fillResults.map((r) => <FillInBlankResultRow key={r.id} r={r} />);
               })()}
-            </div>
+            </Box>
           )}
-        </div>
+        </Box>
       )}
-    </div>
+    </Paper>
   );
 }
 
@@ -148,7 +176,9 @@ export default function TeacherSessionDetailPage() {
   const [session, setSession] = useState<GameSession | null>(null);
   useEffect(() => { getSession(sId).then(setSession).catch(() => {}); }, [sId]);
 
-  if (!session) return <div className="text-textSecondary py-16 text-center">Loading...</div>;
+  if (!session) return (
+    <Box sx={{ color: 'text.secondary', py: 8, textAlign: 'center' }}>Loading...</Box>
+  );
 
   const speakingResults: SpeakingResult[] = session.speakingResults ?? [];
   const phonicsResults: PhonicsItemResult[] = session.phonicsResults ?? [];
@@ -161,177 +191,193 @@ export default function TeacherSessionDetailPage() {
   const initials = studentName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="max-w-2xl animate-fade-in">
+    <Box sx={{
+      maxWidth: 672,
+      animation: 'fadeIn 0.3s ease-in-out',
+      '@keyframes fadeIn': { from: { opacity: 0 }, to: { opacity: 1 } },
+    }}>
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm mb-6">
-        <Link href="/teacher/homework" className="text-textSecondary hover:text-textPrimary transition-colors">Homework</Link>
-        <span className="text-border">/</span>
-        <Link href={`/teacher/homework/${hwId}`} className="text-textSecondary hover:text-textPrimary transition-colors">Detail</Link>
-        <span className="text-border">/</span>
-        <span className="text-textPrimary font-medium">{studentName}</span>
-      </div>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14, mb: 3 }}>
+        <Box component={Link} href="/teacher/homework"
+          sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' }, transition: 'color 0.15s', textDecoration: 'none' }}>
+          Homework
+        </Box>
+        <Box component="span" sx={{ color: 'divider' }}>/</Box>
+        <Box component={Link} href={`/teacher/homework/${hwId}`}
+          sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' }, transition: 'color 0.15s', textDecoration: 'none' }}>
+          Detail
+        </Box>
+        <Box component="span" sx={{ color: 'divider' }}>/</Box>
+        <Box component="span" sx={{ color: 'text.primary', fontWeight: 500 }}>{studentName}</Box>
+      </Box>
 
       {/* Score hero */}
-      <div className="bg-white rounded-2xl border border-border shadow-sm p-5 mb-6">
-        <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-lg font-black text-white"
+      <Paper variant="outlined" sx={{ borderRadius: 4, p: 2.5, mb: 3, boxShadow: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+          <Box sx={{
+            width: 56, height: 56, borderRadius: 4, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', flexShrink: 0, fontSize: 18, fontWeight: 900, color: '#fff',
+          }}
             style={{ background: 'linear-gradient(135deg, #4F9DFF, #A78BFA)' }}>
             {initials}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-black text-textPrimary text-lg">{studentName}</div>
-            <div className="text-textSecondary text-xs mt-0.5">
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{ fontWeight: 900, color: 'text.primary', fontSize: 18 }}>{studentName}</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 12, mt: 0.5 }}>
               Started {new Date(session.startedAt).toLocaleString()}
               {session.completedAt && (
                 <> · Completed {new Date(session.completedAt).toLocaleString()}</>
               )}
-            </div>
+            </Typography>
             {!session.completedAt && (
-              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">
+              <Box component="span" sx={{ display: 'inline-block', mt: 0.5, fontSize: 10, fontWeight: 700, px: 1, py: 0.25, borderRadius: '99px', bgcolor: '#FFFBEB', color: '#D97706' }}>
                 In progress
-              </span>
+              </Box>
             )}
-          </div>
+          </Box>
           {score != null && (
-            <div className="shrink-0 text-right">
-              <div className="text-4xl font-black tabular-nums leading-none" style={{ color: scoreColor }}>
+            <Box sx={{ flexShrink: 0, textAlign: 'right' }}>
+              <Typography sx={{ fontSize: '2.25rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums', lineHeight: 1 }} style={{ color: scoreColor }}>
                 {score}%
-              </div>
-              <div className="text-xs font-bold mt-1 px-2.5 py-0.5 rounded-full inline-block"
+              </Typography>
+              <Box component="span" sx={{ fontSize: 12, fontWeight: 700, mt: 0.5, px: 1.25, py: 0.25, borderRadius: '99px', display: 'inline-block' }}
                 style={{ background: scoreBgColor, color: scoreColor }}>
                 {scoreLabel(score)}
-              </div>
-            </div>
+              </Box>
+            </Box>
           )}
-        </div>
-      </div>
+        </Box>
+      </Paper>
 
       {/* Phonics */}
       {phonicsResults.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-sm font-bold text-textPrimary mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: '#A78BFA18' }}>
-              <Hash className="w-3.5 h-3.5" style={{ color: '#A78BFA' }} />
-            </span>
+        <Box sx={{ mb: 3 }}>
+          <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{ width: 24, height: 24, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ background: '#A78BFA18' }}>
+              <Hash size={14} style={{ color: '#A78BFA' }} />
+            </Box>
             Phonics
-            <span className="text-textSecondary font-normal">({phonicsResults.length})</span>
-          </h2>
-          <div className="space-y-2">
+            <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>({phonicsResults.length})</Box>
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {phonicsResults.map((r, i) => {
               const pct = r.score;
               const color = scoreHex(pct);
               const bg = scoreBg(pct);
               return (
-                <div key={r.id} className="bg-white border border-border rounded-2xl px-4 py-3 shadow-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-textSecondary/50 text-xs shrink-0 w-5 text-right">{i + 1}.</span>
-                      <span className="font-bold text-textPrimary shrink-0">{r.word?.text}</span>
+                <Paper key={r.id} variant="outlined" sx={{ borderRadius: 4, px: 2, py: 1.5, boxShadow: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+                      <Box component="span" sx={{ color: 'text.secondary', fontSize: 12, flexShrink: 0, width: 20, textAlign: 'right', opacity: 0.5 }}>{i + 1}.</Box>
+                      <Box component="span" sx={{ fontWeight: 700, color: 'text.primary', flexShrink: 0 }}>{r.word?.text}</Box>
                       {r.transcribedText ? (
-                        <span className="text-textSecondary text-sm truncate">
+                        <Box component="span" sx={{ color: 'text.secondary', fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           &quot;{r.transcribedText}&quot;
-                        </span>
+                        </Box>
                       ) : (
-                        <span className="text-textSecondary/50 text-sm italic">no answer</span>
+                        <Box component="span" sx={{ color: 'text.secondary', fontSize: 14, fontStyle: 'italic', opacity: 0.5 }}>no answer</Box>
                       )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="w-24 h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
-                      </div>
-                      <span className="font-bold text-sm tabular-nums w-10 text-right"
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                      <Box sx={{ width: 96, height: 6, borderRadius: '99px', bgcolor: 'grey.100', overflow: 'hidden' }}>
+                        <Box sx={{ height: '100%', borderRadius: '99px' }} style={{ width: `${pct}%`, background: color }} />
+                      </Box>
+                      <Box component="span" sx={{ fontWeight: 700, fontSize: 14, fontVariantNumeric: 'tabular-nums', width: 40, textAlign: 'right' }}
                         style={{ color, background: bg, padding: '2px 8px', borderRadius: 99 }}>
                         {pct}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Paper>
               );
             })}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {/* Speaking */}
       {speakingResults.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-sm font-bold text-textPrimary mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: '#FF9BD218' }}>
-              <Mic className="w-3.5 h-3.5" style={{ color: '#FF9BD2' }} />
-            </span>
+        <Box sx={{ mb: 3 }}>
+          <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{ width: 24, height: 24, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ background: '#FF9BD218' }}>
+              <Mic size={14} style={{ color: '#FF9BD2' }} />
+            </Box>
             Speaking
             {session.assignment?.homework?.speakingMode && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              <Box component="span" sx={{ fontSize: 10, fontWeight: 700, px: 1, py: 0.25, borderRadius: '99px' }}
                 style={{
                   background: session.assignment.homework.speakingMode === 'FREE_SPEAK' ? '#FF9BD218' : '#A78BFA18',
                   color: session.assignment.homework.speakingMode === 'FREE_SPEAK' ? '#FF9BD2' : '#A78BFA',
                 }}>
                 {session.assignment.homework.speakingMode === 'FREE_SPEAK' ? 'Free Speak' : 'Script Match'}
-              </span>
+              </Box>
             )}
-          </h2>
-          <div className="space-y-3">
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {speakingResults.map((r) => {
               const pct = Math.round(r.score);
               const color = scoreHex(pct);
               const bg = scoreBg(pct);
               return (
-                <div key={r.id} className="bg-white border border-border rounded-2xl px-5 py-4 shadow-sm">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
+                <Paper key={r.id} variant="outlined" sx={{ borderRadius: 4, px: 2.5, py: 2, boxShadow: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
                       {r.transcribedText ? (
-                        <p className="text-sm text-textPrimary">
-                          Said: <span className="font-medium">&quot;{r.transcribedText}&quot;</span>
-                        </p>
+                        <Typography sx={{ fontSize: 14, color: 'text.primary' }}>
+                          Said: <Box component="span" sx={{ fontWeight: 500 }}>&quot;{r.transcribedText}&quot;</Box>
+                        </Typography>
                       ) : (
-                        <p className="text-sm text-textSecondary/60 italic">No answer recorded</p>
+                        <Typography sx={{ fontSize: 14, color: 'text.secondary', fontStyle: 'italic', opacity: 0.6 }}>No answer recorded</Typography>
                       )}
-                      <p className="text-xs mt-1 font-medium" style={{ color }}>
+                      <Typography sx={{ fontSize: 12, mt: 0.5, fontWeight: 500 }} style={{ color }}>
                         {r.matchedWords} of {r.totalWords} words matched
-                      </p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <div className="text-2xl font-black tabular-nums" style={{ color }}>{pct}%</div>
-                      <div className="text-[10px] font-bold mt-0.5 px-1.5 py-0.5 rounded-full inline-block"
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flexShrink: 0, textAlign: 'right' }}>
+                      <Typography sx={{ fontSize: '1.5rem', fontWeight: 900, fontVariantNumeric: 'tabular-nums' }} style={{ color }}>{pct}%</Typography>
+                      <Box component="span" sx={{ fontSize: 10, fontWeight: 700, mt: 0.25, px: 0.75, py: 0.25, borderRadius: '99px', display: 'inline-block' }}
                         style={{ background: bg, color }}>
                         {r.matchedWords}/{r.totalWords}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-3 h-2 rounded-full bg-gray-100 overflow-hidden">
-                    <div className="h-full rounded-full transition-all"
+                      </Box>
+                    </Box>
+                  </Box>
+                  <Box sx={{ mt: 1.5, height: 8, borderRadius: '99px', bgcolor: 'grey.100', overflow: 'hidden' }}>
+                    <Box sx={{ height: '100%', borderRadius: '99px', transition: 'all 0.2s' }}
                       style={{ width: `${r.totalWords > 0 ? (r.matchedWords / r.totalWords) * 100 : 0}%`, background: color }} />
-                  </div>
-                </div>
+                  </Box>
+                </Paper>
               );
             })}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {/* Reading */}
       {readingActivityResults.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-sm font-bold text-textPrimary mb-3 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: '#6ED6C118' }}>
-              <BookOpen className="w-3.5 h-3.5" style={{ color: '#6ED6C1' }} />
-            </span>
+        <Box sx={{ mb: 3 }}>
+          <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{ width: 24, height: 24, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ background: '#6ED6C118' }}>
+              <BookOpen size={14} style={{ color: '#6ED6C1' }} />
+            </Box>
             Reading
-            <span className="text-textSecondary font-normal">({readingActivityResults.length})</span>
-          </h2>
-          <div className="space-y-2">
+            <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>({readingActivityResults.length})</Box>
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {readingActivityResults.map((ar) => (
               <ActivityResultCard key={ar.id} activityResult={ar} />
             ))}
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
 
       {phonicsResults.length === 0 && speakingResults.length === 0 && readingActivityResults.length === 0 && (
-        <div className="text-textSecondary text-sm py-10 text-center bg-white rounded-2xl border border-border">
+        <Paper variant="outlined" sx={{ color: 'text.secondary', fontSize: 14, py: 5, textAlign: 'center', borderRadius: 4 }}>
           No results recorded yet.
-        </div>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 }

@@ -1,6 +1,10 @@
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import AuthGate from '@/components/AuthGate';
 import {
   getHomework,
@@ -16,6 +20,7 @@ import {
   PhonemeOp,
 } from '@/lib/admin-api';
 import { gradients, scoreHexColor } from '@/lib/colors';
+import { shake } from '@/lib/theme';
 import { Check, ImageIcon } from 'lucide-react';
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
@@ -31,14 +36,22 @@ function shuffle<T>(arr: T[]): T[] {
 
 function PreviewBanner() {
   return (
-    <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-center text-white/70 text-xs font-bold uppercase tracking-wide">
+    <Box sx={{
+      bgcolor: 'rgba(255,255,255,0.1)',
+      border: '1px solid rgba(255,255,255,0.2)',
+      borderRadius: 3,
+      px: 2,
+      py: 1,
+      textAlign: 'center',
+      color: 'rgba(255,255,255,0.7)',
+      fontSize: 12,
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      letterSpacing: '0.1em',
+    }}>
       Preview Mode — Results not saved
-    </div>
+    </Box>
   );
-}
-
-function Spinner({ color = 'border-white/70' }: { color?: string }) {
-  return <div className={`w-12 h-12 border-4 ${color} border-t-transparent rounded-full animate-spin`} />;
 }
 
 // ── Reading activity types (local, mirrors game page) ─────────────────────────
@@ -102,47 +115,84 @@ function MatchingRenderer({
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full">
-      <div className="text-white/60 text-xs font-bold uppercase tracking-wide mb-8 text-center">
-        <ImageIcon className="w-4 h-4 inline mr-1" />Match each image to its word
-      </div>
-      <div className="flex gap-6 justify-center mb-8">
+    <Box sx={{ maxWidth: 752, mx: 'auto', width: '100%' }}>
+      <Box sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 4, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+        <ImageIcon style={{ width: 16, height: 16 }} />Match each image to its word
+      </Box>
+      <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', mb: 4 }}>
         {state.pairs.map((p) => {
           const isSelected = state.selectedImageId === p.pair.id;
           const isLocked = p.status === 'locked';
           const isShaking = p.status === 'shaking';
-          let cls = 'border-white/20 bg-white/10';
-          if (isLocked) cls = 'border-brand-green bg-brand-green/20 cursor-default';
-          else if (isShaking) cls = 'border-highlight animate-shake';
-          else if (isSelected) cls = 'border-primary shadow-lg scale-105';
           return (
-            <button key={p.pair.id} onClick={() => handleImageClick(p.pair.id)} disabled={isLocked}
-              className={`relative w-28 h-28 rounded-2xl overflow-hidden cursor-pointer border-4 transition-all ${cls}`}>
+            <Box
+              key={p.pair.id}
+              component="button"
+              onClick={() => handleImageClick(p.pair.id)}
+              disabled={isLocked}
+              sx={{
+                position: 'relative',
+                width: 112,
+                height: 112,
+                borderRadius: 4,
+                overflow: 'hidden',
+                cursor: isLocked ? 'default' : 'pointer',
+                border: '4px solid',
+                borderColor: isLocked ? '#7BD88F' : isShaking ? '#FF7B7B' : isSelected ? '#4F9DFF' : 'rgba(255,255,255,0.2)',
+                bgcolor: isLocked ? 'rgba(123,216,143,0.2)' : isSelected ? 'transparent' : 'rgba(255,255,255,0.1)',
+                transform: isSelected && !isLocked ? 'scale(1.05)' : 'none',
+                animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',
+                transition: 'all 0.2s',
+                p: 0,
+                background: 'none',
+              }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.pair.imageUrl} alt={p.pair.word} className="w-full h-full object-cover" />
-              {isLocked && <div className="absolute inset-0 flex items-center justify-center bg-brand-green/30"><Check className="w-6 h-6 text-brand-green" /></div>}
-            </button>
+              <img src={p.pair.imageUrl} alt={p.pair.word} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {isLocked && (
+                <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(123,216,143,0.3)' }}>
+                  <Check style={{ width: 24, height: 24, color: '#7BD88F' }} />
+                </Box>
+              )}
+            </Box>
           );
         })}
-      </div>
-      <div className="flex flex-wrap gap-3 justify-center">
+      </Box>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
         {state.shuffledWords.map((pairId) => {
           const p = state.pairs.find((x) => x.pair.id === pairId);
           if (!p) return null;
           const isLocked = p.status === 'locked';
           const isShaking = p.status === 'shaking';
-          let cls = 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40';
-          if (isLocked) cls = 'bg-brand-green/20 text-brand-green border-brand-green cursor-default';
-          else if (isShaking) cls = 'border-highlight text-white animate-shake';
           return (
-            <button key={pairId} onClick={() => handleWordClick(pairId)} disabled={isLocked}
-              className={`px-6 py-3 rounded-full text-sm font-bold border-2 transition-all ${cls}`}>
+            <Box
+              key={pairId}
+              component="button"
+              onClick={() => handleWordClick(pairId)}
+              disabled={isLocked}
+              sx={{
+                px: 3,
+                py: 1.5,
+                borderRadius: '9999px',
+                fontSize: 14,
+                fontWeight: 700,
+                border: '2px solid',
+                borderColor: isLocked ? '#7BD88F' : isShaking ? '#FF7B7B' : 'rgba(255,255,255,0.2)',
+                color: isLocked ? '#7BD88F' : 'white',
+                bgcolor: isLocked ? 'rgba(123,216,143,0.2)' : 'rgba(255,255,255,0.1)',
+                cursor: isLocked ? 'default' : 'pointer',
+                animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',
+                transition: 'all 0.2s',
+                '&:hover': isLocked ? {} : { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' },
+                background: 'none',
+              }}
+            >
               {p.pair.word}
-            </button>
+            </Box>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -181,60 +231,100 @@ function FillBlankRenderer({
   const parts = currentItem.blank.sentence.split('___');
 
   return (
-    <div className="max-w-xl mx-auto w-full">
-      <div className="flex gap-2 justify-center mb-6">
+    <Box sx={{ maxWidth: 576, mx: 'auto', width: '100%' }}>
+      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 3 }}>
         {state.items.map((it, i) => (
-          <div key={i} className="w-2.5 h-2.5 rounded-full transition-all"
-            style={{ background: it.correct === true ? '#7BD88F' : it.correct === false ? '#FF7B7B' : i === state.currentItemIndex ? '#FFD166' : 'rgba(255,255,255,0.2)' }} />
+          <Box key={i} sx={{
+            width: 10,
+            height: 10,
+            borderRadius: '50%',
+            transition: 'all 0.2s',
+            background: it.correct === true ? '#7BD88F' : it.correct === false ? '#FF7B7B' : i === state.currentItemIndex ? '#FFD166' : 'rgba(255,255,255,0.2)',
+          }} />
         ))}
-      </div>
-      <div className="text-center mb-8" style={{ lineHeight: 2 }}>
+      </Box>
+      <Box sx={{ textAlign: 'center', mb: 4, lineHeight: 2 }}>
         {parts.flatMap((part, idx, arr) =>
           idx < arr.length - 1
             ? [
-                <span key={`t${idx}`} className="text-white text-2xl font-black">{part}</span>,
-                <span key={`b${idx}`} className="inline-block w-24 h-8 rounded-lg border-2 border-white/40 bg-white/10 align-middle mx-1" />,
+                <Typography key={`t${idx}`} component="span" sx={{ color: 'white', fontSize: 24, fontWeight: 900 }}>{part}</Typography>,
+                <Box key={`b${idx}`} component="span" sx={{ display: 'inline-block', width: 96, height: 32, borderRadius: 2, border: '2px solid rgba(255,255,255,0.4)', bgcolor: 'rgba(255,255,255,0.1)', verticalAlign: 'middle', mx: 0.5 }} />,
               ]
-            : [<span key={`t${idx}`} className="text-white text-2xl font-black">{part}</span>]
+            : [<Typography key={`t${idx}`} component="span" sx={{ color: 'white', fontSize: 24, fontWeight: 900 }}>{part}</Typography>]
         )}
-      </div>
-      <div className="flex flex-wrap gap-3 justify-center">
+      </Box>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
         {currentItem.blank.choices.map((c) => {
           const isChosen = currentItem.chosenChoiceId === c.id;
           const answered = currentItem.chosenChoiceId !== null;
-          let cls = 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40';
-          if (isChosen && currentItem.correct === true) cls = 'bg-brand-green/20 text-brand-green border-brand-green';
-          else if (isChosen && currentItem.correct === false) cls = 'animate-shake border-highlight text-white';
-          else if (answered) cls = 'opacity-40 cursor-not-allowed bg-white/10 text-white border-white/20';
+          const isCorrect = isChosen && currentItem.correct === true;
+          const isWrong = isChosen && currentItem.correct === false;
+          const isOther = answered && !isChosen;
           return (
-            <button key={c.id} onClick={() => handleChoiceClick(c)} disabled={answered}
-              className={`px-6 py-3 rounded-full text-sm font-bold border-2 transition-all ${cls}`}>
+            <Box
+              key={c.id}
+              component="button"
+              onClick={() => handleChoiceClick(c)}
+              disabled={answered}
+              sx={{
+                px: 3,
+                py: 1.5,
+                borderRadius: '9999px',
+                fontSize: 14,
+                fontWeight: 700,
+                border: '2px solid',
+                borderColor: isCorrect ? '#7BD88F' : isWrong ? '#FF7B7B' : 'rgba(255,255,255,0.2)',
+                color: isCorrect ? '#7BD88F' : 'white',
+                bgcolor: isCorrect ? 'rgba(123,216,143,0.2)' : 'rgba(255,255,255,0.1)',
+                opacity: isOther ? 0.4 : 1,
+                cursor: answered ? 'not-allowed' : 'pointer',
+                animation: isWrong ? `${shake} 0.4s ease-in-out` : 'none',
+                transition: 'all 0.2s',
+                '&:hover': answered ? {} : { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' },
+                background: 'none',
+              }}
+            >
               {c.word}
-            </button>
+            </Box>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
 // ── Phonics result display ─────────────────────────────────────────────────────
 
 function PhonemeTag({ op }: { op: PhonemeOp }) {
-  const colors: Record<string, string> = {
-    correct: 'bg-green-500/20 text-green-300 border-green-500/40',
-    similar: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
-    substituted: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
-    missing: 'bg-red-500/20 text-red-300 border-red-500/40',
-    extra: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
-    error: 'bg-gray-500/20 text-gray-300 border-gray-500/40',
+  const colorMap: Record<string, { bgcolor: string; color: string; borderColor: string }> = {
+    correct:     { bgcolor: 'rgba(34,197,94,0.2)',   color: '#86efac', borderColor: 'rgba(34,197,94,0.4)' },
+    similar:     { bgcolor: 'rgba(234,179,8,0.2)',   color: '#fde047', borderColor: 'rgba(234,179,8,0.4)' },
+    substituted: { bgcolor: 'rgba(249,115,22,0.2)',  color: '#fdba74', borderColor: 'rgba(249,115,22,0.4)' },
+    missing:     { bgcolor: 'rgba(239,68,68,0.2)',   color: '#fca5a5', borderColor: 'rgba(239,68,68,0.4)' },
+    extra:       { bgcolor: 'rgba(168,85,247,0.2)',  color: '#d8b4fe', borderColor: 'rgba(168,85,247,0.4)' },
+    error:       { bgcolor: 'rgba(107,114,128,0.2)', color: '#d1d5db', borderColor: 'rgba(107,114,128,0.4)' },
   };
+  const c = colorMap[op.status] ?? colorMap.error;
   const label = op.expected ?? op.aligned ?? '?';
   return (
-    <span className={`inline-flex flex-col items-center px-2 py-1 rounded-lg border text-xs font-bold gap-0.5 ${colors[op.status] ?? colors.error}`}>
+    <Box component="span" sx={{
+      display: 'inline-flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      px: 1,
+      py: 0.5,
+      borderRadius: 2,
+      border: '1px solid',
+      borderColor: c.borderColor,
+      bgcolor: c.bgcolor,
+      color: c.color,
+      fontSize: 12,
+      fontWeight: 700,
+      gap: 0.25,
+    }}>
       <span>{label}</span>
-      <span className="text-[9px] opacity-60 capitalize">{op.status}</span>
-    </span>
+      <span style={{ fontSize: 9, opacity: 0.6, textTransform: 'capitalize' }}>{op.status}</span>
+    </Box>
   );
 }
 
@@ -410,10 +500,10 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
-            <Spinner />
-            <p className="text-white/70 text-sm">Loading…</p>
-          </div>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
+            <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Loading…</Typography>
+          </Box>
         )}
       </AuthGate>
     );
@@ -424,10 +514,16 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
-            <p className="text-highlight text-lg font-bold">Failed to load homework.</p>
-            <button onClick={() => router.push(backUrl)} className="text-white/60 text-sm hover:text-white">← Back</button>
-          </div>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
+            <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Failed to load homework.</Typography>
+            <Box
+              component="button"
+              onClick={() => router.push(backUrl)}
+              sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+            >
+              ← Back
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -441,82 +537,111 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10 gap-6" style={{ background: gradients.gameBg, minWidth: 1024 }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 5, gap: 3, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <PreviewBanner />
-            <button onClick={() => router.push(backUrl)} className="self-start text-white/60 hover:text-white text-sm">← Back</button>
-            <div className="w-full max-w-sm flex flex-col items-center gap-6">
-              <div className="text-center">
-                <div className="text-4xl mb-3">{isFreespeak ? '🖼️' : '🎤'}</div>
-                <h2 className="text-white text-2xl font-black mb-1">{isFreespeak ? 'Free Speak' : 'Script Match'}</h2>
-                <p className="text-white/60 text-sm">Record to preview scoring</p>
-              </div>
+            <Box
+              component="button"
+              onClick={() => router.push(backUrl)}
+              sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+            >
+              ← Back
+            </Box>
+            <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography sx={{ fontSize: 36, mb: 1.5 }}>{isFreespeak ? '🖼️' : '🎤'}</Typography>
+                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>{isFreespeak ? 'Free Speak' : 'Script Match'}</Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Record to preview scoring</Typography>
+              </Box>
               {isFreespeak && hw?.speakingPictureUrl && (
-                <div className="rounded-2xl overflow-hidden border-4 border-white/20 max-w-xs w-full">
+                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(255,255,255,0.2)', maxWidth: 320, width: '100%' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={hw.speakingPictureUrl} alt="Speaking prompt" className="w-full object-contain" />
-                </div>
+                  <img src={hw.speakingPictureUrl} alt="Speaking prompt" style={{ width: '100%', objectFit: 'contain' }} />
+                </Box>
               )}
               {!isFreespeak && hw?.speakingText && (
-                <div className="bg-white/10 rounded-2xl px-6 py-5 w-full text-center">
-                  <p className="text-white text-xl font-bold leading-relaxed">{hw.speakingText}</p>
-                </div>
+                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 4, px: 3, py: 2.5, width: '100%', textAlign: 'center' }}>
+                  <Typography sx={{ color: 'white', fontSize: 20, fontWeight: 700, lineHeight: 1.6 }}>{hw.speakingText}</Typography>
+                </Box>
               )}
               {isFreespeak && hw?.speakingText && (
-                <div className="bg-white/10 rounded-xl px-4 py-3 w-full">
-                  <p className="text-white/60 text-xs font-bold uppercase tracking-wide mb-1">Talk about:</p>
-                  <p className="text-white/80 text-sm">{hw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</p>
-                </div>
+                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2, py: 1.5, width: '100%' }}>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.5 }}>Talk about:</Typography>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>{hw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</Typography>
+                </Box>
               )}
 
               {/* Recording controls */}
-              <div className="flex flex-col items-center gap-4 w-full">
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%' }}>
                 {recordState === 'idle' && (
                   <>
-                    <button onClick={startSpeakRecording}
-                      className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-white/30 hover:border-white/60 hover:scale-105 transition-all"
-                      style={{ background: 'rgba(255,255,255,0.1)' }}>
-                      <span className="text-4xl">🎤</span>
-                    </button>
-                    <p className="text-white/60 text-sm">Tap to start recording</p>
+                    <Box
+                      component="button"
+                      onClick={startSpeakRecording}
+                      sx={{
+                        width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: '4px solid rgba(255,255,255,0.3)', cursor: 'pointer',
+                        '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
+                        transition: 'all 0.2s',
+                      }}
+                      style={{ background: 'rgba(255,255,255,0.1)' }}
+                    >
+                      <span style={{ fontSize: 36 }}>🎤</span>
+                    </Box>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Tap to start recording</Typography>
                   </>
                 )}
                 {recordState === 'recording' && (
                   <>
-                    <div className="relative flex items-center justify-center">
-                      <div className="absolute w-24 h-24 rounded-full animate-ping opacity-25" style={{ background: '#ef4444' }} />
-                      <button onClick={stopSpeakRecording}
-                        className="relative w-24 h-24 rounded-full flex items-center justify-center border-4 border-red-500"
-                        style={{ background: 'rgba(239,68,68,0.2)' }}>
-                        <div className="w-8 h-8 rounded-sm bg-red-400" />
-                      </button>
-                    </div>
-                    <div className="text-white font-mono text-3xl font-black tabular-nums">{mins}:{secs}</div>
-                    <p className="text-red-400 text-sm font-semibold animate-pulse">Recording… tap to stop</p>
+                    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Box sx={{
+                        position: 'absolute', width: 96, height: 96, borderRadius: '50%', opacity: 0.25,
+                        animation: 'ping 1s cubic-bezier(0,0,0.2,1) infinite',
+                        '@keyframes ping': { '0%,100%': { transform: 'scale(1)', opacity: 0.25 }, '75%': { transform: 'scale(2)', opacity: 0 } },
+                      }} style={{ background: '#ef4444' }} />
+                      <Box
+                        component="button"
+                        onClick={stopSpeakRecording}
+                        sx={{
+                          position: 'relative', width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: '4px solid #ef4444', cursor: 'pointer',
+                        }}
+                        style={{ background: 'rgba(239,68,68,0.2)' }}
+                      >
+                        <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: '#f87171' }} />
+                      </Box>
+                    </Box>
+                    <Typography sx={{ color: 'white', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600, animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } } }}>Recording… tap to stop</Typography>
                   </>
                 )}
                 {recordState === 'recorded' && (
                   <>
-                    <div className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-emerald-400/50"
-                      style={{ background: 'rgba(52,211,153,0.15)' }}>
-                      <span className="text-4xl">✅</span>
-                    </div>
-                    <p className="text-white/60 text-sm">Recorded: {mins}:{secs}</p>
-                    <div className="flex gap-3 w-full">
-                      <button onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
-                        className="flex-1 py-3 rounded-2xl text-white font-bold text-sm border border-white/20 hover:bg-white/10 transition-colors">
+                    <Box sx={{ width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(52,211,153,0.5)' }} style={{ background: 'rgba(52,211,153,0.15)' }}>
+                      <span style={{ fontSize: 36 }}>✅</span>
+                    </Box>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
+                    <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
+                      <Box
+                        component="button"
+                        onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
+                        sx={{ flex: 1, py: 1.5, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 14, border: '1px solid rgba(255,255,255,0.2)', bgcolor: 'transparent', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }, transition: 'colors 0.2s' }}
+                      >
                         Re-record
-                      </button>
-                      <button onClick={handleSpeakSubmit}
-                        className="flex-1 py-3 rounded-2xl text-white font-black text-sm hover:scale-[1.02] transition-transform"
-                        style={{ background: gradients.primaryPurple }}>
+                      </Box>
+                      <Box
+                        component="button"
+                        onClick={handleSpeakSubmit}
+                        sx={{ flex: 1, py: 1.5, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 14, border: 'none', cursor: 'pointer', '&:hover': { transform: 'scale(1.02)' }, transition: 'transform 0.2s' }}
+                        style={{ background: gradients.primaryPurple }}
+                      >
                         Submit for Preview
-                      </button>
-                    </div>
+                      </Box>
+                    </Box>
                   </>
                 )}
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -527,10 +652,10 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
-            <Spinner color="border-accent" />
-            <p className="text-accent font-bold">Scoring…</p>
-          </div>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
+            <CircularProgress size={48} sx={{ color: '#7BD88F' }} />
+            <Typography sx={{ color: '#7BD88F', fontWeight: 700 }}>Scoring…</Typography>
+          </Box>
         )}
       </AuthGate>
     );
@@ -542,46 +667,54 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen py-12 px-8" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-            <div className="max-w-xl mx-auto">
+          <Box sx={{ minHeight: '100vh', py: 6, px: 4, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
+            <Box sx={{ maxWidth: 576, mx: 'auto' }}>
               <PreviewBanner />
-              <div className="text-center my-10">
-                <div className="text-6xl mb-4">🎉</div>
-                <h1 className="text-white text-2xl font-black mb-2">Preview Complete!</h1>
-                <div className="text-7xl font-black mt-4" style={{ color: scoreHexColor(speakResult.score) }}>{speakResult.score}%</div>
-                <p className="text-white/60 text-sm mt-2">This is how students experience the scoring</p>
-              </div>
-              <div className="bg-white/10 rounded-2xl px-5 py-4 mb-8">
+              <Box sx={{ textAlign: 'center', my: 5 }}>
+                <Typography sx={{ fontSize: 60, mb: 2 }}>🎉</Typography>
+                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Preview Complete!</Typography>
+                <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(speakResult.score) }}>{speakResult.score}%</Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mt: 1 }}>This is how students experience the scoring</Typography>
+              </Box>
+              <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 4, px: 2.5, py: 2, mb: 4 }}>
                 {isFreespeak && speakResult.speakingPictureUrl && (
-                  <div className="rounded-xl overflow-hidden mb-3 max-h-40">
+                  <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 1.5, maxHeight: 160 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={speakResult.speakingPictureUrl} alt="Speaking prompt" className="w-full object-contain" />
-                  </div>
+                    <img src={speakResult.speakingPictureUrl} alt="Speaking prompt" style={{ width: '100%', objectFit: 'contain' }} />
+                  </Box>
                 )}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+                  <Box sx={{ flex: 1 }}>
                     {speakResult.transcribedText && (
-                      <div className="text-white/70 text-sm">You said: <span className="text-white italic">&quot;{speakResult.transcribedText}&quot;</span></div>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>You said: <em style={{ color: 'white' }}>&quot;{speakResult.transcribedText}&quot;</em></Typography>
                     )}
                     {isFreespeak && (
-                      <div className="text-white/70 text-sm mt-1">Keywords matched: {speakResult.matchedWords}/{speakResult.totalWords}</div>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 0.5 }}>Keywords matched: {speakResult.matchedWords}/{speakResult.totalWords}</Typography>
                     )}
-                  </div>
-                  <div className="text-2xl font-black tabular-nums shrink-0" style={{ color: scoreHexColor(speakResult.score) }}>{speakResult.score}%</div>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); setSpeakResult(null); setPageState('speak_upload'); }}
-                  className="flex-1 py-4 rounded-2xl text-white font-bold text-base" style={{ background: gradients.primarySecondary }}>
+                  </Box>
+                  <Typography sx={{ fontSize: 24, fontWeight: 900, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }} style={{ color: scoreHexColor(speakResult.score) }}>{speakResult.score}%</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <Box
+                  component="button"
+                  onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); setSpeakResult(null); setPageState('speak_upload'); }}
+                  sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer' }}
+                  style={{ background: gradients.primarySecondary }}
+                >
                   Try Again
-                </button>
-                <button onClick={() => router.push(backUrl)}
-                  className="flex-1 py-4 rounded-2xl text-white font-black text-base" style={{ background: gradients.primaryPurple }}>
+                </Box>
+                <Box
+                  component="button"
+                  onClick={() => router.push(backUrl)}
+                  sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 16, border: 'none', cursor: 'pointer' }}
+                  style={{ background: gradients.primaryPurple }}
+                >
                   Back to Homework
-                </button>
-              </div>
-            </div>
-          </div>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -593,25 +726,41 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10 gap-6" style={{ background: gradients.gameBg, minWidth: 1024 }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 5, gap: 3, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <PreviewBanner />
-            <button onClick={() => router.push(backUrl)} className="self-start text-white/60 hover:text-white text-sm">← Back</button>
-            <div className="w-full max-w-sm flex flex-col items-center gap-6">
-              <div className="text-center">
-                <div className="text-4xl mb-3">#️⃣</div>
-                <h2 className="text-white text-2xl font-black mb-1">Phonics Preview</h2>
-                <p className="text-white/60 text-sm">Pick a word to test pronunciation scoring</p>
-              </div>
-              <div className="w-full flex flex-wrap gap-2 justify-center">
+            <Box
+              component="button"
+              onClick={() => router.push(backUrl)}
+              sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+            >
+              ← Back
+            </Box>
+            <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography sx={{ fontSize: 36, mb: 1.5 }}>#️⃣</Typography>
+                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>Phonics Preview</Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Pick a word to test pronunciation scoring</Typography>
+              </Box>
+              <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
                 {allWords.map((w) => (
-                  <button key={w.id} onClick={() => { setSelectedWord(w); setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); setPageState('phonics_upload'); }}
-                    className="px-5 py-2.5 rounded-full text-sm font-bold border-2 border-white/20 bg-white/10 text-white hover:bg-white/20 hover:border-white/40 transition-all">
+                  <Box
+                    key={w.id}
+                    component="button"
+                    onClick={() => { setSelectedWord(w); setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); setPageState('phonics_upload'); }}
+                    sx={{
+                      px: 2.5, py: 1.25, borderRadius: '9999px', fontSize: 14, fontWeight: 700,
+                      border: '2px solid rgba(255,255,255,0.2)', bgcolor: 'rgba(255,255,255,0.1)', color: 'white',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' },
+                      background: 'none',
+                    }}
+                  >
                     {w.text}
-                  </button>
+                  </Box>
                 ))}
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -624,70 +773,99 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center px-6 py-10 gap-6" style={{ background: gradients.gameBg, minWidth: 1024 }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 5, gap: 3, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
             <PreviewBanner />
-            <button onClick={() => { stopSpeakRecording(); setPageState('phonics_word_select'); }} className="self-start text-white/60 hover:text-white text-sm">← Back</button>
-            <div className="w-full max-w-sm flex flex-col items-center gap-6">
-              <div className="text-center">
-                <div className="text-4xl mb-3">🎤</div>
-                <h2 className="text-white text-2xl font-black mb-1">Say the word</h2>
-                <div className="text-white text-5xl font-black mt-3 mb-1">{selectedWord?.text}</div>
-                <p className="text-white/60 text-sm">Record to see phoneme scoring</p>
-              </div>
+            <Box
+              component="button"
+              onClick={() => { stopSpeakRecording(); setPageState('phonics_word_select'); }}
+              sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+            >
+              ← Back
+            </Box>
+            <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography sx={{ fontSize: 36, mb: 1.5 }}>🎤</Typography>
+                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>Say the word</Typography>
+                <Typography sx={{ color: 'white', fontSize: 48, fontWeight: 900, mt: 1.5, mb: 0.5 }}>{selectedWord?.text}</Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Record to see phoneme scoring</Typography>
+              </Box>
               {selectedWord?.imageUrl && (
-                <div className="rounded-2xl overflow-hidden border-4 border-white/20 max-w-xs w-full">
+                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(255,255,255,0.2)', maxWidth: 320, width: '100%' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={selectedWord.imageUrl} alt={selectedWord.text} className="w-full object-contain" />
-                </div>
+                  <img src={selectedWord.imageUrl} alt={selectedWord.text} style={{ width: '100%', objectFit: 'contain' }} />
+                </Box>
               )}
-              <div className="flex flex-col items-center gap-4 w-full">
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%' }}>
                 {recordState === 'idle' && (
                   <>
-                    <button onClick={startSpeakRecording}
-                      className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-white/30 hover:border-white/60 hover:scale-105 transition-all"
-                      style={{ background: 'rgba(255,255,255,0.1)' }}>
-                      <span className="text-4xl">🎤</span>
-                    </button>
-                    <p className="text-white/60 text-sm">Tap to start recording</p>
+                    <Box
+                      component="button"
+                      onClick={startSpeakRecording}
+                      sx={{
+                        width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: '4px solid rgba(255,255,255,0.3)', cursor: 'pointer',
+                        '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
+                        transition: 'all 0.2s',
+                      }}
+                      style={{ background: 'rgba(255,255,255,0.1)' }}
+                    >
+                      <span style={{ fontSize: 36 }}>🎤</span>
+                    </Box>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Tap to start recording</Typography>
                   </>
                 )}
                 {recordState === 'recording' && (
                   <>
-                    <div className="relative flex items-center justify-center">
-                      <div className="absolute w-24 h-24 rounded-full animate-ping opacity-25" style={{ background: '#ef4444' }} />
-                      <button onClick={stopSpeakRecording}
-                        className="relative w-24 h-24 rounded-full flex items-center justify-center border-4 border-red-500"
-                        style={{ background: 'rgba(239,68,68,0.2)' }}>
-                        <div className="w-8 h-8 rounded-sm bg-red-400" />
-                      </button>
-                    </div>
-                    <div className="text-white font-mono text-3xl font-black tabular-nums">{mins}:{secs}</div>
-                    <p className="text-red-400 text-sm font-semibold animate-pulse">Recording… tap to stop</p>
+                    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Box sx={{
+                        position: 'absolute', width: 96, height: 96, borderRadius: '50%', opacity: 0.25,
+                        animation: 'ping 1s cubic-bezier(0,0,0.2,1) infinite',
+                        '@keyframes ping': { '0%,100%': { transform: 'scale(1)', opacity: 0.25 }, '75%': { transform: 'scale(2)', opacity: 0 } },
+                      }} style={{ background: '#ef4444' }} />
+                      <Box
+                        component="button"
+                        onClick={stopSpeakRecording}
+                        sx={{
+                          position: 'relative', width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: '4px solid #ef4444', cursor: 'pointer',
+                        }}
+                        style={{ background: 'rgba(239,68,68,0.2)' }}
+                      >
+                        <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: '#f87171' }} />
+                      </Box>
+                    </Box>
+                    <Typography sx={{ color: 'white', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600, animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } } }}>Recording… tap to stop</Typography>
                   </>
                 )}
                 {recordState === 'recorded' && (
                   <>
-                    <div className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-emerald-400/50"
-                      style={{ background: 'rgba(52,211,153,0.15)' }}>
-                      <span className="text-4xl">✅</span>
-                    </div>
-                    <p className="text-white/60 text-sm">Recorded: {mins}:{secs}</p>
-                    <div className="flex gap-3 w-full">
-                      <button onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
-                        className="flex-1 py-3 rounded-2xl text-white font-bold text-sm border border-white/20 hover:bg-white/10 transition-colors">
+                    <Box sx={{ width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(52,211,153,0.5)' }} style={{ background: 'rgba(52,211,153,0.15)' }}>
+                      <span style={{ fontSize: 36 }}>✅</span>
+                    </Box>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
+                    <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
+                      <Box
+                        component="button"
+                        onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
+                        sx={{ flex: 1, py: 1.5, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 14, border: '1px solid rgba(255,255,255,0.2)', bgcolor: 'transparent', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }, transition: 'colors 0.2s' }}
+                      >
                         Re-record
-                      </button>
-                      <button onClick={handlePhonicsSubmit}
-                        className="flex-1 py-3 rounded-2xl text-white font-black text-sm hover:scale-[1.02] transition-transform"
-                        style={{ background: gradients.primaryPurple }}>
+                      </Box>
+                      <Box
+                        component="button"
+                        onClick={handlePhonicsSubmit}
+                        sx={{ flex: 1, py: 1.5, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 14, border: 'none', cursor: 'pointer', '&:hover': { transform: 'scale(1.02)' }, transition: 'transform 0.2s' }}
+                        style={{ background: gradients.primaryPurple }}
+                      >
                         Submit for Preview
-                      </button>
-                    </div>
+                      </Box>
+                    </Box>
                   </>
                 )}
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -698,10 +876,10 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: gradients.gameBg }}>
-            <Spinner color="border-accent" />
-            <p className="text-accent font-bold">Analyzing pronunciation…</p>
-          </div>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
+            <CircularProgress size={48} sx={{ color: '#7BD88F' }} />
+            <Typography sx={{ color: '#7BD88F', fontWeight: 700 }}>Analyzing pronunciation…</Typography>
+          </Box>
         )}
       </AuthGate>
     );
@@ -712,49 +890,59 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen py-12 px-8" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-            <div className="max-w-xl mx-auto">
+          <Box sx={{ minHeight: '100vh', py: 6, px: 4, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
+            <Box sx={{ maxWidth: 576, mx: 'auto' }}>
               <PreviewBanner />
-              <div className="text-center my-10">
-                <div className="text-6xl mb-4">🎤</div>
-                <h1 className="text-white text-2xl font-black mb-2">Pronunciation Score</h1>
-                <div className="text-white text-3xl font-black mt-2 mb-1">{phonicsResult.wordText}</div>
-                <div className="text-7xl font-black mt-4" style={{ color: scoreHexColor(phonicsResult.score) }}>{phonicsResult.score}%</div>
-              </div>
-
-              <div className="bg-white/10 rounded-2xl px-5 py-4 mb-6">
+              <Box sx={{ textAlign: 'center', my: 5 }}>
+                <Typography sx={{ fontSize: 60, mb: 2 }}>🎤</Typography>
+                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Pronunciation Score</Typography>
+                <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mt: 1, mb: 0.5 }}>{phonicsResult.wordText}</Typography>
+                <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(phonicsResult.score) }}>{phonicsResult.score}%</Typography>
+              </Box>
+              <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 4, px: 2.5, py: 2, mb: 3 }}>
                 {phonicsResult.transcribedText && (
-                  <p className="text-white/70 text-sm mb-3">You said: <span className="text-white italic">&quot;{phonicsResult.transcribedText}&quot;</span></p>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mb: 1.5 }}>You said: <em style={{ color: 'white' }}>&quot;{phonicsResult.transcribedText}&quot;</em></Typography>
                 )}
                 {phonicsResult.bfa?.feedback && phonicsResult.bfa.feedback.length > 0 && (
-                  <div>
-                    <p className="text-white/50 text-xs font-bold uppercase tracking-wide mb-2">Phoneme breakdown</p>
-                    <div className="flex flex-wrap gap-2">
+                  <Box>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 1 }}>Phoneme breakdown</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {phonicsResult.bfa.feedback.map((op, i) => <PhonemeTag key={i} op={op} />)}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
                 {phonicsResult.bfa?.espeak_fallback && (
-                  <p className="text-white/40 text-xs mt-3">Used eSpeak fallback for expected phonemes</p>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, mt: 1.5 }}>Used eSpeak fallback for expected phonemes</Typography>
                 )}
-              </div>
-
-              <div className="flex gap-3">
-                <button onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); setPhonicsResult(null); setPageState('phonics_upload'); }}
-                  className="flex-1 py-4 rounded-2xl text-white font-bold text-base" style={{ background: gradients.primarySecondary }}>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <Box
+                  component="button"
+                  onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); setPhonicsResult(null); setPageState('phonics_upload'); }}
+                  sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer' }}
+                  style={{ background: gradients.primarySecondary }}
+                >
                   Try Again
-                </button>
-                <button onClick={() => { setPhonicsResult(null); setPageState('phonics_word_select'); }}
-                  className="flex-1 py-4 rounded-2xl text-white font-bold text-base" style={{ background: gradients.primarySecondary }}>
+                </Box>
+                <Box
+                  component="button"
+                  onClick={() => { setPhonicsResult(null); setPageState('phonics_word_select'); }}
+                  sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer' }}
+                  style={{ background: gradients.primarySecondary }}
+                >
                   Other Word
-                </button>
-                <button onClick={() => router.push(backUrl)}
-                  className="flex-1 py-4 rounded-2xl text-white font-black text-base" style={{ background: gradients.primaryPurple }}>
+                </Box>
+                <Box
+                  component="button"
+                  onClick={() => router.push(backUrl)}
+                  sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 16, border: 'none', cursor: 'pointer' }}
+                  style={{ background: gradients.primaryPurple }}
+                >
                   Back
-                </button>
-              </div>
-            </div>
-          </div>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -766,21 +954,29 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="h-screen flex flex-col overflow-hidden" style={{ background: gradients.gameBgAlt, minWidth: 1024 }}>
-            <div className="flex items-center justify-between px-8 py-4 flex-shrink-0">
-              <button onClick={() => router.push(backUrl)} className="text-white/60 hover:text-white text-sm">← Back</button>
-              <div className="flex items-center gap-3">
+          <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 1024 }} style={{ background: gradients.gameBgAlt }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 4, py: 2, flexShrink: 0 }}>
+              <Box
+                component="button"
+                onClick={() => router.push(backUrl)}
+                sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+              >
+                ← Back
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 {activityStates.map((_, i) => (
-                  <div key={i} className="w-8 h-2 rounded-full transition-all"
-                    style={{ background: i < currentActivityIndex ? 'rgba(255,255,255,0.5)' : i === currentActivityIndex ? '#FFD166' : 'rgba(255,255,255,0.2)' }} />
+                  <Box key={i} sx={{
+                    width: 32, height: 8, borderRadius: '9999px', transition: 'all 0.2s',
+                    background: i < currentActivityIndex ? 'rgba(255,255,255,0.5)' : i === currentActivityIndex ? '#FFD166' : 'rgba(255,255,255,0.2)',
+                  }} />
                 ))}
-              </div>
-              <div className="text-white/70 text-sm font-bold">Activity {currentActivityIndex + 1} of {activityStates.length}</div>
-            </div>
-            <div className="bg-white/10 border-b border-white/10 px-8 py-1.5 text-center text-white/50 text-xs font-bold uppercase tracking-wide flex-shrink-0">
+              </Box>
+              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 700 }}>Activity {currentActivityIndex + 1} of {activityStates.length}</Typography>
+            </Box>
+            <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', px: 4, py: 0.75, textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>
               Preview Mode — Not saved
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-center px-8 pb-8 overflow-auto">
+            </Box>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 4, pb: 4, overflow: 'auto' }}>
               {cur ? (
                 cur.type === 'MATCH' ? (
                   <MatchingRenderer
@@ -796,8 +992,8 @@ export default function TeacherTryHomeworkPage() {
                   />
                 )
               ) : null}
-            </div>
-          </div>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
@@ -820,33 +1016,42 @@ export default function TeacherTryHomeworkPage() {
     return (
       <AuthGate requiredRole="TEACHER">
         {() => (
-          <div className="min-h-screen py-12 px-8" style={{ background: gradients.gameBg, minWidth: 1024 }}>
-            <div className="max-w-xl mx-auto">
+          <Box sx={{ minHeight: '100vh', py: 6, px: 4, minWidth: 1024 }} style={{ background: gradients.gameBg }}>
+            <Box sx={{ maxWidth: 576, mx: 'auto' }}>
               <PreviewBanner />
-              <div className="text-center my-10">
-                <div className="text-6xl mb-4">🎉</div>
-                <h1 className="text-white text-2xl font-black mb-2">Preview Complete!</h1>
-                <div className="text-7xl font-black mt-4" style={{ color: scoreHexColor(score) }}>{score}%</div>
-                <p className="text-white/60 text-sm mt-2">{correct} / {total} correct</p>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => {
-                  setCurrentActivityIndex(0);
-                  setActivityStates((prev) => prev.map((a) => {
-                    if (a.type === 'MATCH') return { ...a, pairs: a.pairs.map((p) => ({ ...p, status: 'idle' as const })), selectedImageId: null, complete: false };
-                    return { ...a, items: a.items.map((it) => ({ ...it, chosenChoiceId: null, correct: null })), currentItemIndex: 0, complete: false };
-                  }));
-                  setPageState('reading_playing');
-                }} className="flex-1 py-4 rounded-2xl text-white font-bold text-base" style={{ background: gradients.primarySecondary }}>
+              <Box sx={{ textAlign: 'center', my: 5 }}>
+                <Typography sx={{ fontSize: 60, mb: 2 }}>🎉</Typography>
+                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Preview Complete!</Typography>
+                <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(score) }}>{score}%</Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mt: 1 }}>{correct} / {total} correct</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <Box
+                  component="button"
+                  onClick={() => {
+                    setCurrentActivityIndex(0);
+                    setActivityStates((prev) => prev.map((a) => {
+                      if (a.type === 'MATCH') return { ...a, pairs: a.pairs.map((p) => ({ ...p, status: 'idle' as const })), selectedImageId: null, complete: false };
+                      return { ...a, items: a.items.map((it) => ({ ...it, chosenChoiceId: null, correct: null })), currentItemIndex: 0, complete: false };
+                    }));
+                    setPageState('reading_playing');
+                  }}
+                  sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer' }}
+                  style={{ background: gradients.primarySecondary }}
+                >
                   Try Again
-                </button>
-                <button onClick={() => router.push(backUrl)}
-                  className="flex-1 py-4 rounded-2xl text-white font-black text-base" style={{ background: gradients.primaryPurple }}>
+                </Box>
+                <Box
+                  component="button"
+                  onClick={() => router.push(backUrl)}
+                  sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 16, border: 'none', cursor: 'pointer' }}
+                  style={{ background: gradients.primaryPurple }}
+                >
                   Back to Homework
-                </button>
-              </div>
-            </div>
-          </div>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
         )}
       </AuthGate>
     );
