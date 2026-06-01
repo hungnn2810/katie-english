@@ -150,7 +150,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                         </ListItemIcon>
                         <ListItemText
                           primary={item.label}
-                          primaryTypographyProps={{ fontSize: 14, fontWeight: active ? 600 : 500 }}
+                          slotProps={{ primary: { sx: { fontSize: 14, fontWeight: active ? 600 : 500 } } }}
                         />
                       </ListItemButton>
                     </ListItem>
@@ -259,7 +259,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                       value={newPw}
                       onChange={(e) => setNewPw(e.target.value)}
                       required
-                      inputProps={{ minLength: 6 }}
+                      slotProps={{ htmlInput: { minLength: 6 } }}
                       size="small"
                       fullWidth
                       sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, fontSize: 12 } }}

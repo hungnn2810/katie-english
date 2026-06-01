@@ -69,7 +69,7 @@ export default function HomeworkPage() {
       {confirmDelete !== null && (
         <Dialog open onClose={() => setConfirmDelete(null)} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
           <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-            <Typography variant="h6" fontWeight={900}>Delete homework?</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 900 }}>Delete homework?</Typography>
           </DialogTitle>
           <DialogContent sx={{ px: 4, py: 3 }}>
             <Typography variant="body2" color="text.secondary">

@@ -67,7 +67,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
         {/* Nav */}
         <Box sx={{ flex: 1, px: 1.5, overflowY: 'auto' }}>
           {NAV_GROUPS.map((group, gi) => (
-            <Box key={gi} mt={gi > 0 ? 2.5 : 0}>
+            <Box key={gi} sx={{ mt: gi > 0 ? 2.5 : 0 }}>
               {group.label && (
                 <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#475569', px: 1.5, mb: 0.5, display: 'block' }}>
                   {group.label}
@@ -93,7 +93,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
                         <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
                           <item.icon size={15} />
                         </ListItemIcon>
-                        <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 14, fontWeight: active ? 700 : 500 }} />
+                        <ListItemText primary={item.label} slotProps={{ primary: { sx: { fontSize: 14, fontWeight: active ? 700 : 500 } } }} />
                       </ListItemButton>
                     </ListItem>
                   );
@@ -123,8 +123,8 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
                 <Box component="span" sx={{ opacity: 0.4, mx: 0.25 }}>â€º</Box>
                 <Box component="span" sx={{ opacity: 0.5, fontWeight: 500 }}>{title}</Box>
               </Typography>
-              <Typography variant="h5" fontWeight={700} sx={{ lineHeight: 1, letterSpacing: '-0.02em' }}>{title}</Typography>
-              {subtitle && <Typography variant="body2" color="text.secondary" mt={0.75}>{subtitle}</Typography>}
+              <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1, letterSpacing: '-0.02em' }}>{title}</Typography>
+              {subtitle && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>{subtitle}</Typography>}
             </Box>
 
             {/* User avatar */}
@@ -148,7 +148,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
                     {user.email[0].toUpperCase()}
                   </Box>
                   <Box sx={{ overflow: 'hidden' }}>
-                    <Typography variant="body2" fontWeight={600} noWrap>{user.email}</Typography>
+                    <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>{user.email}</Typography>
                     <Typography variant="caption" color="text.secondary">Administrator</Typography>
                   </Box>
                 </Box>

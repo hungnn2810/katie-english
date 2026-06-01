@@ -169,11 +169,11 @@ function MatchingActivityEditor({
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-        <Typography variant="caption" fontWeight={700} color="text.secondary">{pairs.length} / 6 pairs</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{pairs.length} / 6 pairs</Typography>
       </Box>
 
       {pairs.length === 0 ? (
-        <Typography variant="caption" color="text.secondary" fontStyle="italic" display="block" mb={1.5}>
+        <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic', display: 'block', mb: 1.5 }}>
           No pairs yet — click &quot;+ Add pair&quot; to start.
         </Typography>
       ) : (
@@ -238,13 +238,13 @@ function MatchingActivityEditor({
           + Add pair
         </Button>
       ) : (
-        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ opacity: 0.6 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, opacity: 0.6 }}>
           Maximum 6 pairs reached
         </Typography>
       )}
 
       {pairs.length === 1 && (
-        <Typography variant="caption" color="error.main" display="block" mt={1}>
+        <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 1 }}>
           Add at least 2 image-word pairs.
         </Typography>
       )}
@@ -287,8 +287,8 @@ function FillInBlankActivityEditor({
   return (
     <Box>
       {/* Sentence textarea */}
-      <Box mb={1.5}>
-        <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.5 }}>
+      <Box sx={{ mb: 1.5 }}>
+        <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.5 }}>
           Sentence
         </Typography>
         {hasExistingBlanks && (
@@ -310,8 +310,8 @@ function FillInBlankActivityEditor({
 
       {/* Word chips */}
       {segments.length > 0 && (
-        <Box mb={2}>
-          <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>
             Click a word to make it a blank
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
@@ -354,7 +354,7 @@ function FillInBlankActivityEditor({
       {/* Distractor inputs — one row per blank */}
       {blanks.length > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.5 }}>
+          <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.5 }}>
             Distractors per blank
           </Typography>
           {blanks.map((b) => (
@@ -384,7 +384,7 @@ function FillInBlankActivityEditor({
       )}
 
       {segments.length === 0 && (
-        <Typography variant="caption" color="text.secondary" fontStyle="italic">
+        <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
           Type a sentence above to get started.
         </Typography>
       )}
@@ -450,7 +450,7 @@ function SortableActivityCard({
           <Chip label="Fill in the Blank" size="small" sx={{ bgcolor: '#FFF8E1', color: '#B45309', fontWeight: 700 }} />
         )}
 
-        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ ml: 'auto' }}>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, ml: 'auto' }}>
           Activity {index + 1}
         </Typography>
 
@@ -651,7 +651,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
           <Box component={Link} href="/teacher/homework" sx={{ fontSize: 14, color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'text.primary' } }}>
             ← Back
           </Box>
-          <Typography variant="h5" fontWeight={900} mt={0.5}>
+          <Typography variant="h5" sx={{ fontWeight: 900, mt: 0.5 }}>
             {editMode ? 'Edit Reading Homework' : 'New Reading Homework'}
           </Typography>
         </Box>
@@ -681,8 +681,8 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
       </Box>
 
       {/* Homework name */}
-      <Box mb={3}>
-        <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>
           Homework Name
         </Typography>
         <TextField
@@ -701,7 +701,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
 
       {/* Activities section */}
       <Box>
-        <Typography variant="caption" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1.5 }}>
+        <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1.5 }}>
           Activities
         </Typography>
 

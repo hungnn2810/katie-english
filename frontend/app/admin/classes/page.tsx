@@ -113,7 +113,7 @@ function EditClassModal({
       <Dialog open onClose={onClose} maxWidth="md" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
         <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
-            <Typography variant="h6" fontWeight={900}>Edit Class</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 900 }}>Edit Class</Typography>
             <Typography variant="caption" color="text.secondary">Update class details and schedule.</Typography>
           </Box>
           <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: -0.5 }}>
@@ -207,7 +207,7 @@ function EditClassModal({
                         <Box sx={{ position: 'relative' }}>
                           <TextField
                             type="number" required size="small"
-                            inputProps={{ min: 0.5, max: 8, step: 0.5 }}
+                            slotProps={{ htmlInput: { min: 0.5, max: 8, step: 0.5 } }}
                             value={slot.duration ?? DEFAULT_DURATION}
                             onChange={(e) => setSlotDuration(day, parseFloat(e.target.value) || DEFAULT_DURATION)}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 }, '& input': { pr: 4 } }}
@@ -271,7 +271,7 @@ function DeleteConfirmDialog({
   return (
     <Dialog open onClose={onClose} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
       <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography variant="h6" fontWeight={900}>Delete class?</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 900 }}>Delete class?</Typography>
       </DialogTitle>
       <DialogContent sx={{ px: 4, py: 3 }}>
         <Typography variant="body2" color="text.secondary">

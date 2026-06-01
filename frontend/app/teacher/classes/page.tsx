@@ -186,10 +186,9 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
                         <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                         <TextField
                           type="number" required size="small"
-                          inputProps={{ min: 0.5, max: 8, step: 0.5 }}
+                          slotProps={{ htmlInput: { min: 0.5, max: 8, step: 0.5 }, input: { endAdornment: <InputAdornment position="end">h</InputAdornment> } }}
                           value={slot.duration ?? DEFAULT_DURATION}
                           onChange={(e) => setSlotDuration(day, parseFloat(e.target.value) || DEFAULT_DURATION)}
-                          InputProps={{ endAdornment: <InputAdornment position="end">h</InputAdornment> }}
                           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                         />
                       </Box>
@@ -279,7 +278,7 @@ export default function ClassesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ maxWidth: 240, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-          InputProps={{ startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> }}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> } }}
         />
         <Box sx={{ display: 'flex', gap: 0.75, flex: 1 }}>
           {filterTabs.map((t) => {

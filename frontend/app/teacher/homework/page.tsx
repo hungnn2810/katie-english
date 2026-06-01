@@ -165,13 +165,13 @@ function HomeworkModal({
       <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
-            <Typography variant="h6" fontWeight={900} sx={{ lineHeight: 1.3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.3 }}>
               <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                 {editingId !== null ? 'Edit Â· ' : 'New Â· '}
               </Box>
               <Box component="span" sx={{ color: meta.color }}>{headingName}</Box>
             </Typography>
-            <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
               Reusable template â€” assign to classes separately.
             </Typography>
           </Box>
@@ -221,8 +221,8 @@ function HomeworkModal({
                   <BookOpen size={28} style={{ color: meta.color }} />
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="body2" fontWeight={700}>Reading homework uses a dedicated editor</Typography>
-                  <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>Build activities, set sequences, and preview inline.</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Reading homework uses a dedicated editor</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>Build activities, set sequences, and preview inline.</Typography>
                 </Box>
                 <Button type="button" variant="contained"
                   sx={{ px: 3, borderRadius: 3, fontWeight: 700, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}
@@ -313,7 +313,7 @@ function HomeworkModal({
                                             }} />
                                         </>
                                       )}
-                                      <Typography variant="body2" fontWeight={600}>{word.text}</Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{word.text}</Typography>
                                       <Box component="button" type="button" onClick={() => removeWord(pIdx, wIdx)}
                                         sx={{ border: 'none', background: 'none', cursor: 'pointer', p: 0, color: 'text.disabled', display: 'flex', '&:hover': { color: 'error.main' } }}>
                                         <X size={12} />
@@ -354,7 +354,7 @@ function HomeworkModal({
                       + Part
                     </Button>
                   </Box>
-                  {uploadError && <Typography variant="caption" color="error.main" display="block" mt={1}>{uploadError}</Typography>}
+                  {uploadError && <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 1 }}>{uploadError}</Typography>}
                 </Box>
               </Box>
             )}
@@ -382,7 +382,7 @@ function HomeworkModal({
                               ? { background: meta.color, borderColor: meta.color, color: 'white' }
                               : { background: meta.bg, borderColor: meta.color + '40', color: 'text.secondary' }),
                           }}>
-                          <Typography variant="caption" fontWeight={700} display="block">{label}</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700, display: 'block' }}>{label}</Typography>
                           <Typography variant="caption" sx={{ fontSize: 10, opacity: 0.8 }}>{desc}</Typography>
                         </Button>
                       );
@@ -409,15 +409,15 @@ function HomeworkModal({
                       <Box component="button" type="button" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
                         sx={{ width: '100%', borderRadius: 3, border: '2px dashed', borderColor: meta.color + '55', background: meta.bg, py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.75, cursor: 'pointer', '&:disabled': { opacity: 0.6 }, '&:hover': { opacity: 0.8 } }}>
                         {speakUploading
-                          ? <Typography variant="caption" fontWeight={600} sx={{ color: meta.color }}>Uploadingâ€¦</Typography>
+                          ? <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>Uploadingâ€¦</Typography>
                           : <>
                             <ImageIcon size={20} style={{ color: meta.color }} />
-                            <Typography variant="caption" fontWeight={600} sx={{ color: meta.color }}>Click to upload picture</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>Click to upload picture</Typography>
                           </>}
                       </Box>
                     )}
                     <input ref={speakFileRef} type="file" accept="image/*" hidden onChange={handleSpeakFile} />
-                    {uploadError && <Typography variant="caption" color="error.main" display="block" mt={0.5}>{uploadError}</Typography>}
+                    {uploadError && <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 0.5 }}>{uploadError}</Typography>}
                   </Box>
                 )}
 
@@ -433,7 +433,7 @@ function HomeworkModal({
                     onChange={(e) => setForm((f) => ({ ...f, speakingText: e.target.value }))}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                   {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' && (
-                    <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
                       Student gets credit for each keyword found in their recording.
                     </Typography>
                   )}
@@ -513,7 +513,7 @@ function AssignModal({
       <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
-            <Typography variant="h6" fontWeight={900} sx={{ lineHeight: 1.3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.3 }}>
               <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign Â· </Box>
               <Box component="span" sx={{ color: meta.color }}>{assignHeading}</Box>
             </Typography>
@@ -536,7 +536,7 @@ function AssignModal({
                 Classes
               </Typography>
               {classes.length === 0
-                ? <Typography variant="body2" color="text.disabled" fontStyle="italic">No classes found.</Typography>
+                ? <Typography variant="body2" color="text.disabled" sx={{ fontStyle: 'italic' }}>No classes found.</Typography>
                 : <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                   {classes.map((c) => {
                     const active = selectedClassIds.includes(c.id);
@@ -668,13 +668,11 @@ export default function HomeworkPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-          InputProps={{
-            startAdornment: (
+          slotProps={{ input: { startAdornment: (
               <InputAdornment position="start">
                 <Search size={14} style={{ color: colors.textSecondary, opacity: 0.5 }} />
               </InputAdornment>
-            ),
-          }}
+            ) } }}
         />
         <Box sx={{ display: 'flex', gap: 0.75 }}>
           {([
@@ -713,8 +711,8 @@ export default function HomeworkPage() {
                 <BookOpen size={32} style={{ color: '#94A3B8' }} />
               </Box>
             </Box>
-            <Typography fontWeight={500}>No homework yet</Typography>
-            <Typography variant="body2" mt={0.5}>Create a reusable homework template</Typography>
+            <Typography sx={{ fontWeight: 500 }}>No homework yet</Typography>
+            <Typography variant="body2" sx={{ mt: 0.5 }}>Create a reusable homework template</Typography>
           </Box>
         )}
         {list.length > 0 && filtered.length === 0 && (
@@ -724,7 +722,7 @@ export default function HomeworkPage() {
                 <Search size={32} style={{ color: '#94A3B8' }} />
               </Box>
             </Box>
-            <Typography fontWeight={500}>No homework matches filter</Typography>
+            <Typography sx={{ fontWeight: 500 }}>No homework matches filter</Typography>
           </Box>
         )}
         {filtered.map((h, i) => {
@@ -778,7 +776,7 @@ export default function HomeworkPage() {
                   {h.type === 'PHONICS' && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       {h.name && (
-                        <Typography variant="caption" fontWeight={700} sx={{ color: meta.color }}>{h.name}</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: meta.color }}>{h.name}</Typography>
                       )}
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {(h.parts ?? []).slice(0, 4).map((part) => (
@@ -789,22 +787,22 @@ export default function HomeworkPage() {
                           <Chip label={`+${h.parts.length - 4}`} size="small" variant="outlined" sx={{ borderRadius: 2 }} />
                         )}
                         {(h.parts ?? []).length === 0 && (
-                          <Typography variant="caption" color="text.disabled" fontStyle="italic">No parts yet</Typography>
+                          <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>No parts yet</Typography>
                         )}
                       </Box>
                     </Box>
                   )}
                   {h.type === 'SPEAKING' && (
-                    <Typography variant="body2" color="text.secondary" fontStyle="italic"
-                      sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    <Typography variant="body2" color="text.secondary"
+                      sx={{ fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {h.speakingText || <Box component="span" sx={{ opacity: 0.6 }}>No text set</Box>}
                     </Typography>
                   )}
                   {h.type === 'READING' && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      {h.name && (<Typography variant="caption" fontWeight={700} sx={{ color: meta.color }}>{h.name}</Typography>)}
+                      {h.name && (<Typography variant="caption" sx={{ fontWeight: 700, color: meta.color }}>{h.name}</Typography>)}
                       {(h.readingActivities ?? []).length === 0 ? (
-                        <Typography variant="caption" color="text.disabled" fontStyle="italic">No activities yet</Typography>
+                        <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>No activities yet</Typography>
                       ) : (
                         <Chip label={`${(h.readingActivities ?? []).length} activit${(h.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}`}
                           size="small" sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2, alignSelf: 'flex-start' }} />

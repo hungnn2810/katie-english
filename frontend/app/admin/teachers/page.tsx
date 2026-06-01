@@ -70,7 +70,7 @@ function TeacherModal({ editing, onClose, onSaved }: {
     <Dialog open onClose={onClose} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
       <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Box>
-          <Typography variant="h6" fontWeight={900}>{editing ? 'Edit Teacher' : 'Create Teacher'}</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 900 }}>{editing ? 'Edit Teacher' : 'Create Teacher'}</Typography>
           <Typography variant="caption" color="text.secondary">{editing ? 'Update teacher details.' : 'Add a new teacher account.'}</Typography>
         </Box>
         <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: -0.5 }}>
@@ -153,7 +153,7 @@ function ConfirmDialog({ target, onClose, onConfirmed }: {
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
       <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography variant="h6" fontWeight={900}>{isDisabling ? 'Disable teacher?' : 'Enable teacher?'}</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 900 }}>{isDisabling ? 'Disable teacher?' : 'Enable teacher?'}</Typography>
       </DialogTitle>
       <DialogContent sx={{ px: 4, py: 3 }}>
         <Typography variant="body2" color="text.secondary">

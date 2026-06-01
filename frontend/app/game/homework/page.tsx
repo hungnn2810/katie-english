@@ -150,7 +150,7 @@ function PageContent({ user }: { user: AuthUser }) {
                 value={newPw}
                 onChange={(e) => setNewPw(e.target.value)}
                 required
-                inputProps={{ minLength: 6 }}
+                slotProps={{ htmlInput: { minLength: 6 } }}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
               />
               {pwError && <Alert severity="error" sx={{ borderRadius: 3 }}>{pwError}</Alert>}

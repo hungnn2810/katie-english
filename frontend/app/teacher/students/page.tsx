@@ -159,7 +159,7 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
               <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
               <Box>
                 <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Initial Password</FormLabel>
-                <TextField type="password" size="small" fullWidth required value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" inputProps={{ minLength: 6 }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+                <TextField type="password" size="small" fullWidth required value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" slotProps={{ htmlInput: { minLength: 6 } }} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
               </Box>
             </Paper>
           </DialogContent>
@@ -336,7 +336,7 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
             <strong>Account:</strong> {request.upn}
           </Alert>
           <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>New Password</FormLabel>
-          <TextField type="password" size="small" fullWidth required placeholder="Min 6 characters" value={pw} onChange={(e) => setPw(e.target.value)} inputProps={{ minLength: 6 }} autoFocus sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+          <TextField type="password" size="small" fullWidth required placeholder="Min 6 characters" value={pw} onChange={(e) => setPw(e.target.value)} slotProps={{ htmlInput: { minLength: 6 } }} autoFocus sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
         </DialogContent>
         <DialogActions sx={{ px: 4, pb: 3.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', gap: 1, alignItems: 'stretch' }}>
           {error && <ErrorBanner msg={error} />}
@@ -402,7 +402,7 @@ export default function StudentsPage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
         <TextField size="small" placeholder="Search studentsâ€¦" value={search} onChange={(e) => setSearch(e.target.value)}
           sx={{ flex: 1, minWidth: 192, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-          InputProps={{ startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> }} />
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> } }} />
         <FormControl size="small" sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
           <MuiSelect value={classFilter} onChange={(e) => setClassFilter(e.target.value)} displayEmpty>
             <MenuItem value="">All classes</MenuItem>
