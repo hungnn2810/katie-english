@@ -56,13 +56,13 @@ Source: `frontend/lib/theme.ts` (baseTheme), observed usage in `game/session/[id
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px | 400 | 1.5 |
-| Label | 16px | 600 | 1.4 |
+| Label | 16px | 700 | 1.4 |
 | Heading | 24px | 700 | 1.2 |
-| Display | 30px | 900 | 1.0 |
+| Display | 30px | 700 | 1.0 |
 
 Named exception — Score Display (numeric score render only):
-- Playing state composite score: 48px / weight 900 / line-height 1.0 / fontVariantNumeric: tabular-nums
-- Results screen final score: 72px / weight 900 / line-height 1.0 / fontVariantNumeric: tabular-nums
+- Playing state composite score: 48px / weight 700 / line-height 1.0 / fontVariantNumeric: tabular-nums
+- Results screen final score: 72px / weight 700 / line-height 1.0 / fontVariantNumeric: tabular-nums
 
 These two sizes are sub-variants of the single "Score Display" exception slot. They do not add to the type scale. Total declared scale slots: 4 (Body, Label, Heading, Display) + 1 named exception = 5 entries, within the ≤ 4 scale + exception allowance.
 
@@ -131,16 +131,17 @@ Accent reserved for: "Save Homework" primary CTA button, active nav pip in Teach
 Each card is a MUI Paper (elevation=1, borderRadius 2, p 1.5, border 1px solid divider).
 
 Card internal layout (flex row, gap 2, alignItems flex-start):
-- **Drag handle** (GripVertical icon, 20px, color text.secondary, cursor grab — same as VocabCreationPage)
+- **Drag handle** (GripVertical icon, 20px, color text.secondary, cursor grab, `aria-label="Drag to reorder"` — same as VocabCreationPage)
 - **Item number chip** (Box, bgcolor primary.light, color primary.contrastText, fontSize `0.75rem` one-off, fontWeight 700, px 1, py 0.5, borderRadius 1, min-width 24px, text-align center)
 - **Main content** (flex column, gap 2, flex 1):
   - **Audio upload zone** — Box, dashed border 2px (#E2E8F0), borderRadius 2, p 2, textAlign center, minHeight 80px. States:
     - Empty: "Upload audio prompt (mp3 / wav / webm)" in Typography color text.secondary, fontSize 14. Click triggers hidden file input.
     - Uploading: CircularProgress size 24 centered.
-    - Uploaded: horizontal flex — headphones icon (Headphones, 20px, color primary.main) + filename Typography (fontSize 14, truncated) + X IconButton to remove.
+    - Uploaded: horizontal flex — headphones icon (Headphones, 20px, color primary.main) + filename Typography (fontSize 14, truncated) + X IconButton (`aria-label="Remove question"`) to remove.
+    - Upload failure: Alert severity="error" "File too large or unsupported format. Please try a file under 10MB in mp3, wav, or webm format."
   - **Expected answer field** — TextField, label "Expected answer", placeholder "e.g. The cat is red", fullWidth, size small
   - **Keywords field** — TextField, label "Keywords (comma-separated)", placeholder "e.g. red, cat", fullWidth, size small, helperText "Keywords student must say to score well"
-- **Remove button** — X IconButton, color error, alignSelf flex-start (top-right of card)
+- **Remove button** — X IconButton, `aria-label="Remove question"`, color error, alignSelf flex-start (top-right of card)
 
 **Validation (inline, no modal):**
 - Missing homework name: MUI Alert severity="error" above save button
@@ -180,7 +181,7 @@ Card internal layout (flex row, gap 2, alignItems flex-start):
 
 1. **Audio prompt player block** — Box, bgcolor rgba(255,255,255,0.1), borderRadius 3, p 2, width 100%, display flex, alignItems center, gap 2:
    - Headphones icon (28px, white) on left
-   - Prompt number label: "Question N" — Typography fontSize 14, color rgba(255,255,255,0.6), fontWeight 600
+   - Prompt number label: "Question N" — Typography fontSize 14, color rgba(255,255,255,0.6), fontWeight 700
    - Play/Replay button — circular Box component="button", 56×56px, border 2px solid rgba(255,255,255,0.4), borderRadius 50%, display flex, alignItems center, justifyContent center:
      - Idle (not yet played): Play icon (lucide Play, 24px, white)
      - Playing: CircularProgress 24px, color rgba(255,255,255,0.7)
@@ -200,7 +201,7 @@ Card internal layout (flex row, gap 2, alignItems flex-start):
    - Transcript display: Typography, color rgba(255,255,255,0.8), fontSize 16, fontStyle italic — "Bạn nói: \"[transcript]\""
    - Matched keywords row: flex wrap, gap 0.5 — each matched keyword as MUI Chip, size small, bgcolor rgba(52,211,153,0.2), color #34d399, fontWeight 700
    - PhonemeChips component (reuse existing) — shown only when BFA feedback available
-   - Composite score: Typography, fontSize 48px (Score Display exception — playing sub-variant), fontWeight 900, fontVariantNumeric tabular-nums, color from scoreHexColor(compositeScore * 100)
+   - Composite score: Typography, fontSize 48px (Score Display exception — playing sub-variant), fontWeight 700, fontVariantNumeric tabular-nums, color from scoreHexColor(compositeScore * 100)
 
 4. **Action button**:
    - After scored, no BFA error: "Next →" / "View Results" (last item) — greenSecondary gradient, same as VocabGamePage
@@ -220,18 +221,18 @@ Card internal layout (flex row, gap 2, alignItems flex-start):
 Full-screen results identical to VocabGamePage results. maxWidth 560, mx auto, py 6, px 4.
 
 - PartyPopper icon 64×64, rgba(255,255,255,0.1) bg, borderRadius 3
-- "Homework Complete!" Typography 30px weight 900
-- Final composite score: 72px (Score Display exception — results sub-variant), weight 900, fontVariantNumeric tabular-nums, color from scoreHexColor
+- "Homework Complete!" Typography 30px weight 700
+- Final composite score: 72px (Score Display exception — results sub-variant), weight 700, fontVariantNumeric tabular-nums, color from scoreHexColor
 - Per-item cards (flex column, gap 1.5):
   - Each card: Box bgcolor rgba(255,255,255,0.1), borderRadius 3, px 2.5, py 2
   - Card content (flex column, gap 1):
-    - Row 1: "Question N" label (`0.75rem` one-off, uppercase, rgba(255,255,255,0.6)) + composite score % on right (24px, weight 900)
+    - Row 1: "Question N" label (`0.75rem` one-off, uppercase, rgba(255,255,255,0.6)) + composite score % on right (24px, weight 700)
     - Row 2: transcript Typography (14px, italic, rgba(255,255,255,0.8))
     - Row 3: matched keywords chips (same as playing state feedback zone)
     - Row 4 (if BFA available): PhonemeChips
     - Row 5 (if BFA error): amber error message
     - Row 6: score breakdown micro-row — "Semantic: X% · Pronunciation: Y%" (Typography `0.75rem` one-off, rgba(255,255,255,0.5))
-- "Finish" Button: fullWidth, py 2, borderRadius 3, primaryPurple gradient, fontSize 18, fontWeight 900
+- "Finish" Button: fullWidth, py 2, borderRadius 3, primaryPurple gradient, fontSize 18, fontWeight 700
 
 ---
 
@@ -269,6 +270,7 @@ Full-screen results identical to VocabGamePage results. maxWidth 560, mx auto, p
 | Teacher add item CTA | Add Question |
 | Teacher audio upload placeholder | Upload audio prompt (mp3 / wav / webm) |
 | Teacher keywords helper | Keywords student must say to score well |
+| Teacher audio upload failure | File too large or unsupported format. Please try a file under 10MB in mp3, wav, or webm format. |
 | Student ready heading | Ready? |
 | Student ready subtext | Listen to each question, then record your answer |
 | Student start CTA | Start |
@@ -321,7 +323,7 @@ Identical to VocabGamePage. No timer needed — student controls when to stop.
 ### Audio Upload (Teacher)
 - Hidden `<input type="file" accept="audio/*">` triggered by clicking upload zone.
 - On file select: set uploading=true, call `uploadAudioPrompt(file)`, set audioUrl in draft, set uploading=false.
-- File size limit communicated to user if upload fails: Alert severity="error" "File too large or unsupported format".
+- Upload failure: Alert severity="error" "File too large or unsupported format. Please try a file under 10MB in mp3, wav, or webm format."
 - Accepted: mp3, wav, webm (matches CONTEXT.md D-07).
 
 ### Keyword Chips Display (Student Result)
@@ -331,7 +333,7 @@ Identical to VocabGamePage. No timer needed — student controls when to stop.
 
 ### Sequence Reorder (Teacher)
 - @dnd-kit PointerSensor + KeyboardSensor (sortableKeyboardCoordinates).
-- Drag handle: GripVertical icon, cursor grab, touch action none.
+- Drag handle: GripVertical icon, `aria-label="Drag to reorder"`, cursor grab, touch action none.
 - Active drag: Paper elevation 6, opacity 0.5 on source item.
 - On drag end: arrayMove + update local draft order array.
 
