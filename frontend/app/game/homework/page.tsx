@@ -20,9 +20,10 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType }> = {
-  PHONICS:  { label: 'Phonics',  icon: Hash },
-  SPEAKING: { label: 'Speaking', icon: Mic },
-  READING:  { label: 'Reading',  icon: BookOpen },
+  PHONICS:    { label: 'Phonics',    icon: Hash },
+  SPEAKING:   { label: 'Speaking',   icon: Mic },
+  READING:    { label: 'Reading',    icon: BookOpen },
+  VOCABULARY: { label: 'Vocabulary', icon: BookOpen },
 };
 
 function PageContent({ user }: { user: AuthUser }) {

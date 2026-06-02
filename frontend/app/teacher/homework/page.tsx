@@ -28,15 +28,16 @@ import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search, Ch
 import { parseApiDateTime } from '@/lib/datetime';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
-  PHONICS:  { label: 'Phonics',  icon: Hash,     color: '#A78BFA', bg: '#A78BFA18' },
-  SPEAKING: { label: 'Speaking', icon: Mic,      color: '#FF9BD2', bg: '#FF9BD218' },
-  READING:  { label: 'Reading',  icon: BookOpen, color: '#6ED6C1', bg: '#6ED6C118' },
+  PHONICS:    { label: 'Phonics',    icon: Hash,      color: '#A78BFA', bg: '#A78BFA18' },
+  SPEAKING:   { label: 'Speaking',   icon: Mic,       color: '#FF9BD2', bg: '#FF9BD218' },
+  READING:    { label: 'Reading',    icon: BookOpen,  color: '#6ED6C1', bg: '#6ED6C118' },
+  VOCABULARY: { label: 'Vocabulary', icon: ImageIcon, color: '#FFB26B', bg: '#FFB26B18' },
 };
 
 // â”€â”€ Homework form modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function HomeworkModal({
-  editingId, form, setForm, onClose, onSaved, onNavigateToReading,
+  editingId, form, setForm, onClose, onSaved, onNavigateToReading, onNavigateToVocab,
 }: {
   editingId: number | null;
   form: CreateHomeworkInput;
@@ -44,6 +45,7 @@ function HomeworkModal({
   onClose: () => void;
   onSaved: () => void;
   onNavigateToReading: () => void;
+  onNavigateToVocab: () => void;
 }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -191,7 +193,7 @@ function HomeworkModal({
                 <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1.5, display: 'block' }}>
                   Type
                 </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1.5 }}>
                   {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
                     const m = TYPE_META[t];
                     const active = form.type === t;
@@ -228,6 +230,23 @@ function HomeworkModal({
                   sx={{ px: 3, borderRadius: 3, fontWeight: 700, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}
                   onClick={() => { onClose(); onNavigateToReading(); }}>
                   Open Reading Editor
+                </Button>
+              </Box>
+            )}
+
+            {/* VOCABULARY redirect */}
+            {form.type === 'VOCABULARY' && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 5, borderRadius: 3, border: '2px dashed', borderColor: meta.color + '55', background: meta.bg }}>
+                <Box sx={{ width: 56, height: 56, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', background: meta.color + '22' }}>
+                  <ImageIcon size={28} style={{ color: meta.color }} />
+                </Box>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Vocabulary homework is created in the dedicated editor.</Typography>
+                </Box>
+                <Button type="button" variant="contained"
+                  sx={{ px: 3, borderRadius: 3, fontWeight: 700, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}
+                  onClick={() => { onClose(); onNavigateToVocab(); }}>
+                  Open Vocabulary Editor
                 </Button>
               </Box>
             )}
@@ -450,7 +469,7 @@ function HomeworkModal({
               sx={{ flex: 1, borderRadius: 3, color: 'text.secondary', borderColor: 'divider' }}>
               Cancel
             </Button>
-            {form.type !== 'READING' && (
+            {form.type !== 'READING' && form.type !== 'VOCABULARY' && (
               <Button type="submit" variant="contained" disabled={loading}
                 sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
                 {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
@@ -622,6 +641,7 @@ export default function HomeworkPage() {
   function openCreate() { setForm(emptyForm()); setShowModal(true); }
   function openEdit(h: HomeworkItem) {
     if (h.type === 'READING') return;
+    if (h.type === 'VOCABULARY') return;
     setEditingId(h.id);
     setForm({
       type: h.type,
@@ -639,7 +659,7 @@ export default function HomeworkPage() {
   function closeModal() { setShowModal(false); setEditingId(null); }
 
   const now = new Date();
-  const counts = { ALL: list.length, PHONICS: 0, SPEAKING: 0, READING: 0 };
+  const counts = { ALL: list.length, PHONICS: 0, SPEAKING: 0, READING: 0, VOCABULARY: 0 };
   list.forEach((h) => { counts[h.type]++; });
   const q = search.toLowerCase();
   const filtered = list.filter((h) => {
@@ -658,6 +678,7 @@ export default function HomeworkPage() {
           onClose={closeModal}
           onSaved={() => { load(); showToast(editingId !== null ? 'Homework updated!' : 'Homework created!'); }}
           onNavigateToReading={() => router.push('/teacher/homework/create/reading')}
+          onNavigateToVocab={() => router.push('/teacher/homework/create/vocabulary')}
         />
       )}
       {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={() => { load(); showToast('Homework assigned!'); }} />}
@@ -682,6 +703,7 @@ export default function HomeworkPage() {
             { key: 'PHONICS', label: 'Phonics', icon: AlignLeft },
             { key: 'SPEAKING', label: 'Speaking', icon: Mic },
             { key: 'READING', label: 'Reading', icon: null },
+            { key: 'VOCABULARY', label: 'Vocabulary', icon: null },
           ] as const).map((t) => (
             <Button key={t.key} variant="outlined" size="small" onClick={() => setTypeFilter(t.key)}
               sx={{
@@ -809,6 +831,16 @@ export default function HomeworkPage() {
                         <Chip label={`${(h.readingActivities ?? []).length} activit${(h.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}`}
                           size="small" sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2, alignSelf: 'flex-start' }} />
                       )}
+                    </Box>
+                  )}
+                  {h.type === 'VOCABULARY' && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      {h.name && (<Typography variant="caption" sx={{ fontWeight: 700, color: meta.color }}>{h.name}</Typography>)}
+                      <Chip
+                        label={`${(h.vocabItems ?? []).length} item${(h.vocabItems ?? []).length !== 1 ? 's' : ''}`}
+                        size="small"
+                        sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2, alignSelf: 'flex-start' }}
+                      />
                     </Box>
                   )}
                 </Box>

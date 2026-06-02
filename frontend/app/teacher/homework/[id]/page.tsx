@@ -12,9 +12,10 @@ import Typography from '@mui/material/Typography';
 import { formatDate, parseApiDateTime } from '@/lib/datetime';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
-  PHONICS:  { label: 'Phonics',  icon: Hash,     color: '#A78BFA', bg: '#A78BFA18' },
-  SPEAKING: { label: 'Speaking', icon: Mic,      color: '#FF9BD2', bg: '#FF9BD218' },
-  READING:  { label: 'Reading',  icon: BookOpen, color: '#6ED6C1', bg: '#6ED6C118' },
+  PHONICS:    { label: 'Phonics',    icon: Hash,     color: '#A78BFA', bg: '#A78BFA18' },
+  SPEAKING:   { label: 'Speaking',   icon: Mic,      color: '#FF9BD2', bg: '#FF9BD218' },
+  READING:    { label: 'Reading',    icon: BookOpen, color: '#6ED6C1', bg: '#6ED6C118' },
+  VOCABULARY: { label: 'Vocabulary', icon: BookOpen, color: '#FFB26B', bg: '#FFB26B18' },
 };
 
 function scoreColor(score: number) {
