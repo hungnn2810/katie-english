@@ -100,6 +100,14 @@ export default function middleware(req: NextRequest): NextResponse {
     );
   }
 
+  // Always allow Next.js API routes through regardless of subdomain prefix config.
+  // Without this early-return, /api/auth/* calls from admin.katie.vn would be
+  // blocked by the isAllowed check below (since '/api' is not in allowedPrefixes)
+  // and rewritten to /not-found, breaking all auth route handlers in production.
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
   // D-10: route containment — check that pathname starts with one of the allowed prefixes
   const isAllowed = subConfig.allowedPrefixes.some((prefix) =>
     pathname.startsWith(prefix),
