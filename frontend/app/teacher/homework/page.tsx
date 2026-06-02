@@ -864,10 +864,15 @@ export default function HomeworkPage() {
                         Cancel
                       </Button>
                       <Button size="small" variant="contained" color="error" onClick={async () => {
-                        await deleteHomework(h.id);
-                        setDeletingId(null);
-                        load();
-                        showToast('Homework deleted.');
+                        try {
+                          await deleteHomework(h.id);
+                          setDeletingId(null);
+                          load();
+                          showToast('Homework deleted.');
+                        } catch (err: unknown) {
+                          setDeletingId(null);
+                          showToast(err instanceof Error ? err.message : 'Delete failed.');
+                        }
                       }}
                         sx={{ px: 1.5, py: 0.5, borderRadius: 2, fontSize: 12, fontWeight: 600 }}>
                         Delete
