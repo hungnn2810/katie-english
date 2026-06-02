@@ -581,35 +581,6 @@ export const getReadingHomework = (id: number) =>
 export const updateReadingHomework = (id: number, data: UpdateReadingHomeworkInput) =>
   req<ReadingHomeworkDetail>(`/homework/reading/${id}`, { method: 'PUT', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
 
-// ── Plan 08-03 vocab homework CRUD (POST/GET/PUT /homework/vocab) ──────────────
-
-export const createVocabHomework = (data: CreateVocabHomeworkInput) =>
-  req<VocabHomeworkDetail>('/homework/vocab', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
-
-export const getVocabHomework = (id: number) =>
-  req<VocabHomeworkDetail>(`/homework/vocab/${id}`);
-
-export const updateVocabHomework = (id: number, data: UpdateVocabHomeworkInput) =>
-  req<VocabHomeworkDetail>(`/homework/vocab/${id}`, { method: 'PUT', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
-
-export async function saveVocabResult(
-  sessionId: number,
-  vocabItemId: number,
-  audio?: Blob,
-): Promise<PhonicsItemResult> {
-  const form = new FormData();
-  form.append('vocabItemId', String(vocabItemId));
-  if (audio && audio.size > 0) form.append('audio', audio, 'audio.webm');
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const res = await fetch(`${API_URL}/game/session/${sessionId}/vocab-result`, {
-    method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: form,
-  });
-  if (!res.ok) return parseApiError(res);
-  return res.json();
-}
-
 // ── Plan 03-01 reading result types ──────────────────────────────────────────
 
 export interface SentenceSegment {
