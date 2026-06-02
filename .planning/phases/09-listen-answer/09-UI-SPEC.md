@@ -60,7 +60,13 @@ Source: `frontend/lib/theme.ts` (baseTheme), observed usage in `game/session/[id
 | Heading | 24px | 700 | 1.2 |
 | Display | 30px | 900 | 1.0 |
 
-Additional numeric display (score): 72px / weight 900 / line-height 1.0 / fontVariantNumeric: tabular-nums — matches existing results screen pattern.
+Named exception — Score Display (numeric score render only):
+- Playing state composite score: 48px / weight 900 / line-height 1.0 / fontVariantNumeric: tabular-nums
+- Results screen final score: 72px / weight 900 / line-height 1.0 / fontVariantNumeric: tabular-nums
+
+These two sizes are sub-variants of the single "Score Display" exception slot. They do not add to the type scale. Total declared scale slots: 4 (Body, Label, Heading, Display) + 1 named exception = 5 entries, within the ≤ 4 scale + exception allowance.
+
+Note: `0.75rem` (12px) is used inline for micro-labels (results card question label row, item number chips) as a one-off — it is NOT a declared scale slot.
 
 ---
 
@@ -126,7 +132,7 @@ Each card is a MUI Paper (elevation=1, borderRadius 2, p 1.5, border 1px solid d
 
 Card internal layout (flex row, gap 2, alignItems flex-start):
 - **Drag handle** (GripVertical icon, 20px, color text.secondary, cursor grab — same as VocabCreationPage)
-- **Item number chip** (Box, bgcolor primary.light, color primary.contrastText, fontSize 12, fontWeight 700, px 1, py 0.5, borderRadius 1, min-width 24px, text-align center)
+- **Item number chip** (Box, bgcolor primary.light, color primary.contrastText, fontSize `0.75rem` one-off, fontWeight 700, px 1, py 0.5, borderRadius 1, min-width 24px, text-align center)
 - **Main content** (flex column, gap 2, flex 1):
   - **Audio upload zone** — Box, dashed border 2px (#E2E8F0), borderRadius 2, p 2, textAlign center, minHeight 80px. States:
     - Empty: "Upload audio prompt (mp3 / wav / webm)" in Typography color text.secondary, fontSize 14. Click triggers hidden file input.
@@ -160,7 +166,7 @@ Card internal layout (flex row, gap 2, alignItems flex-start):
 | loading | CircularProgress 48px, rgba(255,255,255,0.7), centered on gameBg |
 | mic-check | Same as loading with label "Requesting microphone access…" |
 | mic-denied | Icon + "Microphone Required" heading + "Try Again" button (pinkHighlight gradient) + "← Back to Homework" link — same as VocabGamePage |
-| error | "#FF7B7B Session not found." + back link — same as all game pages |
+| error | "#FF7B7B Session not found. Please go back and try again." + "← Back to Homework" back link — same as all game pages |
 | ready | "Ready?" heading + "Listen to each question, then record your answer" subtext + "Start" button (primaryPurple gradient) |
 | playing | Audio player + recording controls (detailed below) |
 | uploading | CircularProgress 48px color #FFD166 + "Scoring and saving…" label |
@@ -194,7 +200,7 @@ Card internal layout (flex row, gap 2, alignItems flex-start):
    - Transcript display: Typography, color rgba(255,255,255,0.8), fontSize 16, fontStyle italic — "Bạn nói: \"[transcript]\""
    - Matched keywords row: flex wrap, gap 0.5 — each matched keyword as MUI Chip, size small, bgcolor rgba(52,211,153,0.2), color #34d399, fontWeight 700
    - PhonemeChips component (reuse existing) — shown only when BFA feedback available
-   - Composite score: Typography, fontSize 48, fontWeight 900, fontVariantNumeric tabular-nums, color from scoreHexColor(compositeScore * 100)
+   - Composite score: Typography, fontSize 48px (Score Display exception — playing sub-variant), fontWeight 900, fontVariantNumeric tabular-nums, color from scoreHexColor(compositeScore * 100)
 
 4. **Action button**:
    - After scored, no BFA error: "Next →" / "View Results" (last item) — greenSecondary gradient, same as VocabGamePage
@@ -215,16 +221,16 @@ Full-screen results identical to VocabGamePage results. maxWidth 560, mx auto, p
 
 - PartyPopper icon 64×64, rgba(255,255,255,0.1) bg, borderRadius 3
 - "Homework Complete!" Typography 30px weight 900
-- Final composite score: 72px weight 900, fontVariantNumeric tabular-nums, color from scoreHexColor
+- Final composite score: 72px (Score Display exception — results sub-variant), weight 900, fontVariantNumeric tabular-nums, color from scoreHexColor
 - Per-item cards (flex column, gap 1.5):
   - Each card: Box bgcolor rgba(255,255,255,0.1), borderRadius 3, px 2.5, py 2
   - Card content (flex column, gap 1):
-    - Row 1: "Question N" label (12px, uppercase, rgba(255,255,255,0.6)) + composite score % on right (24px, weight 900)
+    - Row 1: "Question N" label (`0.75rem` one-off, uppercase, rgba(255,255,255,0.6)) + composite score % on right (24px, weight 900)
     - Row 2: transcript Typography (14px, italic, rgba(255,255,255,0.8))
     - Row 3: matched keywords chips (same as playing state feedback zone)
     - Row 4 (if BFA available): PhonemeChips
     - Row 5 (if BFA error): amber error message
-    - Row 6: score breakdown micro-row — "Semantic: X% · Pronunciation: Y%" (Typography 12px, rgba(255,255,255,0.5))
+    - Row 6: score breakdown micro-row — "Semantic: X% · Pronunciation: Y%" (Typography `0.75rem` one-off, rgba(255,255,255,0.5))
 - "Finish" Button: fullWidth, py 2, borderRadius 3, primaryPurple gradient, fontSize 18, fontWeight 900
 
 ---
@@ -283,7 +289,8 @@ Full-screen results identical to VocabGamePage results. maxWidth 560, mx auto, p
 | Student save error | Recording could not be saved |
 | Student save success | Your recording has been saved |
 | Empty state (no items on teacher page) | No questions yet. Add your first question below. |
-| Error state (session not found) | Session not found. |
+| Error state body | Session not found. Please go back and try again. |
+| Error state CTA | ← Back to Homework |
 | Mic denied heading | Microphone Required |
 | Mic denied body | Microphone access is required. Please allow access and reload. |
 | BFA: audio_too_short | Bấm lâu hơn nhé — ghi âm quá ngắn |
