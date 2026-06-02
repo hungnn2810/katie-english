@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_PASSWORD: Pass1234!
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: phonics
     ports:
       - '5432:5432'
@@ -19,7 +19,7 @@ services:
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: Pass1234!
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
       - '9000:9000'
       - '9001:9001'
@@ -36,18 +36,18 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://postgres:Pass1234!@postgres:5432/phonics
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/phonics
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: admin
-      MINIO_SECRET_KEY: Pass1234!
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MINIO_BUCKET: phonics-audio
       MINIO_USE_SSL: 'false'
       PORT: 3001
-      TEACHER_EMAIL: teacher@example.com
-      TEACHER_PASSWORD: Pass1234!
-      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@katie-english.com}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin1234!}
+      TEACHER_EMAIL: ${TEACHER_EMAIL}
+      TEACHER_PASSWORD: ${TEACHER_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       REDIS_URL: redis://redis:6379
       AZURE_SPEECH_KEY: ${AZURE_SPEECH_KEY}
       AZURE_SPEECH_REGION: ${AZURE_SPEECH_REGION:-eastus}
@@ -80,6 +80,7 @@ services:
       dockerfile: Dockerfile
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_SUBDOMAIN: ${NEXT_PUBLIC_SUBDOMAIN:-app}
       NEXT_PUBLIC_ADMIN_ORIGIN: ${NEXT_PUBLIC_ADMIN_ORIGIN:-http://admin.katie.vn}
       NEXT_PUBLIC_APP_ORIGIN: ${NEXT_PUBLIC_APP_ORIGIN:-http://app.katie.vn}
       NEXT_PUBLIC_STUDENT_ORIGIN: ${NEXT_PUBLIC_STUDENT_ORIGIN:-http://student.katie.vn}
