@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { login, register, forgotPassword, RegisterInput } from '@/lib/auth';
 import { BookOpen, Mic, BarChart2, CheckCircle2, GraduationCap, User } from 'lucide-react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -32,7 +31,6 @@ const FEATURES = [
 ];
 
 export default function LoginPage() {
-  const router = useRouter();
   const [role, setRole] = useState<Role | null>(null);
   const [upn, setUpn] = useState('');
   const [password, setPassword] = useState('');
@@ -70,9 +68,22 @@ export default function LoginPage() {
         setMode('login');
         setPassword('');
         setReg(emptyReg());
+      } else if (role === 'TEACHER') {
+        const res = await fetch('/api/auth/teacher-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ upn, password }),
+        });
+        if (!res.ok) {
+          const d = await res.json();
+          throw new Error(d.error ?? 'Invalid credentials');
+        }
+        window.location.href = (process.env.NEXT_PUBLIC_APP_ORIGIN ?? '') + '/teacher';
       } else {
+        // Student password login (existing flow — will be replaced by class-code login in plan 12-03)
         const user = await login(upn, password);
-        router.push(user.role === 'TEACHER' ? '/teacher' : '/game/homework');
+        window.location.href = (process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? '') + '/game/homework';
+        void user;
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '';

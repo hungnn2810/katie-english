@@ -1,7 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { adminLogin } from '@/lib/admin-auth';
 import { Shield, Lock } from 'lucide-react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -12,7 +10,6 @@ import Typography from '@mui/material/Typography';
 const ACCENT = '#4F9DFF';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,8 +20,16 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
     try {
-      await adminLogin(email, password);
-      router.push('/admin');
+      const res = await fetch('/api/auth/admin-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error ?? 'Invalid email or password');
+      }
+      window.location.href = (process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? '') + '/admin';
     } catch {
       // D-14 + T-06-02-04: never reveal which field failed.
       // Also handles HTTP 429 throttle responses — UI shows the same generic message

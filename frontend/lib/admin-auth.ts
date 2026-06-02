@@ -18,7 +18,10 @@ export interface AdminUser {
 
 export function getAdminToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('admin_token');
+  const lsToken = localStorage.getItem('admin_token');
+  if (lsToken) return lsToken;
+  // Cookie fallback for sessions established via /api/auth/admin-login route handler
+  return document.cookie.split(';').find(c => c.trim().startsWith('admin-token='))?.split('=')[1] ?? null;
 }
 
 export function getAdminUser(): AdminUser | null {
@@ -30,11 +33,15 @@ export function getAdminUser(): AdminUser | null {
 export function setAdminAuth(token: string, user: AdminUser) {
   localStorage.setItem('admin_token', token);
   localStorage.setItem('admin_user', JSON.stringify(user));
+  // Dual-write: non-HttpOnly cookie for client-side API calls (T-12-02-03: transitional fallback)
+  document.cookie = `admin-token=${token}; path=/; SameSite=Lax; max-age=604800`;
 }
 
 export function clearAdminAuth() {
   localStorage.removeItem('admin_token');
   localStorage.removeItem('admin_user');
+  // Expire the client-written cookie as well
+  document.cookie = 'admin-token=; path=/; max-age=0';
 }
 
 export function adminAuthHeaders(): HeadersInit {
