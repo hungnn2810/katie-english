@@ -304,6 +304,7 @@ export function VocabCreationPage() {
   }
 
   function validate(): string | null {
+    if (!name.trim()) return 'Homework name is required.';
     if (items.length === 0) return 'Add at least one item.';
     for (const item of items) {
       if (!item.imageUrl) return 'Each item needs an image.';
