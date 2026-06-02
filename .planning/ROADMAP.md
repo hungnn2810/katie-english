@@ -443,7 +443,12 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 4. Local dev can access all three entry points without DNS changes.
 5. Build and Docker Compose work with no regression on existing functionality.
 
+**Plans:**
+- [ ] 12-01-PLAN.md — Next.js middleware.ts + dev:admin/teacher/student scripts + docker-compose env vars (Wave 1)
+- [ ] 12-02-PLAN.md — Cookie auth layer: Next.js API routes (teacher/admin/student-login) + dual-write auth libs + backend student game login endpoint (Wave 2, depends 12-01)
+- [ ] 12-03-PLAN.md — Login pages (teacher-only, student class-code) + 403/404 error pages + game/admin/teacher layout 403 guards (Wave 3, depends 12-02)
+
 ---
 
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-02 — Added Phase 12 (Multi-Subdomain Split)*
+*Last updated: 2026-06-02 — Added Phase 12 plans (3 plans, 3 waves)*
