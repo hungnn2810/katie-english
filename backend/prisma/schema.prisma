@@ -17,6 +17,7 @@ enum HomeworkType {
   PHONICS
   SPEAKING
   READING
+  VOCABULARY
 }
 
 enum ReadingActivityType {
@@ -127,6 +128,7 @@ model Homework {
   parts              HomeworkPart[]
   assignments        HomeworkAssignment[]
   readingActivities  ReadingActivity[]
+  vocabItems         VocabItem[]          @relation("VocabItems")
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -214,14 +216,30 @@ model SpeakingResult {
 model PhonicsItemResult {
   id              Int             @id @default(autoincrement())
   sessionId       Int
-  wordId          Int
+  wordId          Int?
+  vocabItemId     Int?
   transcribedText String?
   score           Float
   session         HomeworkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  word            HomeworkWord    @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  word            HomeworkWord?   @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  vocabItem       VocabItem?      @relation(fields: [vocabItemId], references: [id], onDelete: Cascade)
 
-  @@unique([sessionId, wordId])
   @@map("phonics_item_results")
+}
+
+model VocabItem {
+  id             Int                 @id @default(autoincrement())
+  homeworkId     Int
+  homework       Homework            @relation("VocabItems", fields: [homeworkId], references: [id], onDelete: Cascade)
+  imageUrl       String
+  word           String
+  phonemes       String?
+  order          Int                 @default(0)
+  createdAt      DateTime            @default(now())
+  phonicsResults PhonicsItemResult[]
+
+  @@index([homeworkId])
+  @@map("vocab_items")
 }
 
 model ReadingActivity {
