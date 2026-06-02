@@ -27,8 +27,8 @@ const SUBDOMAIN_CONFIG: Record<Subdomain, SubdomainConfig> = {
   },
   student: {
     cookieName: 'student-token',
-    allowedPrefixes: ['/game', '/login'],
-    loginPath: '/login',
+    allowedPrefixes: ['/game', '/game/login'],
+    loginPath: '/game/login',
     expectedRole: 'STUDENT',
     defaultRedirect: '/game/homework',
   },
