@@ -215,8 +215,8 @@ export async function uploadSpeakingImage(file: File): Promise<string> {
     body: form,
   });
   if (!res.ok) return parseApiError(res);
-  const { key } = await res.json() as { key: string };
-  return `${API_URL}/homework/image/${key}`;
+  const { url } = await res.json() as { url: string };
+  return url;
 }
 
 export async function completeSession(sessionId: number) {
