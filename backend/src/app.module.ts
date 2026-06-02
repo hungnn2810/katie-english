@@ -18,7 +18,10 @@ import { AdminModule } from './admin/admin.module';
     PrismaModule,
     StorageModule,
     AuthModule,
-    ThrottlerModule.forRoot([{ name: 'admin-login', ttl: 60_000, limit: 5 }]),
+    ThrottlerModule.forRoot([
+      { name: 'default', ttl: 60_000, limit: 10 },
+      { name: 'admin-login', ttl: 60_000, limit: 5 },
+    ]),
     AdminModule,
     BfaModule,
     PhonemeModule,
