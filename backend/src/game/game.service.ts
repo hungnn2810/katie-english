@@ -378,10 +378,11 @@ export class GameService {
       const rr = await this.repo.getReadingResult(sessionId);
       avgScore = rr ? rr.score : 0;
     } else if (hw.type === 'VOCABULARY') {
-      const vocabItems = (hw as any).vocabItems as unknown[] ?? [];
-      const count = vocabItems.length;
-      const phonicsResults = session.phonicsResults ?? [];
-      const scoreSum = phonicsResults.reduce((s: number, r: { score: number }) => s + r.score, 0);
+      const vocabResults = (session.phonicsResults ?? []).filter(
+        (r: { vocabItemId?: number | null }) => r.vocabItemId != null,
+      );
+      const count = vocabResults.length;
+      const scoreSum = vocabResults.reduce((s: number, r: { score: number }) => s + r.score, 0);
       avgScore = count > 0 ? scoreSum / count : 0;
     } else {
       const phonicsResults = session.phonicsResults ?? [];
