@@ -127,7 +127,7 @@ export class HomeworkService {
   }
 
   createVocabHomework(dto: CreateVocabHomeworkDto) {
-    if (!dto.name?.trim()) {
+    if (!dto.name || !dto.name.trim()) {
       throw new BadRequestException('Name is required');
     }
     if (!Array.isArray(dto.items) || dto.items.length === 0) {
