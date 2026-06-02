@@ -234,7 +234,7 @@ export class HomeworkRepository {
     return this.prisma.homeworkAssignment.findUnique({
       where: { id },
       include: {
-        homework: { include: { ...partsInclude, ...readingActivitiesInclude } },
+        homework: { include: { ...partsInclude, ...readingActivitiesInclude, ...vocabItemsInclude } },
         classes: { include: { class: true } },
         sessions: { include: { student: true }, orderBy: { startedAt: 'desc' } },
       },
@@ -324,27 +324,29 @@ export class HomeworkRepository {
   }
 
   async updateVocabHomework(id: number, dto: UpdateVocabHomeworkDto) {
-    if (dto.items !== undefined) {
-      await this.prisma.vocabItem.deleteMany({ where: { homeworkId: id } });
-    }
-    return this.prisma.homework.update({
-      where: { id },
-      data: {
-        ...(dto.name !== undefined ? { name: dto.name } : {}),
-        ...(dto.items !== undefined
-          ? {
-              vocabItems: {
-                create: dto.items.map((item, idx) => ({
-                  imageUrl: item.imageUrl,
-                  word: item.word,
-                  phonemes: item.phonemes ? JSON.stringify(item.phonemes) : null,
-                  order: idx,
-                })),
-              },
-            }
-          : {}),
-      },
-      include: { ...vocabItemsInclude, assignments: { include: assignmentInclude } },
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.items !== undefined) {
+        await tx.vocabItem.deleteMany({ where: { homeworkId: id } });
+      }
+      return tx.homework.update({
+        where: { id },
+        data: {
+          ...(dto.name !== undefined ? { name: dto.name } : {}),
+          ...(dto.items !== undefined
+            ? {
+                vocabItems: {
+                  create: dto.items.map((item, idx) => ({
+                    imageUrl: item.imageUrl,
+                    word: item.word,
+                    phonemes: item.phonemes ? JSON.stringify(item.phonemes) : null,
+                    order: idx,
+                  })),
+                },
+              }
+            : {}),
+        },
+        include: { ...vocabItemsInclude, assignments: { include: assignmentInclude } },
+      });
     });
   }
 }
