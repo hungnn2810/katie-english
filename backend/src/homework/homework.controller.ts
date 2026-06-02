@@ -13,14 +13,25 @@ export class HomeworkController {
     private readonly storage: StorageService,
   ) {}
 
+  private static readonly ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+  private static readonly MIME_EXT: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+  };
+
   @Post('image')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
   async uploadImage(@UploadedFile() file?: Express.Multer.File) {
     if (!file) throw new BadRequestException('No file uploaded');
-    const ext = file.originalname.split('.').pop() ?? 'jpg';
+    if (!HomeworkController.ALLOWED_MIME.has(file.mimetype)) {
+      throw new BadRequestException('Only JPEG, PNG, WebP, and GIF images are accepted');
+    }
+    const ext = HomeworkController.MIME_EXT[file.mimetype] ?? 'jpg';
     const key = `homework-images/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    await this.storage.upload(key, file.buffer, file.mimetype);
-    return { key };
+    const url = await this.storage.upload(key, file.buffer, file.mimetype);
+    return { url };
   }
 
   // ── Reading-specific routes (must precede generic :id routes) ────────────
