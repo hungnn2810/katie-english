@@ -32,6 +32,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
       return null;
     }
+    // SECURITY NOTE (WR-01): JWT role is decoded client-side WITHOUT signature
+    // verification. This is intentional defense-in-depth UX only — it prevents
+    // rendering the admin shell for obviously wrong roles. The backend is the
+    // sole authoritative authorization gate; every API call validates the JWT
+    // signature server-side and returns 401/403 for invalid or forged tokens.
     function decodeJwtRole(token: string): string | null {
       try { return JSON.parse(atob(token.split('.')[1])).role ?? null; } catch { return null; }
     }
