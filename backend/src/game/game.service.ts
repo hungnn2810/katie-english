@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, UnauthorizedException, Logger } from '@nestjs/common';
 import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
@@ -7,6 +7,7 @@ import { WordRepository } from '../word/word.repository';
 import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto } from './game.dto';
 import { calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 import { PrismaService } from '../prisma/prisma.service';
+import { TokenService } from '../auth/jwt.service';
 
 @Injectable()
 export class GameService {
@@ -18,7 +19,35 @@ export class GameService {
     private readonly bfa: BfaService,
     private readonly wordRepository: WordRepository,
     private readonly prisma: PrismaService,
+    private readonly tokenService: TokenService,
   ) {}
+
+  async gameLogin(classCode: string, name: string) {
+    const cls = await this.prisma.class.findUnique({
+      where: { code: classCode },
+      include: { students: true },
+    });
+    if (!cls) throw new NotFoundException('Class not found');
+
+    const student = cls.students.find(
+      (s) => s.fullname.toLowerCase() === name.toLowerCase().trim(),
+    );
+    if (!student) throw new UnauthorizedException('Student not found in this class');
+
+    const user = await this.prisma.user.findFirst({
+      where: { studentId: student.id, role: 'STUDENT' },
+    });
+    if (!user) throw new UnauthorizedException('Student account not set up');
+    if (!user.approved) throw new ForbiddenException('Account pending approval');
+
+    const token = this.tokenService.sign({
+      sub: user.id,
+      upn: user.upn,
+      role: 'STUDENT',
+      studentId: student.id,
+    });
+    return { token, user: { id: user.id, upn: user.upn, role: user.role, studentId: student.id } };
+  }
 
   async getAvailableAssignments(studentId: number) {
     const student = await this.repo.getAvailableAssignments(studentId);

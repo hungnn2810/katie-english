@@ -21,3 +21,8 @@ export class SaveVocabResultDto {
   vocabItemId: number;
   transcribedText?: string;
 }
+
+export class GameLoginDto {
+  classCode: string;
+  name: string;
+}
