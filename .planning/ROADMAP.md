@@ -21,7 +21,7 @@
 | 9 | Listen & Answer Exercise | Audio prompt → student answers → semantic score | v2 | 📋 Planned |
 | 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
 | 11 | Frontend React MUI Refactor | Standardize UI architecture and components with Material UI | v2 | 📋 Planned |
-| 12 | Multi-Subdomain Split | 1/3 | In Progress|  |
+| 12 | Multi-Subdomain Split | 2/3 | In Progress|  |
 
 ---
 
@@ -478,9 +478,9 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 5. Build and Docker Compose work with no regression on existing functionality.
 
 **Plans:**
-1/3 plans executed
+2/3 plans executed
 
-- [ ] 12-02-PLAN.md — Cookie auth layer: Next.js API routes (teacher/admin/student-login) + dual-write auth libs + backend student game login endpoint (Wave 2, depends 12-01)
+- [x] 12-02-PLAN.md — Cookie auth layer: Next.js API routes (teacher/admin/student-login) + dual-write auth libs + backend student game login endpoint (Wave 2, depends 12-01)
 - [ ] 12-03-PLAN.md — Login pages (teacher-only, student class-code) + 403/404 error pages + game/admin/teacher layout 403 guards (Wave 3, depends 12-02)
 
 ---
