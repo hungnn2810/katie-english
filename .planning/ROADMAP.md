@@ -21,7 +21,7 @@
 | 9 | Listen & Answer Exercise | Audio prompt → student answers → semantic score | v2 | 📋 Planned |
 | 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
 | 11 | Frontend React MUI Refactor | Standardize UI architecture and components with Material UI | v2 | 📋 Planned |
-| 12 | Multi-Subdomain Split | Route admin/teacher/student to separate subdomains via Next.js middleware | v2 | 📋 Planned |
+| 12 | Multi-Subdomain Split | 1/3 | In Progress|  |
 
 ---
 
@@ -31,6 +31,7 @@
 **Mode:** mvp
 
 **Requirements:**
+
 - SPEAK-01: Teacher can create speaking homework in free-speak mode (image prompt)
 - SPEAK-02: Teacher can create speaking homework in script-matching mode (target text)
 - SPEAK-03: Student uploads audio recording for speaking homework
@@ -39,6 +40,7 @@
 - SPEAK-06: Teacher can view speaking session result (score + transcript)
 
 **Success Criteria:**
+
 1. Teacher creates a speaking homework in free-speak mode with an image prompt and it appears in the assigned class's homework list.
 2. Student opens speaking homework, uploads an audio recording, submits — system generates and stores a score without manual intervention.
 3. Teacher opens the assignment results page and sees per-student score and transcript for speaking submissions.
@@ -51,6 +53,7 @@
 **Mode:** mvp
 
 **Requirements:**
+
 - READ-01: Teacher can create image-word matching activity (upload images, assign word labels)
 - READ-02: Teacher can create fill-in-blank activity (paragraph/sentence with gaps, multiple-choice options)
 - READ-03: Teacher can freely sequence matching and fill-in-blank activities within one homework
@@ -59,12 +62,14 @@
 - READ-06: System scores reading activities deterministically and stores result
 
 **Success Criteria:**
+
 1. Teacher creates a homework with at least one matching activity and one fill-in-blank activity in a custom sequence.
 2. Student opens reading homework, completes image-word matching by clicking pairs — correct pairs highlighted, incorrect shaken.
 3. Student completes fill-in-blank by selecting from choices — all gaps filled before submission allowed.
 4. Score calculated and stored on submission; student sees result screen.
 
 **Plans:**
+
 - [x] 02-01-PLAN.md — Backend data spine: Prisma schema + migration + DTOs + repositories + service scoring + REST endpoint (Wave 1)
 - [x] 02-02-PLAN.md — Frontend API contract: types + saveReadingResult + student routing + teacher entry points (Wave 1)
 - [x] 02-03-PLAN.md — Teacher creation page: image-word matching + fill-in-blank + sequence reorder via @dnd-kit (Wave 2)
@@ -79,6 +84,7 @@
 **Mode:** mvp
 
 **Requirements:**
+
 - READ-07: Teacher can view reading session score breakdown per activity
 - TEACH-01: Teacher can create any homework type (phonics/speaking/reading) from a unified creation flow
 - TEACH-02: Teacher can assign homework to one or more classes with a due date
@@ -87,12 +93,14 @@
 - TEACH-05: Teacher can review individual student attempt (score breakdown + transcript)
 
 **Success Criteria:**
+
 1. Teacher reaches homework creation from one entry point and can select phonics, speaking, or reading type.
 2. Teacher assigns a homework to two classes simultaneously with a single action.
 3. Homework list page shows submission count (e.g., "5/12 submitted") for each assignment.
 4. Teacher opens a student's attempt and sees per-item score breakdown with transcript.
 
 **Plans:**
+
 - [x] 03-01-PLAN.md — Schema foundation: extend Prisma + push DB + sync HomeworkType across DTO/admin-api + backend reading stubs (Wave 1)
 - [x] 03-02-PLAN.md — Submission count slice + TEACH-02 regression: assignmentInclude student count, X/Y pill on list+detail, non-submitted list, AssignModal multi-class verification (Wave 2)
 - [x] 03-03-PLAN.md — TypePickerModal entry point + Reading creation page skeleton + READING filter tab (Wave 3)
@@ -110,6 +118,7 @@
 **Mode:** mvp
 
 **Requirements:**
+
 - STUDENT-01: Student homework list shows assignments ordered by due date
 - STUDENT-02: All student game screens function correctly on tablet/phone (touch-first, minimum 44px touch targets)
 - STUDENT-03: Student homework page uses kid-friendly visuals for ages 6–12 (larger type, gentle colors, playful icons, cute buttons)
@@ -117,9 +126,11 @@
 > **Phase-context note (2026-05-14, per 04-CONTEXT.md D-01):** Student device target is **laptop/PC only**. STUDENT-02 is satisfied by retaining the existing `minWidth: 1024` constraint on the student page; no tablet/phone or touch-target work is performed in this phase. The implementation contract is in `.planning/phases/04-student-page-ui-ux/04-CONTEXT.md`.
 
 **Plans:**
+
 - [x] 04-01-PLAN.md — Sort student homework list by endDate ascending and add Overdue badge variant
 
 **Success Criteria:**
+
 1. Homework list orders assignments by ascending due date; overdue items show a red "Overdue" badge.
 2. Student homework page retains laptop/PC layout (`minWidth: 1024`) with no responsive/touch changes.
 3. Completed assignments remain mixed by due date; best-score badge remains visible.
@@ -134,6 +145,7 @@
 **Depends on:** Phase 4
 
 **Requirements:**
+
 - BFA-01: Fix `similar` phoneme ops missing timestamps
 - BFA-02: Store canonical espeak phonemes on the `Word` model; game service passes stored phonemes instead of `[]`
 - BFA-03: Preload models on startup; `/health` reports model load status
@@ -141,6 +153,7 @@
 - BFA-05: Student phonics result screen shows per-phoneme colored chips (green/yellow/red/gray)
 
 **Success Criteria:**
+
 1. `similar` phoneme ops return `start`/`end`/`duration` populated.
 2. Word creation pre-computes and stores espeak phonemes; no espeak at request time for known words.
 3. Phonics game flow makes exactly one HTTP call to BFA service.
@@ -148,6 +161,7 @@
 5. BFA service uses Groq Whisper API for ASR + local phonemizer — no GPU required.
 
 **Plans:**
+
 - [x] 05-01-PLAN.md — Python BFA service: fix similar-timestamp bug + startup warm-up + `/analyze` endpoint (Wave 1)
 - [x] 05-02-PLAN.md — Prisma Word.phonemes + BfaAnalyzeResult DTO + BfaService.analyze + single-call rewrite (Wave 2)
 - [x] 05-03-PLAN.md — Frontend PhonemeChips component (4 states) + session results wiring + /analyze parallelization (Wave 3)
@@ -164,6 +178,7 @@
 **Mode:** mvp
 
 **Requirements:**
+
 - ADMIN-01: Single admin account seeded via env vars (ADMIN_EMAIL, ADMIN_PASSWORD), login via POST /admin/auth/login, separate JWT
 - ADMIN-02: Admin can create teacher accounts (email, password, name, phone number)
 - ADMIN-03: Admin can edit and disable/enable teacher accounts
@@ -173,6 +188,7 @@
 - ADMIN-07: Admin dashboard shows platform-wide stats (teacher count, class count, student count, submission count)
 
 **Success Criteria:**
+
 1. Admin logs in at /admin/login with env-seeded credentials; sees dashboard with platform stats.
 2. Admin creates a new teacher account with name, email, phone, password — teacher can immediately log in.
 3. Admin disables a teacher account — that teacher cannot log in until re-enabled.
@@ -180,6 +196,7 @@
 5. Admin views all students and can drill into any student's homework result.
 
 **Plans:**
+
 - [ ] 06-01-PLAN.md — Schema: ADMIN role + User.email/name/phone/disabled + Class.teacherId + AdminGuard + ensureAdminUser seed (Wave 1)
 - [ ] 06-02-PLAN.md — POST /admin/auth/login endpoint + frontend /admin/login page + middleware guard (Wave 1)
 - [ ] 06-03-PLAN.md — Teacher CRUD: GET/POST/PATCH /admin/teachers + frontend teacher management page (Wave 2)
@@ -203,6 +220,7 @@
 **Depends on:** Phase 5 (plan 07 complete)
 
 **Requirements:**
+
 - BFA-06: Audio length gate — reject clips shorter than 0.5s or longer than 15s; client shows specific "recording too short/long" error
 - BFA-07: Audio gain normalization — normalize input audio to consistent loudness level before ASR to handle cheap tablet vs. good mic variance
 - BFA-08: Energy/noise gate — if RMS energy or SNR below threshold, return `"recording_too_noisy"` error; client shows "mic quá ồn, thử lại" instead of score 0
@@ -210,6 +228,7 @@
 - BFA-10: Language mixing detection — if transcribed text contains >50% non-English tokens (langdetect), return `"wrong_language"`; client shows "please speak in English"
 
 **Success Criteria:**
+
 1. Submitting a 0.3s clip returns HTTP 400 with `error: "audio_too_short"` — no score computed.
 2. Submitting audio recorded in a noisy environment (SNR < 10dB) returns `"recording_too_noisy"` — student sees actionable message, not 0/100.
 3. Submitting silence returns `"speech_not_detected"` — no score stored.
@@ -217,6 +236,7 @@
 5. All existing passing phonics tests still pass after audio gates added.
 
 **Plans:** 2 plans
+
 - [x] 07-01-PLAN.md — bfa-service: all 5 audio gates (length / loudnorm / RMS / ASR confidence / langdetect) + pytest suite (Wave 1)
 - [x] 07-02-PLAN.md — Backend BFA error forwarding (DTO + axios 400 catch) + frontend amber error display per gate code (Wave 2)
 
@@ -230,6 +250,7 @@
 **Source:** STATEGY.MD Exercise 4 — Vocabulary by Image
 
 **Requirements:**
+
 - VOCAB-01: Teacher can create a Vocabulary homework: upload one image per item, assign the expected word label per image
 - VOCAB-02: Teacher can sequence multiple image-word items (up to 10) in one homework
 - VOCAB-03: Student opens vocab homework, sees image, presses record, speaks the word, receives phoneme feedback chips identical to phonics game
@@ -237,12 +258,14 @@
 - VOCAB-05: Teacher views per-student per-item score breakdown in results page
 
 **Success Criteria:**
+
 1. Teacher creates a vocabulary homework with 3 images and assigns word labels — homework appears in class list with type VOCABULARY.
 2. Student completes all items in sequence; result screen shows per-word score + phoneme chips.
 3. Score stored per item in DB; teacher sees which images each student struggled with.
 4. Phonetically close substitution (cat→cap: /k æ t/ vs /k æ p/) shows `p` as yellow (similar to `t`), not red.
 
 **Plans:**
+
 - [ ] 08-01-PLAN.md — Schema: HomeworkType.VOCABULARY + VocabItem model (imageUrl, word, phonemes) + Prisma migration (Wave 1)
 - [ ] 08-02-PLAN.md — Backend: VOCAB CRUD endpoints + game service VOCAB branch (reuse BFA analyze pipeline) + result storage (Wave 2)
 - [ ] 08-03-PLAN.md — Teacher creation page: VOCABULARY type picker + image upload + word label per item + sequence reorder (Wave 3)
@@ -259,6 +282,7 @@
 **Source:** STATEGY.MD Exercise 2 — Listen and Answer
 
 **Requirements:**
+
 - LISTEN-01: Teacher creates Q&A homework: upload or generate audio prompt + specify expected keywords/answer
 - LISTEN-02: Teacher can sequence multiple Q&A items (up to 10) per homework
 - LISTEN-03: Student listens to audio prompt, records answer, submits
@@ -269,6 +293,7 @@
 - LISTEN-08: Teacher views per-student transcript + semantic score + pronunciation score breakdown
 
 **Success Criteria:**
+
 1. Teacher creates homework with 2 Q&A items — each has audio prompt and expected keywords.
 2. Student hears prompt, records "Red." for expected "The cat is red." — semantic similarity score > 0.6 (accepts truncated child answers).
 3. Student hears prompt, records entirely wrong answer — score < 0.3.
@@ -276,6 +301,7 @@
 5. sentence-transformers model loads on bfa-service startup; no cold-start penalty after first request.
 
 **Plans:**
+
 - [ ] 09-01-PLAN.md — Schema: HomeworkType.LISTEN + ListenItem model (audioUrl, keywords, expectedText) + Prisma migration (Wave 1)
 - [ ] 09-02-PLAN.md — bfa-service: add sentence-transformers MiniLM + `/score-semantic` endpoint + composite scoring logic (Wave 2)
 - [ ] 09-03-PLAN.md — Backend: LISTEN CRUD endpoints + game service LISTEN branch (transcribe → semantic score → BFA pronunciation) + result storage (Wave 3)
@@ -307,11 +333,13 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 | Dependencies | phonemizer + espeak-ng | requests only (REST) |
 
 **Requirements:**
+
 - BFA-11: Azure PA REST API replaces Groq ASR + espeak G2P; per-phoneme AccuracyScore maps to correct/similar/substituted/missing
 - BFA-12: All 5 audio gates (BFA-06 through BFA-10) preserved unchanged
 - BFA-13: DTO shapes for /analyze, /analyze-speaking, /transcribe unchanged — NestJS and frontend zero changes
 
 **Success Criteria:**
+
 1. Student says "cat" correctly — all phoneme chips green; score ≥ 80 from Azure acoustic model.
 2. Student says "cap" for "cat" — `t` phoneme chip shows yellow or red based on Azure score; score < 80.
 3. All 5 audio gate errors still fire (too short, too long, noisy, not detected, wrong language).
@@ -319,6 +347,7 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 5. `GROQ_API_KEY` removed from bfa-service; `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` added.
 
 **Plans:**
+
 - [x] 10-01-PLAN.md — bfa-service: Azure PA REST client + score mapping + remove Groq/espeak + update tests
 
 ---
@@ -330,6 +359,7 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 **Depends on:** Phase 3, Phase 4, Phase 6
 
 **Requirements:**
+
 - FE-01: Introduce shared Material UI theme (palette, typography, spacing, component variants) and apply globally
 - FE-02: Replace ad-hoc core UI primitives (buttons, inputs, dialogs, tables, badges) with reusable MUI-based shared components
 - FE-03: Refactor key teacher flows (homework creation, assignment, dashboard tables) to MUI components without behavior regressions
@@ -337,12 +367,14 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 - FE-05: Refactor admin portal pages to MUI data-entry and table patterns with consistent validation/error states
 
 **Success Criteria:**
+
 1. Frontend has a single source of truth theme and no duplicated page-level styling tokens for core primitives.
 2. Existing teacher, student, and admin core flows remain functionally equivalent after migration.
 3. All migrated pages pass existing lint/build checks and manual smoke test checklist.
 4. New screens can be scaffolded from shared MUI components without introducing one-off style systems.
 
 **Plans:** 4 plans
+
 - [ ] 11-01-PLAN.md — MUI install + base/student theme + root & game ThemeProviders + remove Tailwind/shadcn + delete components/ui (Wave 1)
 - [ ] 11-02-PLAN.md — Teacher area: TeacherShell + 10 teacher pages + ReadingCreationPage (dnd-kit wrapper -> Paper) + shake keyframe (Wave 2, depends 11-01)
 - [ ] 11-03-PLAN.md — Student/game area: 4 game components + 4 game pages + login DatePicker; gradients/minWidth/shake preserved (Wave 2, depends 11-01)
@@ -429,6 +461,7 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 **Depends on:** Phase 6, Phase 11
 
 **Requirements:**
+
 - SUBDOMAIN-01: Next.js middleware reads `Host` header and rewrites routing to admin/teacher/student entry points per subdomain
 - SUBDOMAIN-02: Each subdomain serves only the routes appropriate for that role (admin.* cannot serve /teacher routes, etc.)
 - SUBDOMAIN-03: Each subdomain has its own login page with role-appropriate auth flow
@@ -437,6 +470,7 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 - SUBDOMAIN-06: Docker Compose updated with subdomain-aware configuration
 
 **Success Criteria:**
+
 1. Visiting `admin.katie.vn` serves the admin portal and rejects teacher/student JWT tokens.
 2. Visiting `app.katie.vn` serves the teacher dashboard and rejects admin/student JWT tokens.
 3. Visiting `student.katie.vn` serves the student game and rejects admin/teacher JWT tokens.
@@ -444,7 +478,8 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 5. Build and Docker Compose work with no regression on existing functionality.
 
 **Plans:**
-- [ ] 12-01-PLAN.md — Next.js middleware.ts + dev:admin/teacher/student scripts + docker-compose env vars (Wave 1)
+1/3 plans executed
+
 - [ ] 12-02-PLAN.md — Cookie auth layer: Next.js API routes (teacher/admin/student-login) + dual-write auth libs + backend student game login endpoint (Wave 2, depends 12-01)
 - [ ] 12-03-PLAN.md — Login pages (teacher-only, student class-code) + 403/404 error pages + game/admin/teacher layout 403 guards (Wave 3, depends 12-02)
 
