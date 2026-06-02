@@ -80,6 +80,10 @@ services:
       dockerfile: Dockerfile
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_ADMIN_ORIGIN: ${NEXT_PUBLIC_ADMIN_ORIGIN:-http://admin.katie.vn}
+      NEXT_PUBLIC_APP_ORIGIN: ${NEXT_PUBLIC_APP_ORIGIN:-http://app.katie.vn}
+      NEXT_PUBLIC_STUDENT_ORIGIN: ${NEXT_PUBLIC_STUDENT_ORIGIN:-http://student.katie.vn}
+      NEXT_PUBLIC_LOGIN_URL: ${NEXT_PUBLIC_LOGIN_URL:-http://app.katie.vn/login}
     ports:
       - '3000:3000'
     depends_on:
