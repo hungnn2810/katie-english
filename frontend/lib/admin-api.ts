@@ -298,6 +298,69 @@ export interface Student {
 export type HomeworkType = 'PHONICS' | 'SPEAKING' | 'READING' | 'VOCABULARY';
 export type SpeakingMode = 'FREE_SPEAK' | 'SCRIPT_MATCH';
 
+// ── Phase 08: Vocabulary types ────────────────────────────────────────────────
+
+export interface VocabItem {
+  id: number;
+  homeworkId: number;
+  imageUrl: string;
+  word: string;
+  phonemes?: string | null;
+  order: number;
+}
+
+export interface CreateVocabItemInput {
+  imageUrl: string;
+  word: string;
+  phonemes?: string[];
+}
+
+export interface CreateVocabHomeworkInput {
+  name: string;
+  items: CreateVocabItemInput[];
+}
+
+export interface UpdateVocabHomeworkInput {
+  name?: string;
+  items?: CreateVocabItemInput[];
+}
+
+export interface VocabHomeworkDetail {
+  id: number;
+  name: string | null;
+  type: 'VOCABULARY';
+  vocabItems: VocabItem[];
+  assignments: AssignmentItem[];
+  createdAt: string;
+}
+
+export const createVocabHomework = (data: CreateVocabHomeworkInput) =>
+  req<VocabHomeworkDetail>('/homework/vocab', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+
+export const getVocabHomework = (id: number) =>
+  req<VocabHomeworkDetail>(`/homework/vocab/${id}`);
+
+export const updateVocabHomework = (id: number, data: UpdateVocabHomeworkInput) =>
+  req<VocabHomeworkDetail>(`/homework/vocab/${id}`, { method: 'PUT', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+
+export async function saveVocabResult(
+  sessionId: number,
+  vocabItemId: number,
+  audio?: Blob,
+): Promise<PhonicsItemResult> {
+  const form = new FormData();
+  form.append('vocabItemId', String(vocabItemId));
+  if (audio && audio.size > 0) form.append('audio', audio, 'audio.webm');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const res = await fetch(`${API_URL}/game/session/${sessionId}/vocab-result`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) return parseApiError(res);
+  return res.json();
+}
+
 export type ReadingActivityType = 'MATCH' | 'FILL_BLANK';
 
 export interface MatchPair {
