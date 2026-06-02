@@ -34,7 +34,14 @@ async function bootstrap() {
     logger: ['log', 'warn', 'error', 'debug', 'verbose'],
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
-  app.enableCors({ origin: '*' });
+  app.enableCors({
+    origin: [
+      process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? 'https://admin.katie.vn',
+      process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://app.katie.vn',
+      process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? 'https://student.katie.vn',
+    ],
+    credentials: true,
+  });
   await ensureTeacherUser(app.get(PrismaService));
   await ensureAdminUser(app.get(PrismaService));
   await app.listen(process.env.PORT ?? 3001);
