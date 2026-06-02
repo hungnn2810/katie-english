@@ -21,8 +21,31 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   const [user, setUser] = useState<AuthUser | null | undefined>(undefined);
 
   useEffect(() => {
+    // D-04: detect wrong-role cookie before checking teacher token
+    function getAnyRoleCookie(): string | null {
+      if (typeof window === 'undefined') return null;
+      for (const name of ['admin-token', 'student-token']) {
+        const c = document.cookie.split(';').find(s => s.trim().startsWith(name + '='));
+        if (c) return c.split('=').slice(1).join('=');
+      }
+      return null;
+    }
+    function decodeJwtRole(token: string): string | null {
+      try { return JSON.parse(atob(token.split('.')[1])).role ?? null; } catch { return null; }
+    }
+
     const u = getUser();
-    if (!u || u.role !== 'TEACHER') { router.replace('/login'); return; }
+    if (!u || u.role !== 'TEACHER') {
+      // If a non-teacher role cookie exists, show 403 instead of redirecting to login
+      const wrongRoleCookie = getAnyRoleCookie();
+      const wrongRole = wrongRoleCookie ? decodeJwtRole(wrongRoleCookie) : null;
+      if (wrongRole && wrongRole !== 'TEACHER') {
+        router.replace('/403');
+        return;
+      }
+      router.replace('/login');
+      return;
+    }
     setUser(u);
   }, [router]);
 

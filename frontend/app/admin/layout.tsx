@@ -22,8 +22,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     // Bypass auth gate for login page to prevent redirect loop
     if (pathname === '/admin/login') return;
+
+    // D-04: detect wrong-role cookie before checking admin token
+    function getAnyRoleCookie(): string | null {
+      if (typeof window === 'undefined') return null;
+      for (const name of ['teacher-token', 'student-token']) {
+        const c = document.cookie.split(';').find(s => s.trim().startsWith(name + '='));
+        if (c) return c.split('=').slice(1).join('=');
+      }
+      return null;
+    }
+    function decodeJwtRole(token: string): string | null {
+      try { return JSON.parse(atob(token.split('.')[1])).role ?? null; } catch { return null; }
+    }
+
     const u = getAdminUser();
-    if (!u || u.role !== 'ADMIN') { router.replace('/admin/login'); return; }
+    if (!u || u.role !== 'ADMIN') {
+      // If a non-admin role cookie exists, show 403 instead of redirecting to login
+      const wrongRoleCookie = getAnyRoleCookie();
+      const wrongRole = wrongRoleCookie ? decodeJwtRole(wrongRoleCookie) : null;
+      if (wrongRole && wrongRole !== 'ADMIN') {
+        router.replace('/403');
+        return;
+      }
+      router.replace('/admin/login');
+      return;
+    }
     setUser(u);
   }, [pathname, router]);
 
