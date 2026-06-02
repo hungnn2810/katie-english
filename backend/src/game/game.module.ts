@@ -6,11 +6,12 @@ import { WordModule } from '../word/word.module';
 import { GameRepository } from './game.repository';
 import { GameService } from './game.service';
 import { GameController } from './game.controller';
+import { GameAuthController } from './game-auth.controller';
 import { GameJobsService } from './game.jobs.service';
 
 @Module({
 	imports: [PrismaModule, AuthModule, BfaModule, WordModule],
 	providers: [GameRepository, GameService, GameJobsService],
-	controllers: [GameController],
+	controllers: [GameController, GameAuthController],
 })
 export class GameModule {}

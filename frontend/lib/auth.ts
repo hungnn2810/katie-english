@@ -19,7 +19,10 @@ export interface AuthUser {
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token');
+  const lsToken = localStorage.getItem('token');
+  if (lsToken) return lsToken;
+  // Cookie fallback for sessions established via /api/auth/teacher-login route handler
+  return document.cookie.split(';').find(c => c.trim().startsWith('teacher-token='))?.split('=')[1] ?? null;
 }
 
 export function getUser(): AuthUser | null {
@@ -31,11 +34,15 @@ export function getUser(): AuthUser | null {
 export function setAuth(token: string, user: AuthUser) {
   localStorage.setItem('token', token);
   localStorage.setItem('user', JSON.stringify(user));
+  // Dual-write: non-HttpOnly cookie for client-side API calls (T-12-02-03: transitional fallback)
+  document.cookie = `teacher-token=${token}; path=/; SameSite=Lax; max-age=604800`;
 }
 
 export function clearAuth() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  // Expire the client-written cookie as well
+  document.cookie = 'teacher-token=; path=/; max-age=0';
 }
 
 export function authHeaders(): HeadersInit {
