@@ -1,8 +1,9 @@
 import {
   Controller, Get, Post, Param, Body, ParseIntPipe,
   UseInterceptors, UploadedFile, UseGuards,
-  HttpCode, Query,
+  HttpCode, Query, Req, BadRequestException,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GameService } from './game.service';
 import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto } from './game.dto';
@@ -40,7 +41,11 @@ export class GameController {
     @Body('transcribedText') transcribedText: string,
     @UploadedFile() audio?: Express.Multer.File,
   ) {
-    const dto: SavePhonicsResultDto = { wordId: Number(wordId), transcribedText };
+    const wordIdNum = Number(wordId);
+    if (!Number.isFinite(wordIdNum) || wordIdNum <= 0) {
+      throw new BadRequestException('wordId must be a positive integer');
+    }
+    const dto: SavePhonicsResultDto = { wordId: wordIdNum, transcribedText };
     return this.service.savePhonicsResult(id, dto, audio?.buffer, audio?.mimetype);
   }
 
@@ -80,9 +85,15 @@ export class GameController {
     @Body('vocabItemId') vocabItemId: string,
     @Body('transcribedText') transcribedText: string,
     @UploadedFile() audio?: Express.Multer.File,
+    @Req() req: Request,
   ) {
-    const dto: SaveVocabResultDto = { vocabItemId: Number(vocabItemId), transcribedText };
-    return this.service.saveVocabResult(id, dto, audio?.buffer, audio?.mimetype);
+    const vocabItemIdNum = Number(vocabItemId);
+    if (!Number.isFinite(vocabItemIdNum) || vocabItemIdNum <= 0) {
+      throw new BadRequestException('vocabItemId must be a positive integer');
+    }
+    const requestingStudentId: number = (req as any).user?.studentId ?? 0;
+    const dto: SaveVocabResultDto = { vocabItemId: vocabItemIdNum, transcribedText };
+    return this.service.saveVocabResult(id, dto, requestingStudentId, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/reading-result')

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
 import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
@@ -282,13 +282,16 @@ export class GameService {
   async saveVocabResult(
     sessionId: number,
     dto: SaveVocabResultDto,
+    requestingStudentId: number,
     audioBuffer?: Buffer,
     mimeType?: string,
   ) {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
+    if (session.studentId !== requestingStudentId) {
+      throw new ForbiddenException("Not your session");
+    }
     if (session.completedAt) throw new BadRequestException('Session already completed');
-
     const hw = session.assignment.homework;
     if (hw.type !== 'VOCABULARY') throw new BadRequestException('Homework is not a VOCABULARY type');
 
