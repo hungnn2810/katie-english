@@ -21,7 +21,7 @@ export function getAdminToken(): string | null {
   const lsToken = localStorage.getItem('admin_token');
   if (lsToken) return lsToken;
   // Cookie fallback for sessions established via /api/auth/admin-login route handler
-  return document.cookie.split(';').find(c => c.trim().startsWith('admin-token='))?.split('=')[1] ?? null;
+  return document.cookie.split(';').find(c => c.trim().startsWith('admin-token='))?.split('=').slice(1).join('=') ?? null;
 }
 
 export function getAdminUser(): AdminUser | null {

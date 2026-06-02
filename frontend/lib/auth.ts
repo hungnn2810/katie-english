@@ -22,7 +22,7 @@ export function getToken(): string | null {
   const lsToken = localStorage.getItem('token');
   if (lsToken) return lsToken;
   // Cookie fallback for sessions established via /api/auth/teacher-login route handler
-  return document.cookie.split(';').find(c => c.trim().startsWith('teacher-token='))?.split('=')[1] ?? null;
+  return document.cookie.split(';').find(c => c.trim().startsWith('teacher-token='))?.split('=').slice(1).join('=') ?? null;
 }
 
 export function getUser(): AuthUser | null {
