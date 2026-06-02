@@ -22,7 +22,12 @@ export class SaveVocabResultDto {
   transcribedText?: string;
 }
 
+import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+
 export class GameLoginDto {
+  @IsString() @IsNotEmpty() @MaxLength(20)
   classCode: string;
+
+  @IsString() @IsNotEmpty() @MaxLength(100)
   name: string;
 }

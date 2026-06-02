@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { PrismaService } from './prisma/prisma.service';
 import { UserRole } from '@prisma/client';
@@ -32,6 +33,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'warn', 'error', 'debug', 'verbose'],
   });
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   app.enableCors({ origin: '*' });
   await ensureTeacherUser(app.get(PrismaService));
   await ensureAdminUser(app.get(PrismaService));
