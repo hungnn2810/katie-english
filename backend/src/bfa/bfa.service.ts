@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 import { BfaAlignResult, BfaAnalyzeResult, BfaSpeakingResult, WhisperXResult } from './bfa.dto';
 
 const AZURE_SPEECH_KEY = process.env.AZURE_SPEECH_KEY ?? '';
@@ -23,9 +24,11 @@ function mimeToExt(mimeType: string): string {
 }
 
 function toWav(audioBuffer: Buffer, mimeType: string): Buffer {
+function toWav(audioBuffer: Buffer, mimeType: string): Buffer {
   const ext = mimeToExt(mimeType);
-  const tmpIn = path.join(os.tmpdir(), `apa-in-${process.hrtime.bigint()}.${ext}`);
-  const tmpOut = path.join(os.tmpdir(), `apa-out-${process.hrtime.bigint()}.wav`);
+  const id = randomUUID();
+  const tmpIn  = path.join(os.tmpdir(), `apa-in-${id}.${ext}`);
+  const tmpOut = path.join(os.tmpdir(), `apa-out-${id}.wav`);
   try {
     fs.writeFileSync(tmpIn, audioBuffer);
     execFileSync('ffmpeg', ['-y', '-i', tmpIn, '-ar', '16000', '-ac', '1', '-f', 'wav', tmpOut], {
