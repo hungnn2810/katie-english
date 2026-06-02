@@ -16,3 +16,8 @@ export class SaveReadingResultDto {
   correctItems: number;
   totalItems: number;
 }
+
+export class SaveVocabResultDto {
+  vocabItemId: number;
+  transcribedText?: string;
+}

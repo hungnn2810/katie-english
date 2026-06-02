@@ -4,7 +4,7 @@ import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { BfaAnalyzeResult } from '../bfa/bfa.dto';
 import { WordRepository } from '../word/word.repository';
-import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto } from './game.dto';
+import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto } from './game.dto';
 import { calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -279,6 +279,64 @@ export class GameService {
     return { ...result, bfa: bfaResult };
   }
 
+  async saveVocabResult(
+    sessionId: number,
+    dto: SaveVocabResultDto,
+    audioBuffer?: Buffer,
+    mimeType?: string,
+  ) {
+    const session = await this.repo.getSession(sessionId);
+    if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
+    if (session.completedAt) throw new BadRequestException('Session already completed');
+
+    const hw = session.assignment.homework;
+    if (hw.type !== 'VOCABULARY') throw new BadRequestException('Homework is not a VOCABULARY type');
+
+    // Verify the VocabItem belongs to this homework (T-08-03: cross-homework tamper guard)
+    const vocabItems = (hw as any).vocabItems as { id: number; word: string; phonemes: string | null }[] ?? [];
+    const vocabItem = vocabItems.find((vi) => vi.id === dto.vocabItemId);
+    if (!vocabItem) throw new BadRequestException(`VocabItem ${dto.vocabItemId} not found in this homework`);
+
+    let expectedPhonemes: string[] = [];
+    if (vocabItem.phonemes) {
+      try {
+        const parsed = JSON.parse(vocabItem.phonemes);
+        if (Array.isArray(parsed) && parsed.every((p) => typeof p === 'string')) {
+          expectedPhonemes = parsed;
+        }
+      } catch { /* malformed JSON — fall through to [] */ }
+    }
+
+    let score = 0;
+    let bfaResult: BfaAnalyzeResult | null = null;
+    let transcribedText = dto.transcribedText ?? '';
+
+    this.logger.log(
+      `[session=${sessionId}] vocab word="${vocabItem.word}" audio=${audioBuffer ? `${audioBuffer.length}B ${mimeType}` : 'none'}`,
+    );
+
+    if (audioBuffer && audioBuffer.length > 0) {
+      try {
+        bfaResult = await this.bfa.analyze(
+          audioBuffer,
+          mimeType ?? 'audio/webm',
+          vocabItem.word,
+          expectedPhonemes,
+        );
+        this.logger.log(
+          `[session=${sessionId}] BFA analyze vocab: success=${bfaResult.success} score=${bfaResult.score}`,
+        );
+        transcribedText = bfaResult.transcription?.text ?? transcribedText;
+        score = bfaResult.success ? bfaResult.score : 0;
+      } catch (err) {
+        this.logger.warn(`[session=${sessionId}] BFA analyze error for vocab "${vocabItem.word}": ${(err as Error).message}`);
+      }
+    }
+
+    const result = await this.repo.saveVocabResult(sessionId, dto.vocabItemId, transcribedText, score);
+    return { ...result, bfa: bfaResult };
+  }
+
   async saveReadingResult(sessionId: number, dto: SaveReadingResultDto) {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
@@ -316,6 +374,12 @@ export class GameService {
     } else if (hw.type === 'READING') {
       const rr = await this.repo.getReadingResult(sessionId);
       avgScore = rr ? rr.score : 0;
+    } else if (hw.type === 'VOCABULARY') {
+      const vocabItems = (hw as any).vocabItems as unknown[] ?? [];
+      const count = vocabItems.length;
+      const phonicsResults = session.phonicsResults ?? [];
+      const scoreSum = phonicsResults.reduce((s: number, r: { score: number }) => s + r.score, 0);
+      avgScore = count > 0 ? scoreSum / count : 0;
     } else {
       const phonicsResults = session.phonicsResults ?? [];
       const totalWords = hw.parts.reduce((s: number, p: { words: unknown[] }) => s + p.words.length, 0);

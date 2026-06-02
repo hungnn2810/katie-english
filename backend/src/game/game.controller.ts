@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GameService } from './game.service';
-import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto } from './game.dto';
+import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto } from './game.dto';
 import { AuthGuard, TeacherGuard } from '../auth/auth.guard';
 import { GameJobsService } from './game.jobs.service';
 
@@ -71,6 +71,18 @@ export class GameController {
     @UploadedFile() audio?: Express.Multer.File,
   ) {
     return this.service.tryPhonicsHomework(hwId, Number(wordId), audio?.buffer, audio?.mimetype);
+  }
+
+  @Post('session/:id/vocab-result')
+  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  saveVocabResult(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('vocabItemId') vocabItemId: string,
+    @Body('transcribedText') transcribedText: string,
+    @UploadedFile() audio?: Express.Multer.File,
+  ) {
+    const dto: SaveVocabResultDto = { vocabItemId: Number(vocabItemId), transcribedText };
+    return this.service.saveVocabResult(id, dto, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/reading-result')

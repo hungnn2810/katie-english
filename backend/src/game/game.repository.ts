@@ -14,12 +14,19 @@ const readingActivitiesInclude = {
   },
 };
 
+const vocabItemsInclude = {
+  vocabItems: {
+    orderBy: { order: 'asc' as const },
+  },
+};
+
 const homeworkInclude = {
   parts: {
     include: { words: { orderBy: { order: 'asc' as const } } },
     orderBy: { order: 'asc' as const },
   },
   ...readingActivitiesInclude,
+  ...vocabItemsInclude,
 };
 
 const sessionInclude = {
@@ -31,7 +38,7 @@ const sessionInclude = {
   },
   student: true,
   speakingResults: true,
-  phonicsResults: { include: { word: true } },
+  phonicsResults: { include: { word: true, vocabItem: true } },
   // NOTE: Per-activity result tracking (readingActivityResults with matchingResults/fillInBlankResults)
   // was deferred — the DB schema stores only the aggregate ReadingResult (correctItems/totalItems/score).
   // The homework's readingActivities structure is available via assignment.homework.readingActivities
@@ -92,12 +99,39 @@ export class GameRepository {
     });
   }
 
-  savePhonicsResult(sessionId: number, wordId: number, transcribedText: string, score: number) {
-    return this.prisma.phonicsItemResult.upsert({
-      where: { sessionId_wordId: { sessionId, wordId } },
-      update: { transcribedText, score },
-      create: { sessionId, wordId, transcribedText, score },
+  async savePhonicsResult(sessionId: number, wordId: number, transcribedText: string, score: number) {
+    // Application-layer upsert — named unique on (sessionId, wordId) was dropped in 08-01 migration.
+    const existing = await this.prisma.phonicsItemResult.findFirst({
+      where: { sessionId, wordId },
+    });
+    if (existing) {
+      return this.prisma.phonicsItemResult.update({
+        where: { id: existing.id },
+        data: { transcribedText, score },
+        include: { word: true },
+      });
+    }
+    return this.prisma.phonicsItemResult.create({
+      data: { sessionId, wordId, transcribedText, score },
       include: { word: true },
+    });
+  }
+
+  async saveVocabResult(sessionId: number, vocabItemId: number, transcribedText: string, score: number) {
+    // Application-layer upsert keyed on { sessionId, vocabItemId }.
+    const existing = await this.prisma.phonicsItemResult.findFirst({
+      where: { sessionId, vocabItemId },
+    });
+    if (existing) {
+      return this.prisma.phonicsItemResult.update({
+        where: { id: existing.id },
+        data: { transcribedText, score },
+        include: { vocabItem: true },
+      });
+    }
+    return this.prisma.phonicsItemResult.create({
+      data: { sessionId, vocabItemId, transcribedText, score },
+      include: { vocabItem: true },
     });
   }
 
