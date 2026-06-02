@@ -5,7 +5,7 @@ import AuthGate from '@/components/AuthGate';
 import { getAvailableHomework, startSession, AssignmentItem, HomeworkType } from '@/lib/admin-api';
 import { AuthUser, clearAuth, changePassword } from '@/lib/auth';
 import { cardGradients, gradients } from '@/lib/colors';
-import { Hash, Mic, BookOpen, Lock, CheckCircle2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap } from 'lucide-react';
+import { Hash, Mic, BookOpen, ImageIcon, Lock, CheckCircle2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap } from 'lucide-react';
 import { parseApiDateTime } from '@/lib/datetime';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -20,9 +20,10 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType }> = {
-  PHONICS:  { label: 'Phonics',  icon: Hash },
-  SPEAKING: { label: 'Speaking', icon: Mic },
-  READING:  { label: 'Reading',  icon: BookOpen },
+  PHONICS:    { label: 'Phonics',    icon: Hash },
+  SPEAKING:   { label: 'Speaking',   icon: Mic },
+  READING:    { label: 'Reading',    icon: BookOpen },
+  VOCABULARY: { label: 'Vocabulary', icon: ImageIcon },
 };
 
 function PageContent({ user }: { user: AuthUser }) {
@@ -79,6 +80,8 @@ function PageContent({ user }: { user: AuthUser }) {
       const hwType = session.assignment?.homework?.type;
       if (hwType === 'READING') {
         router.push(`/game/reading/${session.id}`);
+      } else if (hwType === 'VOCABULARY') {
+        router.push(`/game/vocab/${session.id}`);
       } else {
         router.push(`/game/session/${session.id}`);
       }
@@ -342,6 +345,11 @@ function PageContent({ user }: { user: AuthUser }) {
                       {hw.type === 'READING' && (
                         <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700 }}>
                           <BookOpen size={14} /> {(hw.readingActivities ?? []).length} activit{(hw.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}
+                        </Box>
+                      )}
+                      {hw.type === 'VOCABULARY' && (
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700 }}>
+                          <ImageIcon size={14} /> {(hw.vocabItems ?? []).length} item{(hw.vocabItems ?? []).length !== 1 ? 's' : ''}
                         </Box>
                       )}
                     </Box>
