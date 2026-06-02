@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { HomeworkService } from './homework.service';
-import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto } from './homework.dto';
+import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto, CreateVocabHomeworkDto, UpdateVocabHomeworkDto } from './homework.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { StorageService } from '../storage/storage.service';
 
@@ -27,6 +27,11 @@ export class HomeworkController {
   @Post('reading') createReading(@Body() dto: CreateReadingHomeworkDto) { return this.service.createReadingHomework(dto); }
   @Get('reading/:id') findReading(@Param('id', ParseIntPipe) id: number) { return this.service.findReadingById(id); }
   @Put('reading/:id') updateReading(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateReadingHomeworkDto) { return this.service.updateReadingHomework(id, dto); }
+
+  // ── Vocab-specific routes (must precede generic :id routes) ──────────────
+  @Post('vocab') createVocab(@Body() dto: CreateVocabHomeworkDto) { return this.service.createVocabHomework(dto); }
+  @Get('vocab/:id') findVocab(@Param('id', ParseIntPipe) id: number) { return this.service.findVocabById(id); }
+  @Put('vocab/:id') updateVocab(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateVocabHomeworkDto) { return this.service.updateVocabHomework(id, dto); }
 
   @Get() findAll() { return this.service.findAll(); }
   @Get(':id') findOne(@Param('id', ParseIntPipe) id: number) { return this.service.findById(id); }

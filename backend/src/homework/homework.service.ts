@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { HomeworkRepository } from './homework.repository';
-import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto } from './homework.dto';
+import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto, CreateVocabHomeworkDto, UpdateVocabHomeworkDto } from './homework.dto';
 
 @Injectable()
 export class HomeworkService {
@@ -116,6 +116,56 @@ export class HomeworkService {
         }
       }
     }
+  }
+
+  // ── Plan 08-02 vocab service methods ─────────────────────────────────────
+
+  async findVocabById(id: number) {
+    const hw = await this.repo.findVocabById(id);
+    if (!hw) throw new NotFoundException(`Vocabulary homework ${id} not found`);
+    return hw;
+  }
+
+  createVocabHomework(dto: CreateVocabHomeworkDto) {
+    if (!dto.name?.trim()) {
+      throw new BadRequestException('Name is required');
+    }
+    if (!Array.isArray(dto.items) || dto.items.length === 0) {
+      throw new BadRequestException('At least one item is required');
+    }
+    if (dto.items.length > 10) {
+      throw new BadRequestException('Too many items (max 10)');
+    }
+    for (const item of dto.items) {
+      if (!item.word?.trim()) {
+        throw new BadRequestException('Each item must have a non-empty word');
+      }
+      if (!item.imageUrl?.trim()) {
+        throw new BadRequestException('Each item must have a non-empty imageUrl');
+      }
+    }
+    return this.repo.createVocabHomework(dto);
+  }
+
+  async updateVocabHomework(id: number, dto: UpdateVocabHomeworkDto) {
+    await this.findVocabById(id);
+    if (dto.items !== undefined) {
+      if (!Array.isArray(dto.items) || dto.items.length === 0) {
+        throw new BadRequestException('At least one item is required');
+      }
+      if (dto.items.length > 10) {
+        throw new BadRequestException('Too many items (max 10)');
+      }
+      for (const item of dto.items) {
+        if (!item.word?.trim()) {
+          throw new BadRequestException('Each item must have a non-empty word');
+        }
+        if (!item.imageUrl?.trim()) {
+          throw new BadRequestException('Each item must have a non-empty imageUrl');
+        }
+      }
+    }
+    return this.repo.updateVocabHomework(id, dto);
   }
 
   private validateReadingDto(dto: CreateHomeworkDto): void {

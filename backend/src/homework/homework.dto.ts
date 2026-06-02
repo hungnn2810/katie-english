@@ -1,4 +1,4 @@
-export type HomeworkType = 'PHONICS' | 'SPEAKING' | 'READING';
+export type HomeworkType = 'PHONICS' | 'SPEAKING' | 'READING' | 'VOCABULARY';
 export type SpeakingMode = 'FREE_SPEAK' | 'SCRIPT_MATCH';
 export type ReadingActivityType = 'MATCH' | 'FILL_BLANK';
 
@@ -92,4 +92,22 @@ export class CreateReadingHomeworkDto {
 export class UpdateReadingHomeworkDto {
   name?: string;
   activities?: CreateReadingActivityDto[];
+}
+
+// ── Plan 08-02 vocab-specific DTOs ───────────────────────────────────────────
+
+export class CreateVocabItemDto {
+  imageUrl: string;
+  word: string;
+  phonemes?: string[];
+}
+
+export class CreateVocabHomeworkDto {
+  name: string;
+  items: CreateVocabItemDto[];
+}
+
+export class UpdateVocabHomeworkDto {
+  name?: string;
+  items?: CreateVocabItemDto[];
 }

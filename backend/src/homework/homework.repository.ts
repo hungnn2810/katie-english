@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto } from './homework.dto';
+import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto, CreateVocabHomeworkDto, UpdateVocabHomeworkDto } from './homework.dto';
 
 const partsInclude = {
   parts: {
@@ -18,6 +18,12 @@ const readingActivitiesInclude = {
         orderBy: { order: 'asc' as const },
       },
     },
+    orderBy: { order: 'asc' as const },
+  },
+};
+
+const vocabItemsInclude = {
+  vocabItems: {
     orderBy: { order: 'asc' as const },
   },
 };
@@ -284,6 +290,61 @@ export class HomeworkRepository {
         ...(dto.activities !== undefined ? { readingActivities: buildReadingActivitiesCreate(dto.activities) } : {}),
       },
       include: { ...readingActivitiesInclude, assignments: { include: assignmentInclude } },
+    });
+  }
+
+  // ── Plan 08-02 vocab CRUD ─────────────────────────────────────────────────
+
+  findVocabById(id: number) {
+    return this.prisma.homework.findUnique({
+      where: { id },
+      include: {
+        ...vocabItemsInclude,
+        assignments: { include: assignmentInclude },
+      },
+    });
+  }
+
+  createVocabHomework(dto: CreateVocabHomeworkDto) {
+    return this.prisma.homework.create({
+      data: {
+        type: 'VOCABULARY',
+        name: dto.name,
+        vocabItems: {
+          create: dto.items.map((item, idx) => ({
+            imageUrl: item.imageUrl,
+            word: item.word,
+            phonemes: item.phonemes ? JSON.stringify(item.phonemes) : null,
+            order: idx,
+          })),
+        },
+      },
+      include: { ...vocabItemsInclude, assignments: { include: assignmentInclude } },
+    });
+  }
+
+  async updateVocabHomework(id: number, dto: UpdateVocabHomeworkDto) {
+    if (dto.items !== undefined) {
+      await this.prisma.vocabItem.deleteMany({ where: { homeworkId: id } });
+    }
+    return this.prisma.homework.update({
+      where: { id },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name } : {}),
+        ...(dto.items !== undefined
+          ? {
+              vocabItems: {
+                create: dto.items.map((item, idx) => ({
+                  imageUrl: item.imageUrl,
+                  word: item.word,
+                  phonemes: item.phonemes ? JSON.stringify(item.phonemes) : null,
+                  order: idx,
+                })),
+              },
+            }
+          : {}),
+      },
+      include: { ...vocabItemsInclude, assignments: { include: assignmentInclude } },
     });
   }
 }
