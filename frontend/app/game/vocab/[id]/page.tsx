@@ -144,9 +144,10 @@ export default function VocabGamePage() {
   }
 
   const handleStopAndScore = useCallback(async () => {
-    setItems((prev) => prev.map((item, i) => i === currentIndex ? { ...item, recordState: 'scoring' } : item));
+    const capturedIndex = currentIndex;  // capture synchronously before any await
+    setItems((prev) => prev.map((item, i) => i === capturedIndex ? { ...item, recordState: 'scoring' } : item));
     const blob = await stopRecording();
-    const item = itemsRef.current[currentIndex];
+    const item = itemsRef.current[capturedIndex];
     if (!item) return;
     try {
       const result = await saveVocabResult(sessionId, item.vocabItemId, blob ?? undefined);
@@ -154,7 +155,7 @@ export default function VocabGamePage() {
       const bfaError = bfa?.error ?? null;
       const score = bfaError ? 0 : result.score;
       const feedback = bfa?.feedback ?? [];
-      setItems((prev) => prev.map((it, i) => i === currentIndex ? {
+      setItems((prev) => prev.map((it, i) => i === capturedIndex ? {
         ...it,
         score,
         bfa,
@@ -164,7 +165,7 @@ export default function VocabGamePage() {
       } : it));
     } catch {
       setSaveError(true);
-      setItems((prev) => prev.map((it, i) => i === currentIndex ? { ...it, recordState: 'recorded', bfaError: 'speech_not_detected' } : it));
+      setItems((prev) => prev.map((it, i) => i === capturedIndex ? { ...it, recordState: 'recorded', bfaError: 'speech_not_detected' } : it));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, sessionId]);
@@ -184,10 +185,11 @@ export default function VocabGamePage() {
       try {
         const session = await completeSession(sessionId);
         setResults(session);
+        setPageState('results');
       } catch {
         setSaveError(true);
+        setPageState('results');
       }
-      setPageState('results');
     }
   }
 
