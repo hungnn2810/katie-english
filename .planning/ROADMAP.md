@@ -21,6 +21,7 @@
 | 9 | Listen & Answer Exercise | Audio prompt → student answers → semantic score | v2 | 📋 Planned |
 | 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
 | 11 | Frontend React MUI Refactor | Standardize UI architecture and components with Material UI | v2 | 📋 Planned |
+| 12 | Multi-Subdomain Split | Route admin/teacher/student to separate subdomains via Next.js middleware | v2 | 📋 Planned |
 
 ---
 
@@ -419,5 +420,30 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 ---
 
+---
+
+### Phase 12: Multi-Subdomain Split
+
+**Goal:** Split the single Next.js app into three subdomain entry points using middleware-based routing: `admin.*` (admin portal), `app.*` (teacher dashboard), `student.*` (student game). Single codebase, three deployment targets with security isolation, separate auth flows, and per-role JS bundles.
+**Mode:** mvp
+**Depends on:** Phase 6, Phase 11
+
+**Requirements:**
+- SUBDOMAIN-01: Next.js middleware reads `Host` header and rewrites routing to admin/teacher/student entry points per subdomain
+- SUBDOMAIN-02: Each subdomain serves only the routes appropriate for that role (admin.* cannot serve /teacher routes, etc.)
+- SUBDOMAIN-03: Each subdomain has its own login page with role-appropriate auth flow
+- SUBDOMAIN-04: JWT cookies are scoped per subdomain to prevent token bleed between roles
+- SUBDOMAIN-05: Local development works without real subdomain DNS (configurable fallback)
+- SUBDOMAIN-06: Docker Compose updated with subdomain-aware configuration
+
+**Success Criteria:**
+1. Visiting `admin.katie.vn` serves the admin portal and rejects teacher/student JWT tokens.
+2. Visiting `app.katie.vn` serves the teacher dashboard and rejects admin/student JWT tokens.
+3. Visiting `student.katie.vn` serves the student game and rejects admin/teacher JWT tokens.
+4. Local dev can access all three entry points without DNS changes.
+5. Build and Docker Compose work with no regression on existing functionality.
+
+---
+
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-05-31 — Added Phase 11 (Frontend React MUI Refactor) to v2 roadmap*
+*Last updated: 2026-06-02 — Added Phase 12 (Multi-Subdomain Split)*
