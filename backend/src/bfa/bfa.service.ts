@@ -39,7 +39,7 @@ function toWav(audioBuffer: Buffer, mimeType: string): Buffer {
   }
 }
 
-function mapPhonemeOps(wordData: Record<string, any>) {
+export function mapPhonemeOps(wordData: Record<string, any>) {
   const errorType: string = wordData?.PronunciationAssessment?.ErrorType ?? 'None';
   const phonemes: Record<string, any>[] = wordData?.Phonemes ?? [];
   return phonemes.map((p) => {
