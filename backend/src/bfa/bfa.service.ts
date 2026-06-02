@@ -24,7 +24,6 @@ function mimeToExt(mimeType: string): string {
 }
 
 function toWav(audioBuffer: Buffer, mimeType: string): Buffer {
-function toWav(audioBuffer: Buffer, mimeType: string): Buffer {
   const ext = mimeToExt(mimeType);
   const id = randomUUID();
   const tmpIn  = path.join(os.tmpdir(), `apa-in-${id}.${ext}`);

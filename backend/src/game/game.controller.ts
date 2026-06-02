@@ -84,8 +84,8 @@ export class GameController {
     @Param('id', ParseIntPipe) id: number,
     @Body('vocabItemId') vocabItemId: string,
     @Body('transcribedText') transcribedText: string,
-    @UploadedFile() audio?: Express.Multer.File,
     @Req() req: Request,
+    @UploadedFile() audio?: Express.Multer.File,
   ) {
     const vocabItemIdNum = Number(vocabItemId);
     if (!Number.isFinite(vocabItemIdNum) || vocabItemIdNum <= 0) {

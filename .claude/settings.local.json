@@ -158,7 +158,8 @@
       "Bash(cp .planning/ROADMAP.md /tmp/roadmap_backup.md)",
       "Bash(cp /tmp/state_backup.md .planning/STATE.md)",
       "Bash(cp /tmp/roadmap_backup.md .planning/ROADMAP.md)",
-      "Bash(claude mcp *)"
+      "Bash(claude mcp *)",
+      "PowerShell(Get-ChildItem \"J:\\\\sources\\\\katie-english\\\\backend\\\\prisma\\\\migrations\" -Directory | Sort-Object Name | Select-Object -Last 3 | ForEach-Object { Write-Host $_.Name; Get-Content \\(Join-Path $_.FullName \"migration.sql\"\\) })"
     ]
   },
   "enableAllProjectMcpServers": true,

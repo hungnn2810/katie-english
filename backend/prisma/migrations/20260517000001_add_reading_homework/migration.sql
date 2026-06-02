@@ -1,9 +1,6 @@
 -- CreateEnum
 CREATE TYPE "ReadingActivityType" AS ENUM ('MATCH', 'FILL_BLANK');
 
--- AlterEnum
-ALTER TYPE "HomeworkType" ADD VALUE 'READING';
-
 -- CreateTable
 CREATE TABLE "reading_activities" (
     "id" SERIAL NOT NULL,
