@@ -7,9 +7,10 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import {
   getSession, GameSession, SpeakingResult, PhonicsItemResult,
-  ReadingActivityResult, MatchingItemResult, FillInBlankItemResult, SentenceSegment,
+  ReadingActivityResult, MatchingItemResult, FillInBlankItemResult, SentenceSegment, VocabItem,
 } from '@/lib/admin-api';
-import { Check, X, ChevronDown, ChevronRight, Hash, Mic, BookOpen } from 'lucide-react';
+import { Check, X, ChevronDown, ChevronRight, Hash, Mic, BookOpen, ImageIcon } from 'lucide-react';
+import { PhonemeChips } from '@/app/game/session/[id]/_components/PhonemeChips';
 
 function scoreHex(score: number) {
   if (score >= 80) return '#22C55E';
@@ -167,6 +168,53 @@ function ActivityResultCard({ activityResult }: { activityResult: ReadingActivit
   );
 }
 
+// ── VocabResultRow ────────────────────────────────────────────────────────────
+
+function VocabResultRow({ r }: { r: PhonicsItemResult }) {
+  const pct = r.score;
+  const color = scoreHex(pct);
+  const bg = scoreBg(pct);
+  const label = pct >= 80 ? `Great ${pct}%` : `${pct}%`;
+  const word = r.vocabItem?.word ?? '';
+  const imageUrl = r.vocabItem?.imageUrl;
+  const hasFeedback = r.bfa?.success && (r.bfa?.feedback ?? []).length > 0;
+
+  return (
+    <Paper variant="outlined" sx={{ borderRadius: 2, p: 2, border: '1px solid #E2E8F0' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        {/* Left: image thumbnail */}
+        {imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageUrl}
+            alt={word}
+            style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid #E2E8F0', flexShrink: 0 }}
+          />
+        )}
+        {/* Center: word + phoneme chips + transcribed text */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontSize: 16, fontWeight: 700, color: 'text.primary' }}>{word}</Typography>
+          {hasFeedback && <PhonemeChips feedback={r.bfa!.feedback} />}
+          {r.transcribedText && (
+            <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.5, fontStyle: 'italic' }}>
+              &quot;{r.transcribedText}&quot;
+            </Typography>
+          )}
+        </Box>
+        {/* Right: score badge */}
+        <Box
+          component="span"
+          aria-label={`${pct} percent — ${scoreLabel(pct)}`}
+          sx={{ flexShrink: 0, fontSize: 14, fontWeight: 700, px: 1.5, py: 0.5, borderRadius: '999px' }}
+          style={{ background: bg, color }}
+        >
+          {label}
+        </Box>
+      </Box>
+    </Paper>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function TeacherSessionDetailPage() {
@@ -180,9 +228,23 @@ export default function TeacherSessionDetailPage() {
     <Box sx={{ color: 'text.secondary', py: 8, textAlign: 'center' }}>Loading...</Box>
   );
 
+  const homeworkType = session.assignment?.homework?.type;
+  const isVocabulary = homeworkType === 'VOCABULARY';
+
   const speakingResults: SpeakingResult[] = session.speakingResults ?? [];
   const phonicsResults: PhonicsItemResult[] = session.phonicsResults ?? [];
   const readingActivityResults: ReadingActivityResult[] = session.readingActivityResults ?? [];
+
+  // Vocab results live in phonicsResults when homework type is VOCABULARY.
+  // Order them to match the vocabItems order when available.
+  const vocabItems: VocabItem[] = session.vocabItems ?? [];
+  const vocabResults: PhonicsItemResult[] = isVocabulary
+    ? (vocabItems.length > 0
+        ? vocabItems
+            .map((vi) => phonicsResults.find((r) => r.vocabItemId === vi.id))
+            .filter((r): r is PhonicsItemResult => r !== undefined)
+        : phonicsResults.filter((r) => r.vocabItem != null))
+    : [];
 
   const score = session.score != null ? Math.round(session.score) : null;
   const scoreColor = score != null ? scoreHex(score) : '#6B7280';
@@ -249,8 +311,8 @@ export default function TeacherSessionDetailPage() {
         </Box>
       </Paper>
 
-      {/* Phonics */}
-      {phonicsResults.length > 0 && (
+      {/* Phonics — hidden for VOCABULARY sessions (vocab rows live in phonicsResults but are rendered below) */}
+      {phonicsResults.length > 0 && !isVocabulary && (
         <Box sx={{ mb: 3 }}>
           <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box component="span" sx={{ width: 24, height: 24, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -373,7 +435,32 @@ export default function TeacherSessionDetailPage() {
         </Box>
       )}
 
-      {phonicsResults.length === 0 && speakingResults.length === 0 && readingActivityResults.length === 0 && (
+      {/* Vocabulary */}
+      {isVocabulary && (
+        <Box sx={{ mb: 3 }}>
+          <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, color: 'text.primary', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box component="span" sx={{ width: 24, height: 24, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ background: '#FFB26B18' }}>
+              <ImageIcon size={14} style={{ color: '#FFB26B' }} />
+            </Box>
+            <Box component="span" style={{ color: '#FFB26B' }}>Vocabulary</Box>
+            <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>({vocabResults.length})</Box>
+          </Typography>
+          {vocabResults.length > 0 ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {vocabResults.map((r) => (
+                <VocabResultRow key={r.id} r={r} />
+              ))}
+            </Box>
+          ) : (
+            <Paper variant="outlined" sx={{ color: 'text.secondary', fontSize: 14, py: 4, textAlign: 'center', borderRadius: 2 }}>
+              No submissions yet.
+            </Paper>
+          )}
+        </Box>
+      )}
+
+      {phonicsResults.length === 0 && speakingResults.length === 0 && readingActivityResults.length === 0 && !isVocabulary && (
         <Paper variant="outlined" sx={{ color: 'text.secondary', fontSize: 14, py: 5, textAlign: 'center', borderRadius: 4 }}>
           No results recorded yet.
         </Paper>
