@@ -408,9 +408,9 @@ export interface ListenItemResult {
   listenItemId: number;
   itemOrder: number;
   transcript: string;
-  semanticScore: number;
-  pronScore: number;
-  compositeScore: number;
+  semanticScore: number;   // 0.0–1.0
+  pronScore: number;       // 0.0–100
+  compositeScore: number;  // 0.0–1.0
   bfaFeedback?: string | null;
 }
 
@@ -424,6 +424,24 @@ export async function saveVocabResult(
   if (audio && audio.size > 0) form.append('audio', audio, 'audio.webm');
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const res = await fetch(`${API_URL}/game/session/${sessionId}/vocab-result`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) return parseApiError(res);
+  return res.json();
+}
+
+export async function saveListenResult(
+  sessionId: number,
+  listenItemId: number,
+  audio?: Blob,
+): Promise<ListenItemResult> {
+  const form = new FormData();
+  form.append('listenItemId', String(listenItemId));
+  if (audio && audio.size > 0) form.append('audio', audio, 'audio.webm');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const res = await fetch(`${API_URL}/game/session/${sessionId}/listen-result`, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: form,
