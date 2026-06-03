@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { HomeworkService } from './homework.service';
-import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto, CreateVocabHomeworkDto, UpdateVocabHomeworkDto } from './homework.dto';
+import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto, CreateVocabHomeworkDto, UpdateVocabHomeworkDto, CreateListenHomeworkDto, UpdateListenHomeworkDto } from './homework.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { StorageService } from '../storage/storage.service';
 
@@ -43,6 +43,28 @@ export class HomeworkController {
   @Post('vocab') createVocab(@Body() dto: CreateVocabHomeworkDto) { return this.service.createVocabHomework(dto); }
   @Get('vocab/:id') findVocab(@Param('id', ParseIntPipe) id: number) { return this.service.findVocabById(id); }
   @Put('vocab/:id') updateVocab(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateVocabHomeworkDto) { return this.service.updateVocabHomework(id, dto); }
+
+  // ── Audio upload for LISTEN prompts ──────────────────────────────────────
+  private static readonly ALLOWED_AUDIO_MIME = new Set(['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/webm', 'audio/ogg']);
+
+  @Post('audio')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  async uploadAudio(@UploadedFile() file?: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No file uploaded');
+    if (!HomeworkController.ALLOWED_AUDIO_MIME.has(file.mimetype)) {
+      throw new BadRequestException('Only mp3, wav, and webm audio files are accepted');
+    }
+    const ext = file.mimetype.includes('mpeg') || file.mimetype.includes('mp3') ? 'mp3'
+      : file.mimetype.includes('wav') ? 'wav' : 'webm';
+    const key = `listen-audio/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const url = await this.storage.upload(key, file.buffer, file.mimetype);
+    return { url };
+  }
+
+  // ── LISTEN-specific routes (must precede generic :id routes) ─────────────
+  @Post('listen') createListen(@Body() dto: CreateListenHomeworkDto) { return this.service.createListenHomework(dto); }
+  @Get('listen/:id') findListen(@Param('id', ParseIntPipe) id: number) { return this.service.findListenById(id); }
+  @Put('listen/:id') updateListen(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateListenHomeworkDto) { return this.service.updateListenHomework(id, dto); }
 
   @Get() findAll() { return this.service.findAll(); }
   @Get(':id') findOne(@Param('id', ParseIntPipe) id: number) { return this.service.findById(id); }

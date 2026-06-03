@@ -4,7 +4,7 @@ import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { BfaAnalyzeResult } from '../bfa/bfa.dto';
 import { WordRepository } from '../word/word.repository';
-import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto } from './game.dto';
+import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto, SaveListenResultDto } from './game.dto';
 import { calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenService } from '../auth/jwt.service';
@@ -393,6 +393,92 @@ export class GameService {
     return this.repo.listSessions(assignmentId, studentId);
   }
 
+  async saveListenResult(
+    sessionId: number,
+    dto: SaveListenResultDto,
+    requestingStudentId: number,
+    audioBuffer?: Buffer,
+    mimeType?: string,
+  ) {
+    const session = await this.repo.getSession(sessionId);
+    if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
+    if (session.studentId !== requestingStudentId) {
+      throw new ForbiddenException('Not your session');
+    }
+    if (session.completedAt) throw new BadRequestException('Session already completed');
+
+    const hw = session.assignment.homework;
+    if (hw.type !== 'LISTEN') throw new BadRequestException('Homework is not a LISTEN type');
+
+    const listenItems = (hw as any).listenItems as { id: number; keywords: string; expectedText: string }[] ?? [];
+    const listenItem = listenItems.find((li) => li.id === dto.listenItemId);
+    if (!listenItem) throw new BadRequestException(`ListenItem ${dto.listenItemId} not found in this homework`);
+
+    let transcript = dto.transcribedText ?? '';
+    let pronScore = 0;
+    let semanticScore = 0;
+    let matchedKeywords: string[] = [];
+    let bfaFeedbackJson: string | null = null;
+
+    if (audioBuffer && audioBuffer.length > 0) {
+      // Step 1: Transcribe only — use existing BfaService.transcribe (Azure STT, no BFA scoring)
+      // This gives us transcript WITHOUT calling Azure PA, so D-09 threshold can gate BFA (D-05)
+      try {
+        const txResult = await this.bfa.transcribe(audioBuffer, mimeType ?? 'audio/webm');
+        transcript = txResult.text ?? transcript;
+        this.logger.log(`[session=${sessionId}] listen transcript="${transcript}"`);
+      } catch (err) {
+        this.logger.warn(`[session=${sessionId}] transcribe error: ${(err as Error).message}`);
+      }
+
+      // Step 2: Semantic score via bfa-service /score-semantic (D-04)
+      try {
+        let keywordsArr: string[] = [];
+        try { keywordsArr = JSON.parse(listenItem.keywords); } catch { /* malformed keywords JSON */ }
+        const semResult = await this.bfa.scoreSemantic(transcript, listenItem.expectedText, keywordsArr);
+        semanticScore = semResult.semanticScore;
+        matchedKeywords = semResult.matchedKeywords;
+        this.logger.log(`[session=${sessionId}] listen semanticScore=${semanticScore} matched=${matchedKeywords.join(',')}`);
+      } catch (err) {
+        this.logger.warn(`[session=${sessionId}] scoreSemantic error: ${(err as Error).message}`);
+      }
+
+      // Step 3: Pronunciation scoring — ONLY if semantic >= 0.2 AND keywords matched (D-09)
+      // Skipping BFA entirely when threshold not met (saves Azure PA credit, honors D-09)
+      if (semanticScore >= 0.2 && matchedKeywords.length > 0) {
+        try {
+          const bfaResult = await this.bfa.analyzeSpeaking(
+            audioBuffer,
+            mimeType ?? 'audio/webm',
+            matchedKeywords.join(' '),
+          );
+          pronScore = bfaResult.success ? bfaResult.overall_score : 0;
+          if (bfaResult.words && bfaResult.words.length > 0) {
+            bfaFeedbackJson = JSON.stringify(bfaResult.words);
+          }
+          this.logger.log(`[session=${sessionId}] listen pronScore=${pronScore}`);
+        } catch (err) {
+          this.logger.warn(`[session=${sessionId}] BFA analyzeSpeaking error: ${(err as Error).message}`);
+        }
+      }
+    }
+
+    // D-06: composite formula — stored as 0.0–1.0
+    // When semantic < 0.2: pronScore stays 0 (BFA never called), composite is purely semantic-weighted
+    const compositeScore = semanticScore * 0.7 + (pronScore / 100) * 0.3;
+    this.logger.log(`[session=${sessionId}] listen composite=${compositeScore.toFixed(4)} (sem=${semanticScore} pron=${pronScore})`);
+
+    return this.repo.saveListenResult(
+      sessionId,
+      dto.listenItemId,
+      transcript,
+      semanticScore,
+      pronScore,
+      compositeScore,
+      bfaFeedbackJson,
+    );
+  }
+
   async completeSession(sessionId: number) {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
@@ -413,6 +499,12 @@ export class GameService {
       const count = vocabResults.length;
       const scoreSum = vocabResults.reduce((s: number, r: { score: number }) => s + r.score, 0);
       avgScore = count > 0 ? scoreSum / count : 0;
+    } else if (hw.type === 'LISTEN') {
+      const listenResults = (session as any).listenResults ?? [];
+      const count = listenResults.length;
+      const scoreSum = listenResults.reduce((s: number, r: { compositeScore: number }) => s + r.compositeScore, 0);
+      // compositeScore is stored as 0.0–1.0; session score is 0–100
+      avgScore = count > 0 ? (scoreSum / count) * 100 : 0;
     } else {
       const phonicsResults = session.phonicsResults ?? [];
       const totalWords = hw.parts.reduce((s: number, p: { words: unknown[] }) => s + p.words.length, 0);
