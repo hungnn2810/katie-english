@@ -5,7 +5,7 @@ import AuthGate from '@/components/AuthGate';
 import { getAvailableHomework, startSession, AssignmentItem, HomeworkType } from '@/lib/admin-api';
 import { AuthUser, clearAuth, changePassword } from '@/lib/auth';
 import { cardGradients, gradients } from '@/lib/colors';
-import { Hash, Mic, BookOpen, ImageIcon, Lock, CheckCircle2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap } from 'lucide-react';
+import { Hash, Mic, BookOpen, ImageIcon, Lock, CheckCircle2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap, Headphones } from 'lucide-react';
 import { parseApiDateTime } from '@/lib/datetime';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -24,6 +24,7 @@ const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType }
   SPEAKING:   { label: 'Speaking',   icon: Mic },
   READING:    { label: 'Reading',    icon: BookOpen },
   VOCABULARY: { label: 'Vocabulary', icon: ImageIcon },
+  LISTEN:     { label: 'Listen',     icon: Headphones },
 };
 
 function PageContent({ user }: { user: AuthUser }) {

@@ -295,7 +295,7 @@ export interface Student {
   createdAt: string;
 }
 
-export type HomeworkType = 'PHONICS' | 'SPEAKING' | 'READING' | 'VOCABULARY';
+export type HomeworkType = 'PHONICS' | 'SPEAKING' | 'READING' | 'VOCABULARY' | 'LISTEN';
 export type SpeakingMode = 'FREE_SPEAK' | 'SCRIPT_MATCH';
 
 // ── Phase 08: Vocabulary types ────────────────────────────────────────────────
@@ -342,6 +342,77 @@ export const getVocabHomework = (id: number) =>
 
 export const updateVocabHomework = (id: number, data: UpdateVocabHomeworkInput) =>
   req<VocabHomeworkDetail>(`/homework/vocab/${id}`, { method: 'PUT', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+
+// ── Phase 09: Listen & Answer types ──────────────────────────────────────────
+
+export interface ListenItem {
+  id: number;
+  homeworkId: number;
+  audioUrl: string;
+  keywords: string;       // JSON array string
+  expectedText: string;
+  order: number;
+}
+
+export interface CreateListenItemInput {
+  audioUrl: string;
+  keywords: string;       // JSON array string e.g. '["red","cat"]'
+  expectedText: string;
+}
+
+export interface CreateListenHomeworkInput {
+  name: string;
+  items: CreateListenItemInput[];
+}
+
+export interface UpdateListenHomeworkInput {
+  name?: string;
+  items?: CreateListenItemInput[];
+}
+
+export interface ListenHomeworkDetail {
+  id: number;
+  name: string | null;
+  type: 'LISTEN';
+  listenItems: ListenItem[];
+  assignments: AssignmentItem[];
+  createdAt: string;
+}
+
+export const createListenHomework = (data: CreateListenHomeworkInput) =>
+  req<ListenHomeworkDetail>('/homework/listen', { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+
+export const getListenHomework = (id: number) =>
+  req<ListenHomeworkDetail>(`/homework/listen/${id}`);
+
+export const updateListenHomework = (id: number, data: UpdateListenHomeworkInput) =>
+  req<ListenHomeworkDetail>(`/homework/listen/${id}`, { method: 'PUT', body: JSON.stringify(data), headers: { 'Content-Type': 'application/json' } });
+
+export async function uploadAudio(file: File): Promise<string> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_URL}/homework/audio`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) return parseApiError(res);
+  const { url } = await res.json() as { url: string };
+  return url;
+}
+
+export interface ListenItemResult {
+  id: number;
+  sessionId: number;
+  listenItemId: number;
+  itemOrder: number;
+  transcript: string;
+  semanticScore: number;
+  pronScore: number;
+  compositeScore: number;
+  bfaFeedback?: string | null;
+}
 
 export async function saveVocabResult(
   sessionId: number,
@@ -549,6 +620,7 @@ export interface HomeworkItem {
   createdAt: string;
   readingActivities?: ReadingActivity[];
   vocabItems?: VocabItem[];
+  listenItems?: ListenItem[];
 }
 
 export interface HomeworkDetail extends HomeworkItem {
@@ -667,6 +739,7 @@ export interface GameSession {
   readingResult?: ReadingResult;
   readingActivityResults?: ReadingActivityResult[];
   vocabItems?: VocabItem[];
+  listenItems?: ListenItem[];
 }
 
 export interface PhonemeAlignment {
