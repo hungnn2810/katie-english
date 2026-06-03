@@ -340,6 +340,7 @@ export function ListenCreationPage() {
     for (const item of items) {
       if (!item.audioUrl) return 'Each question needs an audio file.';
       if (!item.keywords.trim()) return 'Each question needs keywords.';
+      if (!item.expectedText.trim()) return 'Each question needs an expected answer.';
     }
     return null;
   }
