@@ -37,7 +37,18 @@ async def score_semantic(
     if _minilm_model is None:
         return {"semantic_score": 0.0, "matched_keywords": []}
 
-    kw_list: list[str] = json.loads(keywords)
+    # WR-03: guard against arbitrarily large inputs that could OOM the worker
+    MAX_TEXT_LEN = 2000
+    if len(student_text) > MAX_TEXT_LEN or len(expected_text) > MAX_TEXT_LEN:
+        return {"semantic_score": 0.0, "matched_keywords": []}
+
+    # WR-04: guard against malformed keywords JSON
+    try:
+        kw_list: list[str] = json.loads(keywords)
+        if not isinstance(kw_list, list):
+            kw_list = []
+    except json.JSONDecodeError:
+        kw_list = []
 
     # Semantic similarity via cosine distance of sentence embeddings
     emb_student = _minilm_model.encode(student_text, convert_to_tensor=True)
