@@ -502,7 +502,7 @@ export class GameService {
     } else if (hw.type === 'LISTEN') {
       const listenResults = (session as any).listenResults ?? [];
       const count = listenResults.length;
-      const scoreSum = listenResults.reduce((s: number, r: { compositeScore: number }) => s + r.compositeScore, 0);
+      const scoreSum = listenResults.reduce((s: number, r: { compositeScore: unknown }) => s + Number(r.compositeScore), 0);
       // compositeScore is stored as 0.0–1.0; session score is 0–100
       avgScore = count > 0 ? (scoreSum / count) * 100 : 0;
     } else {
