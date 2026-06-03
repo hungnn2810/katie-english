@@ -193,6 +193,15 @@ export class HomeworkService {
       if (!item.keywords?.trim()) {
         throw new BadRequestException('Each item must have keywords');
       }
+      let kwArr: string[];
+      try {
+        kwArr = JSON.parse(item.keywords);
+        if (!Array.isArray(kwArr) || !kwArr.every((k) => typeof k === 'string')) {
+          throw new Error();
+        }
+      } catch {
+        throw new BadRequestException('keywords must be a valid JSON array of strings e.g. ["red","cat"]');
+      }
       if (!item.expectedText?.trim()) {
         throw new BadRequestException('Each item must have expectedText');
       }
