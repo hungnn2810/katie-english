@@ -28,6 +28,12 @@ const vocabItemsInclude = {
   },
 };
 
+const listenItemsInclude = {
+  listenItems: {
+    orderBy: { order: 'asc' as const },
+  },
+};
+
 const assignmentInclude = {
   classes: { include: { class: { include: { _count: { select: { students: true } } } } } },
   _count: { select: { sessions: true } },
@@ -346,6 +352,63 @@ export class HomeworkRepository {
             : {}),
         },
         include: { ...vocabItemsInclude, assignments: { include: assignmentInclude } },
+      });
+    });
+  }
+
+  // ── Plan 09-03 listen CRUD ────────────────────────────────────────────────────
+
+  findListenById(id: number) {
+    return this.prisma.homework.findUnique({
+      where: { id },
+      include: {
+        ...listenItemsInclude,
+        assignments: { include: assignmentInclude },
+      },
+    });
+  }
+
+  createListenHomework(dto: import('./homework.dto').CreateListenHomeworkDto) {
+    return this.prisma.homework.create({
+      data: {
+        type: 'LISTEN',
+        name: dto.name,
+        listenItems: {
+          create: dto.items.map((item, idx) => ({
+            audioUrl: item.audioUrl,
+            keywords: item.keywords,
+            expectedText: item.expectedText,
+            order: idx,
+          })),
+        },
+      },
+      include: { ...listenItemsInclude, assignments: { include: assignmentInclude } },
+    });
+  }
+
+  async updateListenHomework(id: number, dto: import('./homework.dto').UpdateListenHomeworkDto) {
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.items !== undefined) {
+        await tx.listenItem.deleteMany({ where: { homeworkId: id } });
+      }
+      return tx.homework.update({
+        where: { id },
+        data: {
+          ...(dto.name !== undefined ? { name: dto.name } : {}),
+          ...(dto.items !== undefined
+            ? {
+                listenItems: {
+                  create: dto.items.map((item, idx) => ({
+                    audioUrl: item.audioUrl,
+                    keywords: item.keywords,
+                    expectedText: item.expectedText,
+                    order: idx,
+                  })),
+                },
+              }
+            : {}),
+        },
+        include: { ...listenItemsInclude, assignments: { include: assignmentInclude } },
       });
     });
   }
