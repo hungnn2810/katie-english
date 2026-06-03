@@ -6,7 +6,7 @@ import {
 import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GameService } from './game.service';
-import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto } from './game.dto';
+import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto, SaveListenResultDto } from './game.dto';
 import { AuthGuard, TeacherGuard } from '../auth/auth.guard';
 import { GameJobsService } from './game.jobs.service';
 
@@ -94,6 +94,24 @@ export class GameController {
     const requestingStudentId: number = (req as any).user?.studentId ?? 0;
     const dto: SaveVocabResultDto = { vocabItemId: vocabItemIdNum, transcribedText };
     return this.service.saveVocabResult(id, dto, requestingStudentId, audio?.buffer, audio?.mimetype);
+  }
+
+  @Post('session/:id/listen-result')
+  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  saveListenResult(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('listenItemId') listenItemId: string,
+    @Body('transcribedText') transcribedText: string,
+    @Req() req: Request,
+    @UploadedFile() audio?: Express.Multer.File,
+  ) {
+    const listenItemIdNum = Number(listenItemId);
+    if (!Number.isFinite(listenItemIdNum) || listenItemIdNum <= 0) {
+      throw new BadRequestException('listenItemId must be a positive integer');
+    }
+    const requestingStudentId: number = (req as any).user?.studentId ?? 0;
+    const dto: SaveListenResultDto = { listenItemId: listenItemIdNum, transcribedText };
+    return this.service.saveListenResult(id, dto, requestingStudentId, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/reading-result')

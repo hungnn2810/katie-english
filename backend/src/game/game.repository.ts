@@ -20,6 +20,12 @@ const vocabItemsInclude = {
   },
 };
 
+const listenItemsInclude = {
+  listenItems: {
+    orderBy: { order: 'asc' as const },
+  },
+};
+
 const homeworkInclude = {
   parts: {
     include: { words: { orderBy: { order: 'asc' as const } } },
@@ -27,6 +33,7 @@ const homeworkInclude = {
   },
   ...readingActivitiesInclude,
   ...vocabItemsInclude,
+  ...listenItemsInclude,
 };
 
 const sessionInclude = {
@@ -44,6 +51,7 @@ const sessionInclude = {
   // The homework's readingActivities structure is available via assignment.homework.readingActivities
   // (included above through homeworkInclude → readingActivitiesInclude).
   readingResult: true,
+  listenResults: true,
 };
 
 @Injectable()
@@ -156,6 +164,29 @@ export class GameRepository {
 
   getReadingResult(sessionId: number) {
     return this.prisma.readingResult.findUnique({ where: { sessionId } });
+  }
+
+  async saveListenResult(
+    sessionId: number,
+    listenItemId: number,
+    transcript: string,
+    semanticScore: number,
+    pronScore: number,
+    compositeScore: number,
+    bfaFeedback?: string | null,
+  ) {
+    const existing = await this.prisma.listenItemResult.findFirst({
+      where: { sessionId, listenItemId },
+    });
+    if (existing) {
+      return this.prisma.listenItemResult.update({
+        where: { id: existing.id },
+        data: { transcript, semanticScore, pronScore, compositeScore, bfaFeedback: bfaFeedback ?? null },
+      });
+    }
+    return this.prisma.listenItemResult.create({
+      data: { sessionId, listenItemId, transcript, semanticScore, pronScore, compositeScore, bfaFeedback: bfaFeedback ?? null },
+    });
   }
 
   listSessions(assignmentId?: number, studentId?: number) {

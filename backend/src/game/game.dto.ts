@@ -31,3 +31,8 @@ export class GameLoginDto {
   @IsString() @IsNotEmpty() @MaxLength(100)
   name: string;
 }
+
+export class SaveListenResultDto {
+  listenItemId: number;
+  transcribedText?: string;
+}

@@ -229,4 +229,30 @@ export class BfaService {
 
     return { text: transcript, words };
   }
+
+  async scoreSemantic(
+    studentText: string,
+    expectedText: string,
+    keywords: string[],
+  ): Promise<{ semanticScore: number; matchedKeywords: string[] }> {
+    const bfaUrl = process.env.BFA_SERVICE_URL ?? 'http://bfa-service:8000';
+    const form = new URLSearchParams();
+    form.append('student_text', studentText);
+    form.append('expected_text', expectedText);
+    form.append('keywords', JSON.stringify(keywords));
+    try {
+      const resp = await axios.post(`${bfaUrl}/score-semantic`, form.toString(), {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        timeout: 15_000,
+      });
+      const data = resp.data as { semantic_score: number; matched_keywords: string[] };
+      return {
+        semanticScore: data.semantic_score ?? 0,
+        matchedKeywords: data.matched_keywords ?? [],
+      };
+    } catch (err) {
+      this.logger.warn(`[scoreSemantic] bfa-service error: ${(err as Error).message}`);
+      return { semanticScore: 0, matchedKeywords: [] };
+    }
+  }
 }

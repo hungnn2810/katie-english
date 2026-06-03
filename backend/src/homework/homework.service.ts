@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { HomeworkRepository } from './homework.repository';
-import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto, CreateVocabHomeworkDto, UpdateVocabHomeworkDto } from './homework.dto';
+import { CreateHomeworkDto, UpdateHomeworkDto, CreateAssignmentDto, UpdateAssignmentDto, CreateReadingHomeworkDto, UpdateReadingHomeworkDto, CreateVocabHomeworkDto, UpdateVocabHomeworkDto, CreateListenHomeworkDto, UpdateListenHomeworkDto } from './homework.dto';
 
 @Injectable()
 export class HomeworkService {
@@ -166,6 +166,62 @@ export class HomeworkService {
       }
     }
     return this.repo.updateVocabHomework(id, dto);
+  }
+
+  // ── Plan 09-03 listen service methods ────────────────────────────────────────
+
+  async findListenById(id: number) {
+    const hw = await this.repo.findListenById(id);
+    if (!hw) throw new NotFoundException(`Listen homework ${id} not found`);
+    return hw;
+  }
+
+  createListenHomework(dto: CreateListenHomeworkDto) {
+    if (!dto.name || !dto.name.trim()) {
+      throw new BadRequestException('Name is required');
+    }
+    if (!Array.isArray(dto.items) || dto.items.length === 0) {
+      throw new BadRequestException('At least one item is required');
+    }
+    if (dto.items.length > 10) {
+      throw new BadRequestException('Too many items (max 10)');
+    }
+    for (const item of dto.items) {
+      if (!item.audioUrl?.trim()) {
+        throw new BadRequestException('Each item must have a non-empty audioUrl');
+      }
+      if (!item.keywords?.trim()) {
+        throw new BadRequestException('Each item must have keywords');
+      }
+      if (!item.expectedText?.trim()) {
+        throw new BadRequestException('Each item must have expectedText');
+      }
+    }
+    return this.repo.createListenHomework(dto);
+  }
+
+  async updateListenHomework(id: number, dto: UpdateListenHomeworkDto) {
+    await this.findListenById(id);
+    if (dto.items !== undefined) {
+      if (!Array.isArray(dto.items) || dto.items.length === 0) {
+        throw new BadRequestException('At least one item is required');
+      }
+      if (dto.items.length > 10) {
+        throw new BadRequestException('Too many items (max 10)');
+      }
+      for (const item of dto.items) {
+        if (!item.audioUrl?.trim()) {
+          throw new BadRequestException('Each item must have a non-empty audioUrl');
+        }
+        if (!item.keywords?.trim()) {
+          throw new BadRequestException('Each item must have keywords');
+        }
+        if (!item.expectedText?.trim()) {
+          throw new BadRequestException('Each item must have expectedText');
+        }
+      }
+    }
+    return this.repo.updateListenHomework(id, dto);
   }
 
   private validateReadingDto(dto: CreateHomeworkDto): void {

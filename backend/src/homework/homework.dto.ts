@@ -111,3 +111,21 @@ export class UpdateVocabHomeworkDto {
   name?: string;
   items?: CreateVocabItemDto[];
 }
+
+// ── Plan 09-03 listen-specific DTOs ──────────────────────────────────────────
+
+export class CreateListenItemDto {
+  audioUrl: string;
+  keywords: string;       // JSON array string e.g. '["red","cat"]'
+  expectedText: string;   // full expected answer for semantic scoring (D-02)
+}
+
+export class CreateListenHomeworkDto {
+  name: string;
+  items: CreateListenItemDto[];
+}
+
+export class UpdateListenHomeworkDto {
+  name?: string;
+  items?: CreateListenItemDto[];
+}
