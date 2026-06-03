@@ -1,4 +1,4 @@
-export type HomeworkType = 'PHONICS' | 'SPEAKING' | 'READING' | 'VOCABULARY';
+export type HomeworkType = 'PHONICS' | 'SPEAKING' | 'READING' | 'VOCABULARY' | 'LISTEN';
 export type SpeakingMode = 'FREE_SPEAK' | 'SCRIPT_MATCH';
 export type ReadingActivityType = 'MATCH' | 'FILL_BLANK';
 
