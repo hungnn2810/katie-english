@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getHomework, deleteAssignment, HomeworkDetail, HomeworkType } from '@/lib/admin-api';
 import { gradients, colors } from '@/lib/colors';
-import { Hash, Mic, BookOpen, Eye, Users, CheckCircle2, Clock, BarChart3 } from 'lucide-react';
+import { Hash, Mic, BookOpen, Eye, Users, CheckCircle2, Clock, BarChart3, Headphones } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -12,10 +12,11 @@ import Typography from '@mui/material/Typography';
 import { formatDate, parseApiDateTime } from '@/lib/datetime';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
-  PHONICS:    { label: 'Phonics',    icon: Hash,     color: '#A78BFA', bg: '#A78BFA18' },
-  SPEAKING:   { label: 'Speaking',   icon: Mic,      color: '#FF9BD2', bg: '#FF9BD218' },
-  READING:    { label: 'Reading',    icon: BookOpen, color: '#6ED6C1', bg: '#6ED6C118' },
-  VOCABULARY: { label: 'Vocabulary', icon: BookOpen, color: '#FFB26B', bg: '#FFB26B18' },
+  PHONICS:    { label: 'Phonics',    icon: Hash,       color: '#A78BFA', bg: '#A78BFA18' },
+  SPEAKING:   { label: 'Speaking',   icon: Mic,        color: '#FF9BD2', bg: '#FF9BD218' },
+  READING:    { label: 'Reading',    icon: BookOpen,   color: '#6ED6C1', bg: '#6ED6C118' },
+  VOCABULARY: { label: 'Vocabulary', icon: BookOpen,   color: '#FFB26B', bg: '#FFB26B18' },
+  LISTEN:     { label: 'Listen',     icon: Headphones, color: '#60A5FA', bg: '#60A5FA18' },
 };
 
 function scoreColor(score: number) {

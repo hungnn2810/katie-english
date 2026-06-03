@@ -355,7 +355,7 @@ export function ListenCreationPage() {
     try {
       await createListenHomework({
         name: name.trim(),
-        items: items.map(({ clientId: _, audioFilename: __, ...rest }) => ({
+        items: items.map(({ clientId: _clientId, audioFilename: _audioFilename, ...rest }) => ({
           audioUrl: rest.audioUrl,
           keywords: rest.keywords,
           expectedText: rest.expectedText,
