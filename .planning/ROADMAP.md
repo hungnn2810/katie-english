@@ -18,7 +18,7 @@
 | 6 | Admin Portal | Super-admin: teachers, classes, results mgmt | v1 | 📋 Planned |
 | 7 | BFA Robustness & Audio Gates | Zero silent failures, audio quality validation | v2 | ✅ Complete 2026-05-31 |
 | 8 | Vocabulary by Image Exercise | Image → student speaks word → phoneme feedback | v2 | 📋 Planned |
-| 9 | Listen & Answer Exercise | 4/5 | In Progress|  |
+| 9 | Listen & Answer Exercise | 5/5 | Complete   | 2026-06-03 |
 | 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
 | 11 | Frontend React MUI Refactor | Standardize UI architecture and components with Material UI | v2 | 📋 Planned |
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
@@ -302,12 +302,12 @@
 
 **Plans:**
 
-4/5 plans executed
+5/5 plans complete
 
 - [x] 09-02-PLAN.md — bfa-service: add sentence-transformers MiniLM + `/score-semantic` endpoint + composite scoring logic (Wave 2)
 - [x] 09-03-PLAN.md — Backend: LISTEN CRUD endpoints + game service LISTEN branch (transcribe → semantic score → BFA pronunciation) + result storage (Wave 3)
 - [x] 09-04-PLAN.md — Teacher creation page: LISTEN type picker + audio upload/TTS + keyword field + sequence reorder (Wave 4)
-- [ ] 09-05-PLAN.md — Student game: audio player → record answer → submit → composite result screen (Wave 5)
+- [x] 09-05-PLAN.md — Student game: audio player → record answer → submit → composite result screen (Wave 5)
 - [ ] 09-06-PLAN.md — Teacher results: transcript + semantic + pronunciation + composite per item (Wave 6)
 
 ---
