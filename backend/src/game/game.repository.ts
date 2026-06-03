@@ -108,38 +108,44 @@ export class GameRepository {
   }
 
   async savePhonicsResult(sessionId: number, wordId: number, transcribedText: string, score: number) {
-    // Application-layer upsert — named unique on (sessionId, wordId) was dropped in 08-01 migration.
-    const existing = await this.prisma.phonicsItemResult.findFirst({
-      where: { sessionId, wordId },
-    });
-    if (existing) {
-      return this.prisma.phonicsItemResult.update({
-        where: { id: existing.id },
-        data: { transcribedText, score },
+    // Application-layer upsert wrapped in a transaction to prevent duplicate rows
+    // on concurrent submissions (unique constraint on (sessionId, wordId) was dropped in 08-01).
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.phonicsItemResult.findFirst({
+        where: { sessionId, wordId },
+      });
+      if (existing) {
+        return tx.phonicsItemResult.update({
+          where: { id: existing.id },
+          data: { transcribedText, score },
+          include: { word: true },
+        });
+      }
+      return tx.phonicsItemResult.create({
+        data: { sessionId, wordId, transcribedText, score },
         include: { word: true },
       });
-    }
-    return this.prisma.phonicsItemResult.create({
-      data: { sessionId, wordId, transcribedText, score },
-      include: { word: true },
     });
   }
 
   async saveVocabResult(sessionId: number, vocabItemId: number, transcribedText: string, score: number) {
-    // Application-layer upsert keyed on { sessionId, vocabItemId }.
-    const existing = await this.prisma.phonicsItemResult.findFirst({
-      where: { sessionId, vocabItemId },
-    });
-    if (existing) {
-      return this.prisma.phonicsItemResult.update({
-        where: { id: existing.id },
-        data: { transcribedText, score },
+    // Application-layer upsert wrapped in a transaction to prevent duplicate rows
+    // on concurrent submissions.
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.phonicsItemResult.findFirst({
+        where: { sessionId, vocabItemId },
+      });
+      if (existing) {
+        return tx.phonicsItemResult.update({
+          where: { id: existing.id },
+          data: { transcribedText, score },
+          include: { vocabItem: true },
+        });
+      }
+      return tx.phonicsItemResult.create({
+        data: { sessionId, vocabItemId, transcribedText, score },
         include: { vocabItem: true },
       });
-    }
-    return this.prisma.phonicsItemResult.create({
-      data: { sessionId, vocabItemId, transcribedText, score },
-      include: { vocabItem: true },
     });
   }
 
@@ -175,17 +181,20 @@ export class GameRepository {
     compositeScore: number,
     bfaFeedback?: string | null,
   ) {
-    const existing = await this.prisma.listenItemResult.findFirst({
-      where: { sessionId, listenItemId },
-    });
-    if (existing) {
-      return this.prisma.listenItemResult.update({
-        where: { id: existing.id },
-        data: { transcript, semanticScore, pronScore, compositeScore, bfaFeedback: bfaFeedback ?? null },
+    // Wrapped in a transaction to prevent duplicate rows on concurrent submissions.
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.listenItemResult.findFirst({
+        where: { sessionId, listenItemId },
       });
-    }
-    return this.prisma.listenItemResult.create({
-      data: { sessionId, listenItemId, transcript, semanticScore, pronScore, compositeScore, bfaFeedback: bfaFeedback ?? null },
+      if (existing) {
+        return tx.listenItemResult.update({
+          where: { id: existing.id },
+          data: { transcript, semanticScore, pronScore, compositeScore, bfaFeedback: bfaFeedback ?? null },
+        });
+      }
+      return tx.listenItemResult.create({
+        data: { sessionId, listenItemId, transcript, semanticScore, pronScore, compositeScore, bfaFeedback: bfaFeedback ?? null },
+      });
     });
   }
 
