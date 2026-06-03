@@ -18,6 +18,7 @@ enum HomeworkType {
   SPEAKING
   READING
   VOCABULARY
+  LISTEN
 }
 
 enum ReadingActivityType {
@@ -129,6 +130,7 @@ model Homework {
   assignments        HomeworkAssignment[]
   readingActivities  ReadingActivity[]
   vocabItems         VocabItem[]          @relation("VocabItems")
+  listenItems        ListenItem[]         @relation("ListenItems")
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -196,6 +198,7 @@ model HomeworkSession {
   speakingResults SpeakingResult[]
   phonicsResults  PhonicsItemResult[]
   readingResult   ReadingResult?
+  listenResults   ListenItemResult[]
 
   @@map("homework_sessions")
 }
@@ -298,6 +301,37 @@ model ReadingResult {
   session      HomeworkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@map("reading_results")
+}
+
+model ListenItem {
+  id           Int                @id @default(autoincrement())
+  homeworkId   Int
+  homework     Homework           @relation("ListenItems", fields: [homeworkId], references: [id], onDelete: Cascade)
+  audioUrl     String
+  keywords     String             // JSON array of expected keywords e.g. ["red", "cat"]
+  expectedText String             // full expected answer for semantic scoring
+  order        Int                @default(0)
+  createdAt    DateTime           @default(now())
+  results      ListenItemResult[]
+
+  @@index([homeworkId])
+  @@map("listen_items")
+}
+
+model ListenItemResult {
+  id             Int             @id @default(autoincrement())
+  sessionId      Int
+  listenItemId   Int
+  itemOrder      Int             @default(0)
+  transcript     String          @default("")
+  semanticScore  Float           @default(0)
+  pronScore      Float           @default(0)
+  compositeScore Float           @default(0)
+  bfaFeedback    String?         // JSON — BFA feedback for matched keywords
+  session        HomeworkSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  listenItem     ListenItem      @relation(fields: [listenItemId], references: [id], onDelete: Cascade)
+
+  @@map("listen_item_results")
 }
 
 enum UserRole {
