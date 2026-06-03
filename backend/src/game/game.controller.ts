@@ -1,7 +1,7 @@
 import {
   Controller, Get, Post, Param, Body, ParseIntPipe,
   UseInterceptors, UploadedFile, UseGuards,
-  HttpCode, Query, Req, BadRequestException,
+  HttpCode, Query, Req, BadRequestException, ForbiddenException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -24,7 +24,11 @@ export class GameController {
   }
 
   @Post('session/start')
-  startSession(@Body() dto: StartSessionDto) {
+  startSession(@Body() dto: StartSessionDto, @Req() req: Request) {
+    const callerStudentId: number | undefined = (req as any).user?.studentId;
+    if (!callerStudentId || callerStudentId !== dto.studentId) {
+      throw new ForbiddenException('Cannot start a session for another student');
+    }
     return this.service.startSession(dto);
   }
 
@@ -91,7 +95,8 @@ export class GameController {
     if (!Number.isFinite(vocabItemIdNum) || vocabItemIdNum <= 0) {
       throw new BadRequestException('vocabItemId must be a positive integer');
     }
-    const requestingStudentId: number = (req as any).user?.studentId ?? 0;
+    const requestingStudentId: number | undefined = (req as any).user?.studentId;
+    if (!requestingStudentId) throw new ForbiddenException('Student identity required');
     const dto: SaveVocabResultDto = { vocabItemId: vocabItemIdNum, transcribedText };
     return this.service.saveVocabResult(id, dto, requestingStudentId, audio?.buffer, audio?.mimetype);
   }
@@ -109,7 +114,8 @@ export class GameController {
     if (!Number.isFinite(listenItemIdNum) || listenItemIdNum <= 0) {
       throw new BadRequestException('listenItemId must be a positive integer');
     }
-    const requestingStudentId: number = (req as any).user?.studentId ?? 0;
+    const requestingStudentId: number | undefined = (req as any).user?.studentId;
+    if (!requestingStudentId) throw new ForbiddenException('Student identity required');
     const dto: SaveListenResultDto = { listenItemId: listenItemIdNum, transcribedText };
     return this.service.saveListenResult(id, dto, requestingStudentId, audio?.buffer, audio?.mimetype);
   }
