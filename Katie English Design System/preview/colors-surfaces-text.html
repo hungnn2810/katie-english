@@ -1,0 +1,33 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; }
+.col { display:flex; flex-direction:column; gap:8px; }
+.sw { display:flex; align-items:center; gap:10px; }
+.chip { width:34px; height:34px; border-radius:8px; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08); flex-shrink:0; }
+.meta .n { font-size:12px; font-weight:700; }
+.meta .h { font-size:10.5px; color:#64748B; }
+.txt { display:flex; flex-direction:column; gap:2px; }
+.t1 { font-size:15px; font-weight:700; color:#0F172A; }
+.t2 { font-size:13px; color:#64748B; }
+.t3 { font-size:12px; color:#94A3B8; }
+</style></head>
+<body><div class="card-wrap">
+  <div class="grid">
+    <div class="col">
+      <div class="lbl">Surfaces</div>
+      <div class="sw"><div class="chip" style="background:#F7F9FC"></div><div class="meta"><div class="n">App bg</div><div class="h mono">#F7F9FC</div></div></div>
+      <div class="sw"><div class="chip" style="background:#FFFFFF"></div><div class="meta"><div class="n">Card</div><div class="h mono">#FFFFFF</div></div></div>
+      <div class="sw"><div class="chip" style="background:#E2E8F0"></div><div class="meta"><div class="n">Border</div><div class="h mono">#E2E8F0</div></div></div>
+    </div>
+    <div class="col">
+      <div class="lbl">Dark</div>
+      <div class="sw"><div class="chip" style="background:#0C1220"></div><div class="meta"><div class="n">Sidebar</div><div class="h mono">#0C1220</div></div></div>
+      <div class="sw"><div class="chip" style="background:#2D0B2E"></div><div class="meta"><div class="n">Game bg</div><div class="h mono">#2D0B2E</div></div></div>
+      <div class="sw"><div class="chip" style="background:#1F0821"></div><div class="meta"><div class="n">Game alt</div><div class="h mono">#1F0821</div></div></div>
+    </div>
+    <div class="col">
+      <div class="lbl">Text</div>
+      <div class="txt"><span class="t1">Primary · #0F172A</span><span class="t2">Secondary · #64748B</span><span class="t3">Tertiary · #94A3B8</span></div>
+    </div>
+  </div>
+</div></body></html>

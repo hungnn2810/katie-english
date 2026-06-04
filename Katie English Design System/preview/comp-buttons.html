@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;900&display=swap">
+<link rel="stylesheet" href="_card.css">
+<style>
+.col { display:flex; flex-direction:column; gap:12px; }
+.row3 { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+button { font-family:Inter; border:none; cursor:pointer; }
+.contained { background:#F0623A; color:#fff; font-weight:600; font-size:15px; padding:12px 22px; border-radius:8px; }
+.admin { background:#4F9DFF; }
+.text { background:none; color:#F0623A; font-weight:600; font-size:14px; padding:8px 6px; }
+.outline { background:none; color:#0F172A; font-weight:600; font-size:14px; padding:10px 18px; border-radius:8px; box-shadow: inset 0 0 0 1.5px #E2E8F0; }
+.kid { color:#fff; font-weight:900; font-size:16px; padding:13px 26px; border-radius:12px; background:rgba(255,255,255,0.25); }
+.kidg { background:linear-gradient(135deg,#7BD88F,#6ED6C1); }
+.lbl2 { font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; }
+.wine { background:#2D0B2E; border-radius:12px; padding:14px; }
+</style></head>
+<body><div class="card-wrap">
+  <div class="row3">
+    <span class="lbl2">Pro</span>
+    <button class="contained">Sign In</button>
+    <button class="contained admin">Create</button>
+    <button class="outline">Cancel</button>
+    <button class="text">Forgot password?</button>
+  </div>
+  <div class="wine row3">
+    <span class="lbl2" style="color:rgba(255,255,255,0.5);">Kid</span>
+    <button class="kid">▶ Let's Go!</button>
+    <button class="kid kidg">Next →</button>
+  </div>
+</div></body></html>

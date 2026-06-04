@@ -1,0 +1,22 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="_card.css">
+<style>
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:18px 22px; }
+.field { position:relative; }
+.field input { width:100%; font-family:Inter; font-size:14px; padding:12px 14px; border-radius:8px; border:1.5px solid #E2E8F0; color:#0F172A; outline:none; background:#fff; }
+.field.focus input { border-color:#F0623A; }
+.field .fl { position:absolute; top:-8px; left:11px; background:#fff; padding:0 5px; font-size:11px; font-weight:500; color:#64748B; }
+.field.focus .fl { color:#F0623A; }
+input::placeholder { color:#94A3B8; }
+.err input { border-color:#FF7B7B; }
+.errmsg { font-size:11px; color:#E11D48; margin-top:5px; }
+</style></head>
+<body><div class="card-wrap">
+  <div class="grid">
+    <div class="field"><span class="fl">Email</span><input value="teacher@email.com"></div>
+    <div class="field focus"><span class="fl">Class Code</span><input placeholder="ABC123"></div>
+    <div class="field"><span class="fl">Password</span><input type="password" value="passdummy"></div>
+    <div class="field err"><span class="fl">Phone Number</span><input value="090..."><div class="errmsg">Invalid class code or name</div></div>
+  </div>
+</div></body></html>
