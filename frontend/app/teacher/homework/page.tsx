@@ -8,13 +8,11 @@ import {
   HomeworkItem, ClassItem, CreateHomeworkInput, UpdateHomeworkInput,
   CreateAssignmentInput, HomeworkType, SpeakingMode, CreatePartInput,
 } from '@/lib/admin-api';
-import { cardGradients, colors } from '@/lib/colors';
+import { colors } from '@/lib/colors';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
-import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -24,8 +22,12 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
-import { Plus, X, Loader2, AlignLeft, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2, Headphones } from 'lucide-react';
+import { Plus, X, Loader2, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2, Headphones, Pencil, Trash2, Eye } from 'lucide-react';
 import { parseApiDateTime } from '@/lib/datetime';
+import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
+import HwTypeChip from '@/components/ui/HwTypeChip';
+
+const ACCENT = '#F0623A';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   PHONICS:    { label: 'Phonics',    icon: Hash,       color: '#A78BFA', bg: '#A78BFA18' },
@@ -704,241 +706,161 @@ export default function HomeworkPage() {
       )}
       {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={() => { load(); showToast('Homework assigned!'); }} />}
 
-      {/* Toolbar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5, flexWrap: 'wrap' }}>
-        <TextField
-          size="small"
-          placeholder="Search homework…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-          slotProps={{ input: { startAdornment: (
-              <InputAdornment position="start">
-                <Search size={14} style={{ color: colors.textSecondary, opacity: 0.5 }} />
-              </InputAdornment>
-            ) } }}
-        />
-        <Box sx={{ display: 'flex', gap: 0.75 }}>
-          {([
-            { key: 'ALL', label: 'All', icon: null },
-            { key: 'PHONICS', label: 'Phonics', icon: AlignLeft },
-            { key: 'SPEAKING', label: 'Speaking', icon: Mic },
-            { key: 'READING', label: 'Reading', icon: null },
-            { key: 'VOCABULARY', label: 'Vocabulary', icon: null },
-            { key: 'LISTEN', label: 'Listen', icon: Headphones },
-          ] as const).map((t) => (
-            <Button key={t.key} variant="outlined" size="small" onClick={() => setTypeFilter(t.key)}
-              sx={{
-                px: 1.75, py: 1, borderRadius: 3, fontSize: 12, fontWeight: 600, border: '1px solid', gap: 0.75,
-                ...(typeFilter === t.key
-                  ? { bgcolor: '#F0F9FF', color: colors.primary, borderColor: colors.primary }
-                  : { bgcolor: 'white', color: colors.textSecondary, borderColor: colors.border }),
-              }}>
-              {t.icon && <t.icon size={14} />}
-              {t.label}
-              <Box component="span" sx={{ opacity: 0.6 }}>({counts[t.key]})</Box>
-            </Button>
-          ))}
+      {/* Action row: search/filter (left) + Create Homework (right) */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, mb: '16px', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <TextField
+            size="small"
+            placeholder="Search homework…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{ width: 200, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+            slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search size={14} color="#94A3B8" /></InputAdornment> } }}
+          />
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {([
+              { key: 'ALL', label: 'All' },
+              { key: 'PHONICS', label: 'Phonics' },
+              { key: 'SPEAKING', label: 'Speaking' },
+              { key: 'READING', label: 'Reading' },
+              { key: 'VOCABULARY', label: 'Vocab' },
+              { key: 'LISTEN', label: 'Listen' },
+            ] as const).map((t) => (
+              <Button key={t.key} variant="outlined" size="small" onClick={() => setTypeFilter(t.key)}
+                sx={{
+                  px: 1.5, py: 0.75, borderRadius: '8px', fontSize: 12, fontWeight: 600, border: '1px solid',
+                  ...(typeFilter === t.key
+                    ? { bgcolor: '#FFF2EF', color: ACCENT, borderColor: ACCENT }
+                    : { bgcolor: 'white', color: '#64748B', borderColor: '#E2E8F0' }),
+                }}>
+                {t.label}
+                <Box component="span" sx={{ ml: 0.5, opacity: 0.6 }}>({counts[t.key]})</Box>
+              </Button>
+            ))}
+          </Box>
         </Box>
-        <Box sx={{ flex: 1 }} />
         <Button variant="contained" onClick={openCreate}
-          sx={{ bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, borderRadius: 3, gap: 1, flexShrink: 0 }}>
+          sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: '8px', gap: 1, flexShrink: 0 }}>
           <Plus size={16} />
-          New Homework
+          Create Homework
         </Button>
       </Box>
 
-      {/* Grid */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
-        {list.length === 0 && (
-          <Box sx={{ gridColumn: '1 / -1', textAlign: 'center', py: 10, color: 'text.secondary' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
-              <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <BookOpen size={32} style={{ color: '#94A3B8' }} />
-              </Box>
-            </Box>
-            <Typography sx={{ fontWeight: 500 }}>No homework yet</Typography>
-            <Typography variant="body2" sx={{ mt: 0.5 }}>Create a reusable homework template</Typography>
+      {/* Table */}
+      {list.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+          <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+            <BookOpen size={32} color="#94A3B8" />
           </Box>
-        )}
-        {list.length > 0 && filtered.length === 0 && (
-          <Box sx={{ gridColumn: '1 / -1', textAlign: 'center', py: 8, color: 'text.secondary' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
-              <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Search size={32} style={{ color: '#94A3B8' }} />
-              </Box>
+          <Typography sx={{ fontWeight: 500 }}>No homework yet</Typography>
+          <Typography sx={{ fontSize: 14, mt: 0.5 }}>Create a reusable homework template</Typography>
+        </Box>
+      ) : (
+        <TableShell columns={[
+          { label: 'Homework', width: '2.2fr' },
+          { label: 'Type', width: '1fr' },
+          { label: 'Class', width: '1fr' },
+          { label: 'Due', width: '1fr' },
+          { label: 'Submitted', width: '1fr' },
+        ]}>
+          {filtered.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>No homework matches filter</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 500 }}>No homework matches filter</Typography>
-          </Box>
-        )}
-        {filtered.map((h, i) => {
-          const g = cardGradients[i % cardGradients.length];
-          const meta = TYPE_META[h.type];
-          const activeAssignments = h.assignments.filter((a) => {
-            const endDate = parseApiDateTime(a.endDate);
-            return endDate ? endDate >= now : false;
-          });
-          const submittedStudentIds = new Set<number>();
-          for (const assignment of h.assignments) {
-            for (const session of assignment.sessions ?? []) {
-              submittedStudentIds.add(session.studentId);
-            }
-          }
-          const submittedStudents = submittedStudentIds.size;
-          const totalEnrolled = h.assignments.reduce(
-            (sum, a) => sum + a.classes.reduce((s, ac) => s + (ac.class._count?.students ?? 0), 0),
-            0,
-          );
+          ) : (
+            filtered.map((h, i) => {
+              const meta = TYPE_META[h.type];
+              const activeAssignments = h.assignments.filter((a) => {
+                const endDate = parseApiDateTime(a.endDate);
+                return endDate ? endDate >= now : false;
+              });
+              const submittedStudentIds = new Set<number>();
+              for (const assignment of h.assignments) {
+                for (const session of assignment.sessions ?? []) {
+                  submittedStudentIds.add(session.studentId);
+                }
+              }
+              const submittedCount = submittedStudentIds.size;
+              const totalEnrolled = h.assignments.reduce(
+                (sum, a) => sum + a.classes.reduce((s, ac) => s + (ac.class._count?.students ?? 0), 0), 0,
+              );
+              const classNames = [...new Set(h.assignments.flatMap((a) => a.classes.map((ac) => ac.class.name)))].join(', ') || '—';
+              const nearestDue = h.assignments
+                .map((a) => parseApiDateTime(a.endDate))
+                .filter((d): d is Date => d !== null)
+                .sort((a, b) => a.getTime() - b.getTime())[0];
+              const dueText = nearestDue
+                ? nearestDue < now ? 'Overdue' : nearestDue.toLocaleDateString()
+                : '—';
+              const isOverdue = nearestDue ? nearestDue < now : false;
 
-          return (
-            <Card key={h.id} sx={{ overflow: 'hidden', borderRadius: 4, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', transition: 'all 0.2s', boxShadow: 1, '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' } }}>
-              <Box sx={{ height: 4, flexShrink: 0, background: `linear-gradient(90deg, ${g.from}, ${g.to})` }} />
+              const hwName = h.name || (h.speakingText ? h.speakingText.slice(0, 32) + (h.speakingText.length > 32 ? '…' : '') : meta.label);
 
-              <Box component={Link} href={`/teacher/homework/${h.id}`} sx={{ display: 'block', p: 2.5, pb: 1.5, flex: 1, textDecoration: 'none', color: 'inherit' }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
-                  <Box sx={{ flex: 1, minWidth: 0, pr: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                      <Chip
-                        icon={<meta.icon size={14} style={{ color: meta.color }} />}
-                        label={meta.label}
-                        size="small"
-                        sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, '& .MuiChip-icon': { ml: 0.5 } }}
-                      />
-                    </Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Created {new Date(h.createdAt).toLocaleDateString()}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, flexShrink: 0 }}>
-                    {activeAssignments.length > 0 ? (
-                      <Chip label={`${activeAssignments.length} active`} size="small" sx={{ bgcolor: '#ecfdf5', color: '#059669', fontWeight: 600, border: 0 }} />
-                    ) : (
-                      <Chip label="Unassigned" size="small" variant="outlined" sx={{ fontWeight: 600 }} />
-                    )}
-                  </Box>
-                </Box>
-
-                <Box sx={{ mb: 1.5 }}>
-                  {h.type === 'PHONICS' && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      {h.name && (
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: meta.color }}>{h.name}</Typography>
-                      )}
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {(h.parts ?? []).slice(0, 4).map((part) => (
-                          <Chip key={part.id} label={`${part.name} (${part.words.length})`} size="small"
-                            sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2 }} />
-                        ))}
-                        {(h.parts ?? []).length > 4 && (
-                          <Chip label={`+${h.parts.length - 4}`} size="small" variant="outlined" sx={{ borderRadius: 2 }} />
-                        )}
-                        {(h.parts ?? []).length === 0 && (
-                          <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>No parts yet</Typography>
-                        )}
+              return (
+                <TableShellRow
+                  key={h.id}
+                  columns={[
+                    { label: 'Homework', width: '2.2fr' },
+                    { label: 'Type', width: '1fr' },
+                    { label: 'Class', width: '1fr' },
+                    { label: 'Due', width: '1fr' },
+                    { label: 'Submitted', width: '1fr' },
+                  ]}
+                  last={i === filtered.length - 1}
+                  cells={[
+                    /* Homework */
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box component={Link} href={`/teacher/homework/${h.id}`}
+                        sx={{ fontWeight: 600, fontSize: 14, color: '#0F172A', textDecoration: 'none', '&:hover': { color: ACCENT } }}>
+                        {hwName}
                       </Box>
-                    </Box>
-                  )}
-                  {h.type === 'SPEAKING' && (
-                    <Typography variant="body2" color="text.secondary"
-                      sx={{ fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {h.speakingText || <Box component="span" sx={{ opacity: 0.6 }}>No text set</Box>}
-                    </Typography>
-                  )}
-                  {h.type === 'READING' && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      {h.name && (<Typography variant="caption" sx={{ fontWeight: 700, color: meta.color }}>{h.name}</Typography>)}
-                      {(h.readingActivities ?? []).length === 0 ? (
-                        <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>No activities yet</Typography>
-                      ) : (
-                        <Chip label={`${(h.readingActivities ?? []).length} activit${(h.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}`}
-                          size="small" sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2, alignSelf: 'flex-start' }} />
-                      )}
-                    </Box>
-                  )}
-                  {h.type === 'VOCABULARY' && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      {h.name && (<Typography variant="caption" sx={{ fontWeight: 700, color: meta.color }}>{h.name}</Typography>)}
-                      <Chip
-                        label={`${(h.vocabItems ?? []).length} item${(h.vocabItems ?? []).length !== 1 ? 's' : ''}`}
-                        size="small"
-                        sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2, alignSelf: 'flex-start' }}
-                      />
-                    </Box>
-                  )}
-                  {h.type === 'LISTEN' && (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      {h.name && (<Typography variant="caption" sx={{ fontWeight: 700, color: meta.color }}>{h.name}</Typography>)}
-                      <Chip
-                        label={`${(h.listenItems ?? []).length} question${(h.listenItems ?? []).length !== 1 ? 's' : ''}`}
-                        size="small"
-                        sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 700, border: 0, borderRadius: 2, alignSelf: 'flex-start' }}
-                      />
-                    </Box>
-                  )}
-                </Box>
-
-                {h.assignments.length > 0 && (
-                  <Chip
-                    label={`${submittedStudents} / ${totalEnrolled} submitted`}
-                    size="small"
-                    sx={{ fontWeight: 600, border: 0, borderRadius: '999px', ...(submittedStudents > 0 ? { bgcolor: '#ecfdf5', color: '#059669' } : { bgcolor: 'grey.100', color: 'text.secondary' }) }}
-                  />
-                )}
-              </Box>
-
-              <CardActions sx={{ px: 2.5, py: 1.5, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider', gap: 0.5, borderRadius: 0 }}>
-                {deletingId === h.id ? (
-                  <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                    <Typography variant="caption" color="text.secondary">Delete homework?</Typography>
-                    <Box sx={{ display: 'flex', gap: 0.5 }}>
-                      <Button size="small" onClick={() => setDeletingId(null)}
-                        sx={{ px: 1.5, py: 0.5, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>
-                        Cancel
-                      </Button>
-                      <Button size="small" variant="contained" color="error" onClick={async () => {
-                        try {
-                          await deleteHomework(h.id);
-                          setDeletingId(null);
-                          load();
-                          showToast('Homework deleted.');
-                        } catch (err: unknown) {
-                          setDeletingId(null);
-                          showToast(err instanceof Error ? err.message : 'Delete failed.');
-                        }
-                      }}
-                        sx={{ px: 1.5, py: 0.5, borderRadius: 2, fontSize: 12, fontWeight: 600 }}>
-                        Delete
-                      </Button>
-                    </Box>
-                  </Box>
-                ) : (
-                  <>
-                    <Button size="small" onClick={() => setAssigningHw(h)}
-                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: '#059669', '&:hover': { bgcolor: '#ecfdf5' } }}>
-                      Assign
-                    </Button>
-                    <Button size="small" onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
-                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'primary.main', '&:hover': { bgcolor: '#EFF6FF' } }}>
-                      Edit
-                    </Button>
-                    <Box component={Link} href={`/teacher/homework/${h.id}/try`}
-                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, textAlign: 'center', color: '#A855F7', textDecoration: 'none', display: 'block', '&:hover': { bgcolor: '#F5F3FF' } }}>
-                      Try
-                    </Box>
-                    <Button size="small" onClick={() => setDeletingId(h.id)}
-                      sx={{ flex: 1, py: 0.75, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'error.main', '&:hover': { bgcolor: '#FEF2F2' } }}>
-                      Delete
-                    </Button>
-                  </>
-                )}
-              </CardActions>
-            </Card>
-          );
-        })}
-      </Box>
+                    </Box>,
+                    /* Type */
+                    <HwTypeChip type={h.type as 'PHONICS' | 'SPEAKING' | 'VOCABULARY' | 'LISTEN' | 'READING'} />,
+                    /* Class */
+                    <Typography sx={{ fontSize: 13, color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{classNames}</Typography>,
+                    /* Due */
+                    <Typography sx={{ fontSize: 13, fontWeight: isOverdue ? 700 : 400, color: isOverdue ? ACCENT : '#64748B' }}>{dueText}</Typography>,
+                    /* Submitted */
+                    deletingId === h.id ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
+                        <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+                        <Button size="small" variant="contained"
+                          onClick={async () => { try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.'); } catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.'); } }}
+                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
+                      </Box>
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography sx={{ fontSize: 13, color: '#64748B' }}>{submittedCount} / {totalEnrolled}</Typography>
+                        <Box sx={{ display: 'flex', gap: 0.25, ml: 'auto' }}>
+                          <IconButton size="small" onClick={() => setAssigningHw(h)} sx={{ color: '#059669', width: 26, height: 26 }} title="Assign">
+                            <CheckCircle2 size={13} />
+                          </IconButton>
+                          <IconButton size="small"
+                            onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
+                            sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
+                            <Pencil size={13} />
+                          </IconButton>
+                          <IconButton size="small" component={Link} href={`/teacher/homework/${h.id}/try`} sx={{ color: '#A855F7', width: 26, height: 26 }} title="Try">
+                            <Eye size={13} />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => setDeletingId(h.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title="Delete">
+                            <Trash2 size={13} />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ),
+                  ]}
+                />
+              );
+            })
+          )}
+        </TableShell>
+      )}
 
       {toast && (
-        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'white', border: '1px solid', borderColor: 'divider', borderRadius: 4, boxShadow: 4, px: 2, py: 1.5, fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
+        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'white', border: '1px solid', borderColor: 'divider', borderRadius: '16px', boxShadow: 4, px: 2, py: 1.5, fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
           <CheckCircle2 size={16} style={{ color: '#10b981' }} />
           {toast}
         </Box>
