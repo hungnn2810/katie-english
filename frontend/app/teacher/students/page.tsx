@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -496,7 +496,7 @@ export default function StudentsPage() {
       {students.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 56, height: 56, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-            <Users size={24} color=”#94A3B8” />
+            <Users size={24} color="#94A3B8" />
           </Box>
           <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No students yet</Typography>
           <Typography sx={{ fontSize: 14, mt: 0.5 }}>Add your first student to get started</Typography>
@@ -515,37 +515,23 @@ export default function StudentsPage() {
           ) : (
             filtered.map((s, i) => {
               const isDeleting = deletingId === s.id;
-              const isPending = pending.some((p) => p.upn === s.upn);
-              const isResetReq = resetRequests.some((r) => r.upn === s.upn);
 
               const statusCell = isDeleting ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
-                  <Button size=”small” onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
-                  <Button size=”small” variant=”contained”
+                  <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+                  <Button size="small" variant="contained"
                     onClick={async () => { try { await deleteStudent(s.id); setDeletingId(null); load(classFilter ? Number(classFilter) : undefined); showToast('Student removed.'); } catch { setDeletingId(null); } }}
                     sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
                 </Box>
-              ) : isResetReq ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip label=”Reset req.” size=”small” sx={{ bgcolor: '#FFF2EF', color: ACCENT, fontWeight: 700, height: 22 }} />
-                  <Button size=”small” onClick={() => { const r = resetRequests.find((r) => r.upn === s.upn); if (r) setModal({ kind: 'reset', request: r }); }}
-                    sx={{ fontSize: 11, fontWeight: 600, color: ACCENT, minWidth: 0, px: 0.75 }}>Set pw</Button>
-                </Box>
-              ) : isPending ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip label=”Pending” size=”small” sx={{ bgcolor: '#FFFBEB', color: '#92400E', fontWeight: 700, height: 22 }} />
-                  <Button size=”small” onClick={() => { const p = pending.find((p) => p.upn === s.upn); if (p) setModal({ kind: 'approve', pending: p }); }}
-                    sx={{ fontSize: 11, fontWeight: 600, color: '#16A34A', minWidth: 0, px: 0.75 }}>Approve</Button>
-                </Box>
               ) : (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip label=”Approved” size=”small” sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
+                  <Chip label="Approved" size="small" sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
                   <Box sx={{ display: 'flex', gap: 0.25 }}>
-                    <IconButton size=”small” onClick={() => setModal({ kind: 'edit', student: s })} sx={{ color: ACCENT, width: 26, height: 26 }} title=”Edit”>
+                    <IconButton size="small" onClick={() => setModal({ kind: 'edit', student: s })} sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
                       <Pencil size={13} />
                     </IconButton>
-                    <IconButton size=”small” onClick={() => setDeletingId(s.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title=”Delete”>
+                    <IconButton size="small" onClick={() => setDeletingId(s.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title="Delete">
                       <UserMinus size={13} />
                     </IconButton>
                   </Box>
@@ -577,7 +563,7 @@ export default function StudentsPage() {
                     </Box>,
                     /* Class */
                     s.class
-                      ? <Chip label={s.class.name} size=”small” sx={{ bgcolor: '#EDE9FE', color: '#8B5CF6', fontWeight: 600, height: 22 }} />
+                      ? <Chip label={s.class.name} size="small" sx={{ bgcolor: '#EDE9FE', color: '#8B5CF6', fontWeight: 600, height: 22 }} />
                       : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>—</Typography>,
                     /* Parent */
                     s.parents.length > 0

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
@@ -316,7 +316,7 @@ export default function ClassesPage() {
       {classes.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-            <Users size={28} color=”#94A3B8” />
+            <Users size={28} color="#94A3B8" />
           </Box>
           <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No classes yet</Typography>
           <Typography sx={{ fontSize: 14, mt: 0.5 }}>Create your first class to get started</Typography>
@@ -347,10 +347,10 @@ export default function ClassesPage() {
                 : 'Not scheduled';
 
               const statusChip = c.status === 'INPROGRESS'
-                ? <Chip label=”Active” size=”small” sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
+                ? <Chip label="Active" size="small" sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
                 : c.status === 'PENDING'
-                  ? <Chip label=”Pending” size=”small” sx={{ bgcolor: '#FEF3C7', color: '#92400E', fontWeight: 700, height: 22 }} />
-                  : <Chip label=”Ended” size=”small” sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontWeight: 700, height: 22 }} />;
+                  ? <Chip label="Pending" size="small" sx={{ bgcolor: '#FEF3C7', color: '#92400E', fontWeight: 700, height: 22 }} />
+                  : <Chip label="Ended" size="small" sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontWeight: 700, height: 22 }} />;
 
               return (
                 <TableShellRow
@@ -382,7 +382,7 @@ export default function ClassesPage() {
                       <Typography sx={{ fontSize: 13, color: activeDays.length > 0 ? '#0F172A' : '#94A3B8' }}>{scheduleText}</Typography>
                       {c.startDate && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Calendar size={11} color=”#94A3B8” />
+                          <Calendar size={11} color="#94A3B8" />
                           <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>{formatDate(c.startDate)} – {formatDate(c.endDate)}</Typography>
                         </Box>
                       )}
@@ -391,21 +391,21 @@ export default function ClassesPage() {
                     isDeleting ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
-                        <Button size=”small” onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
-                        <Button size=”small” variant=”contained” onClick={async () => { try { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); } catch { setDeletingId(null); } }}
+                        <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+                        <Button size="small" variant="contained" onClick={async () => { try { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); } catch { setDeletingId(null); } }}
                           sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
                       </Box>
                     ) : (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {statusChip}
                         <Box sx={{ display: 'flex', gap: 0.25, ml: 0.5 }}>
-                          <IconButton size=”small” onClick={() => openEdit(c)} sx={{ color: ACCENT, width: 26, height: 26 }} title=”Edit”>
+                          <IconButton size="small" onClick={() => openEdit(c)} sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
                             <Pencil size={13} />
                           </IconButton>
-                          <IconButton size=”small” component={Link} href={`/teacher/students?classId=${c.id}`} sx={{ color: '#8B5CF6', width: 26, height: 26 }} title=”Students”>
+                          <IconButton size="small" component={Link} href={`/teacher/students?classId=${c.id}`} sx={{ color: '#8B5CF6', width: 26, height: 26 }} title="Students">
                             <Users size={13} />
                           </IconButton>
-                          <IconButton size=”small” onClick={() => setDeletingId(c.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title=”Delete”>
+                          <IconButton size="small" onClick={() => setDeletingId(c.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title="Delete">
                             <Trash2 size={13} />
                           </IconButton>
                         </Box>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -37,7 +37,7 @@ const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; 
   LISTEN:     { label: 'Listen',     icon: Headphones, color: '#60A5FA', bg: '#60A5FA18' },
 };
 
-// â”€â”€ Homework form modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Homework form modal â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 function HomeworkModal({
   editingId, form, setForm, onClose, onSaved, onNavigateToReading, onNavigateToVocab, onNavigateToListen,
@@ -178,7 +178,7 @@ function HomeworkModal({
               <Box component="span" sx={{ color: meta.color }}>{headingName}</Box>
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              Reusable template â€” assign to classes separately.
+              Reusable template â€" assign to classes separately.
             </Typography>
           </Box>
           <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: 0.5 }}>
@@ -191,7 +191,7 @@ function HomeworkModal({
         <DialogContent sx={{ px: 4, py: 3 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 
-            {/* Type selector â€” create mode only */}
+            {/* Type selector â€" create mode only */}
             {editingId === null && (
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1.5, display: 'block' }}>
@@ -367,7 +367,7 @@ function HomeworkModal({
                             {/* Add word */}
                             <Box sx={{ display: 'flex', gap: 1 }}>
                               <TextField size="small" sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 3, fontSize: 14 } }}
-                                placeholder={`Add word (e.g. paper) â€” Enter to add`}
+                                placeholder={`Add word (e.g. paper) â€" Enter to add`}
                                 value={newWordTexts[pIdx] ?? ''}
                                 onChange={(e) => setNewWordTexts((prev) => ({ ...prev, [pIdx]: e.target.value }))}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
@@ -504,7 +504,7 @@ function HomeworkModal({
   );
 }
 
-// â”€â”€ Assign modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Assign modal â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 function AssignModal({
   homework, classes, onClose, onSaved,
@@ -632,7 +632,7 @@ function AssignModal({
   );
 }
 
-// â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€ Page â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const emptyForm = (): CreateHomeworkInput => ({ type: 'PHONICS', speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingPictureUrl: '', speakingText: '' });
 
@@ -784,7 +784,7 @@ export default function HomeworkPage() {
               const totalEnrolled = h.assignments.reduce(
                 (sum, a) => sum + a.classes.reduce((s, ac) => s + (ac.class._count?.students ?? 0), 0), 0,
               );
-              const classNames = [...new Set(h.assignments.flatMap((a) => a.classes.map((ac) => ac.class.name)))].join(', ') || '—';
+              const classNames = Array.from(new Set(h.assignments.flatMap((a) => a.classes.map((ac) => ac.class.name)))).join(', ') || '—';
               const nearestDue = h.assignments
                 .map((a) => parseApiDateTime(a.endDate))
                 .filter((d): d is Date => d !== null)
