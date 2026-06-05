@@ -3,15 +3,18 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getAdminUser, AdminUser } from '@/lib/admin-auth';
 import AdminShell from '@/components/AdminShell';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import { adminTheme } from '@/lib/theme';
 
-const TITLES: Record<string, string> = {
-  '/admin': 'Dashboard',
-  '/admin/teachers': 'Teachers',
-  '/admin/classes': 'Classes',
-  '/admin/students': 'Students',
-  '/admin/homework': 'Homework',
+const TITLES: Record<string, { title: string; subtitle: string }> = {
+  '/admin': { title: 'Dashboard', subtitle: 'School-wide overview' },
+  '/admin/teachers': { title: 'Teachers', subtitle: 'Approve, deactivate and manage teacher accounts' },
+  '/admin/classes': { title: 'Classes', subtitle: 'Create classes and assign teachers' },
+  '/admin/students': { title: 'Students', subtitle: 'Filter by class and bulk-approve registrations' },
+  '/admin/homework': { title: 'Homework', subtitle: 'Cross-teacher homework overview' },
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -56,22 +59,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setUser(u);
   }, [pathname, router]);
 
-  // Login page — render children directly, no AdminShell
-  if (pathname === '/admin/login') return <>{children}</>;
+  // Login page — render children directly inside theme (no AdminShell)
+  if (pathname === '/admin/login') {
+    return (
+      <ThemeProvider theme={adminTheme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
+    );
+  }
 
   // Loading spinner while checking auth
   if (user === undefined) return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 1280 }}>
-      <CircularProgress size={32} />
-    </Box>
+    <ThemeProvider theme={adminTheme}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 1280 }}>
+        <CircularProgress size={32} />
+      </Box>
+    </ThemeProvider>
   );
 
   // Null while redirect is in flight
   if (!user) return null;
 
+  const meta = TITLES[pathname] ?? { title: 'Admin Portal', subtitle: undefined };
+
   return (
-    <AdminShell user={user} title={TITLES[pathname] ?? 'Admin Portal'}>
-      {children}
-    </AdminShell>
+    <ThemeProvider theme={adminTheme}>
+      <CssBaseline />
+      <AdminShell user={user} title={meta.title} subtitle={meta.subtitle}>
+        {children}
+      </AdminShell>
+    </ThemeProvider>
   );
 }

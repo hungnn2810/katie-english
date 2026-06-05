@@ -1,12 +1,13 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import {
   getAdminStudents, getStudentResults, deleteAdminSession,
   AdminStudentItem, AdminStudentResultItem,
 } from '@/lib/admin-portal-api';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Search } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
@@ -15,18 +16,15 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableContainer from '@mui/material/TableContainer';
-import Paper from '@mui/material/Paper';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputAdornment from '@mui/material/InputAdornment';
+import TableShell, { TableRow } from '@/components/ui/TableShell';
 
-// â”€â”€â”€ ScoreBadge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ScoreBadge ─────────────────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score?: number | null }) {
-  if (score === null || score === undefined) return <Typography component="span" sx={{ color: 'text.secondary' }}>â€”</Typography>;
+  if (score === null || score === undefined) return <Typography component="span" sx={{ color: 'text.secondary' }}>—</Typography>;
   const pct = Math.round(score);
   const sx = pct >= 80
     ? { bgcolor: '#DCFCE7', color: '#15803D' }
@@ -36,95 +34,9 @@ function ScoreBadge({ score }: { score?: number | null }) {
   return <Chip label={`${pct}%`} size="small" sx={{ ...sx, fontWeight: 700 }} />;
 }
 
-// â”€â”€â”€ StudentsTable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── StudentResults ──────────────────────────────────────────────────────────
 
-function StudentsTable({ onViewResults }: { onViewResults: (s: AdminStudentItem) => void }) {
-  const [students, setStudents] = useState<AdminStudentItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    setLoading(true);
-    setError('');
-    getAdminStudents()
-      .then(setStudents)
-      .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (error) {
-    return <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>;
-  }
-
-  if (!loading && students.length === 0) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
-        <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No students yet</Typography>
-        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Students are added to classes by teachers.</Typography>
-      </Box>
-    );
-  }
-
-  return (
-    <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
-      <Table stickyHeader>
-        <TableHead>
-          <TableRow sx={{ bgcolor: 'grey.50' }}>
-            {['Student Name', 'Class', 'Teacher', 'Homeworks', 'Actions'].map((h) => (
-              <TableCell key={h} sx={{ px: 2.5, py: 1.5, fontSize: 12, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {loading
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} aria-label="Loading...">
-                  <TableCell colSpan={5} sx={{ px: 2.5, py: 1.5 }}>
-                    <Box sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 2, width: '100%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
-                  </TableCell>
-                </TableRow>
-              ))
-            : students.map((s) => (
-                <TableRow key={s.id} sx={{ '&:hover': { bgcolor: 'grey.50' } }}>
-                  <TableCell sx={{ px: 2.5, py: 1.5, fontWeight: 500, fontSize: 14 }}>{s.fullname}</TableCell>
-                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>
-                    {s.class ? s.class.name : 'â€”'}
-                  </TableCell>
-                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>
-                    {s.class?.teacher
-                      ? (s.class.teacher.name ?? s.class.teacher.upn)
-                      : 'â€”'}
-                  </TableCell>
-                  <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>{s._count.sessions}</TableCell>
-                  <TableCell sx={{ px: 2.5, py: 1.5 }}>
-                    <Button
-                      variant="text"
-                      size="small"
-                      onClick={() => onViewResults(s)}
-                      sx={{ fontSize: 12, fontWeight: 600, borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0 }}
-                    >
-                      View Results
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-}
-
-// â”€â”€â”€ StudentResults â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function StudentResults({
-  student,
-  onBack,
-}: {
-  student: AdminStudentItem;
-  onBack: () => void;
-}) {
+function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack: () => void }) {
   const [results, setResults] = useState<AdminStudentResultItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -163,9 +75,16 @@ function StudentResults({
       .finally(() => setLoading(false));
   }, [student.id]);
 
+  const RESULT_COLS = [
+    { label: 'Homework', width: '2fr' },
+    { label: 'Score', width: '0.8fr' },
+    { label: 'Started', width: '1.4fr' },
+    { label: 'Completed', width: '1.4fr' },
+    { label: '', width: '0.8fr' },
+  ];
+
   return (
     <Box>
-      {/* Delete session confirm dialog */}
       {confirmDelete !== null && (
         <Dialog open onClose={() => setConfirmDelete(null)} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
           <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -194,112 +113,226 @@ function StudentResults({
         </Dialog>
       )}
 
-      {/* Toast */}
       {toast && (
         <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1500, bgcolor: '#0F172A', color: 'white', fontSize: 14, fontWeight: 600, px: 2.5, py: 1.5, borderRadius: 4, boxShadow: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
           <CheckCircle2 style={{ width: 16, height: 16, color: '#4ADE80' }} /> {toast}
         </Box>
       )}
 
-      {/* Back link */}
       <Box
         component="button"
         onClick={onBack}
         sx={{ fontSize: 14, color: 'text.secondary', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.75, mb: 3, p: 0, '&:hover': { color: 'text.primary' } }}
       >
-        â† Back to Students
+        ← Back to Students
       </Box>
 
-      {/* Heading */}
       <Typography sx={{ fontWeight: 700, lineHeight: 1, mb: 3, fontSize: 26 }}>
-        {student.fullname} â€” Homework Results
+        {student.fullname} — Homework Results
       </Typography>
 
-      {/* Error */}
       {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{error}</Alert>}
 
-      {/* Empty state */}
       {!loading && !error && results.length === 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>No homework submissions yet.</Typography>
         </Box>
       )}
 
-      {/* Results table */}
       {(loading || results.length > 0) && (
-        <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: 'grey.50' }}>
-                {['Homework', 'Score', 'Started', 'Completed', 'Actions'].map((h) => (
-                  <TableCell key={h} sx={{ px: 2.5, py: 1.5, fontSize: 12, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading
-                ? Array.from({ length: 3 }).map((_, i) => (
-                    <TableRow key={i} aria-label="Loading...">
-                      <TableCell colSpan={5} sx={{ px: 2.5, py: 1.5 }}>
-                        <Box sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 2, width: '100%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : results.map((r) => (
-                    <TableRow key={r.id} sx={{ '&:hover': { bgcolor: 'grey.50' } }}>
-                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14, fontWeight: 500 }}>
-                        {r.assignment.homework.name ?? r.assignment.homework.type}
-                      </TableCell>
-                      <TableCell sx={{ px: 2.5, py: 1.5 }}>
-                        <ScoreBadge score={r.score} />
-                      </TableCell>
-                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>
-                        {new Date(r.startedAt).toLocaleString()}
-                      </TableCell>
-                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>
-                        {r.completedAt ? new Date(r.completedAt).toLocaleString() : 'â€”'}
-                      </TableCell>
-                      <TableCell sx={{ px: 2.5, py: 1.5 }}>
-                        <Button
-                          variant="text"
-                          size="small"
-                          onClick={() => setConfirmDelete(r)}
-                          sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}
-                        >
-                          Delete
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+        <TableShell columns={RESULT_COLS}>
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <TableRow key={i} columns={RESULT_COLS} last={i === 2}
+                  cells={RESULT_COLS.map((_, ci) => (
+                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
                   ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                />
+              ))
+            : results.map((r, i) => (
+                <TableRow key={r.id} columns={RESULT_COLS} last={i === results.length - 1}
+                  cells={[
+                    <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{r.assignment.homework.name ?? r.assignment.homework.type}</Typography>,
+                    <ScoreBadge score={r.score} />,
+                    <Typography sx={{ fontSize: 14 }}>{new Date(r.startedAt).toLocaleString()}</Typography>,
+                    <Typography sx={{ fontSize: 14 }}>{r.completedAt ? new Date(r.completedAt).toLocaleString() : '—'}</Typography>,
+                    <Button variant="text" size="small" onClick={() => setConfirmDelete(r)}
+                      sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}>
+                      Delete
+                    </Button>,
+                  ]}
+                />
+              ))}
+        </TableShell>
       )}
     </Box>
   );
 }
 
-// â”€â”€â”€ StudentsPage (two-view) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Students list columns ───────────────────────────────────────────────────
+
+const STUDENT_COLS = [
+  { label: '', width: '0.3fr' },
+  { label: 'Student', width: '1.8fr' },
+  { label: 'Class', width: '1.2fr' },
+  { label: 'Parent', width: '1.4fr' },
+  { label: 'Status', width: '1fr' },
+];
+
+function StudentStatusChip({ student }: { student: AdminStudentItem }) {
+  // Students with a class are considered enrolled (Approved); others are Pending
+  if (student.class) {
+    return <Chip label="Approved" size="small" sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, fontSize: 12, borderRadius: 999 }} />;
+  }
+  return <Chip label="Pending" size="small" sx={{ bgcolor: '#FFFBEB', color: '#92400E', fontWeight: 700, fontSize: 12, borderRadius: 999 }} />;
+}
+
+// ─── Students Page ───────────────────────────────────────────────────────────
 
 export default function StudentsPage() {
   const [selectedStudent, setSelectedStudent] = useState<AdminStudentItem | null>(null);
+  const [students, setStudents] = useState<AdminStudentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [classFilter, setClassFilter] = useState('ALL');
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    setLoading(true);
+    setError('');
+    getAdminStudents()
+      .then(setStudents)
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   if (selectedStudent) {
-    return (
-      <StudentResults
-        student={selectedStudent}
-        onBack={() => setSelectedStudent(null)}
-      />
-    );
+    return <StudentResults student={selectedStudent} onBack={() => setSelectedStudent(null)} />;
+  }
+
+  // Build unique class list for filter dropdown
+  const classes = Array.from(
+    new Map(
+      students
+        .filter((s) => s.class)
+        .map((s) => [s.class!.id, s.class!.name])
+    ).entries()
+  );
+
+  const filtered = students.filter((s) => {
+    const matchSearch = !search || s.fullname.toLowerCase().includes(search.toLowerCase());
+    const matchClass = classFilter === 'ALL' || (s.class && String(s.class.id) === classFilter);
+    return matchSearch && matchClass;
+  });
+
+  function toggleSelect(id: number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   }
 
   return (
     <Box>
-      {/* Page heading */}
-      <Typography sx={{ fontWeight: 700, lineHeight: 1, mb: 3, fontSize: 26 }}>
-        Students
-      </Typography>
-      <StudentsTable onViewResults={setSelectedStudent} />
+      {/* Toolbar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, gap: 1.5 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+          <TextField
+            placeholder="Search students…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            size="small"
+            sx={{
+              width: 280,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2, fontSize: 13,
+                '& fieldset': { borderWidth: '1.5px', borderColor: '#E2E8F0' },
+              },
+            }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={15} color="#94A3B8" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <Select
+            value={classFilter}
+            onChange={(e) => setClassFilter(e.target.value)}
+            size="small"
+            displayEmpty
+            sx={{ borderRadius: 2, fontSize: 13, minWidth: 160, '& fieldset': { borderWidth: '1.5px', borderColor: '#E2E8F0' } }}
+          >
+            <MenuItem value="ALL">All classes</MenuItem>
+            {classes.map(([id, name]) => (
+              <MenuItem key={id} value={String(id)}>{name}</MenuItem>
+            ))}
+          </Select>
+        </Box>
+        <Button
+          variant="contained"
+          disabled={selected.size === 0}
+          sx={{ fontWeight: 600, borderRadius: 2, px: 2, py: 1.125, fontSize: 14 }}
+        >
+          + Bulk approve
+        </Button>
+      </Box>
+
+      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
+
+      {!loading && filtered.length === 0 && !error ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
+          <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No students yet</Typography>
+          <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Students are added to classes by teachers.</Typography>
+        </Box>
+      ) : (
+        <TableShell columns={STUDENT_COLS}>
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i} columns={STUDENT_COLS} last={i === 4}
+                  cells={STUDENT_COLS.map((_, ci) => (
+                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
+                  ))}
+                />
+              ))
+            : filtered.map((s, i) => (
+                <TableRow
+                  key={s.id}
+                  columns={STUDENT_COLS}
+                  last={i === filtered.length - 1}
+                  cells={[
+                    /* Checkbox */
+                    <Box
+                      onClick={() => toggleSelect(s.id)}
+                      sx={{
+                        width: 16, height: 16, borderRadius: '4px',
+                        border: selected.has(s.id) ? '1.5px solid #4F9DFF' : '1.5px solid #CBD5E1',
+                        bgcolor: selected.has(s.id) ? '#4F9DFF' : 'transparent',
+                        cursor: 'pointer', flexShrink: 0,
+                      }}
+                    />,
+                    /* Student name — clickable to view results */
+                    <Button variant="text" size="small" onClick={() => setSelectedStudent(s)}
+                      sx={{ fontSize: 14, fontWeight: 600, p: 0, minWidth: 0, color: 'text.primary', textAlign: 'left', '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } }}>
+                      {s.fullname}
+                    </Button>,
+                    <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{s.class ? s.class.name : '—'}</Typography>,
+                    <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+                      {s.class?.teacher ? (s.class.teacher.name ?? s.class.teacher.upn) : '—'}
+                    </Typography>,
+                    <StudentStatusChip student={s} />,
+                  ]}
+                />
+              ))}
+        </TableShell>
+      )}
     </Box>
   );
 }

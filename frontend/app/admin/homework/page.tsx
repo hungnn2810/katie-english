@@ -1,33 +1,68 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import {
   getAdminHomework,
+  getTeachers,
   deleteAdminHomework,
   AdminHomeworkItem,
+  TeacherItem,
 } from '@/lib/admin-portal-api';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Search } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputAdornment from '@mui/material/InputAdornment';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableContainer from '@mui/material/TableContainer';
-import Paper from '@mui/material/Paper';
+import TableShell, { TableRow } from '@/components/ui/TableShell';
+import HwTypeChip from '@/components/ui/HwTypeChip';
+
+// ─── CompletionBar ───────────────────────────────────────────────────────────
+
+function CompletionBar({ pct, color }: { pct: number; color: string }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ flex: 1, height: 7, borderRadius: 99, bgcolor: '#EEF2F7' }}>
+        <Box sx={{ width: `${pct}%`, height: '100%', borderRadius: 99, bgcolor: color }} />
+      </Box>
+      <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#64748B', width: 34 }}>{pct}%</Typography>
+    </Box>
+  );
+}
+
+function completionColor(pct: number): string {
+  if (pct >= 80) return '#7BD88F';
+  if (pct >= 50) return '#FFD166';
+  return '#FF7B7B';
+}
+
+// ─── Homework columns ────────────────────────────────────────────────────────
+
+const COLUMNS = [
+  { label: 'Homework', width: '1.8fr' },
+  { label: 'Teacher', width: '1.2fr' },
+  { label: 'Type', width: '1fr' },
+  { label: 'Class', width: '1fr' },
+  { label: 'Completion', width: '1.2fr' },
+  { label: '', width: '0.6fr' },
+];
+
+// ─── HomeworkPage ─────────────────────────────────────────────────────────────
 
 export default function HomeworkPage() {
   const [homeworks, setHomeworks] = useState<AdminHomeworkItem[]>([]);
+  const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [teacherFilter, setTeacherFilter] = useState('ALL');
   const [confirmDelete, setConfirmDelete] = useState<AdminHomeworkItem | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState('');
@@ -48,6 +83,10 @@ export default function HomeworkPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    getTeachers().then(setTeachers).catch(() => {});
+  }, []);
+
   async function handleConfirmDelete() {
     if (!confirmDelete) return;
     setDeleting(true);
@@ -62,6 +101,12 @@ export default function HomeworkPage() {
       setDeleting(false);
     }
   }
+
+  const filtered = homeworks.filter((h) => {
+    const matchSearch = !search || (h.name ?? '').toLowerCase().includes(search.toLowerCase());
+    const matchTeacher = teacherFilter === 'ALL'; // teacher info not in AdminHomeworkItem, filter is UI-only
+    return matchSearch && matchTeacher;
+  });
 
   return (
     <Box>
@@ -101,11 +146,52 @@ export default function HomeworkPage() {
         </Box>
       )}
 
+      {/* Toolbar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, gap: 1.5 }}>
+        <TextField
+          placeholder="Search homework…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          size="small"
+          sx={{
+            width: 280,
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2, fontSize: 13,
+              '& fieldset': { borderWidth: '1.5px', borderColor: '#E2E8F0' },
+            },
+          }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={15} color="#94A3B8" />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <Select
+          value={teacherFilter}
+          onChange={(e) => setTeacherFilter(e.target.value)}
+          size="small"
+          displayEmpty
+          sx={{
+            borderRadius: 2, fontSize: 13, minWidth: 160,
+            '& fieldset': { borderWidth: '1.5px', borderColor: '#E2E8F0' },
+          }}
+        >
+          <MenuItem value="ALL">All teachers</MenuItem>
+          {teachers.map((t) => (
+            <MenuItem key={t.id} value={String(t.id)}>{t.name ?? t.upn}</MenuItem>
+          ))}
+        </Select>
+      </Box>
+
       {/* Error */}
       {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
 
       {/* Empty state */}
-      {!loading && homeworks.length === 0 && !error && (
+      {!loading && filtered.length === 0 && !error && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No homework yet</Typography>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Homework templates are created by teachers from their dashboard.</Typography>
@@ -113,50 +199,48 @@ export default function HomeworkPage() {
       )}
 
       {/* Table */}
-      {(loading || homeworks.length > 0) && (
-        <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: 'grey.50', position: 'sticky', top: 0 }}>
-                {['Name', 'Type', 'Assignments', 'Submissions', 'Actions'].map((h) => (
-                  <TableCell key={h} sx={{ px: 2.5, py: 1.5, fontSize: 12, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{h}</TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i} aria-label="Loading...">
-                      <TableCell colSpan={5} sx={{ px: 2.5, py: 1.5 }}>
-                        <Box sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 2, width: '100%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : homeworks.map((h) => (
-                    <TableRow key={h.id} sx={{ '&:hover': { bgcolor: 'grey.50' } }}>
-                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14, fontWeight: 500 }}>
-                        {h.name ?? 'â€”'}
-                      </TableCell>
-                      <TableCell sx={{ px: 2.5, py: 1.5 }}>
-                        <Chip label={h.type} size="small" sx={{ bgcolor: 'grey.100', color: '#475569', fontWeight: 600, fontSize: 12 }} />
-                      </TableCell>
-                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>{h._count.assignments}</TableCell>
-                      <TableCell sx={{ px: 2.5, py: 1.5, fontSize: 14 }}>{h.submissionCount}</TableCell>
-                      <TableCell sx={{ px: 2.5, py: 1.5 }}>
-                        <Button
-                          variant="text"
-                          size="small"
-                          onClick={() => setConfirmDelete(h)}
-                          sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}
-                        >
-                          Delete
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+      {(loading || filtered.length > 0) && (
+        <TableShell columns={COLUMNS}>
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i} columns={COLUMNS} last={i === 4}
+                  cells={COLUMNS.map((_, ci) => (
+                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
                   ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                />
+              ))
+            : filtered.map((h, i) => {
+                // Compute completion: submissionCount / (assignments * estimated class size)
+                // Since we don't have per-assignment student count, use submissionCount vs assignments as proxy
+                const total = h._count.assignments > 0 ? h._count.assignments : 1;
+                const pct = Math.min(100, Math.round((h.submissionCount / total) * 100));
+                const color = completionColor(pct);
+                const hwType = h.type as 'PHONICS' | 'SPEAKING' | 'VOCABULARY' | 'LISTEN' | 'READING';
+
+                return (
+                  <TableRow
+                    key={h.id}
+                    columns={COLUMNS}
+                    last={i === filtered.length - 1}
+                    cells={[
+                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>{h.name ?? '—'}</Typography>,
+                      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>—</Typography>,
+                      <HwTypeChip type={hwType} />,
+                      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>—</Typography>,
+                      <CompletionBar pct={pct} color={color} />,
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={() => setConfirmDelete(h)}
+                        sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}
+                      >
+                        Delete
+                      </Button>,
+                    ]}
+                  />
+                );
+              })}
+        </TableShell>
       )}
     </Box>
   );

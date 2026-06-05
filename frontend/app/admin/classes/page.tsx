@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   getAdminClasses,
@@ -11,7 +11,7 @@ import {
   ScheduleSlot,
   ClassStatus,
 } from '@/lib/admin-portal-api';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Search } from 'lucide-react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -31,15 +31,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import InputAdornment from '@mui/material/InputAdornment';
 import Chip from '@mui/material/Chip';
 import CloseIcon from '@mui/icons-material/Close';
+import TableShell, { TableRow } from '@/components/ui/TableShell';
 
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const DAY_LABELS: Record<string, string> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' };
@@ -48,8 +43,18 @@ const DEFAULT_DURATION = 1.5;
 const STATUS_BADGE: Record<ClassStatus, { label: string; color: string; bg: string }> = {
   PENDING:    { label: 'Pending',     color: '#92400E', bg: '#FFFBEB' },
   INPROGRESS: { label: 'In Progress', color: '#15803D', bg: '#F0FDF4' },
-  ENDED:      { label: 'Ended',       color: '#64748B', bg: 'grey.100' },
+  ENDED:      { label: 'Ended',       color: '#64748B', bg: '#F1F5F9' },
 };
+
+const COLUMNS = [
+  { label: 'Class', width: '1.6fr' },
+  { label: 'Code', width: '0.9fr' },
+  { label: 'Teacher', width: '1.4fr' },
+  { label: 'Students', width: '0.9fr' },
+  { label: '', width: '1fr' },
+];
+
+// ─── EditClassModal ──────────────────────────────────────────────────────────
 
 function EditClassModal({
   editing,
@@ -125,7 +130,6 @@ function EditClassModal({
 
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent sx={{ px: 4, py: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Name + Code row */}
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
               <Box>
                 <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>Class Name</FormLabel>
@@ -153,7 +157,6 @@ function EditClassModal({
               </Box>
             </Box>
 
-            {/* Status */}
             <Box>
               <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1 }}>Status</FormLabel>
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -174,7 +177,6 @@ function EditClassModal({
               </Box>
             </Box>
 
-            {/* Schedule */}
             <Box>
               <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1 }}>Schedule</FormLabel>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
@@ -245,6 +247,8 @@ function EditClassModal({
   );
 }
 
+// ─── DeleteConfirmDialog ─────────────────────────────────────────────────────
+
 function DeleteConfirmDialog({
   cls,
   onClose,
@@ -298,9 +302,12 @@ function DeleteConfirmDialog({
   );
 }
 
+// ─── ClassesPage ─────────────────────────────────────────────────────────────
+
 export default function ClassesPage() {
   const [classes, setClasses] = useState<AdminClassItem[]>([]);
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
+  const [search, setSearch] = useState('');
   const [teacherFilter, setTeacherFilter] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -328,17 +335,19 @@ export default function ClassesPage() {
     }
   }, []);
 
-  // Load teachers once on mount
   useEffect(() => {
-    getTeachers()
-      .then(setTeachers)
-      .catch(() => {});
+    getTeachers().then(setTeachers).catch(() => {});
   }, []);
 
-  // Reload classes whenever filter changes (including on mount)
   useEffect(() => {
     loadClasses(teacherFilter);
   }, [teacherFilter, loadClasses]);
+
+  const filtered = classes.filter((c) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q);
+  });
 
   return (
     <Box>
@@ -364,33 +373,59 @@ export default function ClassesPage() {
         </Box>
       )}
 
-      {/* Filter row */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
-        <Typography sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-          Filter by teacher
-        </Typography>
-        <FormControl size="small" sx={{ minWidth: 192 }}>
-          <InputLabel>All teachers</InputLabel>
-          <Select
-            value={teacherFilter}
-            onChange={(e) => setTeacherFilter(e.target.value)}
-            label="All teachers"
-            sx={{ borderRadius: 3 }}
-          >
-            <MenuItem value="ALL">All teachers</MenuItem>
-            {teachers.map((t) => (
-              <MenuItem key={t.id} value={String(t.id)}>
-                {t.name ?? t.upn}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      {/* Toolbar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, gap: 1.5 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+          <TextField
+            placeholder="Search classes…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            size="small"
+            sx={{
+              width: 280,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2, fontSize: 13,
+                '& fieldset': { borderWidth: '1.5px', borderColor: '#E2E8F0' },
+              },
+            }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={15} color="#94A3B8" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <FormControl size="small" sx={{ minWidth: 192 }}>
+            <InputLabel>All teachers</InputLabel>
+            <Select
+              value={teacherFilter}
+              onChange={(e) => setTeacherFilter(e.target.value)}
+              label="All teachers"
+              sx={{ borderRadius: 2, '& fieldset': { borderWidth: '1.5px', borderColor: '#E2E8F0' } }}
+            >
+              <MenuItem value="ALL">All teachers</MenuItem>
+              {teachers.map((t) => (
+                <MenuItem key={t.id} value={String(t.id)}>
+                  {t.name ?? t.upn}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        <Button
+          variant="contained"
+          sx={{ fontWeight: 600, borderRadius: 2, px: 2, py: 1.125, fontSize: 14 }}
+        >
+          + New Class
+        </Button>
       </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
 
-      {/* Table */}
-      {!loading && classes.length === 0 ? (
+      {!loading && filtered.length === 0 && !error ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary' }}>
           {teacherFilter === 'ALL' ? (
             <>
@@ -405,51 +440,49 @@ export default function ClassesPage() {
           )}
         </Box>
       ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: 0, overflow: 'hidden' }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow sx={{ bgcolor: 'grey.50' }}>
-              {['Class Name', 'Teacher', 'Students', 'Status', 'Actions'].map((h) => (
-                <TableCell key={h} sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {classes.map((c) => {
-              const badge = STATUS_BADGE[c.status];
-              return (
-                <TableRow key={c.id} sx={{ '&:hover': { bgcolor: 'grey.50' } }}>
-                  <TableCell>
-                    <Typography sx={{ fontWeight: 600, fontSize: 14, color: 'text.primary' }}>{c.name}</Typography>
-                    <Typography sx={{ fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }}>{c.code}</Typography>
-                  </TableCell>
-                  <TableCell sx={{ fontSize: 14, color: 'text.secondary' }}>
-                    {c.teacher ? (c.teacher.name ?? c.teacher.upn) : 'â€”'}
-                  </TableCell>
-                  <TableCell sx={{ fontSize: 14, color: 'text.secondary' }}>{c._count.students}</TableCell>
-                  <TableCell>
-                    <Chip label={badge.label} size="small" sx={{ bgcolor: badge.bg, color: badge.color, fontWeight: 600 }} />
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button variant="text" size="small"
-                        sx={{ fontSize: 12, fontWeight: 600, color: '#2563EB', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#EFF6FF' } }}
-                        onClick={() => setEditing(c)}>
-                        Edit
-                      </Button>
-                      <Button variant="text" size="small"
-                        sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}
-                        onClick={() => setConfirmDelete(c)}>
-                        Delete
-                      </Button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-        </TableContainer>
+        <TableShell columns={COLUMNS}>
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <TableRow key={i} columns={COLUMNS} last={i === 3}
+                  cells={COLUMNS.map((_, ci) => (
+                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
+                  ))}
+                />
+              ))
+            : filtered.map((c, i) => {
+                const badge = STATUS_BADGE[c.status];
+                const hasTeacher = !!c.teacher;
+                return (
+                  <TableRow
+                    key={c.id}
+                    columns={COLUMNS}
+                    last={i === filtered.length - 1}
+                    cells={[
+                      <Box>
+                        <Typography sx={{ fontWeight: 600, fontSize: 14, color: 'text.primary' }}>{c.name}</Typography>
+                        <Typography sx={{ fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }}>{c.code}</Typography>
+                      </Box>,
+                      <Typography sx={{ fontSize: 14, color: 'text.secondary', fontFamily: 'monospace' }}>{c.code}</Typography>,
+                      <Typography sx={{ fontSize: 14, color: hasTeacher ? 'text.primary' : '#94A3B8' }}>
+                        {hasTeacher ? (c.teacher!.name ?? c.teacher!.upn) : 'Unassigned'}
+                      </Typography>,
+                      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{c._count.students}</Typography>,
+                      hasTeacher ? (
+                        <Button variant="text" size="small" onClick={() => setEditing(c)}
+                          sx={{ fontSize: 13, fontWeight: 600, p: 0, minWidth: 0, color: '#4F9DFF' }}>
+                          Reassign
+                        </Button>
+                      ) : (
+                        <Button variant="contained" size="small" onClick={() => setEditing(c)}
+                          sx={{ fontSize: 13, fontWeight: 600, borderRadius: 2, px: '12px', py: '6px', minWidth: 0 }}>
+                          Assign teacher
+                        </Button>
+                      ),
+                    ]}
+                  />
+                );
+              })}
+        </TableShell>
       )}
     </Box>
   );
