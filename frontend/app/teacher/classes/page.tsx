@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
-import { colors } from '@/lib/colors';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -24,6 +23,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Search, Plus, Calendar, Pencil, Trash2, Users, CheckCircle2, X } from 'lucide-react';
 import { formatDate } from '@/lib/datetime';
+import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 
 const ACCENT = '#F0623A';
 
@@ -312,98 +312,112 @@ export default function ClassesPage() {
         </Button>
       </Box>
 
-      {/* Grid */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 2 }}>
-        {classes.length === 0 && (
-          <Box sx={{ gridColumn: '1/-1', textAlign: 'center', py: 10, color: 'text.secondary' }}>
-            <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-              <svg style={{ width: 28, height: 28, color: '#94A3B8' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
+      {/* Table */}
+      {classes.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+          <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+            <Users size={28} color=”#94A3B8” />
+          </Box>
+          <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No classes yet</Typography>
+          <Typography sx={{ fontSize: 14, mt: 0.5 }}>Create your first class to get started</Typography>
+        </Box>
+      ) : (
+        <TableShell columns={[
+          { label: 'Class', width: '2fr' },
+          { label: 'Code', width: '1fr' },
+          { label: 'Students', width: '1fr' },
+          { label: 'Schedule', width: '1.4fr' },
+          { label: 'Status', width: '1fr' },
+        ]}>
+          {filtered.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+              <Typography sx={{ fontWeight: 500, fontSize: 14 }}>No classes match filter</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No classes yet</Typography>
-            <Typography sx={{ fontSize: 14, mt: 0.5 }}>Create your first class to get started</Typography>
-          </Box>
-        )}
-        {classes.length > 0 && filtered.length === 0 && (
-          <Box sx={{ gridColumn: '1/-1', textAlign: 'center', py: 8, color: 'text.secondary' }}>
-            <Typography sx={{ fontWeight: 500 }}>No classes match</Typography>
-          </Box>
-        )}
-        {filtered.map((c) => {
-          const sc = STATUS_CONFIG[c.status];
-          const slots: ScheduleSlot[] = Array.isArray(c.scheduleSlots) ? c.scheduleSlots : [];
-          const activeDays = DAYS.filter((d) => slots.find((s) => s.day === d));
-          const initials = c.name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
-          const isDeleting = deletingId === c.id;
+          ) : (
+            filtered.map((c, i) => {
+              const sc = STATUS_CONFIG[c.status];
+              const slots: ScheduleSlot[] = Array.isArray(c.scheduleSlots) ? c.scheduleSlots : [];
+              const activeDays = DAYS.filter((d) => slots.find((s) => s.day === d));
+              const isDeleting = deletingId === c.id;
+              const scheduleText = activeDays.length > 0
+                ? activeDays.map((day) => {
+                    const slot = slots.find((s) => s.day === day)!;
+                    return `${DAY_LABELS[day]}${slot.time ? ` ${slot.time}` : ''}`;
+                  }).join(' · ')
+                : 'Not scheduled';
 
-          return (
-            <Paper key={c.id} variant="outlined" sx={{ borderRadius: 4, display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'all 0.2s', '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' } }}>
-              {/* Card header */}
-              <Box sx={{ px: 2.5, pt: 2.5, pb: 2, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                  <Box sx={{ width: 44, height: 44, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: STATUS_AVATAR_BG[c.status] }}>
-                    <Typography sx={{ fontWeight: 900, fontSize: 14, color: STATUS_AVATAR_COLOR[c.status] }}>{initials}</Typography>
-                  </Box>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontWeight: 900, color: 'text.primary', fontSize: 15, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</Typography>
-                    <Typography sx={{ color: 'text.secondary', fontSize: 12, fontFamily: 'monospace', letterSpacing: '0.05em', mt: 0.25 }}>{c.code}</Typography>
-                  </Box>
-                </Box>
-                <Chip label={sc.label} size="small" sx={{ bgcolor: sc.bg, color: sc.color, fontWeight: 700, height: 24, flexShrink: 0, mt: 0.25 }} />
-              </Box>
+              const statusChip = c.status === 'INPROGRESS'
+                ? <Chip label=”Active” size=”small” sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
+                : c.status === 'PENDING'
+                  ? <Chip label=”Pending” size=”small” sx={{ bgcolor: '#FEF3C7', color: '#92400E', fontWeight: 700, height: 22 }} />
+                  : <Chip label=”Ended” size=”small” sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontWeight: 700, height: 22 }} />;
 
-              <Box sx={{ px: 2.5, pb: 2, flex: 1, display: 'flex', flexDirection: 'column', gap: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: 12, color: 'text.secondary', pt: 1.5 }}>
-                  <Calendar size={14} style={{ flexShrink: 0 }} />
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{formatDate(c.startDate)} â€“ {formatDate(c.endDate)}</Typography>
-                </Box>
-                {activeDays.length > 0 && (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {activeDays.map((day) => {
-                      const slot = slots.find((s) => s.day === day)!;
-                      const durationLabel = slot.duration ? ` Â· ${slot.duration}h` : '';
-                      return (
-                        <Chip key={day} label={`${DAY_LABELS[day]}${slot.time ? ` ${slot.time}` : ''}${durationLabel}`} size="small"
-                          sx={{ bgcolor: '#FFF2EF', color: ACCENT, fontWeight: 600, height: 22, fontSize: 11 }} />
-                      );
-                    })}
-                  </Box>
-                )}
-                {c._count && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 'auto', pt: 1, borderTop: '1px solid', borderColor: 'divider' }}>
-                    <Users size={14} color="#94A3B8" />
-                    <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-                      <Box component="span" sx={{ fontWeight: 600, color: 'text.primary' }}>{c._count.students}</Box> student{c._count.students !== 1 ? 's' : ''}
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-
-              <Box sx={{ px: 2, py: 1.5, bgcolor: 'background.default', borderTop: '1px solid', borderColor: 'divider' }}>
-                {isDeleting ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography sx={{ fontSize: 12, color: 'text.secondary', flex: 1 }}>Delete class?</Typography>
-                    <Button size="small" onClick={() => setDeletingId(null)} sx={{ borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>Cancel</Button>
-                    <Button size="small" variant="contained" onClick={async () => { try { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); } catch { setDeletingId(null); } }}
-                      sx={{ borderRadius: 2, fontSize: 12, fontWeight: 600, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' } }}>Delete</Button>
-                  </Box>
-                ) : (
-                  <Box sx={{ display: 'flex', gap: 0.5 }}>
-                    <Button size="small" onClick={() => openEdit(c)} sx={{ flex: 1, borderRadius: 2, fontSize: 12, fontWeight: 600, color: ACCENT, gap: 0.5 }}>
-                      <Pencil size={14} />Edit
-                    </Button>
-                    <Button size="small" component={Link} href={`/teacher/students?classId=${c.id}`} sx={{ flex: 1, borderRadius: 2, fontSize: 12, fontWeight: 600, color: colors.purple, gap: 0.5 }}>
-                      <Users size={14} />Students
-                    </Button>
-                    <Button size="small" onClick={() => setDeletingId(c.id)} sx={{ flex: 1, borderRadius: 2, fontSize: 12, fontWeight: 600, color: 'error.main', gap: 0.5 }}>
-                      <Trash2 size={14} />Delete
-                    </Button>
-                  </Box>
-                )}
-              </Box>
-            </Paper>
-          );
-        })}
-      </Box>
+              return (
+                <TableShellRow
+                  key={c.id}
+                  columns={[
+                    { label: 'Class', width: '2fr' },
+                    { label: 'Code', width: '1fr' },
+                    { label: 'Students', width: '1fr' },
+                    { label: 'Schedule', width: '1.4fr' },
+                    { label: 'Status', width: '1fr' },
+                  ]}
+                  last={i === filtered.length - 1}
+                  cells={[
+                    /* Class */
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ width: 36, height: 36, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: STATUS_AVATAR_BG[c.status] }}>
+                        <Typography sx={{ fontWeight: 900, fontSize: 12, color: STATUS_AVATAR_COLOR[c.status] }}>
+                          {c.name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()}
+                        </Typography>
+                      </Box>
+                      <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#0F172A' }}>{c.name}</Typography>
+                    </Box>,
+                    /* Code */
+                    <Typography sx={{ fontSize: 13, fontFamily: 'monospace', letterSpacing: '0.04em', color: '#64748B' }}>{c.code}</Typography>,
+                    /* Students */
+                    <Typography sx={{ fontSize: 14, color: '#0F172A' }}>{c._count?.students ?? 0}</Typography>,
+                    /* Schedule */
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <Typography sx={{ fontSize: 13, color: activeDays.length > 0 ? '#0F172A' : '#94A3B8' }}>{scheduleText}</Typography>
+                      {c.startDate && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Calendar size={11} color=”#94A3B8” />
+                          <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>{formatDate(c.startDate)} – {formatDate(c.endDate)}</Typography>
+                        </Box>
+                      )}
+                    </Box>,
+                    /* Status */
+                    isDeleting ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
+                        <Button size=”small” onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+                        <Button size=”small” variant=”contained” onClick={async () => { try { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); } catch { setDeletingId(null); } }}
+                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
+                      </Box>
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {statusChip}
+                        <Box sx={{ display: 'flex', gap: 0.25, ml: 0.5 }}>
+                          <IconButton size=”small” onClick={() => openEdit(c)} sx={{ color: ACCENT, width: 26, height: 26 }} title=”Edit”>
+                            <Pencil size={13} />
+                          </IconButton>
+                          <IconButton size=”small” component={Link} href={`/teacher/students?classId=${c.id}`} sx={{ color: '#8B5CF6', width: 26, height: 26 }} title=”Students”>
+                            <Users size={13} />
+                          </IconButton>
+                          <IconButton size=”small” onClick={() => setDeletingId(c.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title=”Delete”>
+                            <Trash2 size={13} />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ),
+                  ]}
+                />
+              );
+            })
+          )}
+        </TableShell>
+      )}
     </Box>
   );
 }
