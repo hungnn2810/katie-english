@@ -6,6 +6,9 @@ import TeacherShell from '@/components/TeacherShell';
 import { TeacherUserContext } from './_context';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { teacherTheme } from '@/lib/theme';
 
 const TITLES: Record<string, string> = {
   '/teacher': 'Dashboard',
@@ -55,17 +58,23 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   }, [router]);
 
   if (user === undefined) return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 1280 }}>
-      <CircularProgress size={32} />
-    </Box>
+    <ThemeProvider theme={teacherTheme}>
+      <CssBaseline />
+      <Box sx={{ minHeight: '100vh', bgcolor: '#F7F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 1280 }}>
+        <CircularProgress size={32} />
+      </Box>
+    </ThemeProvider>
   );
   if (!user) return null;
 
   return (
-    <TeacherUserContext.Provider value={user}>
-      <TeacherShell user={user} title={TITLES[pathname] ?? 'Teacher Portal'}>
-        {children}
-      </TeacherShell>
-    </TeacherUserContext.Provider>
+    <ThemeProvider theme={teacherTheme}>
+      <CssBaseline />
+      <TeacherUserContext.Provider value={user}>
+        <TeacherShell user={user} title={TITLES[pathname] ?? 'Teacher Portal'}>
+          {children}
+        </TeacherShell>
+      </TeacherUserContext.Provider>
+    </ThemeProvider>
   );
 }
