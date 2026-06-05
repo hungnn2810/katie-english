@@ -20,7 +20,7 @@
 | 8 | Vocabulary by Image Exercise | Image → student speaks word → phoneme feedback | v2 | 📋 Planned |
 | 9 | Listen & Answer Exercise | 5/5 | Complete   | 2026-06-03 |
 | 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
-| 11 | Frontend React MUI Refactor | 2/5 | In Progress|  |
+| 11 | Frontend React MUI Refactor | 5/5 | Complete   | 2026-06-05 |
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
 
 ---
@@ -374,12 +374,12 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 3. All migrated pages pass existing lint/build checks and manual smoke test checklist.
 4. New screens can be scaffolded from shared MUI components without introducing one-off style systems.
 
-**Plans:** 2/5 plans executed
+**Plans:** 5/5 plans complete
 
 - [x] 11-01-PLAN.md — MUI install + base/student theme + root & game ThemeProviders + remove Tailwind/shadcn + delete components/ui (Wave 1)
 - [x] 11-02-PLAN.md — Teacher area: TeacherShell + 10 teacher pages + ReadingCreationPage (dnd-kit wrapper -> Paper) + shake keyframe (Wave 2, depends 11-01)
-- [ ] 11-03-PLAN.md — Student/game area: 4 game components + 4 game pages + login DatePicker; gradients/minWidth/shake preserved (Wave 2, depends 11-01)
-- [ ] 11-04-PLAN.md — Admin area: AdminShell + admin login + 5 admin pages (Dialog/Table/Alert) + full build gate (Wave 2, depends 11-01)
+- [x] 11-03-PLAN.md — Student/game area: 4 game components + 4 game pages + login DatePicker; gradients/minWidth/shake preserved (Wave 2, depends 11-01)
+- [x] 11-04-PLAN.md — Admin area: AdminShell + admin login + 5 admin pages (Dialog/Table/Alert) + full build gate (Wave 2, depends 11-01)
 
 ---
 
