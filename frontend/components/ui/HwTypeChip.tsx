@@ -1,5 +1,7 @@
 import { Chip } from '@mui/material';
+import type { LucideProps } from 'lucide-react';
 import { BookOpen, Hash, Headphones, ImageIcon, Mic } from 'lucide-react';
+import type { ForwardRefExoticComponent, RefAttributes } from 'react';
 
 type HwType = 'PHONICS' | 'SPEAKING' | 'VOCABULARY' | 'LISTEN' | 'READING';
 
@@ -7,7 +9,9 @@ interface HwTypeChipProps {
   type: HwType;
 }
 
-const CONFIG: Record<HwType, { label: string; bg: string; color: string; Icon: React.ComponentType<{ size?: number; color?: string }> }> = {
+type LucideIcon = ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>>;
+
+const CONFIG: Record<HwType, { label: string; bg: string; color: string; Icon: LucideIcon }> = {
   PHONICS:    { label: 'Phonics',    bg: '#FFF7ED', color: '#F97316', Icon: Hash },
   SPEAKING:   { label: 'Speaking',   bg: '#FDF2F8', color: '#EC4899', Icon: Mic },
   VOCABULARY: { label: 'Vocabulary', bg: '#F5F3FF', color: '#8B5CF6', Icon: ImageIcon },
