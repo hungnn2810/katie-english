@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import AuthGate from '@/components/AuthGate';
 import { getAvailableHomework, startSession, AssignmentItem, HomeworkType } from '@/lib/admin-api';
 import { AuthUser, clearAuth, changePassword } from '@/lib/auth';
-import { cardGradients, gradients } from '@/lib/colors';
+import { gradients } from '@/lib/colors';
 import { Hash, Mic, BookOpen, ImageIcon, Lock, CheckCircle2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap, Headphones } from 'lucide-react';
 import { parseApiDateTime } from '@/lib/datetime';
 import Box from '@mui/material/Box';
@@ -20,12 +20,21 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType }> = {
-  PHONICS:    { label: 'Phonics',    icon: Hash },
-  SPEAKING:   { label: 'Speaking',   icon: Mic },
-  READING:    { label: 'Reading',    icon: BookOpen },
-  VOCABULARY: { label: 'Vocabulary', icon: ImageIcon },
-  LISTEN:     { label: 'Listen',     icon: Headphones },
+  PHONICS:    { label: 'Phát âm',   icon: Hash },
+  SPEAKING:   { label: 'Nói',       icon: Mic },
+  READING:    { label: 'Đọc',       icon: BookOpen },
+  VOCABULARY: { label: 'Từ vựng',   icon: ImageIcon },
+  LISTEN:     { label: 'Nghe',      icon: Headphones },
 };
+
+const CARD_GRADS = [
+  'linear-gradient(135deg, #F97316, #FBBF24)',
+  'linear-gradient(135deg, #EC4899, #F472B6)',
+  'linear-gradient(135deg, #8B5CF6, #A78BFA)',
+  'linear-gradient(135deg, #10B981, #34D399)',
+  'linear-gradient(135deg, #EF4444, #F87171)',
+  'linear-gradient(135deg, #06B6D4, #67E8F9)',
+];
 
 function PageContent({ user }: { user: AuthUser }) {
   const router = useRouter();
@@ -96,16 +105,7 @@ function PageContent({ user }: { user: AuthUser }) {
   const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
   return (
-    <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden', background: gradients.gameBg, minWidth: 1024 }}>
-      {/* Quizizz-style decorative arcs */}
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.07 }} xmlns="http://www.w3.org/2000/svg">
-        <circle cx="-80" cy="400" r="380" fill="none" stroke="white" strokeWidth="1"/>
-        <circle cx="-80" cy="400" r="500" fill="none" stroke="white" strokeWidth="1"/>
-        <circle cx="-80" cy="400" r="620" fill="none" stroke="white" strokeWidth="1"/>
-        <circle cx="1360" cy="400" r="380" fill="none" stroke="white" strokeWidth="1"/>
-        <circle cx="1360" cy="400" r="500" fill="none" stroke="white" strokeWidth="1"/>
-        <circle cx="1360" cy="400" r="620" fill="none" stroke="white" strokeWidth="1"/>
-      </svg>
+    <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
 
       {/* Change Password Dialog */}
       <Dialog open={showPwModal} onClose={closePwModal} maxWidth="xs" fullWidth
@@ -174,19 +174,19 @@ function PageContent({ user }: { user: AuthUser }) {
         </DialogContent>
       </Dialog>
 
-      {/* Header */}
-      <Box component="header" sx={{ position: 'relative', zIndex: 10, px: 5, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ width: 48, height: 48, bgcolor: 'white', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 3 }}>
-            <Typography sx={{ color: 'primary.main', fontWeight: 900, fontSize: 20 }}>K</Typography>
+      {/* GameHeader */}
+      <Box component="header" sx={{ position: 'relative', zIndex: 10, px: '18px', py: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+          <Box sx={{ width: 36, height: 36, borderRadius: '11px', bgcolor: 'white', color: '#4F9DFF', fontWeight: 900, fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+            K
           </Box>
-          <Typography sx={{ color: 'white', fontSize: 20, fontWeight: 900 }}>Katie English</Typography>
+          <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 17 }}>Katie English</Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2, py: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '12px', px: '12px', py: '6px', pl: '6px' }}>
             <Box sx={{
-              width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: 14, fontWeight: 900, color: 'white',
+              width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 13, fontWeight: 900, color: 'white',
               background: gradients.pinkHighlight,
             }}>
               {user.upn[0].toUpperCase()}
@@ -198,53 +198,51 @@ function PageContent({ user }: { user: AuthUser }) {
             sx={{
               display: 'flex', alignItems: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)',
               '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },
-              fontSize: 14, fontWeight: 500, px: 1.5, py: 1, borderRadius: 3, textTransform: 'none', minWidth: 0,
+              fontSize: 13, fontWeight: 500, px: 1, py: 0.75, borderRadius: 2, textTransform: 'none', minWidth: 0,
             }}
           >
-            <Lock size={14} /> Password
+            <Lock size={13} />
           </Button>
           <Button
             onClick={() => { clearAuth(); router.push('/login'); }}
             sx={{
               color: 'rgba(255,255,255,0.6)',
               '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },
-              fontSize: 14, fontWeight: 500, px: 1.5, py: 1, borderRadius: 3, textTransform: 'none', minWidth: 0,
+              fontSize: 13, fontWeight: 500, px: 1, py: 0.75, borderRadius: 2, textTransform: 'none', minWidth: 0,
             }}
           >
-            Sign out
+            Đăng xuất
           </Button>
         </Box>
       </Box>
 
       {/* Main */}
-      <Box component="main" sx={{ position: 'relative', zIndex: 10, px: 5, py: 4 }}>
-        <Box sx={{ mb: 5 }}>
-          <Typography variant="h3" sx={{ fontWeight: 900, color: 'white', mb: 1.5 }}>
-            Hi, {displayName}!
-          </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 18, fontWeight: 600 }}>
-            Ready to learn something awesome today?
-          </Typography>
-        </Box>
+      <Box component="main" sx={{ position: 'relative', zIndex: 10, px: '18px', pb: '30px' }}>
+        <Typography sx={{ fontSize: 30, fontWeight: 900, color: 'white', mb: '4px' }}>
+          Chào, {displayName}!
+        </Typography>
+        <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, fontWeight: 600, mb: '24px' }}>
+          Hôm nay học gì nào?
+        </Typography>
 
         {loading && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 12, gap: 2 }}>
-            <BookOpen size={48} color="rgba(255,255,255,0.7)" />
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 18, fontWeight: 600 }}>
-              Loading your homework...
+            <CircularProgress size={40} sx={{ color: 'rgba(255,255,255,0.7)' }} />
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, fontWeight: 600 }}>
+              Đang tải bài tập…
             </Typography>
           </Box>
         )}
 
         {!user.studentId && !loading && (
-          <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 6, p: 5, textAlign: 'center', maxWidth: 448, mx: 'auto' }}>
+          <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '20px', p: 5, textAlign: 'center', maxWidth: 448, mx: 'auto' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
-              <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <School size={32} color="white" />
               </Box>
             </Box>
-            <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 24, mb: 1.5 }}>Account not linked</Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>Your account hasn&apos;t been linked to a student profile yet. Please ask your teacher!</Typography>
+            <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 21, mb: 1.5 }}>Tài khoản chưa được liên kết</Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>Tài khoản của em chưa được liên kết với hồ sơ học sinh. Hỏi cô giáo nhé!</Typography>
           </Box>
         )}
 
@@ -256,20 +254,17 @@ function PageContent({ user }: { user: AuthUser }) {
         )}
 
         {!loading && user.studentId && assignments.length === 0 && !error && (
-          <Box sx={{ textAlign: 'center', py: 12 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
-              <Box sx={{ width: 80, height: 80, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <PartyPopper size={40} color="white" />
-              </Box>
+          <Box sx={{ textAlign: 'center', py: '70px' }}>
+            <Box sx={{ width: 76, height: 76, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: '18px' }}>
+              <PartyPopper size={36} color="white" />
             </Box>
-            <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 24, mb: 1 }}>All done! No homework right now!</Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, mt: 1 }}>Check back later when your teacher assigns something.</Typography>
+            <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 21 }}>Hôm nay chưa có bài tập!</Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mt: '8px' }}>Quay lại sau khi cô giao bài nhé.</Typography>
           </Box>
         )}
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {assignments.map((a, i) => {
-            const g = cardGradients[i % cardGradients.length];
             const hw = a.homework;
             const meta = TYPE_META[hw.type];
             const dueDate = parseApiDateTime(a.endDate) ?? new Date(0);
@@ -278,101 +273,102 @@ function PageContent({ user }: { user: AuthUser }) {
             const bestScore = completedSessions.length > 0
               ? Math.max(...completedSessions.map((s) => s.score ?? 0))
               : null;
+            const grad = CARD_GRADS[i % CARD_GRADS.length];
 
             return (
               <Box
                 key={a.id}
                 onClick={() => handleStart(a.id)}
                 sx={{
-                  borderRadius: 6, overflow: 'hidden', boxShadow: 8,
-                  transition: 'transform 0.15s', '&:hover': { transform: 'scale(1.05)' },
-                  cursor: 'pointer', background: `linear-gradient(135deg, ${g.from}, ${g.to})`,
+                  background: grad,
+                  borderRadius: '24px',
+                  padding: '20px',
+                  boxShadow: '0 12px 28px rgba(0,0,0,0.3)',
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s',
+                  '&:hover': { transform: 'scale(1.03)' },
                 }}
               >
-                <Box sx={{ p: 3.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5 }}>
-                    <Box sx={{ width: 48, height: 48, bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {bestScore !== null ? <Star size={24} color="white" /> : <meta.icon size={24} color="white" />}
-                    </Box>
-                    {bestScore !== null ? (
-                      <Chip
-                        icon={<Trophy size={14} color="white" />}
-                        label={`Best: ${bestScore}%`}
-                        size="small"
-                        sx={{ bgcolor: '#7BD88F', color: 'white', fontWeight: 900, fontSize: 14, height: 'auto', py: 0.75, px: 1 }}
-                      />
-                    ) : (
-                      <Chip
-                        size="small"
-                        label={
-                          daysLeft < 0 ? 'Overdue'
-                          : daysLeft === 0 ? 'Due today'
-                          : daysLeft === 1 ? '1 day left'
-                          : `${daysLeft} days left`
-                        }
-                        icon={
-                          daysLeft < 0 ? <AlertTriangle size={14} color="white" />
-                          : daysLeft <= 1 ? <Zap size={14} color="white" />
-                          : <Calendar size={14} color="white" />
-                        }
-                        sx={{
-                          bgcolor: daysLeft <= 1 ? '#FF7B7B' : 'rgba(255,255,255,0.25)',
-                          color: 'white', fontWeight: 900, fontSize: 14, height: 'auto', py: 0.75, px: 1,
-                        }}
-                      />
-                    )}
+                {/* Top row: icon well + status badge */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: '16px' }}>
+                  <Box sx={{ width: 46, height: 46, borderRadius: '13px', bgcolor: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {bestScore !== null ? <Star size={23} color="white" /> : <meta.icon size={23} color="white" />}
                   </Box>
-
-                  <Box sx={{ mb: 2.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, color: 'white', fontWeight: 900, fontSize: 14, mb: 1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <meta.icon size={16} /> {meta.label}
+                  {bestScore !== null ? (
+                    <Box component="span" sx={{
+                      display: 'inline-flex', alignItems: 'center', gap: '5px',
+                      fontWeight: 900, fontSize: 13, color: 'white',
+                      px: '11px', py: '6px', borderRadius: '999px',
+                      bgcolor: '#7BD88F',
+                    }}>
+                      <Trophy size={13} color="white" /> Tốt nhất: {bestScore}%
                     </Box>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                      {hw.type === 'PHONICS' && (hw.parts ?? []).slice(0, 4).map((part) => (
-                        <Box key={part.id} component="span" sx={{ bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700 }}>
-                          {part.name} ({part.words.length})
-                        </Box>
-                      ))}
-                      {hw.type === 'PHONICS' && (hw.parts ?? []).length > 4 && (
-                        <Box component="span" sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 600 }}>
-                          +{hw.parts.length - 4} more
-                        </Box>
-                      )}
-                      {hw.type === 'SPEAKING' && hw.speakingText && (
-                        <Box component="span" sx={{ bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                          {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? '…' : ''}
-                        </Box>
-                      )}
-                      {hw.type === 'READING' && (
-                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700 }}>
-                          <BookOpen size={14} /> {(hw.readingActivities ?? []).length} activit{(hw.readingActivities ?? []).length !== 1 ? 'ies' : 'y'}
-                        </Box>
-                      )}
-                      {hw.type === 'VOCABULARY' && (
-                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: 1.5, py: 0.5, borderRadius: 3, fontWeight: 700 }}>
-                          <ImageIcon size={14} /> {(hw.vocabItems ?? []).length} item{(hw.vocabItems ?? []).length !== 1 ? 's' : ''}
-                        </Box>
-                      )}
+                  ) : (
+                    <Box component="span" sx={{
+                      display: 'inline-flex', alignItems: 'center', gap: '5px',
+                      fontWeight: 900, fontSize: 13, color: 'white',
+                      px: '11px', py: '6px', borderRadius: '999px',
+                      bgcolor: daysLeft < 0 ? '#FF7B7B' : daysLeft <= 1 ? '#FF7B7B' : 'rgba(255,255,255,0.25)',
+                    }}>
+                      {daysLeft < 0
+                        ? <><AlertTriangle size={13} color="white" /> Quá hạn</>
+                        : daysLeft === 0
+                        ? <><Zap size={13} color="white" /> Hạn hôm nay</>
+                        : daysLeft === 1
+                        ? <><Zap size={13} color="white" /> Còn 1 ngày</>
+                        : <><Calendar size={13} color="white" /> Còn {daysLeft} ngày</>
+                      }
                     </Box>
-                  </Box>
+                  )}
+                </Box>
 
-                  <Button
-                    disabled={starting === a.id}
-                    fullWidth
-                    sx={{
-                      display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'rgba(255,255,255,0.25)',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
-                      color: 'white', fontWeight: 900, fontSize: 16, px: 2.5, py: 1.5, borderRadius: 3,
-                      '&.Mui-disabled': { opacity: 0.6, color: 'white' },
-                      textTransform: 'none',
-                    }}
-                  >
-                    {starting === a.id
-                      ? <><CircularProgress size={16} color="inherit" /> Starting...</>
-                      : bestScore !== null
-                        ? <><RefreshCw size={16} /> Try Again</>
-                        : <><Play size={16} /> Let&apos;s Go!</>}
-                  </Button>
+                {/* Type label */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', color: 'white', fontWeight: 900, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.05em', mb: '11px' }}>
+                  <meta.icon size={16} color="white" /> {meta.label}
+                </Box>
+
+                {/* Tag chips */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '7px', mb: '16px' }}>
+                  {hw.type === 'PHONICS' && (hw.parts ?? []).slice(0, 4).map((part) => (
+                    <Box key={part.id} component="span" sx={{ bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, fontSize: 14, px: '11px', py: '5px', borderRadius: '999px' }}>
+                      {part.name} ({part.words.length})
+                    </Box>
+                  ))}
+                  {hw.type === 'PHONICS' && (hw.parts ?? []).length > 4 && (
+                    <Box component="span" sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 14, px: '11px', py: '5px', borderRadius: '999px', fontWeight: 600 }}>
+                      +{hw.parts.length - 4}
+                    </Box>
+                  )}
+                  {hw.type === 'SPEAKING' && hw.speakingText && (
+                    <Box component="span" sx={{ bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: '11px', py: '5px', borderRadius: '999px', fontWeight: 700, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {hw.speakingText.slice(0, 40)}{hw.speakingText.length > 40 ? '…' : ''}
+                    </Box>
+                  )}
+                  {hw.type === 'READING' && (
+                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: '5px', bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: '11px', py: '5px', borderRadius: '999px', fontWeight: 700 }}>
+                      <BookOpen size={14} /> {(hw.readingActivities ?? []).length} bài
+                    </Box>
+                  )}
+                  {hw.type === 'VOCABULARY' && (
+                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: '5px', bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontSize: 14, px: '11px', py: '5px', borderRadius: '999px', fontWeight: 700 }}>
+                      <ImageIcon size={14} /> {(hw.vocabItems ?? []).length} từ
+                    </Box>
+                  )}
+                </Box>
+
+                {/* CTA button */}
+                <Box sx={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  bgcolor: 'rgba(255,255,255,0.25)',
+                  color: 'white', fontWeight: 900, fontSize: 16,
+                  px: 0, py: '13px', borderRadius: '13px',
+                  opacity: starting === a.id ? 0.6 : 1,
+                }}>
+                  {starting === a.id
+                    ? <><CircularProgress size={16} color="inherit" /> Đang mở…</>
+                    : bestScore !== null
+                      ? <><RefreshCw size={16} /> Làm lại →</>
+                      : <><Play size={16} /> Bắt đầu →</>}
                 </Box>
               </Box>
             );

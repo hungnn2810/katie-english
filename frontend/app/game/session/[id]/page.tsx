@@ -6,6 +6,7 @@ import { authHeaders } from '@/lib/auth';
 import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, BfaResult, SpeakingMode } from '@/lib/admin-api';
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
 import PhonemeChips from './_components/PhonemeChips';
+import RecordButton from './_components/RecordButton';
 import { School, Mic, Hash, PartyPopper, CheckCircle2, ImageIcon } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -471,7 +472,7 @@ export default function SessionPage() {
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 3, py: 5, gap: 3, background: gradients.gameBg }}>
             <Button onClick={() => router.push('/game/homework')}
               sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
-              ← Back
+              ← Quay lại
             </Button>
 
             <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
@@ -482,9 +483,9 @@ export default function SessionPage() {
                   </Box>
                 </Box>
                 <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>
-                  {isFreespeak ? 'Free Speak' : 'Script Match'}
+                  {isFreespeak ? 'Nói tự do' : 'Đọc theo kịch bản'}
                 </Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Record your answer below</Typography>
+                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Ghi âm câu trả lời của em</Typography>
               </Box>
 
               {isFreespeak && speakHw.speakingPictureUrl && (
@@ -502,7 +503,7 @@ export default function SessionPage() {
 
               {isFreespeak && speakHw.speakingText && (
                 <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2, py: 1.5, width: '100%' }}>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.5 }}>Talk about:</Typography>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.5 }}>Nói về:</Typography>
                   <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>{speakHw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</Typography>
                 </Box>
               )}
@@ -510,63 +511,20 @@ export default function SessionPage() {
               {/* Recording controls */}
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%' }}>
                 {recordState === 'idle' && (
-                  <>
-                    <Box
-                      component="button"
-                      onClick={startSpeakRecording}
-                      sx={{
-                        width: 96, height: 96, borderRadius: '50%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: '4px solid rgba(255,255,255,0.3)',
-                        background: 'rgba(255,255,255,0.1)',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s',
-                        '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
-                      }}
-                    >
-                      <Mic size={40} color="white" />
-                    </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Tap to start recording</Typography>
-                  </>
+                  <RecordButton state="idle" onStart={startSpeakRecording} />
                 )}
 
                 {recordState === 'recording' && (
                   <>
-                    <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Box sx={{
-                        position: 'absolute', width: 96, height: 96, borderRadius: '50%',
-                        background: '#ef4444', opacity: 0.25,
-                        animation: 'ping 1s cubic-bezier(0,0,0.2,1) infinite',
-                        '@keyframes ping': { '75%,100%': { transform: 'scale(2)', opacity: 0 } },
-                      }} />
-                      <Box
-                        component="button"
-                        onClick={stopSpeakRecording}
-                        sx={{
-                          position: 'relative', width: 96, height: 96, borderRadius: '50%',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          border: '4px solid #ef4444', background: 'rgba(239,68,68,0.2)',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: '#f87171' }} />
-                      </Box>
-                    </Box>
+                    <RecordButton state="recording" onStop={stopSpeakRecording} />
                     <Typography sx={{ color: 'white', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
-                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600 }}>Recording… tap to stop</Typography>
                   </>
                 )}
 
                 {recordState === 'recorded' && (
                   <>
-                    <Box sx={{
-                      width: 96, height: 96, borderRadius: '50%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      border: '4px solid rgba(52,211,153,0.5)', background: 'rgba(52,211,153,0.15)',
-                    }}>
-                      <CheckCircle2 size={40} color="#34d399" />
-                    </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
+                    <RecordButton state="done" />
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Đã ghi: {mins}:{secs}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
                       <Button
                         onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
@@ -576,7 +534,7 @@ export default function SessionPage() {
                           textTransform: 'none',
                         }}
                       >
-                        Re-record
+                        Ghi lại
                       </Button>
                       <Button
                         onClick={handleSpeakingUpload}
@@ -587,7 +545,7 @@ export default function SessionPage() {
                           textTransform: 'none',
                         }}
                       >
-                        Submit
+                        Nộp bài!
                       </Button>
                     </Box>
                   </>
@@ -607,7 +565,7 @@ export default function SessionPage() {
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
-              {pageState === 'cam-check' ? 'Requesting microphone access…' : 'Loading…'}
+              {pageState === 'cam-check' ? 'Đang yêu cầu quyền mic…' : 'Đang tải…'}
             </Typography>
           </Box>
         )}
@@ -626,22 +584,22 @@ export default function SessionPage() {
               </Box>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Microphone Required</Typography>
+              <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, maxWidth: 384 }}>
-                Microphone access is required. Please allow access and reload.
+                Em cần cấp quyền microphone để ghi âm. Hãy cho phép và thử lại nhé.
               </Typography>
             </Box>
             <Button
               onClick={requestCamera}
               sx={{ px: 3, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, background: gradients.pinkHighlight, '&:hover': { opacity: 0.9, background: gradients.pinkHighlight }, textTransform: 'none' }}
             >
-              Try Again
+              Thử lại
             </Button>
             <Button
               onClick={() => router.push('/game/homework')}
               sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
             >
-              ← Back to Homework
+              ← Về trang chủ
             </Button>
           </Box>
         )}
@@ -657,7 +615,7 @@ export default function SessionPage() {
             <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Session not found.</Typography>
             <Button onClick={() => router.push('/game/homework')}
               sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
-              ← Back
+              ← Quay lại
             </Button>
           </Box>
         )}
@@ -671,12 +629,14 @@ export default function SessionPage() {
         {() => (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: '#FFD166' }} />
-            <Typography sx={{ color: '#FFD166', fontWeight: 600 }}>Scoring and saving…</Typography>
+            <Typography sx={{ color: '#FFD166', fontWeight: 600 }}>Đang chấm điểm và lưu…</Typography>
           </Box>
         )}
       </AuthGate>
     );
   }
+
+  const RESULT_MSG = (s: number) => s >= 80 ? 'Tuyệt vời! Em làm rất tốt!' : s >= 50 ? 'Làm tốt lắm! Cố thêm chút nữa nhé!' : 'Đừng lo, thử lại nhé!';
 
   if (pageState === 'results') {
     const finalScore = results?.score ?? (items.length > 0
@@ -686,23 +646,26 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', py: 6, px: 4, background: gradients.gameBg, minWidth: 1024 }}>
+          <Box sx={{ minHeight: '100vh', py: 6, px: 4 }}>
             <Box sx={{ maxWidth: 560, mx: 'auto' }}>
               <Box sx={{ textAlign: 'center', mb: 5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                  <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <PartyPopper size={32} color="white" />
+                  <Box sx={{ width: 76, height: 76, bgcolor: 'rgba(255,255,255,0.12)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <PartyPopper size={38} color="white" />
                   </Box>
                 </Box>
-                <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mb: 1 }}>Homework Complete!</Typography>
+                <Typography sx={{ color: 'white', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
                 {items.length > 0 && (
-                  <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums' }}>
+                  <Typography sx={{ fontSize: 78, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
                     {finalScore}%
                   </Typography>
                 )}
+                <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: 16, fontWeight: 700, mt: '4px' }}>
+                  {RESULT_MSG(finalScore)}
+                </Typography>
                 {saveError
-                  ? <Typography sx={{ color: '#f87171', mt: 0.5, fontSize: 14 }}>Recording could not be saved</Typography>
-                  : <Typography sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5, fontSize: 14 }}>Your recording has been saved</Typography>
+                  ? <Typography sx={{ color: '#f87171', mt: 0.5, fontSize: 14 }}>Không thể lưu bản ghi âm</Typography>
+                  : null
                 }
               </Box>
 
@@ -718,7 +681,7 @@ export default function SessionPage() {
                             </Box>
                             <Typography sx={{ color: 'white', fontWeight: 700, fontSize: 18 }}>{item.text}</Typography>
                             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 0.5 }}>
-                              You said: <Box component="span" sx={{ color: 'white', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
+                              Em nói: <Box component="span" sx={{ color: 'white', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
                             </Typography>
                           </Box>
                           <Typography sx={{ fontSize: 24, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: scoreHexColor(item.score) }}>
@@ -751,11 +714,11 @@ export default function SessionPage() {
                               <Typography sx={{ color: 'white', fontWeight: 500, fontSize: 14, mb: 0.5 }}>{item.text}</Typography>
                             )}
                             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
-                              You said: <Box component="span" sx={{ color: 'white', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
+                              Em nói: <Box component="span" sx={{ color: 'white', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
                             </Typography>
                             {speakHw?.speakingMode === 'FREE_SPEAK' && item.matchedWords !== undefined && item.totalWords !== undefined && (
                               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 0.5 }}>
-                                Keywords matched: {item.matchedWords}/{item.totalWords}
+                                Từ khớp: {item.matchedWords}/{item.totalWords}
                               </Typography>
                             )}
                           </Box>
@@ -773,13 +736,13 @@ export default function SessionPage() {
                 onClick={() => router.push('/game/homework')}
                 fullWidth
                 sx={{
-                  py: 2, borderRadius: 3, color: 'white', fontWeight: 900, fontSize: 18,
-                  background: gradients.primaryPurple,
-                  '&:hover': { opacity: 0.9, background: gradients.primaryPurple },
+                  py: 2, borderRadius: '16px', color: 'white', fontWeight: 900, fontSize: 19,
+                  background: gradients.greenSecondary,
+                  '&:hover': { opacity: 0.9, background: gradients.greenSecondary },
                   textTransform: 'none',
                 }}
               >
-                Finish
+                Nộp bài!
               </Button>
             </Box>
           </Box>
@@ -794,11 +757,11 @@ export default function SessionPage() {
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: gradients.gameBgAlt, minWidth: 1024 }}>
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 4, py: 2, flexShrink: 0 }}>
             <Button onClick={() => router.push('/game/homework')}
               sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
-              ← Back
+              ← Quay lại
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               {items.map((item, i) => (
@@ -810,7 +773,7 @@ export default function SessionPage() {
               ))}
             </Box>
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600 }}>
-              {pageState === 'playing' ? `${doneCount + 1} / ${items.length}` : `${items.length} item${items.length !== 1 ? 's' : ''}`}
+              {pageState === 'playing' ? `${doneCount + 1} / ${items.length}` : `${items.length} câu`}
             </Typography>
           </Box>
 
@@ -823,8 +786,8 @@ export default function SessionPage() {
                       <School size={32} color="white" />
                     </Box>
                   </Box>
-                  <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mb: 1.5 }}>Ready?</Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mb: 5 }}>Say each item clearly when it appears</Typography>
+                  <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mb: 1.5 }}>Sẵn sàng chưa?</Typography>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mb: 5 }}>Đọc to từng từ thật rõ ràng</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mb: 5 }}>
                     {items.map((item, i) => (
                       <Box key={i} component="span" sx={{
@@ -842,13 +805,13 @@ export default function SessionPage() {
                   <Button
                     onClick={handleStart}
                     sx={{
-                      px: 5, py: 2, borderRadius: 3, color: 'white', fontWeight: 900, fontSize: 20,
+                      px: 5, py: 2, borderRadius: '16px', color: 'white', fontWeight: 900, fontSize: 20,
                       boxShadow: 8, '&:hover': { transform: 'scale(1.05)' },
                       background: gradients.primaryPurple, textTransform: 'none',
                       transition: 'transform 0.15s',
                     }}
                   >
-                    Start Recording
+                    Bắt đầu →
                   </Button>
                 </Box>
               )}
@@ -862,7 +825,7 @@ export default function SessionPage() {
                   {current.kind === 'speaking' ? (
                     <>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
-                        <Mic size={16} /> Read aloud
+                        <Mic size={16} /> Đọc to
                       </Box>
                       {current.pictureUrl && (
                         <Box sx={{ mb: 2, borderRadius: 3, overflow: 'hidden', maxHeight: 192, maxWidth: 320, mx: 'auto' }}>
@@ -877,7 +840,7 @@ export default function SessionPage() {
                   ) : (
                     <>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
-                        <Hash size={16} /> Say this sound
+                        <Hash size={16} /> Đọc to âm này
                       </Box>
                       <Typography sx={{ fontSize: 72, fontWeight: 900, color: 'white', mb: 2, letterSpacing: '0.1em', textShadow: '0 0 40px rgba(167,139,250,0.6)' }}>
                         {current.text}
@@ -888,7 +851,7 @@ export default function SessionPage() {
                   <Box sx={{ minHeight: 48, mb: 4 }}>
                     {transcript
                       ? <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 24, fontStyle: 'italic', fontWeight: 500 }}>"{transcript}"</Typography>
-                      : <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}>Listening…</Typography>
+                      : <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}>Đang nghe…</Typography>
                     }
                   </Box>
 
@@ -900,7 +863,7 @@ export default function SessionPage() {
                       textTransform: 'none', transition: 'transform 0.15s',
                     }}
                   >
-                    Next →
+                    Tiếp →
                   </Button>
 
                   {doneCount > 0 && (
