@@ -98,11 +98,11 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
         bgcolor: '#0C1220', boxShadow: '1px 0 0 rgba(255,255,255,0.05)',
       }}>
         {/* Logo */}
-        <Box sx={{ px: 2.5, pt: 3.5, pb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+        <Box sx={{ px: '20px', pt: '28px', pb: '24px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Box sx={{
-              width: 36, height: 36, borderRadius: 3, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', flexShrink: 0, boxShadow: 3, bgcolor: ACCENT,
+              width: 36, height: 36, borderRadius: '12px', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.3)', bgcolor: ACCENT,
             }}>
               <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 14 }}>K</Typography>
             </Box>
@@ -110,7 +110,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
               <Typography sx={{ color: 'white', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
                 Katie English
               </Typography>
-              <Typography sx={{ color: '#64748B', fontSize: 10, letterSpacing: '0.05em', mt: 0.5 }}>
+              <Typography sx={{ color: '#64748B', fontSize: 10, letterSpacing: '0.05em', mt: '3px' }}>
                 Teacher Portal
               </Typography>
             </Box>
@@ -118,18 +118,18 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
         </Box>
 
         {/* Nav */}
-        <Box sx={{ flex: 1, px: 1.5, overflowY: 'auto' }}>
+        <Box sx={{ flex: 1, px: '12px', overflowY: 'auto' }}>
           {NAV_GROUPS.map((group, gi) => (
-            <Box key={gi} sx={{ mt: gi > 0 ? 2.5 : 0 }}>
+            <Box key={gi} sx={{ mt: gi > 0 ? '20px' : 0 }}>
               {group.label && (
                 <Typography variant="caption" sx={{
                   fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
-                  color: '#475569', px: 1.5, mb: 0.75, display: 'block',
+                  color: '#475569', px: '12px', mb: '6px', display: 'block', fontSize: 11,
                 }}>
                   {group.label}
                 </Typography>
               )}
-              <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+              <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                 {group.items.map((item) => {
                   const active = pathname === item.href || (item.href !== '/teacher' && pathname.startsWith(item.href));
                   return (
@@ -139,7 +139,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                         href={item.href}
                         selected={active}
                         sx={{
-                          borderRadius: 3, py: 1.25, position: 'relative',
+                          borderRadius: '12px', py: '11px', px: '14px', position: 'relative',
                           '&.Mui-selected': { bgcolor: ACCENT_BG, color: ACCENT_TEXT },
                           '&.Mui-selected:hover': { bgcolor: ACCENT_BG },
                           '&:not(.Mui-selected)': { color: '#94A3B8' },
@@ -152,7 +152,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                             width: 3, height: 20, borderRadius: '0 4px 4px 0', bgcolor: ACCENT,
                           }} />
                         )}
-                        <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
+                        <ListItemIcon sx={{ minWidth: '32px', color: 'inherit' }}>
                           <item.icon size={15} />
                         </ListItemIcon>
                         <ListItemText
@@ -169,8 +169,8 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
         </Box>
 
         {/* Sidebar footer */}
-        <Box sx={{ px: 2.5, pb: 2.5, pt: 1.5 }}>
-          <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mb: 1.5 }} />
+        <Box sx={{ px: '20px', pb: '20px', pt: '12px' }}>
+          <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mb: '12px' }} />
           <Typography sx={{ fontSize: 10, color: '#475569', textAlign: 'center' }}>
             © Katie English
           </Typography>
@@ -178,21 +178,21 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
       </Box>
 
       {/* Main */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Box sx={{ flex: 1, bgcolor: '#F7F9FC', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Box component="main" sx={{ flex: 1, overflowY: 'auto' }}>
           {/* Page header */}
-          <Box sx={{ px: 4, pt: 4, pb: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <Box sx={{ px: '32px', pt: '32px', pb: '24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <Box>
-              <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Typography sx={{ fontSize: 12, color: '#64748B', mb: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 Teacher Portal
-                <Box component="span" sx={{ opacity: 0.4, mx: 0.25 }}>›</Box>
-                <Box component="span" sx={{ color: 'text.primary', opacity: 0.5, fontWeight: 500 }}>{title}</Box>
+                <Box component="span" sx={{ opacity: 0.4 }}>›</Box>
+                <Box component="span" sx={{ color: '#0F172A', opacity: 0.5, fontWeight: 500 }}>{title}</Box>
               </Typography>
-              <Typography sx={{ fontSize: 26, fontWeight: 900, color: 'text.primary', letterSpacing: '-0.03em', lineHeight: 1 }}>
+              <Typography sx={{ fontSize: 26, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.03em', lineHeight: 1 }}>
                 {title}
               </Typography>
               {subtitle && (
-                <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: 0.75 }}>{subtitle}</Typography>
+                <Typography sx={{ fontSize: 14, color: '#64748B', mt: '8px' }}>{subtitle}</Typography>
               )}
             </Box>
 
@@ -300,7 +300,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
           </Box>
 
           {/* Content */}
-          <Box sx={{ px: 4, pb: 4 }}>
+          <Box sx={{ px: '32px', pb: '32px' }}>
             {children}
           </Box>
         </Box>
