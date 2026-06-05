@@ -20,7 +20,7 @@
 | 8 | Vocabulary by Image Exercise | Image → student speaks word → phoneme feedback | v2 | 📋 Planned |
 | 9 | Listen & Answer Exercise | 5/5 | Complete   | 2026-06-03 |
 | 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
-| 11 | Frontend React MUI Refactor | 5/5 | Complete   | 2026-06-05 |
+| 11 | Frontend React MUI Refactor | 5/5 | Complete    | 2026-06-05 |
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
 
 ---

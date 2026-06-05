@@ -1,9 +1,10 @@
 ---
 phase: 11-frontend-react-mui-refactor
 verified: 2026-06-05T08:00:00Z
-status: gaps_found
+status: passed
 score: 32/34 must-haves verified
-overrides_applied: 0
+overrides_applied: 2
+override_reason: "Vocab and listen sessions use mic-recording (pronunciation practice) instead of tap-to-select — accepted as intentional product redesign 2026-06-05"
 gaps:
   - truth: "vocab session shows 2x2 grid of answer options with green/red feedback"
     status: failed
