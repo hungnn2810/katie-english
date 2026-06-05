@@ -6,6 +6,9 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+import { teacherTheme } from '@/lib/theme';
 
 const ACCENT = '#F0623A';
 
@@ -38,6 +41,8 @@ export default function TeacherLoginPage() {
   }
 
   return (
+    <ThemeProvider theme={teacherTheme}>
+      <CssBaseline />
     <Box sx={{ minHeight: '100vh', display: 'flex', minWidth: 1024 }}>
       {/* Left panel — dark navy */}
       <Box sx={{ width: 420, flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 6, bgcolor: '#0C1220' }}>
@@ -131,5 +136,6 @@ export default function TeacherLoginPage() {
         </Box>
       </Box>
     </Box>
+    </ThemeProvider>
   );
 }
