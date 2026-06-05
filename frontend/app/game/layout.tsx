@@ -56,7 +56,24 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ThemeProvider theme={studentTheme}>
-      {children}
+      <Box sx={{ minHeight: '100vh', bgcolor: '#2D0B2E', position: 'relative', overflow: 'hidden' }}>
+        {/* Concentric-circle arc decoration */}
+        <Box
+          component="svg"
+          sx={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden', opacity: 0.07, zIndex: 0 }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {[150, 230, 320].map((r) => (
+            <circle key={`l${r}`} cx="-30" cy="320" r={r} fill="none" stroke="white" strokeWidth="1" />
+          ))}
+          {[150, 230, 320].map((r) => (
+            <circle key={`r${r}`} cx="420" cy="320" r={r} fill="none" stroke="white" strokeWidth="1" />
+          ))}
+        </Box>
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          {children}
+        </Box>
+      </Box>
     </ThemeProvider>
   );
 }

@@ -262,7 +262,7 @@ export default function ListenGamePage() {
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
-              {pageState === 'mic-check' ? 'Requesting microphone access…' : 'Loading…'}
+              {pageState === 'mic-check' ? 'Đang yêu cầu quyền mic…' : 'Đang tải…'}
             </Typography>
           </Box>
         )}
@@ -282,22 +282,22 @@ export default function ListenGamePage() {
               </Box>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 700, mb: 1 }}>Microphone Required</Typography>
+              <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, maxWidth: 384 }}>
-                Microphone access is required. Please allow access and reload.
+                Em cần cấp quyền microphone để ghi âm. Hãy cho phép và thử lại nhé.
               </Typography>
             </Box>
             <Button
               onClick={requestMic}
               sx={{ px: 3, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, background: gradients.pinkHighlight, '&:hover': { opacity: 0.9, background: gradients.pinkHighlight }, textTransform: 'none' }}
             >
-              Try Again
+              Thử lại
             </Button>
             <Button
               onClick={() => router.push('/game/homework')}
               sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
             >
-              ← Back to Homework
+              ← Về trang chủ
             </Button>
           </Box>
         )}
@@ -311,10 +311,10 @@ export default function ListenGamePage() {
       <AuthGate requiredRole="STUDENT">
         {() => (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
-            <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Session not found. Please go back and try again.</Typography>
+            <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Không tìm thấy bài học. Vui lòng quay lại và thử lại.</Typography>
             <Button onClick={() => router.push('/game/homework')}
               sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
-              ← Back to Homework
+              ← Về trang chủ
             </Button>
           </Box>
         )}
@@ -329,7 +329,7 @@ export default function ListenGamePage() {
         {() => (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: '#FFD166' }} />
-            <Typography sx={{ color: '#FFD166', fontWeight: 600 }}>Scoring and saving…</Typography>
+            <Typography sx={{ color: '#FFD166', fontWeight: 600 }}>Đang chấm điểm và lưu…</Typography>
           </Box>
         )}
       </AuthGate>
@@ -337,6 +337,8 @@ export default function ListenGamePage() {
   }
 
   // ── Results ───────────────────────────────────────────────────────────────
+  const RESULT_MSG = (s: number) => s >= 80 ? 'Tuyệt vời! Em làm rất tốt!' : s >= 50 ? 'Làm tốt lắm! Cố thêm chút nữa nhé!' : 'Đừng lo, thử lại nhé!';
+
   if (pageState === 'results') {
     const finalScore = results?.score ?? (items.length > 0
       ? Math.round(items.reduce((s, it) => s + it.compositeScore * 100, 0) / items.length)
@@ -345,22 +347,24 @@ export default function ListenGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', py: 6, px: 4, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', py: 6, px: 4 }}>
             <Box sx={{ maxWidth: 560, mx: 'auto' }}>
               <Box sx={{ textAlign: 'center', mb: 5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                  <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <PartyPopper size={32} color="white" />
+                  <Box sx={{ width: 76, height: 76, bgcolor: 'rgba(255,255,255,0.12)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <PartyPopper size={38} color="white" />
                   </Box>
                 </Box>
-                <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 700, mb: 1 }}>Homework Complete!</Typography>
-                <Typography sx={{ fontSize: 72, fontWeight: 700, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums' }}>
+                <Typography sx={{ color: 'white', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
+                <Typography sx={{ fontSize: 78, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
                   {finalScore}%
                 </Typography>
-                {saveError
-                  ? <Typography sx={{ color: '#f87171', mt: 0.5, fontSize: 14 }}>Recording could not be saved</Typography>
-                  : <Typography sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5, fontSize: 14 }}>Your recording has been saved</Typography>
-                }
+                <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: 16, fontWeight: 700, mt: '4px' }}>
+                  {RESULT_MSG(finalScore)}
+                </Typography>
+                {saveError && (
+                  <Typography sx={{ color: '#f87171', mt: 0.5, fontSize: 14 }}>Không thể lưu bản ghi âm</Typography>
+                )}
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
@@ -372,7 +376,7 @@ export default function ListenGamePage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Headphones size={24} color="rgba(255,255,255,0.5)" />
                           <Typography sx={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
-                            Question {idx + 1}
+                            Câu {idx + 1}
                           </Typography>
                         </Box>
                         <Typography sx={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: scoreHexColor(Math.round(item.compositeScore * 100)) }}>
@@ -401,7 +405,7 @@ export default function ListenGamePage() {
                       )}
                       {/* Row 5: Score breakdown */}
                       <Typography sx={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
-                        Semantic: {Math.round(item.semanticScore * 100)}% · Pronunciation: {Math.round(item.pronScore)}%
+                        Ngữ nghĩa: {Math.round(item.semanticScore * 100)}% · Phát âm: {Math.round(item.pronScore)}%
                       </Typography>
                     </Box>
                   </Box>
@@ -412,13 +416,13 @@ export default function ListenGamePage() {
                 onClick={() => router.push('/game/homework')}
                 fullWidth
                 sx={{
-                  py: 2, borderRadius: 3, color: 'white', fontWeight: 700, fontSize: 18,
-                  background: gradients.primaryPurple,
-                  '&:hover': { opacity: 0.9, background: gradients.primaryPurple },
+                  py: 2, borderRadius: '16px', color: 'white', fontWeight: 900, fontSize: 19,
+                  background: gradients.greenSecondary,
+                  '&:hover': { opacity: 0.9, background: gradients.greenSecondary },
                   textTransform: 'none',
                 }}
               >
-                Finish
+                Nộp bài!
               </Button>
             </Box>
           </Box>
@@ -462,20 +466,20 @@ export default function ListenGamePage() {
           {/* Ready state */}
           {pageState === 'ready' && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 3, maxWidth: 480, width: '100%' }}>
-              <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 700 }}>Ready?</Typography>
+              <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900 }}>Sẵn sàng chưa?</Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16 }}>
-                Listen to each question, then record your answer
+                Nghe câu hỏi rồi ghi lại câu trả lời nhé
               </Typography>
               <Button
                 onClick={() => setPageState('playing')}
                 sx={{
-                  px: 5, py: 2, borderRadius: 3, color: 'white', fontWeight: 700, fontSize: 20,
+                  px: 5, py: 2, borderRadius: '16px', color: 'white', fontWeight: 900, fontSize: 20,
                   background: gradients.primaryPurple,
                   '&:hover': { opacity: 0.9, background: gradients.primaryPurple },
                   textTransform: 'none',
                 }}
               >
-                Start
+                Bắt đầu →
               </Button>
             </Box>
           )}
@@ -484,20 +488,19 @@ export default function ListenGamePage() {
           {pageState === 'playing' && current && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, maxWidth: 480, width: '100%' }}>
 
-              {/* Audio prompt player */}
+              {/* "Nghe và trả lời" heading */}
+              <Typography sx={{ color: 'white', fontSize: 22, fontWeight: 900, alignSelf: 'flex-start' }}>Nghe và trả lời</Typography>
+
+              {/* Audio player panel */}
               <Box sx={{
-                width: '100%', maxWidth: 480,
-                bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, p: 2,
+                width: '100%',
+                bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '20px', p: '22px',
                 display: 'flex', alignItems: 'center', gap: 2,
               }}>
-                <Headphones size={28} color="white" style={{ flexShrink: 0 }} />
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 700, flex: 1 }}>
-                  Question {currentIndex + 1}
-                </Typography>
-                {/* Play/Replay button */}
+                {/* Play/Pause button — primaryPurple gradient */}
                 <Box
                   component="button"
-                  aria-label={audioPlayState === 'idle' ? 'Play question' : 'Replay'}
+                  aria-label={audioPlayState === 'idle' ? 'Phát câu hỏi' : 'Phát lại'}
                   onClick={() => {
                     const audio = audioRef.current;
                     if (!audio) return;
@@ -508,19 +511,37 @@ export default function ListenGamePage() {
                   }}
                   disabled={audioPlayState === 'playing'}
                   sx={{
-                    width: 56, height: 56, borderRadius: '50%',
+                    width: 60, height: 60, borderRadius: '50%',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: '2px solid rgba(255,255,255,0.4)',
-                    background: 'rgba(255,255,255,0.1)',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #4F9DFF, #A78BFA)',
                     cursor: audioPlayState === 'playing' ? 'default' : 'pointer',
                     flexShrink: 0,
                   }}
                 >
                   {audioPlayState === 'playing'
-                    ? <CircularProgress size={24} sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                    ? <CircularProgress size={26} sx={{ color: '#fff' }} />
                     : audioPlayState === 'played'
-                    ? <RotateCcw size={20} color="white" />
-                    : <Play size={24} color="white" />}
+                    ? <RotateCcw size={26} color="white" />
+                    : <Play size={26} color="white" />}
+                </Box>
+
+                {/* Waveform bars + timestamp */}
+                <Box sx={{ flex: 1 }}>
+                  <Box sx={{ display: 'flex', gap: '3px', alignItems: 'center', height: 34 }}>
+                    {[12, 22, 30, 18, 26, 14, 30, 20, 10, 24, 16, 28, 12, 22, 18, 26, 14, 20].map((h, i) => (
+                      <Box
+                        key={i}
+                        sx={{
+                          flex: 1, height: h, borderRadius: '3px',
+                          background: audioPlayState === 'playing' && i < 9 ? '#A78BFA' : 'rgba(255,255,255,0.3)',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: 600, mt: '6px' }}>
+                    0:09 / 0:18
+                  </Typography>
                 </Box>
               </Box>
 
@@ -530,10 +551,10 @@ export default function ListenGamePage() {
                   <>
                     <Box
                       component="button"
-                      aria-label="Start recording"
+                      aria-label="Nhấn để ghi âm"
                       onClick={startRecording}
                       sx={{
-                        width: 96, height: 96, borderRadius: '50%',
+                        width: 104, height: 104, borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         border: '4px solid rgba(255,255,255,0.3)',
                         background: 'rgba(255,255,255,0.1)',
@@ -542,68 +563,75 @@ export default function ListenGamePage() {
                         '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
                       }}
                     >
-                      <Mic size={40} color="white" />
+                      <Mic size={42} color="white" />
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Tap to record</Typography>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 15 }}>Nhấn để ghi âm</Typography>
                   </>
                 )}
 
                 {current.recordState === 'recording' && (
                   <>
                     <Box sx={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {/* Ping ring animation */}
                       <Box sx={{
                         position: 'absolute',
-                        width: 96, height: 96, borderRadius: '50%',
+                        width: 104, height: 104, borderRadius: '50%',
                         background: '#ef4444', opacity: 0.25,
-                        animation: 'ping 1s cubic-bezier(0,0,0.2,1) infinite',
-                        '@keyframes ping': { '75%,100%': { transform: 'scale(2)', opacity: 0 } },
+                        animation: 'ping 1.3s cubic-bezier(0,0,0.2,1) infinite',
+                        '@keyframes ping': {
+                          '0%': { transform: 'scale(1)', opacity: 0.25 },
+                          '75%, 100%': { transform: 'scale(1.5)', opacity: 0 },
+                        },
                       }} />
                       <Box
                         component="button"
-                        aria-label="Stop recording"
+                        aria-label="Đang ghi âm — nhấn để dừng"
                         onClick={handleStopAndScore}
                         sx={{
                           position: 'relative',
-                          width: 96, height: 96, borderRadius: '50%',
+                          width: 104, height: 104, borderRadius: '50%',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           border: '4px solid #ef4444',
                           background: 'rgba(239,68,68,0.2)',
                           cursor: 'pointer',
                         }}
                       >
-                        <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: '#f87171' }} />
+                        <Box sx={{ width: 34, height: 34, borderRadius: '7px', bgcolor: '#f87171' }} />
                       </Box>
                     </Box>
-                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600 }}>Recording… tap to stop</Typography>
+                    <Typography sx={{ color: '#f87171', fontSize: 15, fontWeight: 700 }}>Đang ghi âm… nhấn để dừng</Typography>
                   </>
                 )}
 
                 {current.recordState === 'scoring' && (
                   <>
                     <Box sx={{
-                      width: 96, height: 96, borderRadius: '50%',
+                      width: 104, height: 104, borderRadius: '50%',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       border: '4px solid rgba(255,255,255,0.3)',
                       background: 'rgba(255,255,255,0.1)',
                     }}>
-                      <CircularProgress size={40} sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                      <Box sx={{
+                        width: 40, height: 40,
+                        border: '4px solid rgba(255,255,255,0.25)',
+                        borderTopColor: '#fff',
+                        borderRadius: '50%',
+                        animation: 'spin 0.8s linear infinite',
+                        '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } },
+                      }} />
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Scoring…</Typography>
+                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 15 }}>Đang chấm điểm…</Typography>
                   </>
                 )}
 
                 {current.recordState === 'recorded' && (
-                  <>
-                    <Box sx={{
-                      width: 96, height: 96, borderRadius: '50%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      border: '4px solid rgba(52,211,153,0.5)',
-                      background: 'rgba(52,211,153,0.15)',
-                    }}>
-                      <CheckCircle2 size={40} color="#34d399" />
-                    </Box>
-                  </>
+                  <Box sx={{
+                    width: 104, height: 104, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: '4px solid rgba(52,211,153,0.5)',
+                    background: 'rgba(52,211,153,0.15)',
+                  }}>
+                    <CheckCircle2 size={42} color="#34d399" />
+                  </Box>
                 )}
               </Box>
 
@@ -668,20 +696,20 @@ export default function ListenGamePage() {
                       textTransform: 'none',
                     }}
                   >
-                    Try Again
+                    Thử lại
                   </Button>
                 ) : (
                   <Button
                     onClick={handleNext}
                     sx={{
-                      px: 4, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, fontSize: 18,
+                      px: 4, py: 1.5, borderRadius: '16px', color: 'white', fontWeight: 900, fontSize: 18,
                       background: gradients.greenSecondary,
                       '&:hover': { transform: 'scale(1.05)', background: gradients.greenSecondary },
                       textTransform: 'none',
                       transition: 'transform 0.15s',
                     }}
                   >
-                    {isLastItem ? 'View Results' : 'Next →'}
+                    {isLastItem ? 'Xem kết quả' : 'Tiếp →'}
                   </Button>
                 )
               )}
