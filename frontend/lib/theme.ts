@@ -53,5 +53,46 @@ export const baseTheme = createTheme({
         root: { textTransform: 'none', fontWeight: 600 },
       },
     },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 1px 3px rgba(15,23,42,0.10), 0 1px 2px rgba(15,23,42,0.06)',
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 999,
+          fontWeight: 700,
+          fontSize: 12,
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        head: {
+          fontSize: 11,
+          fontWeight: 700,
+          textTransform: 'uppercase' as const,
+          letterSpacing: '0.06em',
+          color: '#94A3B8',
+        },
+      },
+    },
+  },
+});
+
+export const teacherTheme = createTheme(baseTheme, {
+  palette: {
+    primary: { main: '#F0623A', contrastText: '#ffffff' },
+  },
+});
+
+export const adminTheme = createTheme(baseTheme, {
+  palette: {
+    primary: { main: '#4F9DFF', contrastText: '#ffffff' },
   },
 });
