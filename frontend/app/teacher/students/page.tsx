@@ -7,7 +7,6 @@ import {
   getPendingStudents, approveStudent, ApproveStudentInput, PendingStudent,
   getPasswordResetRequests, resetStudentPassword, PasswordResetRequest,
 } from '@/lib/admin-api';
-import { colors } from '@/lib/colors';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -19,19 +18,12 @@ import DialogActions from '@mui/material/DialogActions';
 import MuiSelect from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableContainer from '@mui/material/TableContainer';
 import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -39,6 +31,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Search, Plus, User, Users, Clock, KeyRound, CheckCircle2, UserMinus, Pencil, X } from 'lucide-react';
 import { formatDate } from '@/lib/datetime';
+import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 
 const ACCENT = '#F0623A';
 
@@ -407,24 +400,34 @@ export default function StudentsPage() {
       <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast('')} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         message={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><CheckCircle2 size={16} color="#4ade80" />{toast}</Box>} />
 
-      {/* Toolbar */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
-        <TextField size="small" placeholder="Search students…" value={search} onChange={(e) => setSearch(e.target.value)}
-          sx={{ flex: 1, minWidth: 192, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> } }} />
-        <FormControl size="small" sx={{ width: 208, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
-          <MuiSelect value={classFilter} onChange={(e) => setClassFilter(e.target.value)} displayEmpty>
-            <MenuItem value="">All classes</MenuItem>
-            {classes.map((c) => <MenuItem key={c.id} value={String(c.id)}>{c.name}</MenuItem>)}
-          </MuiSelect>
-        </FormControl>
-        {students.length > 0 && (
-          <Typography sx={{ fontSize: 14, color: 'text.secondary', fontWeight: 500 }}>
-            {filtered.length} of {students.length}
-            {activeClassName && <Box component="span" sx={{ ml: 0.5, color: 'primary.main', fontWeight: 600 }}>Â· {activeClassName}</Box>}
-          </Typography>
-        )}
-        <Button variant="contained" onClick={() => setModal({ kind: 'create' })} sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: 3, gap: 1 }}>
+      {/* Action row: Approve all (left) + search/filter + Add Student (right) */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, mb: '16px', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {pending.length > 0 && (
+            <Button variant="outlined" size="small"
+              onClick={() => pending.length > 0 && setModal({ kind: 'approve', pending: pending[0] })}
+              sx={{ borderRadius: '8px', fontSize: 12, fontWeight: 600, gap: 0.75, borderColor: '#E2E8F0', color: '#0F172A' }}>
+              <CheckCircle2 size={15} /> Approve all
+            </Button>
+          )}
+          <TextField size="small" placeholder="Search students…" value={search} onChange={(e) => setSearch(e.target.value)}
+            sx={{ width: 200, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+            slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> } }} />
+          <FormControl size="small" sx={{ width: 180, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
+            <MuiSelect value={classFilter} onChange={(e) => setClassFilter(e.target.value)} displayEmpty>
+              <MenuItem value="">All classes</MenuItem>
+              {classes.map((c) => <MenuItem key={c.id} value={String(c.id)}>{c.name}</MenuItem>)}
+            </MuiSelect>
+          </FormControl>
+          {students.length > 0 && (
+            <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
+              {filtered.length} of {students.length}
+              {activeClassName && <Box component="span" sx={{ ml: 0.5, color: ACCENT, fontWeight: 600 }}>· {activeClassName}</Box>}
+            </Typography>
+          )}
+        </Box>
+        <Button variant="contained" onClick={() => setModal({ kind: 'create' })}
+          sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: '8px', gap: 1 }}>
           <Plus size={16} /> Add Student
         </Button>
       </Box>
@@ -490,93 +493,112 @@ export default function StudentsPage() {
       )}
 
       {/* Table */}
-      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 4 }}>
-        {students.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary' }}>
-            <Box sx={{ width: 56, height: 56, bgcolor: 'grey.100', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
-              <Users size={24} color="#94A3B8" />
-            </Box>
-            <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No students yet</Typography>
-            <Typography sx={{ fontSize: 14, mt: 0.5 }}>Add your first student to get started</Typography>
+      {students.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+          <Box sx={{ width: 56, height: 56, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+            <Users size={24} color=”#94A3B8” />
           </Box>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: 'background.default' }}>
-                <TableCell sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>Student</TableCell>
-                <TableCell sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>Date of Birth</TableCell>
-                <TableCell sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>Class</TableCell>
-                <TableCell sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>Parent</TableCell>
-                <TableCell sx={{ width: 112 }} />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={5} sx={{ textAlign: 'center', py: 6, color: 'text.secondary', fontSize: 14 }}>No students match your search.</TableCell></TableRow>
-              )}
-              {filtered.map((s) => {
-                const isDeleting = deletingId === s.id;
-                return (
-                  <TableRow key={s.id} sx={{ '&:hover': { bgcolor: 'background.default' }, '&:hover .row-actions': { opacity: 1 } }}>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Box sx={{ width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'white', flexShrink: 0, bgcolor: s.sex === 'MALE' ? '#3B82F6' : '#EC4899' }}>
-                          {s.fullname[0].toUpperCase()}
-                        </Box>
-                        <Box>
-                          <Typography sx={{ fontWeight: 600, color: 'text.primary', fontSize: 14 }}>{s.fullname}</Typography>
-                          <Typography sx={{ fontSize: 12, color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <User size={12} />{s.sex === 'MALE' ? 'Male' : 'Female'}
-                          </Typography>
-                        </Box>
+          <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No students yet</Typography>
+          <Typography sx={{ fontSize: 14, mt: 0.5 }}>Add your first student to get started</Typography>
+        </Box>
+      ) : (
+        <TableShell columns={[
+          { label: 'Student', width: '2fr' },
+          { label: 'Class', width: '1fr' },
+          { label: 'Parent', width: '1.4fr' },
+          { label: 'Status', width: '1.2fr' },
+        ]}>
+          {filtered.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>No students match your search.</Typography>
+            </Box>
+          ) : (
+            filtered.map((s, i) => {
+              const isDeleting = deletingId === s.id;
+              const isPending = pending.some((p) => p.upn === s.upn);
+              const isResetReq = resetRequests.some((r) => r.upn === s.upn);
+
+              const statusCell = isDeleting ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
+                  <Button size=”small” onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+                  <Button size=”small” variant=”contained”
+                    onClick={async () => { try { await deleteStudent(s.id); setDeletingId(null); load(classFilter ? Number(classFilter) : undefined); showToast('Student removed.'); } catch { setDeletingId(null); } }}
+                    sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
+                </Box>
+              ) : isResetReq ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label=”Reset req.” size=”small” sx={{ bgcolor: '#FFF2EF', color: ACCENT, fontWeight: 700, height: 22 }} />
+                  <Button size=”small” onClick={() => { const r = resetRequests.find((r) => r.upn === s.upn); if (r) setModal({ kind: 'reset', request: r }); }}
+                    sx={{ fontSize: 11, fontWeight: 600, color: ACCENT, minWidth: 0, px: 0.75 }}>Set pw</Button>
+                </Box>
+              ) : isPending ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label=”Pending” size=”small” sx={{ bgcolor: '#FFFBEB', color: '#92400E', fontWeight: 700, height: 22 }} />
+                  <Button size=”small” onClick={() => { const p = pending.find((p) => p.upn === s.upn); if (p) setModal({ kind: 'approve', pending: p }); }}
+                    sx={{ fontSize: 11, fontWeight: 600, color: '#16A34A', minWidth: 0, px: 0.75 }}>Approve</Button>
+                </Box>
+              ) : (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label=”Approved” size=”small” sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
+                  <Box sx={{ display: 'flex', gap: 0.25 }}>
+                    <IconButton size=”small” onClick={() => setModal({ kind: 'edit', student: s })} sx={{ color: ACCENT, width: 26, height: 26 }} title=”Edit”>
+                      <Pencil size={13} />
+                    </IconButton>
+                    <IconButton size=”small” onClick={() => setDeletingId(s.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title=”Delete”>
+                      <UserMinus size={13} />
+                    </IconButton>
+                  </Box>
+                </Box>
+              );
+
+              return (
+                <TableShellRow
+                  key={s.id}
+                  columns={[
+                    { label: 'Student', width: '2fr' },
+                    { label: 'Class', width: '1fr' },
+                    { label: 'Parent', width: '1.4fr' },
+                    { label: 'Status', width: '1.2fr' },
+                  ]}
+                  last={i === filtered.length - 1}
+                  cells={[
+                    /* Student */
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ width: 34, height: 34, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white', flexShrink: 0, bgcolor: s.sex === 'MALE' ? '#3B82F6' : '#EC4899' }}>
+                        {s.fullname[0].toUpperCase()}
                       </Box>
-                    </TableCell>
-                    <TableCell sx={{ fontSize: 14, color: 'text.secondary' }}>{formatDate(s.dateOfBirth)}</TableCell>
-                    <TableCell>
-                      {s.class
-                        ? <Chip label={s.class.name} size="small" sx={{ bgcolor: '#EDE9FE', color: colors.purple, fontWeight: 600 }} />
-                        : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>â€”</Typography>}
-                    </TableCell>
-                    <TableCell>
-                      {s.parents.length > 0
-                        ? <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
-                            {s.parents.map((p) => (
-                              <Typography key={p.id} sx={{ fontSize: 12, color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                <User size={12} style={{ flexShrink: 0 }} />
-                                {p.type === 'FATHER' ? 'Father' : 'Mother'}: {p.name} Â· {p.phoneNumber}
-                              </Typography>
-                            ))}
-                          </Box>
-                        : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>â€”</Typography>}
-                    </TableCell>
-                    <TableCell>
-                      {isDeleting ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                          <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Sure?</Typography>
-                          <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 12, borderRadius: 2, color: 'text.secondary', minWidth: 0, px: 1 }}>No</Button>
-                          <Button size="small" variant="contained" onClick={async () => { try { await deleteStudent(s.id); setDeletingId(null); load(classFilter ? Number(classFilter) : undefined); showToast('Student removed.'); } catch { setDeletingId(null); } }}
-                            sx={{ fontSize: 12, borderRadius: 2, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 1 }}>Yes</Button>
+                      <Box>
+                        <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: 14 }}>{s.fullname}</Typography>
+                        <Typography sx={{ fontSize: 12, color: '#64748B', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <User size={11} />{s.sex === 'MALE' ? 'Male' : 'Female'}
+                        </Typography>
+                      </Box>
+                    </Box>,
+                    /* Class */
+                    s.class
+                      ? <Chip label={s.class.name} size=”small” sx={{ bgcolor: '#EDE9FE', color: '#8B5CF6', fontWeight: 600, height: 22 }} />
+                      : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>—</Typography>,
+                    /* Parent */
+                    s.parents.length > 0
+                      ? <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                          {s.parents.map((p) => (
+                            <Typography key={p.id} sx={{ fontSize: 12, color: '#64748B', display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                              <User size={11} style={{ flexShrink: 0 }} />
+                              {p.type === 'FATHER' ? 'Father' : 'Mother'}: {p.name} · {p.phoneNumber}
+                            </Typography>
+                          ))}
                         </Box>
-                      ) : (
-                        <Box className="row-actions" sx={{ display: 'flex', gap: 1, opacity: 0, transition: 'opacity 0.15s' }}>
-                          <Button size="small" onClick={() => setModal({ kind: 'edit', student: s })}
-                            sx={{ fontSize: 12, fontWeight: 600, borderRadius: 2, color: ACCENT, gap: 0.5, minWidth: 0, px: 1 }}>
-                            <Pencil size={12} /> Edit
-                          </Button>
-                          <Button size="small" onClick={() => setDeletingId(s.id)}
-                            sx={{ fontSize: 12, fontWeight: 600, borderRadius: 2, color: 'error.main', gap: 0.5, minWidth: 0, px: 1, '&:hover': { bgcolor: '#FEF2F2' } }}>
-                            <UserMinus size={12} /> Delete
-                          </Button>
-                        </Box>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+                      : <Typography sx={{ color: 'text.disabled', fontSize: 14 }}>—</Typography>,
+                    /* Status */
+                    statusCell,
+                  ]}
+                />
+              );
+            })
+          )}
+        </TableShell>
+      )}
     </Box>
   );
 }
