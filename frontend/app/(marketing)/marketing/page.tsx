@@ -1,7 +1,7 @@
-import HeroSection from './components/HeroSection';
-import TeacherProfileSection from './components/TeacherProfileSection';
-import StudentResultsSection from './components/StudentResultsSection';
-import TestimonialCarousel from './components/TestimonialCarousel';
+import HeroSection from '../components/HeroSection';
+import TeacherProfileSection from '../components/TeacherProfileSection';
+import StudentResultsSection from '../components/StudentResultsSection';
+import TestimonialCarousel from '../components/TestimonialCarousel';
 
 const jsonLd = {
   '@context': 'https://schema.org',
