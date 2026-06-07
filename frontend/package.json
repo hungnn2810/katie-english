@@ -6,10 +6,11 @@
     "dev:admin": "cross-env NEXT_PUBLIC_SUBDOMAIN=admin next dev -p 3001",
     "dev:teacher": "cross-env NEXT_PUBLIC_SUBDOMAIN=app next dev -p 3002",
     "dev:student": "cross-env NEXT_PUBLIC_SUBDOMAIN=student next dev -p 3003",
+    "dev:marketing": "cross-env NEXT_PUBLIC_SUBDOMAIN=marketing next dev -p 3004",
     "dev:all": "concurrently -n admin,teacher,student -c blue,green,yellow \"npm run dev:admin\" \"npm run dev:teacher\" \"npm run dev:student\"",
     "build": "next build",
     "start": "next start",
-    "copy-vad-assets": "if not exist public mkdir public && copy node_modules\\@ricky0123\\vad-web\\dist\\vad.worklet.bundle.min.js public\\ && copy node_modules\\@ricky0123\\vad-web\\dist\\silero_vad_legacy.onnx public\\ && copy node_modules\\onnxruntime-web\\dist\\ort-wasm-simd-threaded.wasm public\\",
+    "copy-vad-assets": "shx mkdir -p public && shx cp node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js public/ && shx cp node_modules/@ricky0123/vad-web/dist/silero_vad_legacy.onnx public/ && shx cp node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm public/",
     "postinstall": "npm run copy-vad-assets"
   },
   "dependencies": {
@@ -38,6 +39,7 @@
     "concurrently": "^9.2.1",
     "cross-env": "^7.0.3",
     "postcss": "^8.0.0",
+    "shx": "^0.4.0",
     "typescript": "^5.0.0"
   }
 }
