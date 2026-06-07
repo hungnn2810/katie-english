@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: true
 preset: base-nova / neutral / cssVariables
 created: 2026-06-07
+revised: 2026-06-07
 ---
 
 # Phase 13 — UI Design Contract
@@ -53,22 +54,24 @@ Exceptions:
 
 ## Typography
 
-All typography uses Inter font (--font-inter). MUI variant mapping below:
+All typography uses Inter font (--font-inter). MUI variant mapping below.
+
+Exactly 4 distinct font sizes and exactly 2 font weights are declared:
 
 | Role | MUI Variant | Size (desktop) | Size (mobile) | Weight | Line Height | Usage |
 |------|-------------|---------------|---------------|--------|-------------|-------|
 | Display | h1 | 48px | 32px | 700 | 1.15 | Hero tagline (one instance only) |
 | Heading | h2 | 32px | 24px | 700 | 1.2 | Section headings (h2 per section) |
-| Subheading | h3 | 20px | 18px | 600 | 1.3 | Card titles, teacher profile sub-labels |
-| Body | body1 | 16px | 16px | 400 | 1.6 | All paragraph text, testimonial quotes |
-| Label | caption / body2 | 14px | 14px | 500 | 1.4 | Tags, badges, stat labels, CTA sub-copy |
+| Subheading | h3 | 20px | 18px | 700 | 1.3 | Card titles, teacher profile sub-labels |
+| Body | body1 / body2 / caption | 16px | 16px | 400 | 1.6 | All paragraph text, testimonial quotes, tags, badges, stat labels, CTA sub-copy |
 
 Rules:
 - Exactly one `<h1>` on the page (hero tagline).
 - Section headings use `<h2>` — one per section.
 - Sub-sections and card titles use `<h3>`.
-- Body text weight is always 400; heading weights are always 700 (h1/h2) or 600 (h3).
-- Vietnamese text: no special font — Inter supports Latin Extended which covers Vietnamese diacritics.
+- Font weights: 400 (body1, body2, caption) and 700 (h1, h2, h3) only. No 500 or 600.
+- Labels, tags, badges, and captions use 16px at weight 400. Visual distinction from body paragraphs is achieved via letter-spacing (0.05em) and uppercase or MUI `variant="caption"` — not a separate size.
+- Vietnamese text: Inter supports Latin Extended which covers Vietnamese diacritics — no fallback font needed.
 
 ---
 
@@ -221,6 +224,7 @@ Per CONTEXT.md D-15 through D-22 — all locked decisions.
 |-------------|------|
 | Color contrast | All text on white/light background: minimum 4.5:1 (WCAG AA). #0F172A on #F7F9FC = 14.7:1 — passes. #FFFFFF on #4F9DFF = 3.8:1 — acceptable for large text (CTA button). |
 | Keyboard navigation | Carousel prev/next arrows focusable; Zalo button focusable; phone link focusable |
+| Carousel aria-labels | Prev arrow: `aria-label="Testimonial trước"`. Next arrow: `aria-label="Testimonial tiếp theo"`. Carousel container: `aria-label="Đánh giá từ phụ huynh"` with `role="region"`. |
 | Carousel pause | Carousel auto-advance pauses on hover/focus |
 | Touch targets | Zalo button min-height: 44px; carousel arrows min 44x44px |
 | Skip link | Not required (no nav menu — single scroll page) |
