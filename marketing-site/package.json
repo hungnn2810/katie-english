@@ -1,0 +1,27 @@
+{
+  "name": "katie-marketing-site",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3004",
+    "build": "next build",
+    "start": "next start -p 3004"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.0.1",
+    "@mui/material-nextjs": "^9.0.1",
+    "lucide-react": "^1.17.0",
+    "next": "^14.2.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}
