@@ -445,8 +445,20 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 | BFA-12 | Phase 10 | Pending |
 | BFA-13 | Phase 10 | Pending |
 
+| LAND-01 | Phase 13 | Pending |
+| LAND-02 | Phase 13 | Pending |
+| LAND-03 | Phase 13 | Pending |
+| LAND-04 | Phase 13 | Pending |
+| LAND-05 | Phase 13 | Pending |
+| LAND-06 | Phase 13 | Pending |
+| LAND-07 | Phase 13 | Pending |
+| LAND-08 | Phase 13 | Pending |
+| LAND-09 | Phase 13 | Pending |
+| LAND-10 | Phase 13 | Pending |
+
 **v1 Coverage:** 26/26 requirements mapped ✓
 **v2 Coverage:** 18/18 requirements mapped ✓
+**v3 Coverage:** 10/10 requirements mapped ✓
 
 ---
 
@@ -516,7 +528,13 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 6. Google Search Console crawl không lỗi; og:image preview đúng khi share link lên Facebook/Zalo.
 7. Lighthouse SEO score ≥ 90.
 
+**Plans:** 3 plans
+
+- [ ] 13-01-PLAN.md — Middleware rewrite katie.vn → /marketing + marketing route scaffold + SEO metadata (layout, sitemap, robots, JSON-LD) (Wave 1)
+- [ ] 13-02-PLAN.md — Hero, Teacher Profile, Student Results, Testimonials carousel — top half of landing page (Wave 2, depends 13-01)
+- [ ] 13-03-PLAN.md — Software section, CTA/Contact banner, wire all 6 sections, dev:marketing script + human verify (Wave 3, depends 13-02)
+
 ---
 
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-07 — Added Phase 13: Landing Page*
+*Last updated: 2026-06-07 — Phase 13 planning complete (3 plans)*
