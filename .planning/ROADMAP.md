@@ -22,6 +22,7 @@
 | 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
 | 11 | Frontend React MUI Refactor | 5/5 | Complete    | 2026-06-05 |
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
+| 13 | Landing Page | Marketing website giới thiệu lớp cô Katie tại katie.vn | v3 | 📋 Planned |
 
 ---
 
@@ -486,5 +487,32 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 ---
 
+### Phase 13: Landing Page
+
+**Goal:** Marketing website tại katie.vn giới thiệu lớp tiếng Anh cô Katie cho phụ huynh — tĩnh, tiếng Việt, giao diện xanh blue tươi sáng.
+**Mode:** mvp
+**Depends on:** Phase 12 (subdomain middleware)
+
+**Requirements:**
+
+- LAND-01: Trang hiển thị tại katie.vn (root domain) qua middleware Phase 12
+- LAND-02: Section Hero — tagline, ảnh, mô tả lớp học
+- LAND-03: Section Profile giáo viên — ảnh cô Katie, kinh nghiệm, bằng cấp
+- LAND-04: Section Kết quả học sinh — before/after stories + điểm thi học kì + danh hiệu cuộc thi
+- LAND-05: Section Testimonials — carousel phụ huynh đánh giá (5-6 quotes)
+- LAND-06: Section Giới thiệu phần mềm — feature list + screenshots platform
+- LAND-07: CTA/Liên hệ — Zalo link + số điện thoại
+- LAND-08: Responsive desktop + mobile
+
+**Success Criteria:**
+
+1. Truy cập katie.vn hiển thị landing page (không phải teacher dashboard hay student game).
+2. Tất cả 6 sections hiển thị đầy đủ, không lỗi trên desktop và mobile.
+3. Testimonials carousel tự động chạy, có thể click chuyển slide.
+4. Nút Zalo mở Zalo chat đúng số.
+5. Giao diện xanh blue, tươi sáng, không giống corporate.
+
+---
+
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-02 — Added Phase 12 plans (3 plans, 3 waves)*
+*Last updated: 2026-06-07 — Added Phase 13: Landing Page*
