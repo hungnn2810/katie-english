@@ -45,10 +45,21 @@ Xây dựng marketing landing page tại katie.vn (root domain) — giới thi�
 - **D-13:** Màu chủ đạo xanh blue, giao diện tươi sáng phù hợp giáo dục.
 - **D-14:** Responsive — desktop + mobile/tablet.
 
+### SEO
+- **D-15:** Next.js `metadata` object trong `layout.tsx` / `page.tsx` — `title`, `description`, `keywords`, `openGraph`, `twitter` card.
+- **D-16:** `<title>` = "Lớp Tiếng Anh Cô Katie | Dạy Tiếng Anh Trẻ Em" (hoặc tương tự — planner quyết định copy cụ thể).
+- **D-17:** OpenGraph tags đầy đủ để share lên Facebook/Zalo preview đẹp (og:image, og:title, og:description).
+- **D-18:** `sitemap.xml` tự động qua `app/sitemap.ts` (Next.js built-in).
+- **D-19:** `robots.txt` allow crawl landing page, disallow `/teacher`, `/student`, `/admin`, `/api`.
+- **D-20:** Semantic HTML — dùng `<h1>` duy nhất, heading hierarchy đúng (`h2`/`h3`), `alt` text đầy đủ cho ảnh.
+- **D-21:** Core Web Vitals — lazy load ảnh (`next/image`), không block render, LCP target < 2.5s.
+- **D-22:** Structured data JSON-LD — `LocalBusiness` hoặc `EducationalOrganization` schema cho katie.vn.
+
 ### Claude's Discretion
 - Layout cụ thể từng section (grid, flex, card style)
 - Icon set chọn dùng
 - Specific tailwind color palette trong range xanh blue
+- Exact copy text cho meta title/description
 
 </decisions>
 
@@ -108,7 +119,7 @@ No external specs — requirements fully captured in decisions above.
 - CMS/admin panel để cô Katie tự cập nhật nội dung — scope riêng nếu cần.
 - Form đăng ký online với backend — hiện tại dùng Zalo/SĐT thay thế.
 - Multilingual (EN/VI) — có thể add sau nếu cần.
-- SEO optimization nâng cao (sitemap, structured data) — nice-to-have, deferred.
+~~SEO~~ — moved to scope (D-15 → D-22).
 
 </deferred>
 

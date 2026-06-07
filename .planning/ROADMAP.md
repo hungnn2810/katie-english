@@ -503,6 +503,8 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 - LAND-06: Section Giới thiệu phần mềm — feature list + screenshots platform
 - LAND-07: CTA/Liên hệ — Zalo link + số điện thoại
 - LAND-08: Responsive desktop + mobile
+- LAND-09: SEO metadata đầy đủ — Next.js metadata API, OpenGraph (Facebook/Zalo preview), sitemap.xml, robots.txt
+- LAND-10: Semantic HTML + JSON-LD structured data (EducationalOrganization), ảnh dùng next/image, LCP < 2.5s
 
 **Success Criteria:**
 
@@ -511,6 +513,8 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 3. Testimonials carousel tự động chạy, có thể click chuyển slide.
 4. Nút Zalo mở Zalo chat đúng số.
 5. Giao diện xanh blue, tươi sáng, không giống corporate.
+6. Google Search Console crawl không lỗi; og:image preview đúng khi share link lên Facebook/Zalo.
+7. Lighthouse SEO score ≥ 90.
 
 ---
 
