@@ -81,8 +81,8 @@ export default function middleware(req: NextRequest): NextResponse {
     if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
       return NextResponse.next();
     }
-    // Rewrite all other root domain paths to /marketing
-    const rewriteUrl = new URL('/marketing', req.url);
+    // Rewrite all other root domain paths to the marketing page (served at /)
+    const rewriteUrl = new URL('/', req.url);
     return NextResponse.rewrite(rewriteUrl);
   }
 
