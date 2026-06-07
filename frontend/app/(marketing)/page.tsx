@@ -1,5 +1,7 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import HeroSection from './components/HeroSection';
+import TeacherProfileSection from './components/TeacherProfileSection';
+import StudentResultsSection from './components/StudentResultsSection';
+import TestimonialCarousel from './components/TestimonialCarousel';
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -22,16 +24,10 @@ export default function MarketingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Typography variant="h1">Lớp Tiếng Anh Cô Katie</Typography>
-      </Box>
+      <HeroSection />
+      <TeacherProfileSection />
+      <StudentResultsSection />
+      <TestimonialCarousel />
     </main>
   );
 }
