@@ -39,6 +39,9 @@ function detectSubdomain(
 ): Subdomain | 'root' | 'unknown' {
   // D-02: env var overrides Host header for local dev
   const envSubdomain = process.env.NEXT_PUBLIC_SUBDOMAIN;
+  if (envSubdomain === 'marketing') {
+    return 'root';
+  }
   if (
     envSubdomain === 'admin' ||
     envSubdomain === 'app' ||
@@ -72,12 +75,15 @@ export default function middleware(req: NextRequest): NextResponse {
   const subdomain = detectSubdomain(req);
   const { pathname } = req.nextUrl;
 
-  // D-08: root domain redirects 301 to app.katie.vn
+  // D-08 (updated): root domain rewrites to /marketing (marketing landing page)
   if (subdomain === 'root') {
-    return NextResponse.redirect(
-      new URL('https://app.katie.vn' + req.nextUrl.pathname, req.url),
-      301,
-    );
+    // Passthrough for Next.js-generated files so they are served directly
+    if (pathname === '/sitemap.xml' || pathname === '/robots.txt') {
+      return NextResponse.next();
+    }
+    // Rewrite all other root domain paths to /marketing
+    const rewriteUrl = new URL('/marketing', req.url);
+    return NextResponse.rewrite(rewriteUrl);
   }
 
   // D-09: unknown subdomains rewrite to /not-found
