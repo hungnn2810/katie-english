@@ -1,15 +1,4 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { baseTheme } from '@/lib/theme';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
 
 const title = 'Lớp Tiếng Anh Cô Katie | Dạy Tiếng Anh Trẻ Em';
 const description =
@@ -46,16 +35,5 @@ export default function MarketingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="vi" className={inter.variable}>
-      <body>
-        <AppRouterCacheProvider>
-          <ThemeProvider theme={baseTheme}>
-            <CssBaseline />
-            {children}
-          </ThemeProvider>
-        </AppRouterCacheProvider>
-      </body>
-    </html>
-  );
+  return <>{children}</>;
 }
