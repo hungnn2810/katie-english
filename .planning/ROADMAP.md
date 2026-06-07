@@ -22,7 +22,7 @@
 | 10 | Azure PA Engine | Replace Groq+espeak with Azure Pronunciation Assessment | v2 | 📋 Planned |
 | 11 | Frontend React MUI Refactor | 5/5 | Complete    | 2026-06-05 |
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
-| 13 | Landing Page | Marketing website giới thiệu lớp cô Katie tại katie.vn | v3 | 📋 Planned |
+| 13 | Landing Page | 1/3 | In Progress|  |
 
 ---
 
@@ -528,9 +528,9 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 6. Google Search Console crawl không lỗi; og:image preview đúng khi share link lên Facebook/Zalo.
 7. Lighthouse SEO score ≥ 90.
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
-- [ ] 13-01-PLAN.md — Middleware rewrite katie.vn → /marketing + marketing route scaffold + SEO metadata (layout, sitemap, robots, JSON-LD) (Wave 1)
+- [x] 13-01-PLAN.md — Middleware rewrite katie.vn → /marketing + marketing route scaffold + SEO metadata (layout, sitemap, robots, JSON-LD) (Wave 1)
 - [ ] 13-02-PLAN.md — Hero, Teacher Profile, Student Results, Testimonials carousel — top half of landing page (Wave 2, depends 13-01)
 - [ ] 13-03-PLAN.md — Software section, CTA/Contact banner, wire all 6 sections, dev:marketing script + human verify (Wave 3, depends 13-02)
 
