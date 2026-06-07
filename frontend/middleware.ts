@@ -56,6 +56,7 @@ function detectSubdomain(
   if (host.startsWith('app.')) return 'app';
   if (host.startsWith('student.')) return 'student';
   if (host === 'katie.vn' || host === 'www.katie.vn') return 'root';
+  if (host === 'localhost' || host.startsWith('localhost:')) return 'root';
 
   return 'unknown';
 }
