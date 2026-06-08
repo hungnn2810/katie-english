@@ -6,7 +6,6 @@
     "dev:admin": "cross-env NEXT_PUBLIC_SUBDOMAIN=admin next dev -p 3001",
     "dev:teacher": "cross-env NEXT_PUBLIC_SUBDOMAIN=app next dev -p 3002",
     "dev:student": "cross-env NEXT_PUBLIC_SUBDOMAIN=student next dev -p 3003",
-    "dev:marketing": "cross-env NEXT_PUBLIC_SUBDOMAIN=marketing next dev -p 3004",
     "dev:all": "concurrently -n admin,teacher,student -c blue,green,yellow \"npm run dev:admin\" \"npm run dev:teacher\" \"npm run dev:student\"",
     "build": "next build",
     "start": "next start",
