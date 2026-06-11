@@ -161,7 +161,9 @@
       "Bash(claude mcp *)",
       "PowerShell(Get-ChildItem \"J:\\\\sources\\\\katie-english\\\\backend\\\\prisma\\\\migrations\" -Directory | Sort-Object Name | Select-Object -Last 3 | ForEach-Object { Write-Host $_.Name; Get-Content \\(Join-Path $_.FullName \"migration.sql\"\\) })",
       "Read(//Users/hung/**)",
-      "Read(//Users/hung/Documents/**)"
+      "Read(//Users/hung/Documents/**)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:d[k] for k in ['jest','scripts'] if k in d}, indent=2\\)\\)\")",
+      "Bash(dir \"backend\\\\src\\\\game\\\\__fixtures__\\\\\")"
     ]
   },
   "enableAllProjectMcpServers": true,

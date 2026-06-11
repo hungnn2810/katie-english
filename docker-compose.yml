@@ -54,7 +54,6 @@ services:
       AZURE_PHONEME_CORRECT_THRESHOLD: '80'
       AZURE_PHONEME_SIMILAR_THRESHOLD: '50'
       AZURE_MIN_WORD_SCORE: '70'
-      BFA_SERVICE_URL: http://bfa-service:8000
     ports:
       - '3001:3001'
     depends_on:
@@ -64,8 +63,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-      bfa-service:
-        condition: service_healthy
 
   redis:
     image: redis:7-alpine
@@ -76,19 +73,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-  bfa-service:
-    build:
-      context: ./bfa-service
-      dockerfile: Dockerfile
-    ports:
-      - '8001:8000'
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   frontend:
     build:

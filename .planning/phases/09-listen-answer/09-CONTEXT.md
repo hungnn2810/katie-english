@@ -54,16 +54,19 @@ model ListenItemResult {
 }
 ```
 
-### D-04: Semantic Scoring — sentence-transformers
-Add `sentence-transformers==2.7.0` to bfa-service requirements. Load model `all-MiniLM-L6-v2` at startup via FastAPI lifespan (same pattern as Phase 5 model warm-up). New endpoint `POST /score-semantic`:
-```
-Input:  { student_text: str, expected_text: str, keywords: list[str] }
-Output: { semantic_score: float, matched_keywords: list[str] }
-```
-`semantic_score`: cosine similarity between student answer embedding and expected text embedding.
-`matched_keywords`: keywords present in student answer (word-boundary regex match, same as Phase 1 D-05).
+### D-04: Semantic Scoring — OpenAI GPT-4o-mini *(updated 2026-06-11)*
+~~sentence-transformers / bfa-service~~ **REPLACED** by OpenAI Chat Completions API.
 
-Truncated answer handling: MiniLM computes semantic similarity at sentence level — "Red." vs "The cat is red." scores ~0.7–0.8, which is acceptable.
+`BfaService.scoreSemantic()` in `backend/src/bfa/bfa.service.ts` now:
+1. **Keyword matching** — local TypeScript regex `\b...\b` (same logic as original Python, deterministic, no API call)
+2. **Semantic score** — POST to `https://api.openai.com/v1/chat/completions` with `gpt-4o-mini`, `response_format: json_object`, returns `{"semantic_score": float}`
+
+Env vars required: `OPENAI_API_KEY` (required), `OPENAI_MODEL` (default: `gpt-4o-mini`).
+If `OPENAI_API_KEY` not set → `semanticScore=0`, keywords still matched locally.
+
+The Python bfa-service `/score-semantic` endpoint is no longer called by any backend code.
+
+Truncated answer handling: GPT-4o-mini instructed to be lenient ("Red." vs "The cat is red." → 0.7-0.8).
 
 ### D-05: Pronunciation Scoring (LISTEN-06)
 After semantic scoring, take `matched_keywords` (words student actually said). For each matched keyword, call `bfa.analyze(audio_segment, word, phonemes)`.

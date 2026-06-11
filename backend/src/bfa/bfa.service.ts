@@ -13,6 +13,11 @@ const PHONEME_CORRECT_THRESHOLD = parseInt(process.env.AZURE_PHONEME_CORRECT_THR
 const PHONEME_SIMILAR_THRESHOLD = parseInt(process.env.AZURE_PHONEME_SIMILAR_THRESHOLD ?? '50', 10);
 const MIN_WORD_SCORE = parseInt(process.env.AZURE_MIN_WORD_SCORE ?? '70', 10);
 
+// Prefer bundled ffmpeg-static when available (dev/test), fall back to system ffmpeg (prod)
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+let FFMPEG_CMD = 'ffmpeg';
+try { const s: string | null = require('ffmpeg-static'); if (s) FFMPEG_CMD = s; } catch { /* use system ffmpeg */ }
+
 function mimeToExt(mimeType: string): string {
   if (mimeType.includes('webm')) return 'webm';
   if (mimeType.includes('m4a')) return 'm4a';
@@ -30,7 +35,7 @@ function toWav(audioBuffer: Buffer, mimeType: string): Buffer {
   const tmpOut = path.join(os.tmpdir(), `apa-out-${id}.wav`);
   try {
     fs.writeFileSync(tmpIn, audioBuffer);
-    execFileSync('ffmpeg', ['-y', '-i', tmpIn, '-ar', '16000', '-ac', '1', '-f', 'wav', tmpOut], {
+    execFileSync(FFMPEG_CMD, ['-y', '-i', tmpIn, '-ar', '16000', '-ac', '1', '-f', 'wav', tmpOut], {
       timeout: 30_000,
       stdio: 'pipe',
     });
@@ -235,24 +240,53 @@ export class BfaService {
     expectedText: string,
     keywords: string[],
   ): Promise<{ semanticScore: number; matchedKeywords: string[] }> {
-    const bfaUrl = process.env.BFA_SERVICE_URL ?? 'http://bfa-service:8000';
-    const form = new URLSearchParams();
-    form.append('student_text', studentText);
-    form.append('expected_text', expectedText);
-    form.append('keywords', JSON.stringify(keywords));
+    // Keyword matching done locally — deterministic, no external call needed
+    const lowerStudent = studentText.toLowerCase();
+    const matchedKeywords = keywords.filter((kw) =>
+      new RegExp(`\\b${kw.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(lowerStudent),
+    );
+
+    const openaiKey = process.env.OPENAI_API_KEY ?? '';
+    if (!openaiKey) {
+      this.logger.warn('[scoreSemantic] OPENAI_API_KEY not set — semanticScore=0');
+      return { semanticScore: 0, matchedKeywords };
+    }
+
+    const model = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
     try {
-      const resp = await axios.post(`${bfaUrl}/score-semantic`, form.toString(), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        timeout: 15_000,
-      });
-      const data = resp.data as { semantic_score: number; matched_keywords: string[] };
-      return {
-        semanticScore: data.semantic_score ?? 0,
-        matchedKeywords: data.matched_keywords ?? [],
-      };
+      const resp = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model,
+          response_format: { type: 'json_object' },
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a language assessment assistant for young English learners. Score semantic similarity between a student answer and an expected answer. Return only JSON.',
+            },
+            {
+              role: 'user',
+              content: `Student answer: "${studentText}"\nExpected answer: "${expectedText}"\n\nReturn: {"semantic_score": <float 0.0-1.0>}\n\nRules: 1.0 = identical meaning, 0.0 = completely unrelated. Be lenient — short correct answers ("Red.") vs full sentences ("The cat is red.") should score 0.7-0.8.`,
+            },
+          ],
+          temperature: 0,
+          max_tokens: 50,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${openaiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 15_000,
+        },
+      );
+      const content: string = (resp.data as any)?.choices?.[0]?.message?.content ?? '{}';
+      const parsed = JSON.parse(content) as { semantic_score?: number };
+      const semanticScore = Math.max(0, Math.min(1, Number(parsed.semantic_score ?? 0)));
+      return { semanticScore, matchedKeywords };
     } catch (err) {
-      this.logger.warn(`[scoreSemantic] bfa-service error: ${(err as Error).message}`);
-      return { semanticScore: 0, matchedKeywords: [] };
+      this.logger.warn(`[scoreSemantic] OpenAI error: ${(err as Error).message}`);
+      return { semanticScore: 0, matchedKeywords };
     }
   }
 }

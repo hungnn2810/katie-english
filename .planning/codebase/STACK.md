@@ -30,11 +30,10 @@ last_mapped_commit: 76a70d3d792f
 - **minio** — S3-compatible storage client
 
 ### BFA Service — `bfa-service/`
+> **Note (2026-06-11):** After Phase 10 (Azure PA) + scoreSemantic migration to OpenAI, this service only serves `/score-semantic` and `/health`. It is no longer called by any backend code — `scoreSemantic` now calls OpenAI directly. The Python bfa-service container can be removed from docker-compose.
+
 - **FastAPI** — HTTP API (single-file: `main.py`)
-- **WhisperX** — Speech transcription + word-level alignment
-- **bournemouth-forced-aligner** — Phoneme-timestamp alignment
-- **PyTorch** (CPU) — Model inference
-- **espeak-ng** (system) — IPA phoneme generation fallback
+- **sentence-transformers** (`all-MiniLM-L6-v2`) — Semantic scoring (unused by backend since scoreSemantic → OpenAI)
 - **ffmpeg** (system) — Audio normalization (16kHz mono WAV)
 
 ## Database
@@ -63,7 +62,8 @@ last_mapped_commit: 76a70d3d792f
 | `PORT` | `3001` | `backend/` main.ts |
 | `TEACHER_EMAIL` | — | `backend/` bootstrap seed |
 | `TEACHER_PASSWORD` | — | `backend/` bootstrap seed |
-| `BFA_URL` | `http://localhost:3002` | `backend/` BfaService |
+| `OPENAI_API_KEY` | — | `backend/` BfaService.scoreSemantic |
+| `OPENAI_MODEL` | `gpt-4o-mini` | `backend/` BfaService.scoreSemantic |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:3001` | `frontend/` lib/api.ts |
 | `WHISPERX_MODEL` | `small` | `bfa-service/` main.py |
 | `BFA_PRESET` | `en-us` | `bfa-service/` main.py |
