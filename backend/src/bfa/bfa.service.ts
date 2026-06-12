@@ -252,47 +252,57 @@ export class BfaService {
       new RegExp(`\\b${kw.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(lowerStudent),
     );
 
-    const openaiKey = process.env.OPENAI_API_KEY ?? '';
-    if (!openaiKey) {
-      this.logger.warn('[scoreSemantic] OPENAI_API_KEY not set — semanticScore=0');
+    const apiKey = process.env.AZURE_OPENAI_KEY ?? '';
+    if (!apiKey) {
+      this.logger.warn('[scoreSemantic] AZURE_OPENAI_KEY not set — semanticScore=0');
       return { semanticScore: 0, matchedKeywords };
     }
 
-    const model = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
-    try {
-      const resp = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
+    const endpoint = process.env.AZURE_OPENAI_ENDPOINT ?? '';
+    const deployment = process.env.AZURE_OPENAI_DEPLOYMENT ?? 'gpt-4o-mini';
+    const apiVersion = process.env.AZURE_OPENAI_API_VERSION ?? '2024-08-01-preview';
+    const body = {
+      response_format: { type: 'json_object' },
+      messages: [
         {
-          model,
-          response_format: { type: 'json_object' },
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a language assessment assistant for young English learners. Score semantic similarity between a student answer and an expected answer. Return only JSON.',
-            },
-            {
-              role: 'user',
-              content: `Student answer: "${studentText}"\nExpected answer: "${expectedText}"\n\nReturn: {"semantic_score": <float 0.0-1.0>}\n\nRules: 1.0 = identical meaning, 0.0 = completely unrelated. Be lenient — short correct answers ("Red.") vs full sentences ("The cat is red.") should score 0.7-0.8.`,
-            },
-          ],
-          temperature: 0,
-          max_tokens: 50,
+          role: 'system',
+          content: 'You are a language assessment assistant for young English learners. Score semantic similarity between a student answer and an expected answer. Return only JSON.',
         },
         {
-          headers: {
-            Authorization: `Bearer ${openaiKey}`,
-            'Content-Type': 'application/json',
-          },
+          role: 'user',
+          content: `Student answer: "${studentText}"\nExpected answer: "${expectedText}"\n\nReturn: {"semantic_score": <float 0.0-1.0>}\n\nRules: 1.0 = identical meaning, 0.0 = completely unrelated. Be lenient — short correct answers ("Red.") vs full sentences ("The cat is red.") should score 0.7-0.8.`,
+        },
+      ],
+      temperature: 0,
+      max_tokens: 50,
+    };
+    const headers = { 'api-key': apiKey, 'Content-Type': 'application/json' };
+    const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${apiVersion}`;
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const resp = await axios.post(url, body, {
+          headers,
           timeout: 15_000,
-        },
-      );
-      const content: string = (resp.data as any)?.choices?.[0]?.message?.content ?? '{}';
-      const parsed = JSON.parse(content) as { semantic_score?: number };
-      const semanticScore = Math.max(0, Math.min(1, Number(parsed.semantic_score ?? 0)));
-      return { semanticScore, matchedKeywords };
-    } catch (err) {
-      this.logger.warn(`[scoreSemantic] OpenAI error: ${(err as Error).message}`);
-      return { semanticScore: 0, matchedKeywords };
+        });
+        const content: string = (resp.data as any)?.choices?.[0]?.message?.content ?? '{}';
+        const parsed = JSON.parse(content) as { semantic_score?: number };
+        const semanticScore = Math.max(0, Math.min(1, Number(parsed.semantic_score ?? 0)));
+        return { semanticScore, matchedKeywords };
+      } catch (err: any) {
+        const status: number = err?.response?.status ?? 0;
+        const errCode: string = err?.response?.data?.error?.code ?? 'unknown';
+        const isQuota = errCode === 'insufficient_quota';
+        if (isQuota || status !== 429 || attempt === 2) {
+          this.logger.warn(`[scoreSemantic] Azure OpenAI error: ${(err as Error).message} | code=${errCode}`);
+          return { semanticScore: 0, matchedKeywords };
+        }
+        const retryAfter = Number(err?.response?.headers?.['retry-after'] ?? 2) * 1000;
+        const delay = Math.max(retryAfter, 1000 * 2 ** attempt);
+        this.logger.warn(`[scoreSemantic] Azure OpenAI 429 — retry ${attempt + 1}/3 in ${delay}ms`);
+        await new Promise((r) => setTimeout(r, delay));
+      }
     }
+    return { semanticScore: 0, matchedKeywords };
   }
 }

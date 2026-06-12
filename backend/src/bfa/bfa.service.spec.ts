@@ -422,10 +422,18 @@ describe('BfaService', () => {
   // ── scoreSemantic ──────────────────────────────────────────────────────────
 
   describe('scoreSemantic', () => {
-    beforeEach(() => { process.env.OPENAI_API_KEY = 'test-key'; });
-    afterEach(() => { delete process.env.OPENAI_API_KEY; });
+    beforeEach(() => {
+      process.env.AZURE_OPENAI_KEY = 'test-key';
+      process.env.AZURE_OPENAI_ENDPOINT = 'https://test.openai.azure.com';
+      process.env.AZURE_OPENAI_DEPLOYMENT = 'gpt-4o-mini';
+    });
+    afterEach(() => {
+      delete process.env.AZURE_OPENAI_KEY;
+      delete process.env.AZURE_OPENAI_ENDPOINT;
+      delete process.env.AZURE_OPENAI_DEPLOYMENT;
+    });
 
-    it('happy path — keywords matched locally, semantic score from OpenAI', async () => {
+    it('happy path — keywords matched locally, semantic score from Azure OpenAI', async () => {
       mockPost.mockResolvedValueOnce({
         data: { choices: [{ message: { content: '{"semantic_score": 0.87}' } }] },
       });
@@ -436,8 +444,8 @@ describe('BfaService', () => {
       expect(result.matchedKeywords).toEqual(['cat', 'sat', 'mat']); // all 3 present in student text
     });
 
-    it('OpenAI throws → fallback {semanticScore: 0, matchedKeywords: local regex result}', async () => {
-      mockPost.mockRejectedValueOnce(new Error('OpenAI down'));
+    it('Azure OpenAI throws → fallback {semanticScore: 0, matchedKeywords: local regex result}', async () => {
+      mockPost.mockRejectedValueOnce(new Error('Azure OpenAI down'));
 
       const result = await service.scoreSemantic('hello', 'hello world', []);
 
@@ -445,7 +453,7 @@ describe('BfaService', () => {
       expect(result.matchedKeywords).toHaveLength(0);
     });
 
-    it('calls OpenAI chat completions with Bearer auth and json_object response_format', async () => {
+    it('calls Azure OpenAI with api-key header and json_object response_format', async () => {
       mockPost.mockResolvedValueOnce({
         data: { choices: [{ message: { content: '{"semantic_score": 0.5}' } }] },
       });
@@ -453,16 +461,16 @@ describe('BfaService', () => {
       await service.scoreSemantic('student answer', 'expected answer', ['kw1']);
 
       expect(mockPost).toHaveBeenCalledWith(
-        expect.stringContaining('api.openai.com/v1/chat/completions'),
-        expect.objectContaining({ model: 'gpt-4o-mini', response_format: { type: 'json_object' } }),
+        expect.stringContaining('test.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions'),
+        expect.objectContaining({ response_format: { type: 'json_object' } }),
         expect.objectContaining({
-          headers: expect.objectContaining({ Authorization: expect.stringContaining('Bearer ') }),
+          headers: expect.objectContaining({ 'api-key': 'test-key' }),
         }),
       );
     });
 
-    it('OPENAI_API_KEY not set → semanticScore=0, keywords still matched locally', async () => {
-      delete process.env.OPENAI_API_KEY;
+    it('AZURE_OPENAI_KEY not set → semanticScore=0, keywords still matched locally', async () => {
+      delete process.env.AZURE_OPENAI_KEY;
 
       const result = await service.scoreSemantic('the cat sat', 'the cat sat', ['cat']);
 

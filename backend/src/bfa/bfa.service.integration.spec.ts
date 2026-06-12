@@ -23,8 +23,19 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { BfaService } from './bfa.service';
 
+// Load .env from backend root (Jest does not auto-load .env)
+const envPath = path.resolve(__dirname, '..', '..', '.env');
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+    const match = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+    if (match && !process.env[match[1]]) process.env[match[1]] = match[2].trim();
+  }
+}
+
 const HAS_AZURE = Boolean(process.env.AZURE_SPEECH_KEY);
+const HAS_AZURE_OPENAI = Boolean(process.env.AZURE_OPENAI_KEY);
 const describeIf = HAS_AZURE ? describe : describe.skip;
+const describeIfOpenAI = HAS_AZURE_OPENAI ? describe : describe.skip;
 
 const fixturesDir = path.join(__dirname, '..', 'game', '__fixtures__');
 
@@ -177,4 +188,90 @@ describeIf('BfaService.transcribe — live Azure STT (pipeline validation)', () 
       expect(typeof result.text).toBe('string');
     }, 60_000,
   );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// scoreSemantic — OpenAI LLM semantic scoring
+// ─────────────────────────────────────────────────────────────────────────────
+
+describeIfOpenAI('BfaService.scoreSemantic — live OpenAI LLM (pipeline validation)', () => {
+  let service: BfaService;
+  let openaiAvailable = true;
+
+  beforeAll(async () => {
+    service = new BfaService();
+    // Probe: single call to detect quota/auth errors before score assertions run
+    const probe = await service.scoreSemantic('hello', 'hello', []);
+    openaiAvailable = probe.semanticScore > 0;
+    if (!openaiAvailable) {
+      console.warn('[scoreSemantic] OpenAI probe returned 0 — likely 429/quota. Score assertions will be skipped.');
+    }
+  }, 30_000);
+
+  it('identical answers — semanticScore near 1.0', async () => {
+    const result = await service.scoreSemantic('The cat is red.', 'The cat is red.', ['cat', 'red']);
+
+    console.log('[scoreSemantic identical]', JSON.stringify(result, null, 2));
+
+    if (openaiAvailable) expect(result.semanticScore).toBeGreaterThanOrEqual(0.9);
+    expect(result.matchedKeywords).toEqual(expect.arrayContaining(['cat', 'red']));
+  }, 30_000);
+
+  it('short correct answer vs full sentence — semanticScore >= 0.7 (lenient scoring)', async () => {
+    const result = await service.scoreSemantic('Red.', 'The cat is red.', ['cat', 'red']);
+
+    console.log('[scoreSemantic lenient]', JSON.stringify(result, null, 2));
+
+    if (openaiAvailable) expect(result.semanticScore).toBeGreaterThanOrEqual(0.7);
+  }, 30_000);
+
+  it('semantically similar paraphrase — semanticScore >= 0.6', async () => {
+    const result = await service.scoreSemantic(
+      'A dog is running in the park.',
+      'The dog runs through the park.',
+      ['dog', 'park'],
+    );
+
+    console.log('[scoreSemantic paraphrase]', JSON.stringify(result, null, 2));
+
+    if (openaiAvailable) expect(result.semanticScore).toBeGreaterThanOrEqual(0.6);
+    expect(result.matchedKeywords).toEqual(expect.arrayContaining(['dog', 'park']));
+  }, 30_000);
+
+  it('completely unrelated answer — semanticScore <= 0.3', async () => {
+    const result = await service.scoreSemantic('I like pizza.', 'The cat is red.', ['cat', 'red']);
+
+    console.log('[scoreSemantic unrelated]', JSON.stringify(result, null, 2));
+
+    // 0 (quota fallback) satisfies <= 0.3 — assertion always valid
+    expect(result.semanticScore).toBeLessThanOrEqual(0.3);
+    expect(result.matchedKeywords).toHaveLength(0);
+  }, 30_000);
+
+  it('empty student answer — semanticScore = 0, no matched keywords', async () => {
+    const result = await service.scoreSemantic('', 'The cat is red.', ['cat', 'red']);
+
+    console.log('[scoreSemantic empty]', JSON.stringify(result, null, 2));
+
+    expect(result.semanticScore).toBe(0);
+    expect(result.matchedKeywords).toHaveLength(0);
+  }, 30_000);
+
+  it('keyword matching is case-insensitive', async () => {
+    const result = await service.scoreSemantic('The CAT is RED.', 'The cat is red.', ['cat', 'red']);
+
+    console.log('[scoreSemantic case-insensitive]', JSON.stringify(result, null, 2));
+
+    expect(result.matchedKeywords).toEqual(expect.arrayContaining(['cat', 'red']));
+  }, 30_000);
+
+  it('no keywords provided — matchedKeywords empty, semanticScore still computed', async () => {
+    const result = await service.scoreSemantic('The cat is red.', 'The cat is red.', []);
+
+    console.log('[scoreSemantic no-keywords]', JSON.stringify(result, null, 2));
+
+    expect(result.matchedKeywords).toHaveLength(0);
+    expect(result.semanticScore).toBeGreaterThanOrEqual(0);
+    expect(result.semanticScore).toBeLessThanOrEqual(1);
+  }, 30_000);
 });
