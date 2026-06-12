@@ -10,7 +10,6 @@ last_mapped_commit: 76a70d3d792f
 |-------|----------|---------|
 | Frontend | TypeScript 5, TSX | Node.js (Next.js build) |
 | Backend | TypeScript 5 | Node.js 20 |
-| BFA Service | Python 3.11 | CPython |
 
 ## Frameworks
 
@@ -28,19 +27,20 @@ last_mapped_commit: 76a70d3d792f
 - **axios** — HTTP client for BFA service calls
 - **multer** — Multipart file upload (via `@nestjs/platform-express`)
 - **minio** — S3-compatible storage client
+- **bullmq** + **ioredis** — Redis-backed job queue (audio processing)
+- **ffmpeg-static** — Bundled ffmpeg for dev/test audio conversion (falls back to system ffmpeg in prod)
 
-### BFA Service — `bfa-service/`
-> **Note (2026-06-11):** After Phase 10 (Azure PA) + scoreSemantic migration to OpenAI, this service only serves `/score-semantic` and `/health`. It is no longer called by any backend code — `scoreSemantic` now calls OpenAI directly. The Python bfa-service container can be removed from docker-compose.
+## Infrastructure
 
-- **FastAPI** — HTTP API (single-file: `main.py`)
-- **sentence-transformers** (`all-MiniLM-L6-v2`) — Semantic scoring (unused by backend since scoreSemantic → OpenAI)
-- **ffmpeg** (system) — Audio normalization (16kHz mono WAV)
-
-## Database
-
+### Database
 - **PostgreSQL 16** — Primary datastore
 - Connection: `DATABASE_URL` env var, Prisma manages pool
 - Docker image: `postgres:16-alpine`
+
+### Queue
+- **Redis 7** — BullMQ job queue backing store
+- Docker image: `redis:7-alpine`
+- Port: 6379
 
 ## Storage
 
@@ -60,19 +60,31 @@ last_mapped_commit: 76a70d3d792f
 | `MINIO_BUCKET` | `phonics-audio` | `backend/` StorageService |
 | `MINIO_USE_SSL` | `false` | `backend/` StorageService |
 | `PORT` | `3001` | `backend/` main.ts |
+| `REDIS_URL` | `redis://redis:6379` | `backend/` BullMQ |
 | `TEACHER_EMAIL` | — | `backend/` bootstrap seed |
 | `TEACHER_PASSWORD` | — | `backend/` bootstrap seed |
+| `ADMIN_EMAIL` | — | `backend/` bootstrap seed |
+| `ADMIN_PASSWORD` | — | `backend/` bootstrap seed |
+| `AZURE_SPEECH_KEY` | — | `backend/` BfaService (PA + STT) |
+| `AZURE_SPEECH_REGION` | `eastus` | `backend/` BfaService |
+| `AZURE_PHONEME_CORRECT_THRESHOLD` | `80` | `backend/` BfaService.mapPhonemeOps |
+| `AZURE_PHONEME_SIMILAR_THRESHOLD` | `50` | `backend/` BfaService.mapPhonemeOps |
+| `AZURE_MIN_WORD_SCORE` | `70` | `backend/` BfaService.analyzeSpeaking |
 | `OPENAI_API_KEY` | — | `backend/` BfaService.scoreSemantic |
 | `OPENAI_MODEL` | `gpt-4o-mini` | `backend/` BfaService.scoreSemantic |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:3001` | `frontend/` lib/api.ts |
-| `WHISPERX_MODEL` | `small` | `bfa-service/` main.py |
-| `BFA_PRESET` | `en-us` | `bfa-service/` main.py |
+| `NEXT_PUBLIC_SUBDOMAIN` | `app` | `frontend/` subdomain routing |
+| `NEXT_PUBLIC_ADMIN_ORIGIN` | `http://admin.katie.vn` | `frontend/` |
+| `NEXT_PUBLIC_APP_ORIGIN` | `http://app.katie.vn` | `frontend/` |
+| `NEXT_PUBLIC_STUDENT_ORIGIN` | `http://student.katie.vn` | `frontend/` |
+| `NEXT_PUBLIC_LOGIN_URL` | `http://app.katie.vn/login` | `frontend/` |
 
 ## Build & Deployment
 
-- **Docker Compose** — `docker-compose.yml` at root, 5 services: `postgres`, `minio`, `bfa`, `backend`, `frontend`
-- Service startup order: `postgres` + `minio` + `bfa` → `backend` → `frontend`
-- Port mapping: frontend:3000, backend:3001, bfa:3002, minio:9000/9001, postgres:5432
+- **Docker Compose** — `docker-compose.yml` at root, 5 services: `postgres`, `minio`, `redis`, `backend`, `frontend`
+- Service startup order: `postgres` + `minio` + `redis` → `backend` → `frontend`
+- Port mapping: frontend:3000, backend:3001, minio:9000/9001, redis:6379, postgres:5432
+- BFA pronunciation scoring via Azure Cognitive Services REST API (no local service container needed)
 
 ## Testing
 

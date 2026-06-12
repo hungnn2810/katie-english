@@ -6,6 +6,7 @@ import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
 import { WordRepository } from '../word/word.repository';
 import { PrismaService } from '../prisma/prisma.service';
+import { TokenService } from '../auth/jwt.service';
 import { levenshtein, calcSpeakingScore, calcFreeSpeak } from './game.scoring';
 import { SaveReadingResultDto } from './game.dto';
 
@@ -274,6 +275,7 @@ describe('GameService.savePhonicsResult', () => {
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
         { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
+        { provide: TokenService, useValue: { sign: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -422,6 +424,7 @@ describe('GameService.completeSession', () => {
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
         { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
+        { provide: TokenService, useValue: { sign: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -493,54 +496,65 @@ describe('saveReadingResult', () => {
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
         { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
+        { provide: TokenService, useValue: { sign: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
     repo = module.get(GameRepository);
-    repo.saveReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 8, correctItems: 5, score: 63 } as any);
+    // mockReadingSession has 3 matchPairs + 2 fillBlanks = 5 server-computed items
+    repo.saveReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 5, correctItems: 3, score: 60 } as any);
   });
 
   it('throws NotFoundException when session is missing', async () => {
     repo.getSession.mockResolvedValue(null as any);
-    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 8 };
+    const dto: SaveReadingResultDto = { correctItems: 5 };
     await expect(service.saveReadingResult(1, dto)).rejects.toThrow(NotFoundException);
   });
 
   it('throws BadRequestException when session already completed', async () => {
     repo.getSession.mockResolvedValue(mockReadingSession({ completedAt: new Date() }) as any);
-    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 8 };
+    const dto: SaveReadingResultDto = { correctItems: 5 };
     await expect(service.saveReadingResult(1, dto)).rejects.toThrow(BadRequestException);
   });
 
   it('throws BadRequestException when homework type is not READING', async () => {
     repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
-    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 8 };
+    const dto: SaveReadingResultDto = { correctItems: 5 };
     await expect(service.saveReadingResult(1, dto)).rejects.toThrow(BadRequestException);
   });
 
-  it('throws BadRequestException when correctItems > totalItems', async () => {
+  it('throws BadRequestException when correctItems exceeds server-computed totalItems', async () => {
+    // mock has 5 server items; correctItems: 6 > 5 → throws
     repo.getSession.mockResolvedValue(mockReadingSession() as any);
-    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 3 };
+    const dto: SaveReadingResultDto = { correctItems: 6 };
     await expect(service.saveReadingResult(1, dto)).rejects.toThrow(BadRequestException);
   });
 
-  it('throws BadRequestException when values are negative', async () => {
+  it('throws BadRequestException when correctItems is negative', async () => {
     repo.getSession.mockResolvedValue(mockReadingSession() as any);
-    const dto: SaveReadingResultDto = { correctItems: -1, totalItems: 5 };
+    const dto: SaveReadingResultDto = { correctItems: -1 };
     await expect(service.saveReadingResult(1, dto)).rejects.toThrow(BadRequestException);
   });
 
-  it('computes score = round(correctItems/totalItems*100) and calls repo.saveReadingResult with that score', async () => {
+  it('computes score = round(correctItems/serverTotalItems*100) and calls repo.saveReadingResult', async () => {
+    // server total = 3 matchPairs + 2 fillBlanks = 5; 3/5 = 60
     repo.getSession.mockResolvedValue(mockReadingSession() as any);
-    const dto: SaveReadingResultDto = { correctItems: 5, totalItems: 8 };
+    const dto: SaveReadingResultDto = { correctItems: 3 };
     await service.saveReadingResult(1, dto);
-    expect(repo.saveReadingResult).toHaveBeenCalledWith(1, 8, 5, 63);
+    expect(repo.saveReadingResult).toHaveBeenCalledWith(1, 5, 3, 60);
   });
 
-  it('returns score=0 when totalItems is 0', async () => {
-    repo.getSession.mockResolvedValue(mockReadingSession() as any);
+  it('returns score=0 when homework has no reading activities', async () => {
+    repo.getSession.mockResolvedValue(mockReadingSession({
+      assignment: {
+        homework: {
+          type: 'READING', parts: [], speakingText: null, speakingPictureUrl: null,
+          readingActivities: [],
+        },
+      },
+    }) as any);
     repo.saveReadingResult.mockResolvedValue({ id: 1, sessionId: 1, totalItems: 0, correctItems: 0, score: 0 } as any);
-    const dto: SaveReadingResultDto = { correctItems: 0, totalItems: 0 };
+    const dto: SaveReadingResultDto = { correctItems: 0 };
     await service.saveReadingResult(1, dto);
     expect(repo.saveReadingResult).toHaveBeenCalledWith(1, 0, 0, 0);
   });
@@ -571,6 +585,7 @@ describe('completeSession READING branch', () => {
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
         { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
+        { provide: TokenService, useValue: { sign: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -641,6 +656,7 @@ describe('completeSession READING', () => {
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
         { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
+        { provide: TokenService, useValue: { sign: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -696,6 +712,7 @@ describe('GameService.saveSpeakingResult', () => {
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyze: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
         { provide: PrismaService, useValue: { homework: { findUnique: jest.fn() } } },
+        { provide: TokenService, useValue: { sign: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);
@@ -765,6 +782,7 @@ describe('GameService.trySpeakingHomework', () => {
         { provide: BfaService, useValue: { align: jest.fn(), transcribe: jest.fn(), analyzeSpeaking: jest.fn() } },
         { provide: WordRepository, useValue: { findByText: jest.fn() } },
         { provide: PrismaService, useValue: prisma },
+        { provide: TokenService, useValue: { sign: jest.fn() } },
       ],
     }).compile();
     service = module.get(GameService);

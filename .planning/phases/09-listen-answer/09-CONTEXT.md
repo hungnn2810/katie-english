@@ -15,7 +15,7 @@ Depends on: Phase 5 (BFA transcribe + analyze pipeline), Phase 7 (audio gates), 
 
 Does NOT touch: phonics game, vocabulary game, speaking homework, reading homework, admin portal.
 
-New dependency introduced: `sentence-transformers` (all-MiniLM-L6-v2, 80MB, CPU, Apache-2.0) added to bfa-service.
+Semantic scoring via OpenAI GPT-4o-mini (`OPENAI_API_KEY` required). No Python service dependency.
 
 </domain>
 
@@ -98,9 +98,6 @@ If `semantic_score < 0.2`: answer classified as "wrong" — show "hãy thử l�
 
 If `semantic_score >= 0.2`: score normally even if low.
 
-### D-10: bfa-service startup — model loading
-`sentence-transformers` model loads ~3s on first use. Load eagerly in FastAPI lifespan alongside existing Groq health check. Add to `/health` response: `"minilm_loaded": bool`.
-
 </decisions>
 
 <canonical_refs>
@@ -110,8 +107,7 @@ If `semantic_score >= 0.2`: score normally even if low.
 
 - `backend/prisma/schema.prisma` — HomeworkType enum + existing result models (pattern reference)
 - `backend/src/game/game.service.ts` — `completeSession` branching pattern — LISTEN branch mirrors PHONICS/VOCAB
-- `bfa-service/main.py` — Add `/score-semantic` endpoint + sentence-transformers model warm-up
-- `bfa-service/requirements.txt` — Add `sentence-transformers==2.7.0`
+- `backend/src/bfa/bfa.service.ts` — `scoreSemantic()` (OpenAI) + `analyzeSpeaking()` (Azure PA)
 - `frontend/app/game/session/[id]/page.tsx` — Student game flow pattern reference
 - `.planning/phases/08-vocabulary-image/08-CONTEXT.md` — HomeworkType extension pattern (mirrors Phase 8 approach)
 - `STATEGY.MD` §1 Exercise 2, §4 semantic similarity row — Requirements source
@@ -119,50 +115,16 @@ If `semantic_score >= 0.2`: score normally even if low.
 </canonical_refs>
 
 <specifics>
-## bfa-service /score-semantic endpoint
+## BfaService.scoreSemantic (backend/src/bfa/bfa.service.ts)
 
-```python
-from sentence_transformers import SentenceTransformer, util
+Keyword matching: local TypeScript `\b`-regex, no API call.
+Semantic score: POST `https://api.openai.com/v1/chat/completions` with `gpt-4o-mini`, `response_format: json_object` → `{"semantic_score": float}`.
+Fallback: if `OPENAI_API_KEY` unset → `semanticScore=0`, keywords still matched.
 
-_minilm_model: Optional[SentenceTransformer] = None
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global _minilm_model
-    _minilm_model = SentenceTransformer('all-MiniLM-L6-v2')
-    yield
-
-@app.post("/score-semantic")
-async def score_semantic(
-    student_text: str = Form(...),
-    expected_text: str = Form(...),
-    keywords: str = Form("[]"),  # JSON array
-):
-    kw_list = json.loads(keywords)
-    
-    # Semantic similarity
-    emb_student  = _minilm_model.encode(student_text, convert_to_tensor=True)
-    emb_expected = _minilm_model.encode(expected_text, convert_to_tensor=True)
-    semantic_score = float(util.cos_sim(emb_student, emb_expected)[0][0])
-    semantic_score = max(0.0, min(1.0, semantic_score))
-    
-    # Keyword matching (word-boundary regex)
-    matched = [
-        kw for kw in kw_list
-        if re.search(r'\b' + re.escape(kw.lower()) + r'\b', student_text.lower())
-    ]
-    
-    return {
-        "semantic_score": round(semantic_score, 4),
-        "matched_keywords": matched,
-    }
-```
-
-## Composite Score NestJS Side
+## Composite Score (game.service.ts — LISTEN branch)
 
 ```typescript
-// game.service.ts — LISTEN branch
-const semanticResult = await this.bfa.scoreSemanticText(
+const semanticResult = await this.bfa.scoreSemantic(
   transcript, item.expectedText, JSON.parse(item.keywords)
 );
 const pronResult = semanticResult.semanticScore >= 0.2 && semanticResult.matchedKeywords.length > 0

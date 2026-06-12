@@ -52,12 +52,20 @@ export function calcSpeakingScore(
 function matchesKeyword(transcript: string, kw: string): boolean {
   const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (new RegExp(`\\b${escaped}\\b`, 'i').test(transcript)) return true;
-  const words = transcript.toLowerCase().split(/\s+/).filter(Boolean);
-  for (const w of words) {
+  const kwWords = kw.toLowerCase().split(/\s+/).filter(Boolean);
+  const txWords = transcript.toLowerCase().split(/\s+/).filter(Boolean);
+  if (kwWords.length > 1) {
+    return kwWords.every((kwPart) =>
+      txWords.some((w) => {
+        const maxLen = Math.max(w.length, kwPart.length);
+        return maxLen > 0 && 1 - levenshtein(w, kwPart) / maxLen >= 0.75;
+      }),
+    );
+  }
+  for (const w of txWords) {
     const maxLen = Math.max(w.length, kw.length);
     if (maxLen === 0) return false;
-    const sim = 1 - levenshtein(w, kw) / maxLen;
-    if (sim >= 0.75) return true;
+    if (1 - levenshtein(w, kw) / maxLen >= 0.75) return true;
   }
   return false;
 }

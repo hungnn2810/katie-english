@@ -377,16 +377,25 @@ export class GameService {
     const hw = session.assignment.homework;
     if (hw.type !== 'READING') throw new BadRequestException('Homework is not a READING type');
 
-    if (dto.correctItems < 0 || dto.totalItems < 0) {
-      throw new BadRequestException('correctItems and totalItems must be non-negative');
+    if (dto.correctItems < 0) {
+      throw new BadRequestException('correctItems must be non-negative');
     }
-    if (dto.correctItems > dto.totalItems) {
+
+    // Compute totalItems server-side so client cannot inflate it
+    const readingActivities = (hw as any).readingActivities as { matchPairs: unknown[]; fillBlanks: unknown[] }[] ?? [];
+    const totalItems = readingActivities.reduce(
+      (sum: number, act: { matchPairs: unknown[]; fillBlanks: unknown[] }) =>
+        sum + (act.matchPairs?.length ?? 0) + (act.fillBlanks?.length ?? 0),
+      0,
+    );
+
+    if (dto.correctItems > totalItems) {
       throw new BadRequestException('correctItems cannot exceed totalItems');
     }
 
-    const score = dto.totalItems > 0 ? Math.round((dto.correctItems / dto.totalItems) * 100) : 0;
-    this.logger.log(`[session=${sessionId}] reading score=${score} correct=${dto.correctItems}/${dto.totalItems}`);
-    return this.repo.saveReadingResult(sessionId, dto.totalItems, dto.correctItems, score);
+    const score = totalItems > 0 ? Math.round((dto.correctItems / totalItems) * 100) : 0;
+    this.logger.log(`[session=${sessionId}] reading score=${score} correct=${dto.correctItems}/${totalItems}`);
+    return this.repo.saveReadingResult(sessionId, totalItems, dto.correctItems, score);
   }
 
   listSessions(assignmentId?: number, studentId?: number) {
@@ -432,9 +441,9 @@ export class GameService {
       }
 
       // Step 2: Semantic score via bfa-service /score-semantic (D-04)
+      let keywordsArr: string[] = [];
+      try { keywordsArr = JSON.parse(listenItem.keywords); } catch { /* malformed keywords JSON */ }
       try {
-        let keywordsArr: string[] = [];
-        try { keywordsArr = JSON.parse(listenItem.keywords); } catch { /* malformed keywords JSON */ }
         const semResult = await this.bfa.scoreSemantic(transcript, listenItem.expectedText, keywordsArr);
         semanticScore = semResult.semanticScore;
         matchedKeywords = semResult.matchedKeywords;
@@ -443,14 +452,15 @@ export class GameService {
         this.logger.warn(`[session=${sessionId}] scoreSemantic error: ${(err as Error).message}`);
       }
 
-      // Step 3: Pronunciation scoring — ONLY if semantic >= 0.2 AND keywords matched (D-09)
-      // Skipping BFA entirely when threshold not met (saves Azure PA credit, honors D-09)
-      if (semanticScore >= 0.2 && matchedKeywords.length > 0) {
+      // Step 3: Pronunciation scoring — ONLY if semantic >= 0.2 (D-09)
+      // When keywords present, at least one must match; when none defined, semantic threshold alone gates.
+      const keywordsOk = keywordsArr.length === 0 || matchedKeywords.length > 0;
+      if (semanticScore >= 0.2 && keywordsOk) {
         try {
           const bfaResult = await this.bfa.analyzeSpeaking(
             audioBuffer,
             mimeType ?? 'audio/webm',
-            matchedKeywords.join(' '),
+            listenItem.expectedText,
           );
           pronScore = bfaResult.success ? bfaResult.overall_score : 0;
           if (bfaResult.words && bfaResult.words.length > 0) {

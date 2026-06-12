@@ -46,9 +46,9 @@ describeIf('BfaService.analyze — live Azure PA (pipeline validation)', () => {
   it('cat.m4a — ffmpeg converts m4a, Azure responds, result is contract-compliant', async () => {
     const result = await service.analyze(fixture('cat.m4a'), 'audio/m4a', 'cat', []);
 
-    // Pipeline completed — no ffmpeg failure
+    console.log('[analyze cat]', JSON.stringify(result, null, 2));
+
     expect(result.error).not.toBe('audio_conversion_failed');
-    // Response shape always present regardless of Azure PA quality
     expect(result).toHaveProperty('word', 'cat');
     expect(result).toHaveProperty('score');
     expect(result).toHaveProperty('phonemes');
@@ -60,6 +60,8 @@ describeIf('BfaService.analyze — live Azure PA (pipeline validation)', () => {
   it('bag.m4a — feedback ops (if any) each have valid status', async () => {
     const result = await service.analyze(fixture('bag.m4a'), 'audio/m4a', 'bag', []);
 
+    console.log('[analyze bag]', JSON.stringify(result, null, 2));
+
     expect(result.error).not.toBe('audio_conversion_failed');
     for (const op of result.feedback) {
       expect(['correct', 'similar', 'substituted', 'missing']).toContain(op.status);
@@ -68,6 +70,8 @@ describeIf('BfaService.analyze — live Azure PA (pipeline validation)', () => {
 
   it('raincoat.m4a — multi-syllable word, phoneme timing non-negative when present', async () => {
     const result = await service.analyze(fixture('raincoat.m4a'), 'audio/m4a', 'raincoat', []);
+
+    console.log('[analyze raincoat]', JSON.stringify(result, null, 2));
 
     expect(result.error).not.toBe('audio_conversion_failed');
     for (const ph of result.phonemes) {
@@ -80,6 +84,8 @@ describeIf('BfaService.analyze — live Azure PA (pipeline validation)', () => {
     '%s.m4a — no ffmpeg error, score in [0,100]',
     async (word) => {
       const result = await service.analyze(fixture(`${word}.m4a`), 'audio/m4a', word, []);
+
+      console.log(`[analyze ${word}] score=${result.score} transcript="${result.transcription?.text}" phonemes=${result.phonemes.length} feedback=${JSON.stringify(result.feedback)}`);
 
       expect(result.error).not.toBe('audio_conversion_failed');
       expect(result.score).toBeGreaterThanOrEqual(0);
@@ -102,12 +108,13 @@ describeIf('BfaService.analyzeSpeaking — live Azure PA (pipeline validation)',
   it('cat.m4a as "cat" — no ffmpeg error, total_words=1, result shape correct', async () => {
     const result = await service.analyzeSpeaking(fixture('cat.m4a'), 'audio/m4a', 'cat');
 
+    console.log('[analyzeSpeaking cat]', JSON.stringify(result, null, 2));
+
     expect(result).toHaveProperty('success');
     expect(result).toHaveProperty('total_words', 1);
     expect(result).toHaveProperty('words');
     expect(result.overall_score).toBeGreaterThanOrEqual(0);
     expect(result.overall_score).toBeLessThanOrEqual(100);
-    // success:false with no network error means Azure responded (speech_not_detected from low quality audio is OK)
     if (!result.success) {
       expect(result.transcription.text).toBe('');
     }
@@ -115,6 +122,8 @@ describeIf('BfaService.analyzeSpeaking — live Azure PA (pipeline validation)',
 
   it('raincoat.m4a as "raincoat" — words array has 1 slot (1 target word)', async () => {
     const result = await service.analyzeSpeaking(fixture('raincoat.m4a'), 'audio/m4a', 'raincoat');
+
+    console.log('[analyzeSpeaking raincoat]', JSON.stringify(result, null, 2));
 
     expect(result.total_words).toBe(1);
     if (result.success) {
@@ -138,9 +147,10 @@ describeIf('BfaService.transcribe — live Azure STT (pipeline validation)', () 
   it('cat.m4a — pipeline completes, returns text string and words array', async () => {
     const result = await service.transcribe(fixture('cat.m4a'), 'audio/m4a');
 
+    console.log('[transcribe cat]', JSON.stringify(result, null, 2));
+
     expect(typeof result.text).toBe('string');
     expect(Array.isArray(result.words)).toBe(true);
-    // If words returned, each has valid shape
     for (const w of result.words ?? []) {
       expect(typeof w.word).toBe('string');
       expect(w.start).toBeGreaterThanOrEqual(0);
@@ -151,6 +161,8 @@ describeIf('BfaService.transcribe — live Azure STT (pipeline validation)', () 
   it('test.m4a — pipeline completes, returns contract-compliant shape', async () => {
     const result = await service.transcribe(fixture('test.m4a'), 'audio/m4a');
 
+    console.log('[transcribe test]', JSON.stringify(result, null, 2));
+
     expect(typeof result.text).toBe('string');
     expect(Array.isArray(result.words)).toBe(true);
   }, 60_000);
@@ -159,6 +171,8 @@ describeIf('BfaService.transcribe — live Azure STT (pipeline validation)', () 
     '%s.m4a — no exception thrown, text is string',
     async (word) => {
       const result = await service.transcribe(fixture(`${word}.m4a`), 'audio/m4a');
+
+      console.log(`[transcribe ${word}] text="${result.text}" words=${JSON.stringify(result.words)}`);
 
       expect(typeof result.text).toBe('string');
     }, 60_000,

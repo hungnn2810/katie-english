@@ -14,7 +14,6 @@ export class CompleteSessionDto {
 
 export class SaveReadingResultDto {
   correctItems: number;
-  totalItems: number;
 }
 
 export class SaveVocabResultDto {
