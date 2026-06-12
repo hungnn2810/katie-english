@@ -47,11 +47,11 @@ function toWav(audioBuffer: Buffer, mimeType: string): Buffer {
 }
 
 export function mapPhonemeOps(wordData: Record<string, any>) {
-  const errorType: string = wordData?.PronunciationAssessment?.ErrorType ?? 'None';
+  const errorType: string = wordData?.PronunciationAssessment?.ErrorType ?? wordData?.ErrorType ?? 'None';
   const phonemes: Record<string, any>[] = wordData?.Phonemes ?? [];
   return phonemes.map((p) => {
     const symbol: string = p.Phoneme ?? '';
-    const score: number = p.PronunciationAssessment?.AccuracyScore ?? 0;
+    const score: number = p.PronunciationAssessment?.AccuracyScore ?? p.AccuracyScore ?? 0;
     const offsetTicks: number = p.Offset ?? 0;
     const durationTicks: number = p.Duration ?? 0;
     const start = Math.round((offsetTicks / 10_000_000) * 10000) / 10000;
@@ -85,19 +85,16 @@ export class BfaService {
   private readonly sttBase = `https://${AZURE_SPEECH_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1`;
 
   private async azurePA(wavBuffer: Buffer, referenceText: string): Promise<Record<string, any>> {
-    const params = new URLSearchParams({
-      language: 'en-US',
-      format: 'detailed',
-      'pronunciation.referenceText': referenceText,
-      'pronunciation.granularity': 'Phoneme',
-      'pronunciation.gradingSystem': 'HundredMark',
-      'pronunciation.enableMiscue': 'True',
-    });
+    const params = new URLSearchParams({ language: 'en-US', format: 'detailed' });
+    const paCfg = Buffer.from(
+      JSON.stringify({ ReferenceText: referenceText, GradingSystem: 'HundredMark', Granularity: 'Phoneme', EnableMiscue: true }),
+    ).toString('base64');
     const resp = await axios.post(`${this.sttBase}?${params}`, wavBuffer, {
       headers: {
         'Ocp-Apim-Subscription-Key': AZURE_SPEECH_KEY,
         'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
         Accept: 'application/json',
+        'Pronunciation-Assessment': paCfg,
       },
       timeout: 30_000,
     });
@@ -140,8 +137,17 @@ export class BfaService {
 
     const transcript = ((paResult.DisplayText as string) ?? '').replace(/\.$/, '').trim();
     const nbest = ((paResult.NBest as any[]) ?? [{}])[0] ?? {};
-    const wordData = ((nbest.Words as any[]) ?? [])[0] ?? {};
-    const score = Math.round((wordData.PronunciationAssessment?.AccuracyScore as number) ?? 0);
+    const azureWords: any[] = (nbest.Words as any[]) ?? [];
+    // With enableMiscue=true, extra recognized sounds appear as Insertion words.
+    // Find the word matching the reference (non-Insertion); fall back to first non-Insertion, then first word.
+    const wordData = azureWords.find(
+      (w: any) =>
+        (w.PronunciationAssessment?.ErrorType ?? w.ErrorType ?? 'None') !== 'Insertion' &&
+        (w.Word ?? '').toLowerCase() === word.toLowerCase(),
+    ) ?? azureWords.find((w: any) => (w.PronunciationAssessment?.ErrorType ?? w.ErrorType ?? 'None') !== 'Insertion')
+      ?? azureWords[0]
+      ?? {};
+    const score = Math.round(Number(wordData.PronunciationAssessment?.AccuracyScore ?? wordData.AccuracyScore ?? 0));
     const ops = mapPhonemeOps(wordData);
     const phonemes = ops
       .filter((op) => op.status !== 'missing')
@@ -180,17 +186,17 @@ export class BfaService {
 
     const transcript = ((paResult.DisplayText as string) ?? '').replace(/\.$/, '').trim();
     const nbest = ((paResult.NBest as any[]) ?? [{}])[0] ?? {};
-    const overallScore = Math.round((nbest.PronunciationAssessment?.AccuracyScore as number) ?? 0);
+    const overallScore = Math.round(Number(nbest.PronunciationAssessment?.AccuracyScore ?? nbest.AccuracyScore ?? 0));
     const azureWords: any[] = (nbest.Words as any[]) ?? [];
 
     // Filter student insertions so positional index aligns with targetWords
     const alignedWords = azureWords.filter(
-      (w: any) => (w.PronunciationAssessment?.ErrorType ?? 'None') !== 'Insertion',
+      (w: any) => (w.PronunciationAssessment?.ErrorType ?? w.ErrorType ?? 'None') !== 'Insertion',
     );
 
     const wordResults = targetWords.map((tw, i) => {
       const aw = alignedWords[i] ?? {};
-      const wScore = Math.round((aw.PronunciationAssessment?.AccuracyScore as number) ?? 0);
+      const wScore = Math.round(Number(aw.PronunciationAssessment?.AccuracyScore ?? aw.AccuracyScore ?? 0));
       const ops = mapPhonemeOps(aw);
       const phonemes = ops
         .filter((op) => op.status !== 'missing')
