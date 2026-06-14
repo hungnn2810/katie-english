@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   getAdminClasses,
   getTeachers,
@@ -11,7 +11,8 @@ import {
   ScheduleSlot,
   ClassStatus,
 } from '@/lib/admin-portal-api';
-import { CheckCircle2, Search } from 'lucide-react';
+import { useToast } from '@/lib/toast-context';
+import { Search } from 'lucide-react';
 import { DATE_FORMAT } from '@/lib/datetime';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -24,7 +25,6 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -66,6 +66,7 @@ function EditClassModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { showToast } = useToast();
   const [form, setForm] = useState<AdminUpdateClassInput>({
     name: editing.name,
     code: editing.code,
@@ -74,7 +75,6 @@ function EditClassModal({
     status: editing.status,
     scheduleSlots: Array.isArray(editing.scheduleSlots) ? editing.scheduleSlots : [],
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   function setField<K extends keyof AdminUpdateClassInput>(k: K, v: AdminUpdateClassInput[K]) {
@@ -101,14 +101,13 @@ function EditClassModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       await updateAdminClass(editing.id, form);
       onSaved();
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -230,7 +229,6 @@ function EditClassModal({
           </DialogContent>
 
           <DialogActions sx={{ px: 4, pb: 3.5, pt: 2.5, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', gap: 0 }}>
-            {error && <Alert severity="error" sx={{ borderRadius: 2, mb: 1.5, width: '100%' }}>{error}</Alert>}
             <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
               <Button type="button" variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3, fontWeight: 600 }}>Keep class</Button>
               <Button
@@ -261,18 +259,17 @@ function DeleteConfirmDialog({
   onClose: () => void;
   onDeleted: () => void;
 }) {
+  const { showToast } = useToast();
   const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState('');
 
   async function handleDelete() {
     setDeleting(true);
-    setError('');
     try {
       await deleteAdminClass(cls.id);
       onDeleted();
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to delete class. Please try again.');
+      showToast(err instanceof Error ? err.message : 'Failed to delete class. Please try again.', 'error');
       setDeleting(false);
     }
   }
@@ -286,7 +283,6 @@ function DeleteConfirmDialog({
         <Typography variant="body2" color="text.secondary">
           Delete class? All homework and sessions in this class will be permanently deleted.
         </Typography>
-        {error && <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>{error}</Alert>}
       </DialogContent>
       <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
         <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3, fontWeight: 600 }}>Keep class</Button>
@@ -308,31 +304,22 @@ function DeleteConfirmDialog({
 // ─── ClassesPage ─────────────────────────────────────────────────────────────
 
 export default function ClassesPage() {
+  const { showToast } = useToast();
   const [classes, setClasses] = useState<AdminClassItem[]>([]);
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [search, setSearch] = useState('');
   const [teacherFilter, setTeacherFilter] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [editing, setEditing] = useState<AdminClassItem | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<AdminClassItem | null>(null);
-  const [toast, setToast] = useState('');
-
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function showToast(msg: string) {
-    setToast(msg);
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
-  }
 
   const loadClasses = useCallback(async (filter: string) => {
     setLoading(true);
-    setError('');
     try {
       const data = await getAdminClasses(filter === 'ALL' ? undefined : Number(filter));
       setClasses(data);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load classes.');
+      showToast(err instanceof Error ? err.message : 'Failed to load classes.', 'error');
     } finally {
       setLoading(false);
     }
@@ -368,12 +355,6 @@ export default function ClassesPage() {
           onClose={() => setConfirmDelete(null)}
           onDeleted={() => { loadClasses(teacherFilter); showToast('Class deleted.'); }}
         />
-      )}
-
-      {toast && (
-        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1500, bgcolor: '#0F172A', color: 'white', fontSize: 14, fontWeight: 600, px: 2.5, py: 1.5, borderRadius: 4, boxShadow: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CheckCircle2 style={{ width: 16, height: 16, color: '#4ADE80' }} /> {toast}
-        </Box>
       )}
 
       {/* Toolbar */}
@@ -426,9 +407,7 @@ export default function ClassesPage() {
         </Button>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
-
-      {!loading && filtered.length === 0 && !error ? (
+      {!loading && filtered.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary' }}>
           {teacherFilter === 'ALL' ? (
             <>

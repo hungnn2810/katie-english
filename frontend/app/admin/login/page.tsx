@@ -1,23 +1,25 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
+import { useToast } from '@/lib/toast-context';
+import { colors } from '@/lib/colors';
 
-const ACCENT = '#4F9DFF';
+const ACCENT = colors.primary;
 
 export default function AdminLoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       const res = await fetch('/api/auth/admin-login', {
@@ -29,12 +31,9 @@ export default function AdminLoginPage() {
         const d = await res.json();
         throw new Error(d.error ?? 'Invalid email or password');
       }
-      window.location.href = (process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? '') + '/admin';
+      router.push('/admin');
     } catch {
-      // D-14 + T-06-02-04: never reveal which field failed.
-      // Also handles HTTP 429 throttle responses — UI shows the same generic message
-      // so the rate-limit counter is never exposed to the user (M-02).
-      setError('Invalid email or password');
+      showToast('Invalid email or password', 'error');
     } finally {
       setLoading(false);
     }
@@ -103,7 +102,7 @@ export default function AdminLoginPage() {
               size="small"
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
-            {error && <Alert severity="error" sx={{ mt: 1, borderRadius: 2 }}>{error}</Alert>}
+
           </Box>
 
           <Button

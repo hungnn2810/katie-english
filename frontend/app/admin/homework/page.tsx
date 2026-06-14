@@ -7,13 +7,13 @@ import {
   AdminHomeworkItem,
   TeacherItem,
 } from '@/lib/admin-portal-api';
-import { CheckCircle2, Search } from 'lucide-react';
+import { useToast } from '@/lib/toast-context';
+import { Search } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -57,30 +57,24 @@ const COLUMNS = [
 // ─── HomeworkPage ─────────────────────────────────────────────────────────────
 
 export default function HomeworkPage() {
+  const { showToast } = useToast();
   const [homeworks, setHomeworks] = useState<AdminHomeworkItem[]>([]);
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [teacherFilter, setTeacherFilter] = useState('ALL');
   const [confirmDelete, setConfirmDelete] = useState<AdminHomeworkItem | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [toast, setToast] = useState('');
-
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(''), 3000);
-  }
 
   useEffect(() => {
     setLoading(true);
-    setError('');
     getAdminHomework()
       .then(setHomeworks)
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+        showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
       })
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -94,9 +88,9 @@ export default function HomeworkPage() {
       await deleteAdminHomework(confirmDelete.id);
       setHomeworks((prev) => prev.filter((h) => h.id !== confirmDelete.id));
       setConfirmDelete(null);
-      showToast('Homework deleted.');
+      showToast('Homework deleted.', 'success');
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to delete homework. Please try again.');
+      showToast(err instanceof Error ? err.message : 'Failed to delete homework. Please try again.', 'error');
     } finally {
       setDeleting(false);
     }
@@ -137,13 +131,6 @@ export default function HomeworkPage() {
             </Button>
           </DialogActions>
         </Dialog>
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1500, bgcolor: '#0F172A', color: 'white', fontSize: 14, fontWeight: 600, px: 2.5, py: 1.5, borderRadius: 4, boxShadow: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CheckCircle2 style={{ width: 16, height: 16, color: '#4ADE80' }} /> {toast}
-        </Box>
       )}
 
       {/* Toolbar */}
@@ -187,11 +174,8 @@ export default function HomeworkPage() {
         </Select>
       </Box>
 
-      {/* Error */}
-      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
-
       {/* Empty state */}
-      {!loading && filtered.length === 0 && !error && (
+      {!loading && filtered.length === 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No homework yet</Typography>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Homework templates are created by teachers from their dashboard.</Typography>

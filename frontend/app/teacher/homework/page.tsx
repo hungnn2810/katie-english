@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -19,9 +19,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
+import { useToast } from '@/lib/toast-context';
 import { Plus, X, Loader2, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2, Headphones, Pencil, Trash2, Eye } from 'lucide-react';
 import { parseApiDateTime } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
@@ -51,7 +51,7 @@ function HomeworkModal({
   onNavigateToVocab: () => void;
   onNavigateToListen: () => void;
 }) {
-  const [error, setError] = useState('');
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [newPartName, setNewPartName] = useState('');
   const [newWordTexts, setNewWordTexts] = useState<Record<number, string>>({});
@@ -131,13 +131,12 @@ function HomeworkModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
     if (form.type === 'PHONICS') {
-      if (parts.length === 0) { setError('Add at least one part.'); return; }
-      if (parts.some((p) => p.words.length === 0)) { setError('Each part needs at least one word.'); return; }
+      if (parts.length === 0) { showToast('Add at least one part.', 'error'); return; }
+      if (parts.some((p) => p.words.length === 0)) { showToast('Each part needs at least one word.', 'error'); return; }
     }
     if (form.type === 'SPEAKING' && !form.speakingText?.trim()) {
-      setError(form.speakingMode === 'FREE_SPEAK' ? 'Enter keywords (comma-separated).' : 'Enter the text to speak.');
+      showToast(form.speakingMode === 'FREE_SPEAK' ? 'Enter keywords (comma-separated).' : 'Enter the text to speak.', 'error');
       return;
     }
     setLoading(true);
@@ -157,7 +156,7 @@ function HomeworkModal({
       onSaved();
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save.');
+      showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
     } finally {
       setLoading(false);
     }
@@ -484,7 +483,6 @@ function HomeworkModal({
         </DialogContent>
 
         <DialogActions sx={{ px: 4, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
-          {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 1.5 }}>{error}</Alert>}
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Button type="button" variant="outlined" onClick={onClose}
               sx={{ flex: 1, borderRadius: 3, color: 'text.secondary', borderColor: 'divider' }}>
@@ -517,9 +515,9 @@ function AssignModal({
   const nowLocalValue = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
     .toISOString()
     .slice(0, 16);
+  const { showToast } = useToast();
   const [selectedClassIds, setSelectedClassIds] = useState<number[]>([]);
   const [endDate, setEndDate] = useState(nowLocalValue);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   function toggleClass(id: number) {
@@ -528,9 +526,8 @@ function AssignModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
-    if (selectedClassIds.length === 0) { setError('Select at least one class.'); return; }
-    if (!endDate) { setError('Set an end date.'); return; }
+    if (selectedClassIds.length === 0) { showToast('Select at least one class.', 'error'); return; }
+    if (!endDate) { showToast('Set an end date.', 'error'); return; }
     setLoading(true);
     try {
       const input: CreateAssignmentInput = { homeworkId: homework.id, classIds: selectedClassIds, endDate };
@@ -538,7 +535,7 @@ function AssignModal({
       onSaved();
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to assign.');
+      showToast(err instanceof Error ? err.message : 'Failed to assign.', 'error');
     } finally {
       setLoading(false);
     }
@@ -614,7 +611,6 @@ function AssignModal({
         </DialogContent>
 
         <DialogActions sx={{ px: 4, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
-          {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 1.5 }}>{error}</Alert>}
           <Box sx={{ display: 'flex', gap: 1.5 }}>
             <Button type="button" variant="outlined" onClick={onClose}
               sx={{ flex: 1, borderRadius: 3, color: 'text.secondary', borderColor: 'divider' }}>
@@ -638,6 +634,7 @@ const emptyForm = (): CreateHomeworkInput => ({ type: 'PHONICS', speakingMode: '
 
 export default function HomeworkPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [list, setList] = useState<HomeworkItem[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [form, setForm] = useState(emptyForm());
@@ -647,14 +644,6 @@ export default function HomeworkPage() {
   const [typeFilter, setTypeFilter] = useState<HomeworkType | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [toast, setToast] = useState('');
-
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function showToast(msg: string) {
-    setToast(msg);
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
-  }
 
   const load = () => getHomeworkList().then(setList).catch(() => {});
   useEffect(() => { load(); getClasses().then(setClasses); }, []);
@@ -698,13 +687,13 @@ export default function HomeworkPage() {
           form={form}
           setForm={setForm}
           onClose={closeModal}
-          onSaved={() => { load(); showToast(editingId !== null ? 'Homework updated!' : 'Homework created!'); }}
+          onSaved={() => { load(); showToast(editingId !== null ? 'Homework updated!' : 'Homework created!', 'success'); }}
           onNavigateToReading={() => router.push('/teacher/homework/create/reading')}
           onNavigateToVocab={() => router.push('/teacher/homework/create/vocabulary')}
           onNavigateToListen={() => router.push('/teacher/homework/create/listen')}
         />
       )}
-      {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={() => { load(); showToast('Homework assigned!'); }} />}
+      {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={() => { load(); showToast('Homework assigned!', 'success'); }} />}
 
       {/* Action row: search/filter (left) + Create Homework (right) */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, mb: '16px', flexWrap: 'wrap' }}>
@@ -827,7 +816,7 @@ export default function HomeworkPage() {
                         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
                         <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
                         <Button size="small" variant="contained"
-                          onClick={async () => { try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.'); } catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.'); } }}
+                          onClick={async () => { try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.', 'success'); } catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.', 'error'); } }}
                           sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
                       </Box>
                     ) : (
@@ -859,12 +848,6 @@ export default function HomeworkPage() {
         </TableShell>
       )}
 
-      {toast && (
-        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'white', border: '1px solid', borderColor: 'divider', borderRadius: '16px', boxShadow: 4, px: 2, py: 1.5, fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
-          <CheckCircle2 size={16} style={{ color: '#10b981' }} />
-          {toast}
-        </Box>
-      )}
     </Box>
   );
 }

@@ -1,16 +1,16 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   getTeachers, createTeacher, updateTeacher, disableTeacher, enableTeacher,
   TeacherItem, CreateTeacherInput, UpdateTeacherInput,
 } from '@/lib/admin-portal-api';
-import { CheckCircle2, Search } from 'lucide-react';
+import { useToast } from '@/lib/toast-context';
+import { Search } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import FormLabel from '@mui/material/FormLabel';
 import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -39,16 +39,15 @@ function TeacherModal({ editing, onClose, onSaved }: {
   onClose: () => void;
   onSaved: (msg: string) => void;
 }) {
+  const { showToast } = useToast();
   const [name, setName] = useState(editing?.name ?? '');
   const [email, setEmail] = useState(editing?.upn ?? '');
   const [phone, setPhone] = useState(editing?.phone ?? '');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       if (editing) {
@@ -63,7 +62,7 @@ function TeacherModal({ editing, onClose, onSaved }: {
       }
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save. Please try again.');
+      showToast(err instanceof Error ? err.message : 'Failed to save. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -101,7 +100,6 @@ function TeacherModal({ editing, onClose, onSaved }: {
             </FormLabel>
             <TextField id="teacher-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editing ? 'Leave blank to keep current' : 'Password'} required={!editing} fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
           </Box>
-          {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
         </DialogContent>
         <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
           <Button type="button" variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Keep teacher</Button>
@@ -127,12 +125,11 @@ function ConfirmDialog({ target, onClose, onConfirmed }: {
   onClose: () => void;
   onConfirmed: () => void;
 }) {
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const isDisabling = !target.disabled;
 
   async function handleConfirm() {
-    setError('');
     setLoading(true);
     try {
       if (isDisabling) {
@@ -143,7 +140,7 @@ function ConfirmDialog({ target, onClose, onConfirmed }: {
       onConfirmed();
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed. Please try again.');
+      showToast(err instanceof Error ? err.message : 'Failed. Please try again.', 'error');
       setLoading(false);
     }
   }
@@ -159,7 +156,6 @@ function ConfirmDialog({ target, onClose, onConfirmed }: {
             ? `Disable teacher? ${target.name ?? target.upn} will no longer be able to log in until re-enabled.`
             : `Enable teacher? ${target.name ?? target.upn} will be able to log in again.`}
         </Typography>
-        {error && <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>{error}</Alert>}
       </DialogContent>
       <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
         <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Keep teacher</Button>
@@ -239,36 +235,27 @@ function ActionCell({ teacher, onEdit, onConfirm }: {
 // ─── Teachers Page ──────────────────────────────────────────────────────────
 
 export default function TeachersPage() {
+  const { showToast } = useToast();
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<TeacherItem | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<TeacherItem | null>(null);
-  const [toast, setToast] = useState('');
 
   async function loadTeachers() {
     setLoading(true);
-    setError('');
     try {
       const data = await getTeachers();
       setTeachers(data);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load teachers.');
+      showToast(err instanceof Error ? err.message : 'Failed to load teachers.', 'error');
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => { loadTeachers(); }, []);
-
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function showToast(msg: string) {
-    setToast(msg);
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
-  }
 
   const filtered = teachers.filter((t) => {
     if (!search) return true;
@@ -292,13 +279,6 @@ export default function TeachersPage() {
           onClose={() => setConfirmTarget(null)}
           onConfirmed={() => { loadTeachers(); showToast('Changes saved.'); }}
         />
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1500, bgcolor: '#0F172A', color: 'white', fontSize: 14, fontWeight: 600, px: 2.5, py: 1.5, borderRadius: 4, boxShadow: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CheckCircle2 style={{ width: 16, height: 16, color: '#4ADE80' }} /> {toast}
-        </Box>
       )}
 
       {/* Toolbar */}
@@ -334,11 +314,8 @@ export default function TeachersPage() {
         </Button>
       </Box>
 
-      {/* Error */}
-      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
-
       {/* Empty state */}
-      {!loading && filtered.length === 0 && !error ? (
+      {!loading && filtered.length === 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>
             {search ? 'No teachers match your search' : 'No teachers yet'}

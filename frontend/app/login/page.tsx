@@ -14,7 +14,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Alert from '@mui/material/Alert';
+import { useToast } from '@/lib/toast-context';
 
 const ACCENT = '#F0623A';
 
@@ -32,11 +32,10 @@ const FEATURES = [
 ];
 
 export default function LoginPage() {
+  const { showToast } = useToast();
   const [role, setRole] = useState<Role | null>(null);
   const [upn, setUpn] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [reg, setReg] = useState(emptyReg());
@@ -49,23 +48,23 @@ export default function LoginPage() {
 
   async function handleForgot(e: React.FormEvent) {
     e.preventDefault();
-    setError(''); setLoading(true);
+    setLoading(true);
     try {
       await forgotPassword(forgotUpn);
       setForgotDone(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to send request');
+      showToast(err instanceof Error ? err.message : 'Failed to send request', 'error');
     } finally { setLoading(false); }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError(''); setNotice(''); setLoading(true);
+    setLoading(true);
     try {
       if (mode === 'register') {
         const parentPhone = reg.parents[0]?.phoneNumber ?? upn;
         await register({ upn: parentPhone, password, ...reg });
-        setNotice('Account created. A teacher must approve your account before you can sign in.');
+        showToast('Account created. A teacher must approve your account before you can sign in.', 'info');
         setMode('login');
         setPassword('');
         setReg(emptyReg());
@@ -88,7 +87,7 @@ export default function LoginPage() {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '';
-      setError(message || (mode === 'register' ? 'Registration failed' : 'Invalid credentials'));
+      showToast(message || (mode === 'register' ? 'Registration failed' : 'Invalid credentials'), 'error');
     } finally { setLoading(false); }
   }
 
@@ -193,8 +192,8 @@ export default function LoginPage() {
             <Box>
               <Button
                 onClick={() => {
-                  if (mode === 'forgot') { setMode('login'); setForgotDone(false); setForgotUpn(''); setError(''); }
-                  else { setRole(null); setError(''); setNotice(''); }
+                  if (mode === 'forgot') { setMode('login'); setForgotDone(false); setForgotUpn(''); }
+                  else { setRole(null); }
                 }}
                 sx={{
                   color: '#64748B', fontSize: 14, mb: 4, display: 'flex', alignItems: 'center', gap: 0.75,
@@ -254,7 +253,6 @@ export default function LoginPage() {
                         required
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                       />
-                      {error && <Alert severity="error" sx={{ borderRadius: 1 }}>{error}</Alert>}
                       <Button
                         type="submit"
                         variant="contained"
@@ -375,9 +373,6 @@ export default function LoginPage() {
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
                   />
 
-                  {notice && <Alert severity="success" sx={{ borderRadius: 1 }}>{notice}</Alert>}
-                  {error && <Alert severity="error" sx={{ borderRadius: 1 }}>{error}</Alert>}
-
                   <Button
                     type="submit"
                     variant="contained"
@@ -399,7 +394,7 @@ export default function LoginPage() {
                     <>
                       <Button
                         type="button"
-                        onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); setNotice(''); }}
+                        onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); }}
                         fullWidth
                         sx={{ fontSize: 14, color: '#64748B', '&:hover': { color: '#0F172A' }, textTransform: 'none', py: 0.5 }}
                       >
@@ -408,7 +403,7 @@ export default function LoginPage() {
                       {mode === 'login' && (
                         <Button
                           type="button"
-                          onClick={() => { setMode('forgot'); setError(''); setForgotDone(false); }}
+                          onClick={() => { setMode('forgot'); setForgotDone(false); }}
                           fullWidth
                           sx={{ fontSize: 14, fontWeight: 500, color: ACCENT, '&:hover': { opacity: 0.7 }, textTransform: 'none', py: 0.5 }}
                         >

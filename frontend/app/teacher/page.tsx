@@ -5,13 +5,14 @@ import { getClasses, getStudents, getHomeworkList, getPendingStudents, getPasswo
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import Alert from '@mui/material/Alert';
 import Card from '@mui/material/Card';
 import CircularProgress from '@mui/material/CircularProgress';
 import { RefreshCw, School, Users, BookOpen, Video, ChevronRight, AlertTriangle } from 'lucide-react';
+import { useToast } from '@/lib/toast-context';
 import StatCard from '@/components/ui/StatCard';
+import { colors } from '@/lib/colors';
 
-const ACCENT = '#F0623A';
+const ACCENT = colors.teacherAccent;
 const DAY_ORDER = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 function formatRelativeTime(date: Date): string {
@@ -65,11 +66,10 @@ export default function TeacherDashboard() {
   const [pendingCount, setPendingCount] = useState(0);
   const [resetCount, setResetCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   async function loadDashboard() {
     setLoading(true);
-    setError('');
     try {
       const [c, s, h, pending, resets] = await Promise.all([
         getClasses(), getStudents(), getHomeworkList(),
@@ -88,7 +88,7 @@ export default function TeacherDashboard() {
         .sort((a, b) => a.nextAt.getTime() - b.nextAt.getTime());
       setUpcomingClasses(withNext);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard.');
+      showToast(err instanceof Error ? err.message : 'Failed to load dashboard.', 'error');
     } finally {
       setLoading(false);
     }
@@ -100,22 +100,6 @@ export default function TeacherDashboard() {
 
   return (
     <Box>
-      {error && (
-        <Alert
-          severity="error"
-          sx={{ mb: '20px', borderRadius: '12px' }}
-          action={
-            <Button onClick={loadDashboard} size="small" variant="contained"
-              sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontSize: 12, gap: 0.5 }}>
-              <RefreshCw size={14} />
-              Retry
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
-      )}
-
       {/* Pending actions banner */}
       {(pendingCount > 0 || resetCount > 0) && (
         <Box sx={{ mb: '20px', borderRadius: '12px', border: '1px solid #FCD34D', bgcolor: '#FFFBEB', px: '16px', py: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>

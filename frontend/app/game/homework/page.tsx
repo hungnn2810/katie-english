@@ -5,8 +5,9 @@ import AuthGate from '@/components/AuthGate';
 import { getAvailableHomework, startSession, AssignmentItem, HomeworkType } from '@/lib/admin-api';
 import { AuthUser, clearAuth, changePassword } from '@/lib/auth';
 import { gradients } from '@/lib/colors';
-import { Hash, Mic, BookOpen, ImageIcon, Lock, CheckCircle2, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap, Headphones } from 'lucide-react';
+import { Hash, Mic, BookOpen, ImageIcon, Lock, RefreshCw, Play, PartyPopper, School, AlertTriangle, Star, Trophy, Calendar, Zap, Headphones } from 'lucide-react';
 import { parseApiDateTime } from '@/lib/datetime';
+import { useToast } from '@/lib/toast-context';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -15,7 +16,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
-import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -38,34 +38,30 @@ const CARD_GRADS = [
 
 function PageContent({ user }: { user: AuthUser }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [assignments, setAssignments] = useState<AssignmentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState<number | null>(null);
-  const [error, setError] = useState('');
   const [showPwModal, setShowPwModal] = useState(false);
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
-  const [pwError, setPwError] = useState('');
-  const [pwSuccess, setPwSuccess] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
-    setPwError(''); setPwSuccess(false); setPwLoading(true);
+    setPwLoading(true);
     try {
       await changePassword(currentPw, newPw);
-      setPwSuccess(true);
       setCurrentPw(''); setNewPw('');
-      setTimeout(() => { setShowPwModal(false); setPwSuccess(false); }, 2000);
+      setShowPwModal(false);
+      showToast('Password changed!', 'success');
     } catch (err: unknown) {
-      setPwError(err instanceof Error ? err.message : 'Failed to change password');
+      showToast(err instanceof Error ? err.message : 'Failed to change password', 'error');
     } finally { setPwLoading(false); }
   }
 
   function closePwModal() {
     setShowPwModal(false);
-    setPwError('');
-    setPwSuccess(false);
     setCurrentPw('');
     setNewPw('');
   }
@@ -78,13 +74,14 @@ function PageContent({ user }: { user: AuthUser }) {
         const bDate = parseApiDateTime(b.endDate)?.getTime() ?? 0;
         return aDate - bDate;
       })))
-      .catch(() => setError('Failed to load homework'))
+      .catch(() => showToast('Failed to load homework', 'error'))
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.studentId]);
 
   async function handleStart(assignmentId: number) {
     if (!user.studentId) return;
-    setStarting(assignmentId); setError('');
+    setStarting(assignmentId);
     try {
       const session = await startSession(user.studentId, assignmentId);
       const hwType = session.assignment?.homework?.type;
@@ -96,7 +93,7 @@ function PageContent({ user }: { user: AuthUser }) {
         router.push(`/game/session/${session.id}`);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to start');
+      showToast(err instanceof Error ? err.message : 'Failed to start', 'error');
       setStarting(null);
     }
   }
@@ -125,52 +122,42 @@ function PageContent({ user }: { user: AuthUser }) {
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ px: 3.5, py: 3 }}>
-          {pwSuccess ? (
-            <Box sx={{ textAlign: 'center', py: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
-                <CheckCircle2 size={48} color="#10b981" />
-              </Box>
-              <Typography sx={{ fontWeight: 900, fontSize: 18 }}>Password updated!</Typography>
-            </Box>
-          ) : (
-            <Box component="form" onSubmit={handleChangePassword} sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-              <TextField
-                type="password"
-                label="Current Password"
-                size="small"
-                fullWidth
-                placeholder="••••••••"
-                value={currentPw}
-                onChange={(e) => setCurrentPw(e.target.value)}
-                required
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-              />
-              <TextField
-                type="password"
-                label="New Password"
-                size="small"
-                fullWidth
-                placeholder="Min 6 characters"
-                value={newPw}
-                onChange={(e) => setNewPw(e.target.value)}
-                required
-                slotProps={{ htmlInput: { minLength: 6 } }}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-              />
-              {pwError && <Alert severity="error" sx={{ borderRadius: 3 }}>{pwError}</Alert>}
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={pwLoading}
-                fullWidth
-                sx={{ py: 1.5, borderRadius: 4, fontWeight: 900, background: gradients.pinkHighlight, '&:hover': { opacity: 0.9, background: gradients.pinkHighlight } }}
-              >
-                {pwLoading
-                  ? <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><CircularProgress size={16} color="inherit" /> Updating...</Box>
-                  : <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><CheckCircle2 size={16} /> Update Password</Box>}
-              </Button>
-            </Box>
-          )}
+          <Box component="form" onSubmit={handleChangePassword} sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              type="password"
+              label="Current Password"
+              size="small"
+              fullWidth
+              placeholder="••••••••"
+              value={currentPw}
+              onChange={(e) => setCurrentPw(e.target.value)}
+              required
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+            />
+            <TextField
+              type="password"
+              label="New Password"
+              size="small"
+              fullWidth
+              placeholder="Min 6 characters"
+              value={newPw}
+              onChange={(e) => setNewPw(e.target.value)}
+              required
+              slotProps={{ htmlInput: { minLength: 6 } }}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={pwLoading}
+              fullWidth
+              sx={{ py: 1.5, borderRadius: 4, fontWeight: 900, background: gradients.pinkHighlight, '&:hover': { opacity: 0.9, background: gradients.pinkHighlight } }}
+            >
+              {pwLoading
+                ? <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><CircularProgress size={16} color="inherit" /> Updating...</Box>
+                : 'Update Password'}
+            </Button>
+          </Box>
         </DialogContent>
       </Dialog>
 
@@ -246,14 +233,7 @@ function PageContent({ user }: { user: AuthUser }) {
           </Box>
         )}
 
-        {error && (
-          <Box sx={{ bgcolor: 'rgba(255,123,123,0.2)', border: '1px solid rgba(255,123,123,0.5)', borderRadius: 3, px: 3, py: 2, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <AlertTriangle size={16} color="white" />
-            <Typography sx={{ color: 'white', fontWeight: 600 }}>{error}</Typography>
-          </Box>
-        )}
-
-        {!loading && user.studentId && assignments.length === 0 && !error && (
+        {!loading && user.studentId && assignments.length === 0 && (
           <Box sx={{ textAlign: 'center', py: '70px' }}>
             <Box sx={{ width: 76, height: 76, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: '18px' }}>
               <PartyPopper size={36} color="white" />

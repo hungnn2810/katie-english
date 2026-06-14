@@ -1,27 +1,29 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { GraduationCap, Mic } from 'lucide-react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { teacherTheme } from '@/lib/theme';
 import { setAuth } from '@/lib/auth';
+import { useToast } from '@/lib/toast-context';
+import { colors } from '@/lib/colors';
 
-const ACCENT = '#F0623A';
+const ACCENT = colors.teacherAccent;
 
 export default function TeacherLoginPage() {
+  const router = useRouter();
   const [upn, setUpn] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       const res = await fetch('/api/auth/teacher-login', {
@@ -34,9 +36,9 @@ export default function TeacherLoginPage() {
         throw new Error(d.error ?? 'Invalid credentials');
       }
       setAuth(d.token, d.user);
-      window.location.href = (process.env.NEXT_PUBLIC_APP_ORIGIN ?? '') + '/teacher';
+      router.push('/teacher');
     } catch {
-      setError('Invalid credentials');
+      showToast('Invalid credentials', 'error');
     } finally {
       setLoading(false);
     }
@@ -122,7 +124,7 @@ export default function TeacherLoginPage() {
                 size="small"
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 1 } }}
               />
-              {error && <Alert severity="error" sx={{ mt: 1, borderRadius: 1 }}>{error}</Alert>}
+
             </Box>
 
             <Button

@@ -9,8 +9,8 @@ import ResultBanner from '@/components/ResultBanner';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useToast } from '@/lib/toast-context';
 
 type GameState = 'loading' | 'playing' | 'submitted';
 
@@ -20,22 +20,21 @@ export default function GamePage() {
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [state, setState] = useState<GameState>('loading');
   const [level, setLevel] = useState(1);
-  const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   const loadWord = useCallback(async (lvl: number) => {
     setState('loading');
     setSelected([]);
     setResult(null);
-    setError('');
     try {
       const data = await fetchRandomWord(lvl);
       setWord(data);
       setState('playing');
     } catch {
-      setError('Failed to load word. Is the backend running?');
+      showToast('Failed to load word. Is the backend running?', 'error');
       setState('playing');
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     loadWord(level);
@@ -68,7 +67,7 @@ export default function GamePage() {
       setResult(res);
       setState('submitted');
     } catch {
-      setError('Failed to submit. Try again.');
+      showToast('Failed to submit. Try again.', 'error');
     }
   };
 
@@ -104,9 +103,7 @@ export default function GamePage() {
             </Box>
           </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>
-          )}
+
 
           {state === 'loading' && (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>

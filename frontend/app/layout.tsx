@@ -4,6 +4,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { baseTheme } from '@/lib/theme';
+import { ToastProvider } from '@/lib/toast-context';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -23,7 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppRouterCacheProvider>
           <ThemeProvider theme={baseTheme}>
             <CssBaseline />
-            {children}
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

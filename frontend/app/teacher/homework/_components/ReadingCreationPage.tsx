@@ -32,6 +32,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useToast } from '@/lib/toast-context';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -480,11 +481,12 @@ function SortableActivityCard({
 
 export function ReadingCreationPage({ editId }: { editId?: number }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const editMode = typeof editId === 'number';
 
   const [name, setName] = useState('');
   const [activities, setActivities] = useState<ReadingActivityDraft[]>([]);
-  const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [initialLoading, setInitialLoading] = useState(editMode);
@@ -522,7 +524,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
         });
         setActivities(drafts);
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Failed to load homework.');
+        showToast(err instanceof Error ? err.message : 'Failed to load homework.', 'error');
       } finally {
         setInitialLoading(false);
       }
@@ -604,12 +606,12 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
   }
 
   async function handleSave() {
-    const validationError = validate();
-    if (validationError) {
-      setError(validationError);
+    const vErr = validate();
+    if (vErr) {
+      setValidationError(vErr);
       return;
     }
-    setError('');
+    setValidationError('');
     setLoading(true);
 
     const payload: CreateReadingHomeworkInput = {
@@ -625,7 +627,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
       }
       router.push('/teacher/homework');  // D-03: no AssignModal auto-open
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save.');
+      showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
     } finally {
       setLoading(false);
     }
@@ -696,7 +698,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
       </Box>
 
       {/* Error display */}
-      {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{error}</Alert>}
+      {validationError && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{validationError}</Alert>}
       {uploadError && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{uploadError}</Alert>}
 
       {/* Activities section */}

@@ -6,6 +6,19 @@ import { BfaAnalyzeResult } from '../bfa/bfa.dto';
 import { WordRepository } from '../word/word.repository';
 import { StartSessionDto, SavePhonicsResultDto, SaveReadingResultDto, SaveVocabResultDto, SaveListenResultDto } from './game.dto';
 import { calcSpeakingScore, calcFreeSpeak } from './game.scoring';
+
+interface HwWithVocabItems {
+  vocabItems: { id: number; word: string; phonemes: string | null }[];
+}
+interface HwWithListenItems {
+  listenItems: { id: number; keywords: string; expectedText: string }[];
+}
+interface HwWithReadingActivities {
+  readingActivities: { matchPairs: unknown[]; fillBlanks: unknown[] }[];
+}
+interface SessionWithListenResults {
+  listenResults: { compositeScore: unknown }[];
+}
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenService } from '../auth/jwt.service';
 
@@ -325,7 +338,7 @@ export class GameService {
     if (hw.type !== 'VOCABULARY') throw new BadRequestException('Homework is not a VOCABULARY type');
 
     // Verify the VocabItem belongs to this homework (T-08-03: cross-homework tamper guard)
-    const vocabItems = (hw as any).vocabItems as { id: number; word: string; phonemes: string | null }[] ?? [];
+    const vocabItems = (hw as unknown as HwWithVocabItems).vocabItems ?? [];
     const vocabItem = vocabItems.find((vi) => vi.id === dto.vocabItemId);
     if (!vocabItem) throw new BadRequestException(`VocabItem ${dto.vocabItemId} not found in this homework`);
 
@@ -382,7 +395,7 @@ export class GameService {
     }
 
     // Compute totalItems server-side so client cannot inflate it
-    const readingActivities = (hw as any).readingActivities as { matchPairs: unknown[]; fillBlanks: unknown[] }[] ?? [];
+    const readingActivities = (hw as unknown as HwWithReadingActivities).readingActivities ?? [];
     const totalItems = readingActivities.reduce(
       (sum: number, act: { matchPairs: unknown[]; fillBlanks: unknown[] }) =>
         sum + (act.matchPairs?.length ?? 0) + (act.fillBlanks?.length ?? 0),
@@ -419,7 +432,7 @@ export class GameService {
     const hw = session.assignment.homework;
     if (hw.type !== 'LISTEN') throw new BadRequestException('Homework is not a LISTEN type');
 
-    const listenItems = (hw as any).listenItems as { id: number; keywords: string; expectedText: string }[] ?? [];
+    const listenItems = (hw as unknown as HwWithListenItems).listenItems ?? [];
     const listenItem = listenItems.find((li) => li.id === dto.listenItemId);
     if (!listenItem) throw new BadRequestException(`ListenItem ${dto.listenItemId} not found in this homework`);
 
@@ -510,7 +523,7 @@ export class GameService {
       const scoreSum = vocabResults.reduce((s: number, r: { score: number }) => s + r.score, 0);
       avgScore = count > 0 ? scoreSum / count : 0;
     } else if (hw.type === 'LISTEN') {
-      const listenResults = (session as any).listenResults ?? [];
+      const listenResults = (session as unknown as SessionWithListenResults).listenResults ?? [];
       const count = listenResults.length;
       const scoreSum = listenResults.reduce((s: number, r: { compositeScore: unknown }) => s + Number(r.compositeScore), 0);
       // compositeScore is stored as 0.0–1.0; session score is 0–100

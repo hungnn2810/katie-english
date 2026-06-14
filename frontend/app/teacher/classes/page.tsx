@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
 import Box from '@mui/material/Box';
@@ -15,17 +15,17 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import Snackbar from '@mui/material/Snackbar';
 import InputAdornment from '@mui/material/InputAdornment';
+import { useToast } from '@/lib/toast-context';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Search, Plus, Calendar, Pencil, Trash2, Users, CheckCircle2, X } from 'lucide-react';
+import { Search, Plus, Calendar, Pencil, Trash2, Users, X } from 'lucide-react';
 import { formatDate, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
+import { colors } from '@/lib/colors';
 
-const ACCENT = '#F0623A';
+const ACCENT = colors.teacherAccent;
 
 const STATUS_CONFIG: Record<ClassStatus, { label: string; color: string; bg: string; dot: string }> = {
   PENDING:    { label: 'Pending',     color: '#92400E', bg: '#FEF3C7', dot: '#F59E0B' },
@@ -57,8 +57,8 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
   onSaved: () => void;
 }) {
   const [form, setForm] = useState(initial);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const setField = (k: keyof Omit<ReturnType<typeof emptyForm>, 'scheduleSlots'>, v: string) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -81,13 +81,13 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault(); setError(''); setLoading(true);
+    e.preventDefault(); setLoading(true);
     try {
       if (editing) { await updateClass(editing.id, form); }
       else { await createClass(form); }
       onSaved(); onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save class');
+      showToast(err instanceof Error ? err.message : 'Failed to save class', 'error');
     } finally { setLoading(false); }
   }
 
@@ -202,7 +202,6 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
           </DialogContent>
 
           <DialogActions sx={{ px: 4, pb: 3.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', gap: 1.5 }}>
-            {error && <Alert severity="error" sx={{ borderRadius: 3, flex: 1, mr: 'auto' }}>{error}</Alert>}
             <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
               {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
@@ -223,17 +222,10 @@ export default function ClassesPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | ClassStatus>('ALL');
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [toast, setToast] = useState('');
+  const { showToast } = useToast();
 
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const load = () => getClasses().then(setClasses).catch(() => {});
   useEffect(() => { load(); }, []);
-
-  function showToast(msg: string) {
-    setToast(msg);
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToast(''), 3000);
-  }
 
   function openCreate() { setEditing(null); setInitialForm(emptyForm()); setShowModal(true); }
   function openEdit(c: ClassItem) {
@@ -268,14 +260,6 @@ export default function ClassesPage() {
           onSaved={() => { load(); showToast(editing ? 'Class updated!' : 'Class created!'); }}
         />
       )}
-
-      <Snackbar
-        open={!!toast}
-        autoHideDuration={3000}
-        onClose={() => setToast('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        message={<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><CheckCircle2 size={16} color="#4ade80" />{toast}</Box>}
-      />
 
       {/* Toolbar */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>

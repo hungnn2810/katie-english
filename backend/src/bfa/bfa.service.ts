@@ -1,9 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import * as os from 'os';
 import * as path from 'path';
-import * as fs from 'fs';
+import { writeFile, readFile, unlink } from 'fs/promises';
 import axios from 'axios';
+
+const execFileAsync = promisify(execFile);
 import { randomUUID } from 'crypto';
 import { BfaAlignResult, BfaAnalyzeResult, BfaSpeakingResult, WhisperXResult } from './bfa.dto';
 
@@ -28,21 +31,20 @@ function mimeToExt(mimeType: string): string {
   return 'wav';
 }
 
-function toWav(audioBuffer: Buffer, mimeType: string): Buffer {
+async function toWav(audioBuffer: Buffer, mimeType: string): Promise<Buffer> {
   const ext = mimeToExt(mimeType);
   const id = randomUUID();
   const tmpIn  = path.join(os.tmpdir(), `apa-in-${id}.${ext}`);
   const tmpOut = path.join(os.tmpdir(), `apa-out-${id}.wav`);
   try {
-    fs.writeFileSync(tmpIn, audioBuffer);
-    execFileSync(FFMPEG_CMD, ['-y', '-i', tmpIn, '-ar', '16000', '-ac', '1', '-f', 'wav', tmpOut], {
+    await writeFile(tmpIn, audioBuffer);
+    await execFileAsync(FFMPEG_CMD, ['-y', '-i', tmpIn, '-ar', '16000', '-ac', '1', '-f', 'wav', tmpOut], {
       timeout: 30_000,
-      stdio: 'pipe',
     });
-    return fs.readFileSync(tmpOut);
+    return await readFile(tmpOut);
   } finally {
-    try { fs.unlinkSync(tmpIn); } catch { /* best-effort */ }
-    try { fs.unlinkSync(tmpOut); } catch { /* best-effort */ }
+    unlink(tmpIn).catch(() => {});
+    unlink(tmpOut).catch(() => {});
   }
 }
 
@@ -117,7 +119,7 @@ export class BfaService {
   async analyze(audioBuffer: Buffer, mimeType: string, word: string, _expectedPhonemes: string[]): Promise<BfaAnalyzeResult> {
     let wavBuffer: Buffer;
     try {
-      wavBuffer = toWav(audioBuffer, mimeType);
+      wavBuffer = await toWav(audioBuffer, mimeType);
     } catch (err) {
       this.logger.warn(`[analyze] ffmpeg failed: ${(err as Error).message}`);
       return { success: false, error: 'audio_conversion_failed', message: '', word, phonemes: [], feedback: [], score: 0, transcription: { text: '' } };
@@ -163,7 +165,7 @@ export class BfaService {
   async analyzeSpeaking(audioBuffer: Buffer, mimeType: string, targetText: string): Promise<BfaSpeakingResult> {
     let wavBuffer: Buffer;
     try {
-      wavBuffer = toWav(audioBuffer, mimeType);
+      wavBuffer = await toWav(audioBuffer, mimeType);
     } catch (err) {
       this.logger.warn(`[analyzeSpeaking] ffmpeg failed: ${(err as Error).message}`);
       const targetWords = targetText.trim().split(/\s+/).filter(Boolean);
@@ -211,7 +213,7 @@ export class BfaService {
   async transcribe(audioBuffer: Buffer, mimeType: string): Promise<WhisperXResult> {
     let wavBuffer: Buffer;
     try {
-      wavBuffer = toWav(audioBuffer, mimeType);
+      wavBuffer = await toWav(audioBuffer, mimeType);
     } catch (err) {
       this.logger.warn(`[transcribe] ffmpeg failed: ${(err as Error).message}`);
       return { text: '', words: [] };

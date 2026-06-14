@@ -1,12 +1,15 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import { useToast } from '@/lib/toast-context';
+import { colors } from '@/lib/colors';
 
-const ACCENT = '#A78BFA';
+const ACCENT = colors.purple;
 const FIELD_STYLE = {
   width: '100%',
   fontFamily: 'Inter',
@@ -22,13 +25,14 @@ const FIELD_STYLE = {
 };
 
 export default function StudentLoginPage() {
+  const router = useRouter();
   const [classCode, setClassCode] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState('');
   const [tried, setTried] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const ready = classCode.trim().length >= 2 && name.trim().length >= 1 && password.length >= 4;
 
@@ -36,7 +40,6 @@ export default function StudentLoginPage() {
     e.preventDefault();
     setTried(true);
     if (!ready) return;
-    setError('');
     setLoading(true);
     try {
       const res = await fetch('/api/auth/student-login', {
@@ -48,9 +51,9 @@ export default function StudentLoginPage() {
         const d = await res.json();
         throw new Error(d.error ?? 'Mã lớp hoặc tên không đúng');
       }
-      window.location.href = (process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? '') + '/game/homework';
+      router.push('/game/homework');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Mã lớp hoặc tên không đúng');
+      showToast(err instanceof Error ? err.message : 'Mã lớp hoặc tên không đúng', 'error');
     } finally {
       setLoading(false);
     }
@@ -146,14 +149,6 @@ export default function StudentLoginPage() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', color: '#FF9BD2', fontSize: 13, fontWeight: 700 }}>
             <AlertCircle size={15} color="#FF9BD2" />
             Em hãy điền đầy đủ thông tin để đăng nhập nhé!
-          </Box>
-        )}
-
-        {/* Server error */}
-        {error && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '7px', color: '#FF9BD2', fontSize: 13, fontWeight: 700 }}>
-            <AlertCircle size={15} color="#FF9BD2" />
-            {error}
           </Box>
         )}
 

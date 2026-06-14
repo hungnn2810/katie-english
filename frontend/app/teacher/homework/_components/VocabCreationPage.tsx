@@ -22,6 +22,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useToast } from '@/lib/toast-context';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -235,10 +236,11 @@ function SortableVocabItemCard({
 
 export function VocabCreationPage() {
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [name, setName] = useState('');
   const [items, setItems] = useState<VocabItemDraft[]>([]);
-  const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadingId, setUploadingId] = useState<string | null>(null);
@@ -314,12 +316,12 @@ export function VocabCreationPage() {
   }
 
   async function handleSave() {
-    const validationError = validate();
-    if (validationError) {
-      setError(validationError);
+    const vErr = validate();
+    if (vErr) {
+      setValidationError(vErr);
       return;
     }
-    setError('');
+    setValidationError('');
     setLoading(true);
     try {
       await createVocabHomework({
@@ -328,7 +330,7 @@ export function VocabCreationPage() {
       });
       router.push('/teacher/homework');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save.');
+      showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
     } finally {
       setLoading(false);
     }
@@ -447,9 +449,9 @@ export function VocabCreationPage() {
       )}
 
       {/* Validation error — above save button */}
-      {error && (
+      {validationError && (
         <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>
-          {error}
+          {validationError}
         </Alert>
       )}
 

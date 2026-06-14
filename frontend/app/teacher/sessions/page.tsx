@@ -15,11 +15,11 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import { Loader2, ChevronDown, AlignLeft, Mic, ExternalLink } from 'lucide-react';
+import { ChevronDown, AlignLeft, Mic, ExternalLink } from 'lucide-react';
+import { useToast } from '@/lib/toast-context';
 import { formatDate } from '@/lib/datetime';
+import { colors } from '@/lib/colors';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 function ScoreBadge({ score }: { score?: number | null }) {
   if (score === null || score === undefined) return <Typography component="span" sx={{ color: 'text.secondary' }}>—</Typography>;
@@ -43,11 +43,10 @@ export default function SessionsPage() {
   const [expanded, setExpanded] = useState<number | null>(null);
   const [details, setDetails] = useState<Record<number, GameSession>>({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   const doSearch = useCallback(async () => {
     setLoading(true);
-    setError('');
     try {
       const data = await getSessionResults(
         assignmentFilter ? Number(assignmentFilter) : undefined,
@@ -56,11 +55,11 @@ export default function SessionsPage() {
       setSessions(data);
       setExpanded(null);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to load sessions');
+      showToast(e instanceof Error ? e.message : 'Failed to load sessions', 'error');
     } finally {
       setLoading(false);
     }
-  }, [assignmentFilter, studentFilter, dateFrom, dateTo]);
+  }, [assignmentFilter, studentFilter, showToast]);
 
   useEffect(() => {
     getStudents().then(setStudents).catch(() => {});
@@ -127,14 +126,12 @@ export default function SessionsPage() {
             <TextField type="date" size="small" value={dateTo} onChange={e => setDateTo(e.target.value)} sx={{ width: 144, '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
           </Box>
           <Button variant="contained" onClick={doSearch} disabled={loading}
-            sx={{ borderRadius: 3, bgcolor: '#F0623A', '&:hover': { bgcolor: '#F0623A', opacity: 0.9 }, gap: 1, alignSelf: 'flex-end' }}>
+            sx={{ borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1, alignSelf: 'flex-end' }}>
             {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
             {loading ? 'Loading…' : 'Search'}
           </Button>
         </Box>
       </Paper>
-
-      {error && <Alert severity="error" sx={{ borderRadius: 3 }}>{error}</Alert>}
 
       {displayed.length > 0 && (
         <Typography sx={{ fontSize: 12, color: 'text.secondary', fontWeight: 500, px: 0.5 }}>

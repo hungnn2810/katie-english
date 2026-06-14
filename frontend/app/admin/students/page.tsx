@@ -4,13 +4,13 @@ import {
   getAdminStudents, getStudentResults, deleteAdminSession,
   AdminStudentItem, AdminStudentResultItem,
 } from '@/lib/admin-portal-api';
-import { CheckCircle2, Search } from 'lucide-react';
+import { useToast } from '@/lib/toast-context';
+import { Search } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -37,17 +37,11 @@ function ScoreBadge({ score }: { score?: number | null }) {
 // ─── StudentResults ──────────────────────────────────────────────────────────
 
 function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack: () => void }) {
+  const { showToast } = useToast();
   const [results, setResults] = useState<AdminStudentResultItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<AdminStudentResultItem | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [toast, setToast] = useState('');
-
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(''), 3000);
-  }
 
   async function handleConfirmDelete() {
     if (!confirmDelete) return;
@@ -56,9 +50,9 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
       await deleteAdminSession(confirmDelete.id);
       setResults((prev) => prev.filter((r) => r.id !== confirmDelete.id));
       setConfirmDelete(null);
-      showToast('Session deleted.');
+      showToast('Session deleted.', 'success');
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to delete session. Please try again.');
+      showToast(err instanceof Error ? err.message : 'Failed to delete session. Please try again.', 'error');
     } finally {
       setDeleting(false);
     }
@@ -66,13 +60,13 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
 
   useEffect(() => {
     setLoading(true);
-    setError('');
     getStudentResults(student.id)
       .then(setResults)
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+        showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
       })
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [student.id]);
 
   const RESULT_COLS = [
@@ -113,12 +107,6 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
         </Dialog>
       )}
 
-      {toast && (
-        <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1500, bgcolor: '#0F172A', color: 'white', fontSize: 14, fontWeight: 600, px: 2.5, py: 1.5, borderRadius: 4, boxShadow: 8, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CheckCircle2 style={{ width: 16, height: 16, color: '#4ADE80' }} /> {toast}
-        </Box>
-      )}
-
       <Box
         component="button"
         onClick={onBack}
@@ -131,9 +119,7 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
         {student.fullname} — Homework Results
       </Typography>
 
-      {error && <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>{error}</Alert>}
-
-      {!loading && !error && results.length === 0 && (
+      {!loading && results.length === 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>No homework submissions yet.</Typography>
         </Box>
@@ -190,23 +176,23 @@ function StudentStatusChip({ student }: { student: AdminStudentItem }) {
 // ─── Students Page ───────────────────────────────────────────────────────────
 
 export default function StudentsPage() {
+  const { showToast } = useToast();
   const [selectedStudent, setSelectedStudent] = useState<AdminStudentItem | null>(null);
   const [students, setStudents] = useState<AdminStudentItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('ALL');
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     setLoading(true);
-    setError('');
     getAdminStudents()
       .then(setStudents)
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+        showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
       })
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (selectedStudent) {
@@ -285,9 +271,7 @@ export default function StudentsPage() {
         </Button>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 3 }}>{error}</Alert>}
-
-      {!loading && filtered.length === 0 && !error ? (
+      {!loading && filtered.length === 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No students yet</Typography>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Students are added to classes by teachers.</Typography>

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { getAdminStats, AdminStats } from '@/lib/admin-portal-api';
+import { useToast } from '@/lib/toast-context';
 import { Users, School, GraduationCap, FileText, KeyRound } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -69,18 +70,17 @@ const ACTIVITY = [
 ];
 
 export default function AdminDashboard() {
+  const { showToast } = useToast();
   const [stats, setStats] = useState<AdminStats>({ teachers: 0, classes: 0, students: 0, submissions: 0 });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   async function loadDashboard() {
     setLoading(true);
-    setError('');
     try {
       const data = await getAdminStats();
       setStats(data);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard.');
+      showToast(err instanceof Error ? err.message : 'Failed to load dashboard.', 'error');
     } finally {
       setLoading(false);
     }
@@ -90,19 +90,6 @@ export default function AdminDashboard() {
 
   return (
     <Box>
-      {error && (
-        <Box sx={{ mb: 2.5, borderRadius: 3, border: '1px solid #FCA5A5', bgcolor: '#FEF2F2', px: 2, py: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
-          <Typography sx={{ fontSize: 14, color: '#DC2626' }}>Something went wrong. Please try again.</Typography>
-          <Button
-            onClick={loadDashboard}
-            size="small"
-            variant="contained"
-            sx={{ fontSize: 12, fontWeight: 600, color: 'white', bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: 2, flexShrink: 0 }}
-          >
-            Retry
-          </Button>
-        </Box>
-      )}
 
       {/* 4 MiniStat cards */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, mb: '22px' }}>

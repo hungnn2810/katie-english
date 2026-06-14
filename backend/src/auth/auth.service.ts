@@ -96,7 +96,7 @@ export class AuthService {
 
     await this.prisma.user.update({
       where: { id: dto.userId },
-      data: { approved: true, studentId, registrationData: undefined },
+      data: { approved: true, studentId, registrationData: null },
     });
     return { approved: true, studentId };
   }
