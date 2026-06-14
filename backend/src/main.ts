@@ -1,3 +1,8 @@
+import * as dotenv from 'dotenv';
+import { resolve } from 'path';
+// Load root .env for local dev; no-op in Docker where env vars are injected directly
+dotenv.config({ path: resolve(__dirname, '../../.env') });
+
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -34,14 +39,19 @@ async function bootstrap() {
     logger: ['log', 'warn', 'error', 'debug', 'verbose'],
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
-  app.enableCors({
-    origin: [
-      process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? 'https://admin.katie.vn',
-      process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://app.katie.vn',
-      process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? 'https://student.katie.vn',
-    ],
-    credentials: true,
-  });
+  const isProd = process.env.NODE_ENV === 'production';
+  const allowedOrigins = [
+    process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? (isProd ? 'https://admin.katie.vn' : null),
+    process.env.NEXT_PUBLIC_APP_ORIGIN ?? (isProd ? 'https://app.katie.vn' : null),
+    process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? (isProd ? 'https://student.katie.vn' : null),
+    ...(!isProd ? [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:3003',
+    ] : []),
+  ].filter(Boolean) as string[];
+  app.enableCors({ origin: allowedOrigins, credentials: true });
   await ensureTeacherUser(app.get(PrismaService));
   await ensureAdminUser(app.get(PrismaService));
   await app.listen(process.env.PORT ?? 3001);

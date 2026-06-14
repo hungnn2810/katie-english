@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { login, register, forgotPassword, RegisterInput } from '@/lib/auth';
+import { DATE_FORMAT } from '@/lib/datetime';
 import { BookOpen, Mic, BarChart2, CheckCircle2, GraduationCap, User } from 'lucide-react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -312,7 +313,8 @@ export default function LoginPage() {
                         </FormControl>
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                           <DatePicker
-                            label="Date of Birth *"
+                            label={`Date of Birth * (${DATE_FORMAT})`}
+                            format={DATE_FORMAT}
                             value={reg.dateOfBirth ? new Date(reg.dateOfBirth) : null}
                             onChange={(newValue: Date | null) => {
                               const iso = newValue ? newValue.toISOString().split('T')[0] : '';

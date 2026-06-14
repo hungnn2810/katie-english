@@ -53,10 +53,11 @@ last_mapped_commit: 76a70d3d792f
 | Env Var | Default | Where used |
 |---------|---------|------------|
 | `DATABASE_URL` | — | `backend/` Prisma |
+| `JWT_SECRET` | `katie-secret-2024` | `backend/` JwtService — **change in production** |
 | `MINIO_ENDPOINT` | `localhost` | `backend/` StorageService |
 | `MINIO_PORT` | `9000` | `backend/` StorageService |
 | `MINIO_ACCESS_KEY` | `admin` | `backend/` StorageService |
-| `MINIO_SECRET_KEY` | — | `backend/` StorageService |
+| `MINIO_SECRET_KEY` | `Pass1234!` | `backend/` StorageService + MinIO root password |
 | `MINIO_BUCKET` | `phonics-audio` | `backend/` StorageService |
 | `MINIO_USE_SSL` | `false` | `backend/` StorageService |
 | `PORT` | `3001` | `backend/` main.ts |
@@ -70,8 +71,12 @@ last_mapped_commit: 76a70d3d792f
 | `AZURE_PHONEME_CORRECT_THRESHOLD` | `80` | `backend/` BfaService.mapPhonemeOps |
 | `AZURE_PHONEME_SIMILAR_THRESHOLD` | `50` | `backend/` BfaService.mapPhonemeOps |
 | `AZURE_MIN_WORD_SCORE` | `70` | `backend/` BfaService.analyzeSpeaking |
-| `OPENAI_API_KEY` | — | `backend/` BfaService.scoreSemantic |
-| `OPENAI_MODEL` | `gpt-4o-mini` | `backend/` BfaService.scoreSemantic |
+| `AZURE_OPENAI_KEY` | — | `backend/` BfaService.scoreSemantic (optional) |
+| `AZURE_OPENAI_ENDPOINT` | — | `backend/` BfaService.scoreSemantic (optional) |
+| `AZURE_OPENAI_DEPLOYMENT` | `gpt-4o-mini` | `backend/` BfaService.scoreSemantic (optional) |
+| `AZURE_OPENAI_API_VERSION` | `2024-08-01-preview` | `backend/` BfaService.scoreSemantic (optional) |
+| `BFA_WEBHOOK_URL` | `''` | `backend/` GameJobsService (optional) |
+| `BFA_QUEUE_CONCURRENCY` | `1` | `backend/` GameJobsService (optional) |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:3001` | `frontend/` lib/api.ts |
 | `NEXT_PUBLIC_SUBDOMAIN` | `app` | `frontend/` subdomain routing |
 | `NEXT_PUBLIC_ADMIN_ORIGIN` | `http://admin.katie.vn` | `frontend/` |

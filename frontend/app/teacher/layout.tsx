@@ -42,6 +42,11 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
       try { return JSON.parse(atob(token.split('.')[1])).role ?? null; } catch { return null; }
     }
 
+    if (pathname === '/teacher/login') {
+      setUser(null);
+      return;
+    }
+
     const u = getUser();
     if (!u || u.role !== 'TEACHER') {
       // If a non-teacher role cookie exists, show 403 instead of redirecting to login
@@ -51,11 +56,11 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
         router.replace('/403');
         return;
       }
-      router.replace('/login');
+      router.replace('/teacher/login');
       return;
     }
     setUser(u);
-  }, [router]);
+  }, [router, pathname]);
 
   if (user === undefined) return (
     <ThemeProvider theme={teacherTheme}>
@@ -65,7 +70,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
       </Box>
     </ThemeProvider>
   );
-  if (!user) return null;
+  if (!user) return <>{children}</>;
 
   return (
     <ThemeProvider theme={teacherTheme}>

@@ -30,7 +30,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Search, Plus, User, Users, Clock, KeyRound, CheckCircle2, UserMinus, Pencil, X } from 'lucide-react';
-import { formatDate } from '@/lib/datetime';
+import { formatDate, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 
 const ACCENT = '#F0623A';
@@ -134,8 +134,8 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
                 <SexToggle value={form.sex} onChange={(s) => setForm((f) => ({ ...f, sex: s }))} />
               </Box>
               <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Date of Birth</FormLabel>
-                <DatePicker value={form.dateOfBirth ? new Date(form.dateOfBirth) : null} onChange={(v: Date | null) => setForm((f) => ({ ...f, dateOfBirth: v ? v.toISOString().split('T')[0] : '' }))} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }} />
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Date of Birth ({DATE_FORMAT})</FormLabel>
+                <DatePicker format={DATE_FORMAT} value={form.dateOfBirth ? new Date(form.dateOfBirth) : null} onChange={(v: Date | null) => setForm((f) => ({ ...f, dateOfBirth: v ? v.toISOString().split('T')[0] : '' }))} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }} />
               </Box>
               <Box sx={{ gridColumn: '1/-1' }}>
                 <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Class</FormLabel>
@@ -201,8 +201,8 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
                 <SexToggle value={form.sex} onChange={(s) => setForm((f) => ({ ...f, sex: s }))} />
               </Box>
               <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Date of Birth</FormLabel>
-                <DatePicker value={form.dateOfBirth ? new Date(form.dateOfBirth) : null} onChange={(v: Date | null) => setForm((f) => ({ ...f, dateOfBirth: v ? v.toISOString().split('T')[0] : '' }))} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }} />
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Date of Birth ({DATE_FORMAT})</FormLabel>
+                <DatePicker format={DATE_FORMAT} value={form.dateOfBirth ? new Date(form.dateOfBirth) : null} onChange={(v: Date | null) => setForm((f) => ({ ...f, dateOfBirth: v ? v.toISOString().split('T')[0] : '' }))} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }} />
               </Box>
               <Box sx={{ gridColumn: '1/-1' }}>
                 <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Class</FormLabel>
@@ -274,7 +274,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
                 <SexToggle value={form.sex} onChange={(s) => setForm((f) => ({ ...f, sex: s }))} />
               </Box>
               <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Date of Birth *</FormLabel>
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Date of Birth * ({DATE_FORMAT})</FormLabel>
                 <DatePicker value={form.dateOfBirth ? new Date(form.dateOfBirth) : null} onChange={(v: Date | null) => setForm((f) => ({ ...f, dateOfBirth: v ? v.toISOString().split('T')[0] : '' }))} slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }} />
               </Box>
               <Box sx={{ gridColumn: '1/-1' }}>

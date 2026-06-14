@@ -22,7 +22,7 @@ import { PartyPopper, ImageIcon, Check, PenLine } from 'lucide-react';
 
 // ── Constants & helpers ────────────────────────────────────────────────────────
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 async function fetchSession(id: number): Promise<GameSession> {
   const res = await fetch(`${API_URL}/game/session/${id}`, { headers: { ...authHeaders() } });
@@ -56,7 +56,7 @@ type ActivityState =
 
 function LoadingState() {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg, minWidth: 1024 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
       <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
       <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Loading…</p>
     </Box>
@@ -65,7 +65,7 @@ function LoadingState() {
 
 function ErrorState({ kind, onBack }: { kind: ErrorKind; onBack: () => void }) {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg, minWidth: 1024 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg, px: 3 }}>
       <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Homework not found</Typography>
       {kind === 'no-activities' && (
         <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, textAlign: 'center', maxWidth: 320 }}>This reading homework has no activities yet.</Typography>
@@ -77,7 +77,7 @@ function ErrorState({ kind, onBack }: { kind: ErrorKind; onBack: () => void }) {
 
 function SubmittingState() {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg, minWidth: 1024 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
       <CircularProgress size={48} sx={{ color: '#FFD166' }} />
       <p style={{ color: '#FFD166', fontWeight: 700 }}>Saving your score…</p>
     </Box>
@@ -97,7 +97,7 @@ function ResultsState({
 }) {
   const score = session?.score ?? 0;
   return (
-    <Box sx={{ minHeight: '100vh', py: 6, px: 4, background: gradients.gameBg, minWidth: 1024 }}>
+    <Box sx={{ minHeight: '100vh', py: { xs: 4, sm: 6 }, px: { xs: 2, sm: 4 }, background: gradients.gameBg }}>
       <Box sx={{ maxWidth: 560, mx: 'auto', textAlign: 'center', mb: 5 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
           <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -170,15 +170,15 @@ function PlayingShell({
   children: React.ReactNode;
 }) {
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: gradients.gameBgAlt, minWidth: 1024 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 4, py: 2, flexShrink: 0 }}>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: gradients.gameBgAlt }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: { xs: 2, sm: 4 }, py: 2, flexShrink: 0 }}>
         <Button onClick={onBack} sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>← Back</Button>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {activityStates.map((_, i) => (
             <Box
               key={i}
               sx={{
-                width: 32, height: 8, borderRadius: '9999px', transition: 'all 0.15s',
+                width: { xs: 20, sm: 32 }, height: 8, borderRadius: '9999px', transition: 'all 0.15s',
                 background:
                   i < currentActivityIndex
                     ? 'rgba(255,255,255,0.5)'
@@ -193,7 +193,7 @@ function PlayingShell({
           Activity {currentActivityIndex + 1} of {activityStates.length}
         </Typography>
       </Box>
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 4, pb: 4, overflowY: 'auto' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: { xs: 2, sm: 4 }, pb: 4, overflowY: 'auto' }}>
         {children}
       </Box>
     </Box>
@@ -280,7 +280,7 @@ function MatchingActivityRenderer({
       </Box>
 
       {/* Image row */}
-      <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1.5, sm: 3 }, justifyContent: 'center', mb: 4 }}>
         {state.pairs.map((p) => {
           const isSelected = state.selectedImageId === p.pair.id;
           const isLocked = p.status === 'locked';
@@ -293,7 +293,7 @@ function MatchingActivityRenderer({
               onClick={() => handleImageClick(p.pair.id)}
               disabled={isLocked}
               sx={{
-                position: 'relative', width: 112, height: 112, borderRadius: 4,
+                position: 'relative', width: { xs: 88, sm: 112 }, height: { xs: 88, sm: 112 }, borderRadius: 4,
                 overflow: 'hidden', cursor: isLocked ? 'default' : 'pointer',
                 border: '4px solid', transition: 'all 0.15s', p: 0, background: 'none',
                 animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',
@@ -421,14 +421,14 @@ function FillBlankActivityRenderer({
         {parts.flatMap((part, idx, arr) =>
           idx < arr.length - 1
             ? [
-                <Box component="span" key={`t${idx}`} sx={{ color: 'white', fontSize: 24, fontWeight: 900 }}>{part}</Box>,
+                <Box component="span" key={`t${idx}`} sx={{ color: 'white', fontSize: { xs: 18, sm: 24 }, fontWeight: 900 }}>{part}</Box>,
                 <Box
                   component="span"
                   key={`b${idx}`}
-                  sx={{ display: 'inline-block', width: 96, height: 32, borderRadius: 2, border: '2px solid rgba(255,255,255,0.4)', bgcolor: 'rgba(255,255,255,0.1)', verticalAlign: 'middle', mx: 0.5 }}
+                  sx={{ display: 'inline-block', width: { xs: 72, sm: 96 }, height: 32, borderRadius: 2, border: '2px solid rgba(255,255,255,0.4)', bgcolor: 'rgba(255,255,255,0.1)', verticalAlign: 'middle', mx: 0.5 }}
                 />,
               ]
-            : [<Box component="span" key={`t${idx}`} sx={{ color: 'white', fontSize: 24, fontWeight: 900 }}>{part}</Box>]
+            : [<Box component="span" key={`t${idx}`} sx={{ color: 'white', fontSize: { xs: 18, sm: 24 }, fontWeight: 900 }}>{part}</Box>]
         )}
       </Box>
 

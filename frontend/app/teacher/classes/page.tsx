@@ -22,7 +22,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Search, Plus, Calendar, Pencil, Trash2, Users, CheckCircle2, X } from 'lucide-react';
-import { formatDate } from '@/lib/datetime';
+import { formatDate, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 
 const ACCENT = '#F0623A';
@@ -118,16 +118,18 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
                 <TextField size="small" fullWidth required value={form.code} onChange={(e) => setField('code', e.target.value)} placeholder="e.g. ENG-01" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
               </Box>
               <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Start Date</FormLabel>
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Start Date ({DATE_FORMAT})</FormLabel>
                 <DatePicker
+                  format={DATE_FORMAT}
                   value={form.startDate ? new Date(form.startDate) : null}
                   onChange={(v: Date | null) => setField('startDate', v ? v.toISOString().split('T')[0] : '')}
                   slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
                 />
               </Box>
               <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>End Date</FormLabel>
+                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>End Date ({DATE_FORMAT})</FormLabel>
                 <DatePicker
+                  format={DATE_FORMAT}
                   value={form.endDate ? new Date(form.endDate) : null}
                   onChange={(v: Date | null) => setField('endDate', v ? v.toISOString().split('T')[0] : '')}
                   slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}

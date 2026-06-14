@@ -12,6 +12,7 @@ import {
   ClassStatus,
 } from '@/lib/admin-portal-api';
 import { CheckCircle2, Search } from 'lucide-react';
+import { DATE_FORMAT } from '@/lib/datetime';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -140,16 +141,18 @@ function EditClassModal({
                 <TextField size="small" fullWidth required value={form.code ?? ''} onChange={(e) => setField('code', e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
               </Box>
               <Box>
-                <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>Start Date</FormLabel>
+                <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>Start Date ({DATE_FORMAT})</FormLabel>
                 <DatePicker
+                  format={DATE_FORMAT}
                   value={form.startDate ? new Date(form.startDate) : null}
                   onChange={(v) => setField('startDate', v ? v.toISOString().split('T')[0] : '')}
                   slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
                 />
               </Box>
               <Box>
-                <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>End Date</FormLabel>
+                <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>End Date ({DATE_FORMAT})</FormLabel>
                 <DatePicker
+                  format={DATE_FORMAT}
                   value={form.endDate ? new Date(form.endDate) : null}
                   onChange={(v) => setField('endDate', v ? v.toISOString().split('T')[0] : '')}
                   slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}

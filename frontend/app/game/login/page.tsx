@@ -61,7 +61,8 @@ export default function StudentLoginPage() {
   const pwBad = tried && password.length < 4;
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', px: '26px', py: '32px' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: { sm: 'center' }, justifyContent: { sm: 'center' }, px: { xs: '26px', sm: 3 }, py: '32px' }}>
+      <Box sx={{ width: '100%', maxWidth: { sm: 440 }, display: 'flex', flexDirection: 'column', bgcolor: { sm: 'rgba(255,255,255,0.06)' }, borderRadius: { sm: 5 }, p: { sm: '36px' } }}>
       {/* K monogram + brand name */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: '11px', mb: '28px' }}>
         <Box sx={{
@@ -186,6 +187,7 @@ export default function StudentLoginPage() {
         Quên mật khẩu?{' '}
         <Box component="span" sx={{ color: ACCENT, cursor: 'pointer' }}>Hỏi cô giáo nhé</Box>
       </Typography>
+      </Box>
     </Box>
   );
 }

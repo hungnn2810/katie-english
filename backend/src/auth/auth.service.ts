@@ -40,7 +40,7 @@ export class AuthService {
           sex: dto.sex,
           dateOfBirth: dto.dateOfBirth,
           classId: dto.classId ?? null,
-          parents: dto.parents,
+          parents: dto.parents.map(p => ({ name: p.name, phoneNumber: p.phoneNumber, type: p.type })),
         },
       },
     });

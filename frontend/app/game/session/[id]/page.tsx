@@ -39,7 +39,7 @@ function itemTime(kind: ItemKind) {
   return 15;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 async function fetchSession(id: number): Promise<GameSession> {
   const res = await fetch(`${API_URL}/game/session/${id}`, { headers: { ...authHeaders() } });

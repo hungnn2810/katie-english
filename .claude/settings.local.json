@@ -163,7 +163,20 @@
       "Read(//Users/hung/**)",
       "Read(//Users/hung/Documents/**)",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:d[k] for k in ['jest','scripts'] if k in d}, indent=2\\)\\)\")",
-      "Bash(dir \"backend\\\\src\\\\game\\\\__fixtures__\\\\\")"
+      "Bash(dir \"backend\\\\src\\\\game\\\\__fixtures__\\\\\")",
+      "Bash(code-review-graph --version)",
+      "Bash(where code-review-graph *)",
+      "Bash(npx code-review-graph *)",
+      "Read(//c/Users/hungnn/.claude/**)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('mcpServers',{}\\), indent=2\\)\\)\")",
+      "Bash(C:/Users/hungnn/AppData/Local/Python/pythoncore-3.14-64/Scripts/code-review-graph.exe *)",
+      "PowerShell(cd C:\\\\sources\\\\katie-english\\\\backend; $env:DATABASE_URL=\"postgresql://postgres:Pass1234!@localhost:5432/phonics\"; npx prisma migrate deploy 2>&1)",
+      "Bash(node -e \"const dotenv = require\\('dotenv-cli'\\); console.log\\(process.cwd\\(\\)\\)\")",
+      "Bash(ls C:/sources/katie-english/backend/../.env)",
+      "Bash(code-review-graph status *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(& \"C:\\\\Users\\\\hungnn\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\Scripts\\\\code-review-graph.exe\" --version 2>&1)",
+      "Bash(Remove-Item *)"
     ]
   },
   "enableAllProjectMcpServers": true,

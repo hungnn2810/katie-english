@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { teacherTheme } from '@/lib/theme';
+import { setAuth } from '@/lib/auth';
 
 const ACCENT = '#F0623A';
 
@@ -28,10 +29,11 @@ export default function TeacherLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ upn, password }),
       });
+      const d = await res.json();
       if (!res.ok) {
-        const d = await res.json();
         throw new Error(d.error ?? 'Invalid credentials');
       }
+      setAuth(d.token, d.user);
       window.location.href = (process.env.NEXT_PUBLIC_APP_ORIGIN ?? '') + '/teacher';
     } catch {
       setError('Invalid credentials');

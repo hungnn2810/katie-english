@@ -19,7 +19,7 @@ import Alert from '@mui/material/Alert';
 import { Loader2, ChevronDown, AlignLeft, Mic, ExternalLink } from 'lucide-react';
 import { formatDate } from '@/lib/datetime';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 function ScoreBadge({ score }: { score?: number | null }) {
   if (score === null || score === undefined) return <Typography component="span" sx={{ color: 'text.secondary' }}>—</Typography>;

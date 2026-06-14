@@ -4,11 +4,11 @@
   "scripts": {
     "build": "nest build",
     "start": "node dist/main",
-    "start:dev": "set PORT=3000 && nest start --watch",
+    "start:dev": "dotenv -e ../.env -- nest start --watch",
     "test": "jest",
-    "prisma:migrate": "prisma migrate deploy",
-    "prisma:seed": "ts-node prisma/seed.ts",
-    "prisma:studio": "prisma studio"
+    "prisma:migrate": "dotenv -e ../.env -- prisma migrate deploy",
+    "prisma:seed": "dotenv -e ../.env -- ts-node prisma/seed.ts",
+    "prisma:studio": "dotenv -e ../.env -- prisma studio"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -39,6 +39,7 @@
     "bullmq": "^5.24.6",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "dotenv": "^17.4.2",
     "form-data": "^4.0.5",
     "ioredis": "^5.4.2",
     "minio": "^7.1.3",
@@ -53,6 +54,7 @@
     "@types/jest": "^30.0.0",
     "@types/multer": "^2.1.0",
     "@types/node": "^20.0.0",
+    "dotenv-cli": "^11.0.0",
     "ffmpeg-static": "^5.3.0",
     "jest": "^30.3.0",
     "prisma": "^5.22.0",

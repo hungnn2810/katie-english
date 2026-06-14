@@ -56,6 +56,10 @@ function detectSubdomain(
   if (host.startsWith('app.')) return 'app';
   if (host.startsWith('student.')) return 'student';
   if (host === 'katie.vn' || host === 'www.katie.vn') return 'root';
+  // Local dev: detect by convention port — 3001=admin, 3002=app, 3003=student
+  if (host === 'localhost:3001') return 'admin';
+  if (host === 'localhost:3002') return 'app';
+  if (host === 'localhost:3003') return 'student';
   if (host === 'localhost' || host.startsWith('localhost:')) return 'root';
 
   return 'unknown';
