@@ -92,4 +92,4 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 ---
 *State updated: 2026-05-19*
 
-**Planned Phase:** 11 (frontend-refactor-with-react-mui) — 4 plans — 2026-05-31T17:24:47.745Z
+**Planned Phase:** 14 (game-responsive) — 3 plans — 2026-06-17T00:00:00.000Z

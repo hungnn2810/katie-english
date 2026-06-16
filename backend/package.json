@@ -4,11 +4,11 @@
   "scripts": {
     "build": "nest build",
     "start": "node dist/main",
-    "start:dev": "dotenv -e ../.env -- nest start --watch",
+    "start:dev": "dotenv -e .env -- nest start --watch",
     "test": "jest",
-    "prisma:migrate": "dotenv -e ../.env -- prisma migrate deploy",
-    "prisma:seed": "dotenv -e ../.env -- ts-node prisma/seed.ts",
-    "prisma:studio": "dotenv -e ../.env -- prisma studio"
+    "prisma:migrate": "dotenv -e .env -- prisma migrate deploy",
+    "prisma:seed": "dotenv -e .env -- ts-node prisma/seed.ts",
+    "prisma:studio": "dotenv -e .env -- prisma studio"
   },
   "jest": {
     "moduleFileExtensions": [

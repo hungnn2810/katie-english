@@ -16,7 +16,7 @@ export default function AuthGate({ requiredRole, children }: Props) {
 
   useEffect(() => {
     const u = getUser();
-    if (!u) { router.replace('/login'); return; }
+    if (!u) { router.replace(requiredRole === 'STUDENT' ? '/game/login' : '/teacher/login'); return; }
     if (requiredRole && u.role !== requiredRole) {
       router.replace(u.role === 'TEACHER' ? '/teacher' : '/game/homework');
       return;

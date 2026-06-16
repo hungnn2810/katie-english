@@ -23,6 +23,7 @@
 | 11 | Frontend React MUI Refactor | 5/5 | Complete    | 2026-06-05 |
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
 | 13 | Landing Page | 1/3 | In Progress|  |
+| 14 | Game Responsive Layout | 0/3 | Pending |  |
 
 ---
 
@@ -536,5 +537,41 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 ---
 
+---
+
+### Phase 14: Game Responsive Layout
+
+**Goal:** Make all /game/ pages (homework list, login, phonics/speaking session, reading game, vocab game, listen game) fully responsive for mobile (≥320px), tablet/iPad (≥768px), and desktop (≥1024px), preserving the purple dark-mode aesthetic.
+**Mode:** mvp
+**Depends on:** Phase 11 (MUI refactor)
+
+**Requirements:**
+
+- RESP-01: /game/homework page is responsive on mobile, iPad, and desktop — centered maxWidth card on desktop, full-width on mobile
+- RESP-02: /game/login page is responsive on all viewports (already partially done — verify and fix remaining gaps)
+- RESP-03: /game/session/[id] phonics+speaking game layout is responsive on all viewports
+- RESP-04: /game/reading/[id] reading game is responsive (match-pair grid, fill-blank layout)
+- RESP-05: /game/vocab/[id] vocab game is responsive (image display, record button)
+- RESP-06: /game/listen/[id] listen game is responsive (audio player, record section)
+- RESP-07: layout.tsx background SVG decoration uses viewport-relative coordinates (no hardcoded 420px cx)
+- RESP-08: All interactive elements (buttons, record button, pairs) have ≥44px touch targets on mobile
+- RESP-09: Typography and padding scale correctly — no horizontal overflow on 320px viewport
+
+**Success Criteria:**
+
+1. All 6 /game/ pages render without horizontal scroll on a 375px (iPhone) viewport.
+2. All 6 /game/ pages render with centered card layout and appropriate padding on a 768px (iPad) viewport.
+3. All 6 /game/ pages render with correct desktop centering and maxWidth on a 1440px viewport.
+4. Record button and interactive game elements have touch targets ≥44px on mobile.
+5. Background SVG adapts to viewport width without clipping.
+
+**Plans:**
+
+- [ ] 14-01-PLAN.md — layout.tsx SVG responsive + homework page responsive layout (Wave 1)
+- [ ] 14-02-PLAN.md — session/[id] phonics+speaking + vocab/[id] + listen/[id] responsive layout (Wave 2)
+- [ ] 14-03-PLAN.md — reading/[id] responsive layout + login page polish + cross-page smoke test (Wave 2)
+
+---
+
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-07 — Phase 13 planning complete (3 plans)*
+*Last updated: 2026-06-17 — Phase 14 added: Game Responsive Layout*

@@ -1,7 +1,6 @@
 import * as dotenv from 'dotenv';
-import { resolve } from 'path';
-// Load root .env for local dev; no-op in Docker where env vars are injected directly
-dotenv.config({ path: resolve(__dirname, '../../.env') });
+// Load backend/.env for local dev; no-op in Docker where env vars are injected via env_file
+dotenv.config();
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';

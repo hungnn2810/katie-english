@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { useToast } from '@/lib/toast-context';
+import { setAuth } from '@/lib/auth';
 import { colors } from '@/lib/colors';
 
 const ACCENT = colors.purple;
@@ -51,6 +52,8 @@ export default function StudentLoginPage() {
         const d = await res.json();
         throw new Error(d.error ?? 'Mã lớp hoặc tên không đúng');
       }
+      const data = await res.json();
+      setAuth(data.token, data.user);
       window.location.href = '/game/homework';
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Mã lớp hoặc tên không đúng', 'error');

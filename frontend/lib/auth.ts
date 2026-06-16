@@ -36,8 +36,8 @@ export function setAuth(token: string, user: AuthUser) {
 export function clearAuth() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-  // Expire the client-written cookie as well
   document.cookie = 'teacher-token=; path=/; max-age=0';
+  document.cookie = 'student-token=; path=/; max-age=0';
 }
 
 export function authHeaders(): HeadersInit {

@@ -191,7 +191,7 @@ function PageContent({ user }: { user: AuthUser }) {
             <Lock size={13} />
           </Button>
           <Button
-            onClick={() => { clearAuth(); router.push('/login'); }}
+            onClick={() => { clearAuth(); router.push('/game/login'); }}
             sx={{
               color: 'rgba(255,255,255,0.6)',
               '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },

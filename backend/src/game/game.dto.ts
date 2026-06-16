@@ -1,5 +1,10 @@
+import { IsInt } from 'class-validator';
+
 export class StartSessionDto {
+  @IsInt()
   studentId: number;
+
+  @IsInt()
   assignmentId: number;
 }
 
