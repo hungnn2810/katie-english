@@ -10,21 +10,21 @@ export class StudentRepository {
   findAll() {
     return this.prisma.student.findMany({
       orderBy: { fullname: 'asc' },
-      include: { class: true, parents: true },
+      include: { class: true, parents: true, user: { select: { upn: true } } },
     });
   }
 
   findById(id: number) {
     return this.prisma.student.findUnique({
       where: { id },
-      include: { class: true, parents: true },
+      include: { class: true, parents: true, user: { select: { upn: true } } },
     });
   }
 
   findByClass(classId: number) {
     return this.prisma.student.findMany({
       where: { classId },
-      include: { parents: true },
+      include: { parents: true, user: { select: { upn: true } } },
     });
   }
 
@@ -43,32 +43,34 @@ export class StudentRepository {
           })),
         },
       },
-      include: { class: true, parents: true },
+      include: { class: true, parents: true, user: { select: { upn: true } } },
     });
   }
 
   async update(id: number, dto: UpdateStudentDto) {
-    if (dto.parents !== undefined) {
-      await this.prisma.parentInfo.deleteMany({ where: { studentId: id } });
-    }
-    return this.prisma.student.update({
-      where: { id },
-      data: {
-        ...(dto.fullname && { fullname: dto.fullname }),
-        ...(dto.sex && { sex: dto.sex as Sex }),
-        ...(dto.dateOfBirth && { dateOfBirth: new Date(dto.dateOfBirth) }),
-        ...(dto.classId !== undefined && { classId: dto.classId }),
-        ...(dto.parents !== undefined && {
-          parents: {
-            create: dto.parents.map((p) => ({
-              name: p.name,
-              phoneNumber: p.phoneNumber,
-              type: p.type as ParentType,
-            })),
-          },
-        }),
-      },
-      include: { class: true, parents: true },
+    return this.prisma.$transaction(async (tx) => {
+      if (dto.parents !== undefined) {
+        await tx.parentInfo.deleteMany({ where: { studentId: id } });
+      }
+      return tx.student.update({
+        where: { id },
+        data: {
+          ...(dto.fullname && { fullname: dto.fullname }),
+          ...(dto.sex && { sex: dto.sex as Sex }),
+          ...(dto.dateOfBirth && { dateOfBirth: new Date(dto.dateOfBirth) }),
+          ...(dto.classId !== undefined && { classId: dto.classId }),
+          ...(dto.parents !== undefined && {
+            parents: {
+              create: dto.parents.map((p) => ({
+                name: p.name,
+                phoneNumber: p.phoneNumber,
+                type: p.type as ParentType,
+              })),
+            },
+          }),
+        },
+        include: { class: true, parents: true },
+      });
     });
   }
 

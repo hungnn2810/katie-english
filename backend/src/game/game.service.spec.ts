@@ -289,14 +289,14 @@ describe('GameService.savePhonicsResult', () => {
   it('uses BFA score when BFA succeeds', async () => {
     repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
     bfa.analyze.mockResolvedValue(mockBfaSuccess(87) as any);
-    await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+    await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
     expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, 'sh', 87);
   });
 
   it('scores 0 when BFA fails', async () => {
     repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
     bfa.analyze.mockResolvedValue(mockBfaFail() as any);
-    await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+    await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
     expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
   });
 
@@ -335,7 +335,7 @@ describe('GameService.savePhonicsResult', () => {
     repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
     bfa.analyze.mockResolvedValue(mockBfaSuccess(90) as any);
     wordRepo.findByText.mockResolvedValue({ id: 1, text: 'sh', phonemes: '["sh"]' } as any);
-    await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+    await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
     expect(wordRepo.findByText).toHaveBeenCalledWith('sh');
     expect(bfa.analyze).toHaveBeenCalledWith(expect.any(Buffer), 'audio/webm', 'sh', ['sh']);
   });
@@ -344,7 +344,7 @@ describe('GameService.savePhonicsResult', () => {
     repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
     bfa.analyze.mockResolvedValue(mockBfaSuccess(80) as any);
     wordRepo.findByText.mockResolvedValue(null);
-    await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+    await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
     expect(bfa.analyze).toHaveBeenCalledWith(expect.any(Buffer), 'audio/webm', 'sh', []);
   });
 
@@ -352,7 +352,7 @@ describe('GameService.savePhonicsResult', () => {
     it('forwards audio_too_short through savePhonicsResult', async () => {
       repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
       bfa.analyze.mockResolvedValue(mockBfaError('audio_too_short', 'Recording too short — hold the button longer') as any);
-      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
       expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
       expect(result.bfa?.error).toBe('audio_too_short');
       expect(result.bfa?.message).toBe('Recording too short — hold the button longer');
@@ -362,7 +362,7 @@ describe('GameService.savePhonicsResult', () => {
     it('forwards audio_too_long through savePhonicsResult', async () => {
       repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
       bfa.analyze.mockResolvedValue(mockBfaError('audio_too_long', 'Recording too long — keep it under 15 seconds') as any);
-      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
       expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
       expect(result.bfa?.error).toBe('audio_too_long');
       expect(result.bfa?.message).toBe('Recording too long — keep it under 15 seconds');
@@ -372,7 +372,7 @@ describe('GameService.savePhonicsResult', () => {
     it('forwards recording_too_noisy through savePhonicsResult', async () => {
       repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
       bfa.analyze.mockResolvedValue(mockBfaError('recording_too_noisy', 'Mic quá ồn — tìm chỗ yên tĩnh hơn nhé') as any);
-      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
       expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
       expect(result.bfa?.error).toBe('recording_too_noisy');
       expect(result.bfa?.message).toBe('Mic quá ồn — tìm chỗ yên tĩnh hơn nhé');
@@ -382,7 +382,7 @@ describe('GameService.savePhonicsResult', () => {
     it('forwards speech_not_detected through savePhonicsResult', async () => {
       repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
       bfa.analyze.mockResolvedValue(mockBfaError('speech_not_detected', 'Không nghe rõ — nói to hơn nhé') as any);
-      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
       expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
       expect(result.bfa?.error).toBe('speech_not_detected');
       expect(result.bfa?.message).toBe('Không nghe rõ — nói to hơn nhé');
@@ -392,7 +392,7 @@ describe('GameService.savePhonicsResult', () => {
     it('forwards wrong_language through savePhonicsResult', async () => {
       repo.getSession.mockResolvedValue(mockPhonicsSession() as any);
       bfa.analyze.mockResolvedValue(mockBfaError('wrong_language', 'Please speak in English') as any);
-      const result = await service.savePhonicsResult(1, { wordId: 1 }, Buffer.from('audio'), 'audio/webm');
+      const result = await service.savePhonicsResult(1, { wordId: 1 }, undefined, Buffer.from('audio'), 'audio/webm');
       expect(repo.savePhonicsResult).toHaveBeenCalledWith(1, 1, '', 0);
       expect(result.bfa?.error).toBe('wrong_language');
       expect(result.bfa?.message).toBe('Please speak in English');

@@ -157,7 +157,7 @@ export class GameJobsService implements OnModuleInit, OnModuleDestroy {
         wordId: job.data.wordId,
         transcribedText: job.data.transcribedText,
       };
-      return await this.gameService.savePhonicsResult(sessionId, dto, audioBuffer, mimeType);
+      return await this.gameService.savePhonicsResult(sessionId, dto, undefined, audioBuffer, mimeType);
     } finally {
       await this.storage.removeObject(audioKey);
     }

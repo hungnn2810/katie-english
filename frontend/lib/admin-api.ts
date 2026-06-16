@@ -13,8 +13,13 @@ async function parseApiError(res: Response): Promise<never> {
 }
 
 async function req<T>(path: string, options?: RequestInit): Promise<T> {
+  const isJsonBody = options?.body && typeof options.body === 'string';
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { ...authHeaders(), ...(options?.headers ?? {}) },
+    headers: {
+      ...authHeaders(),
+      ...(isJsonBody ? { 'Content-Type': 'application/json' } : {}),
+      ...(options?.headers ?? {}),
+    },
     ...options,
   });
   if (!res.ok) return parseApiError(res);
@@ -292,6 +297,7 @@ export interface Student {
   classId?: number;
   class?: ClassItem;
   parents: { id: number; name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
+  user?: { upn: string } | null;
   createdAt: string;
 }
 
@@ -590,40 +596,6 @@ export interface HomeworkPart {
   name: string;
   order: number;
   words: HomeworkWord[];
-}
-
-export interface VocabItem {
-  id: number;
-  homeworkId: number;
-  imageUrl: string;
-  word: string;
-  phonemes?: string | null;
-  order: number;
-}
-
-export interface CreateVocabItemInput {
-  imageUrl: string;
-  word: string;
-  phonemes?: string[];
-}
-
-export interface CreateVocabHomeworkInput {
-  name: string;
-  items: CreateVocabItemInput[];
-}
-
-export interface UpdateVocabHomeworkInput {
-  name?: string;
-  items?: CreateVocabItemInput[];
-}
-
-export interface VocabHomeworkDetail {
-  id: number;
-  name: string | null;
-  type: 'VOCABULARY';
-  vocabItems: VocabItem[];
-  assignments: AssignmentItem[];
-  createdAt: string;
 }
 
 export interface HomeworkItem {

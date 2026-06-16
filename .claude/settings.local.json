@@ -176,7 +176,20 @@
       "Bash(code-review-graph status *)",
       "PowerShell(Get-Command *)",
       "PowerShell(& \"C:\\\\Users\\\\hungnn\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\Scripts\\\\code-review-graph.exe\" --version 2>&1)",
-      "Bash(Remove-Item *)"
+      "Bash(Remove-Item *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('scripts', {}\\), indent=2\\)\\)\")",
+      "Bash(psql *)",
+      "PowerShell(psql *)",
+      "Bash(DATABASE_URL=* psql *)",
+      "PowerShell($env:DATABASE_URL=*; psql *)",
+      "Bash(npx prisma studio *)",
+      "PowerShell(npx prisma studio *)",
+      "Bash(PGPASSWORD=\"Pass1234!\" psql -U postgres -h localhost -d phonics -c \"\\\\dt\")",
+      "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/webapp-testing/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/frontend-design/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/mcp-builder/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/glebis/claude-skills/main/tdd/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)"
     ]
   },
   "enableAllProjectMcpServers": true,

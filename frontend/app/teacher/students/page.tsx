@@ -88,30 +88,42 @@ function ParentFields({ parents, onChange }: {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {parents.map((p, i) => (
-        <Box key={i} sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1.5 }}>
-          <Box>
-            <FormLabel sx={fLabelSx}>Name</FormLabel>
-            <TextField size="small" fullWidth placeholder="Parent name" value={p.name}
-              onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], name: e.target.value }; onChange(ps); }}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+        <Box key={i} sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+          <Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1.5 }}>
+            <Box>
+              <FormLabel sx={fLabelSx}>Name</FormLabel>
+              <TextField size="small" fullWidth placeholder="Parent name" value={p.name}
+                onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], name: e.target.value }; onChange(ps); }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+            </Box>
+            <Box>
+              <FormLabel sx={fLabelSx}>Phone Number</FormLabel>
+              <TextField size="small" fullWidth placeholder="Phone number" value={p.phoneNumber}
+                onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], phoneNumber: e.target.value }; onChange(ps); }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+            </Box>
+            <Box>
+              <FormLabel sx={fLabelSx}>Relationship</FormLabel>
+              <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
+                <MuiSelect value={p.type} onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], type: e.target.value as 'FATHER' | 'MOTHER' }; onChange(ps); }}>
+                  <MenuItem value="FATHER">Father</MenuItem>
+                  <MenuItem value="MOTHER">Mother</MenuItem>
+                </MuiSelect>
+              </FormControl>
+            </Box>
           </Box>
-          <Box>
-            <FormLabel sx={fLabelSx}>Phone Number</FormLabel>
-            <TextField size="small" fullWidth placeholder="Phone number" value={p.phoneNumber}
-              onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], phoneNumber: e.target.value }; onChange(ps); }}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-          </Box>
-          <Box>
-            <FormLabel sx={fLabelSx}>Relationship</FormLabel>
-            <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
-              <MuiSelect value={p.type} onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], type: e.target.value as 'FATHER' | 'MOTHER' }; onChange(ps); }}>
-                <MenuItem value="FATHER">Father</MenuItem>
-                <MenuItem value="MOTHER">Mother</MenuItem>
-              </MuiSelect>
-            </FormControl>
-          </Box>
+          {parents.length > 1 && (
+            <IconButton size="small" type="button" onClick={() => onChange(parents.filter((_, j) => j !== i))} sx={{ mb: 0.5, color: 'error.main' }}>
+              <X size={14} />
+            </IconButton>
+          )}
         </Box>
       ))}
+      {parents.length < 2 && (
+        <Button type="button" size="small" onClick={() => onChange([...parents, { ...emptyParent }])} sx={{ alignSelf: 'flex-start', fontSize: 12 }}>
+          + Add parent
+        </Button>
+      )}
     </Box>
   );
 }
@@ -258,6 +270,18 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent sx={{ px: 4, py: 3 }}>
 
+            {/* Section: Auth */}
+            <Paper variant="outlined" sx={sectionSx}>
+              <Typography sx={sectionTitleSx}>Auth</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <Box>
+                  <FormLabel sx={fLabelSx}>Username</FormLabel>
+                  <TextField size="small" fullWidth disabled value={student.user?.upn ?? ''}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
+                </Box>
+              </Box>
+            </Paper>
+
             {/* Section: Student Info */}
             <Paper variant="outlined" sx={sectionSx}>
               <Typography sx={sectionTitleSx}>Student Info</Typography>
@@ -266,6 +290,7 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
                   <FormLabel sx={fLabelSx}>Full Name</FormLabel>
                   <TextField size="small" fullWidth required value={form.fullname}
                     onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))}
+                    placeholder="Student's full name"
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                 </Box>
                 <Box>
@@ -641,8 +666,9 @@ export default function StudentsPage() {
                         setDeletingId(null);
                         load(classFilter ? Number(classFilter) : undefined);
                         showToast('Student removed.', 'success');
-                      } catch {
+                      } catch (err) {
                         setDeletingId(null);
+                        showToast(err instanceof Error ? err.message : 'Failed to remove student.', 'error');
                       }
                     }}
                     sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>

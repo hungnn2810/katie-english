@@ -19,7 +19,6 @@ export async function POST(req: Request) {
   const data = await res.json();
   const cookieStore = cookies();
   cookieStore.set('student-token', data.token, {
-    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     path: '/',

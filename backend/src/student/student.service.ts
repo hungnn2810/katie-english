@@ -22,14 +22,31 @@ export class StudentService {
   }
 
   async create(dto: CreateStudentDto) {
-    const existing = await this.prisma.user.findUnique({ where: { upn: dto.upn } });
-    if (existing) throw new ConflictException('UPN already registered');
-    const student = await this.repo.create(dto);
     const hashed = await bcrypt.hash(dto.password, 10);
-    await this.prisma.user.create({
-      data: { upn: dto.upn, password: hashed, role: UserRole.STUDENT, approved: true, studentId: student.id },
+    return this.prisma.$transaction(async (tx) => {
+      const existing = await tx.user.findUnique({ where: { upn: dto.upn } });
+      if (existing) throw new ConflictException('UPN already registered');
+      const student = await tx.student.create({
+        data: {
+          fullname: dto.fullname,
+          sex: dto.sex as import('@prisma/client').Sex,
+          dateOfBirth: new Date(dto.dateOfBirth),
+          classId: dto.classId ?? null,
+          parents: {
+            create: dto.parents.map((p) => ({
+              name: p.name,
+              phoneNumber: p.phoneNumber,
+              type: p.type as import('@prisma/client').ParentType,
+            })),
+          },
+        },
+        include: { class: true, parents: true, user: { select: { upn: true } } },
+      });
+      await tx.user.create({
+        data: { upn: dto.upn, password: hashed, role: UserRole.STUDENT, approved: true, studentId: student.id },
+      });
+      return student;
     });
-    return student;
   }
 
   async update(id: number, dto: UpdateStudentDto) {

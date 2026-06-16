@@ -1,8 +1,10 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createListenHomework,
+  updateListenHomework,
+  getListenHomework,
   uploadAudio,
 } from '@/lib/admin-api';
 import {
@@ -250,7 +252,7 @@ function SortableListenItemCard({
 
 // ── ListenCreationPage ─────────────────────────────────────────────────────────
 
-export function ListenCreationPage() {
+export function ListenCreationPage({ editId }: { editId?: number }) {
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -260,6 +262,31 @@ export function ListenCreationPage() {
   const [loading, setLoading] = useState(false);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!editId) return;
+    getListenHomework(editId)
+      .then((hw) => {
+        setName(hw.name ?? '');
+        setItems(
+          hw.listenItems.map((li) => {
+            let keywords = li.keywords;
+            try {
+              const arr = JSON.parse(li.keywords);
+              if (Array.isArray(arr)) keywords = arr.join(', ');
+            } catch {}
+            return {
+              clientId: crypto.randomUUID(),
+              audioUrl: li.audioUrl,
+              audioFilename: li.audioUrl.split('/').pop() ?? 'audio file',
+              keywords,
+              expectedText: li.expectedText,
+            };
+          })
+        );
+      })
+      .catch(() => showToast('Failed to load homework.', 'error'));
+  }, [editId]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -356,14 +383,19 @@ export function ListenCreationPage() {
     setValidationError('');
     setLoading(true);
     try {
-      await createListenHomework({
+      const payload = {
         name: name.trim(),
         items: items.map(({ clientId: _clientId, audioFilename: _audioFilename, ...rest }) => ({
           audioUrl: rest.audioUrl,
           keywords: rest.keywords,
           expectedText: rest.expectedText,
         })),
-      });
+      };
+      if (editId) {
+        await updateListenHomework(editId, payload);
+      } else {
+        await createListenHomework(payload);
+      }
       router.push('/teacher/homework');
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
@@ -396,7 +428,7 @@ export function ListenCreationPage() {
       {/* Page heading */}
       <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>
         <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-          New ·{' '}
+          {editId ? 'Edit' : 'New'} ·{' '}
         </Box>
         <Box component="span" sx={{ color: '#60A5FA' }}>
           Listen & Answer

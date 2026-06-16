@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -21,9 +21,12 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useToast } from '@/lib/toast-context';
 import { Plus, X, Loader2, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2, Headphones, Pencil, Trash2, Eye } from 'lucide-react';
-import { parseApiDateTime } from '@/lib/datetime';
+import { parseApiDateTime, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 import HwTypeChip from '@/components/ui/HwTypeChip';
 
@@ -196,7 +199,7 @@ function HomeworkModal({
                 <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1.5, display: 'block' }}>
                   Type
                 </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1.5 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1.5 }}>
                   {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
                     const m = TYPE_META[t];
                     const active = form.type === t;
@@ -512,12 +515,9 @@ function AssignModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const nowLocalValue = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
   const { showToast } = useToast();
   const [selectedClassIds, setSelectedClassIds] = useState<number[]>([]);
-  const [endDate, setEndDate] = useState(nowLocalValue);
+  const [endDate, setEndDate] = useState<Date | null>(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d; });
   const [loading, setLoading] = useState(false);
 
   function toggleClass(id: number) {
@@ -530,7 +530,7 @@ function AssignModal({
     if (!endDate) { showToast('Set an end date.', 'error'); return; }
     setLoading(true);
     try {
-      const input: CreateAssignmentInput = { homeworkId: homework.id, classIds: selectedClassIds, endDate };
+      const input: CreateAssignmentInput = { homeworkId: homework.id, classIds: selectedClassIds, endDate: endDate.toISOString() };
       await createAssignment(input);
       onSaved();
       onClose();
@@ -551,7 +551,7 @@ function AssignModal({
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.3 }}>
-              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign Â· </Box>
+              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign· </Box>
               <Box component="span" sx={{ color: meta.color }}>{assignHeading}</Box>
             </Typography>
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
@@ -595,17 +595,17 @@ function AssignModal({
             </Box>
             <Box>
               <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
-                End Date
+                End Date ({DATE_FORMAT})
               </Typography>
-              <TextField
-                type="datetime-local"
-                required
-                fullWidth
-                size="small"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-              />
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  format={DATE_FORMAT}
+                  value={endDate}
+                  onChange={(v: Date | null) => setEndDate(v)}
+                  minDate={new Date()}
+                  slotProps={{ textField: { size: 'small', fullWidth: true, required: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
+                />
+              </LocalizationProvider>
             </Box>
           </Box>
         </DialogContent>
@@ -646,7 +646,7 @@ export default function HomeworkPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const load = () => getHomeworkList().then(setList).catch(() => {});
-  useEffect(() => { load(); getClasses().then(setClasses); }, []);
+  useEffect(() => { load(); getClasses().then(setClasses).catch(() => {}); }, []);
 
   function openCreate() { setForm(emptyForm()); setShowModal(true); }
   function openEdit(h: HomeworkItem) {
@@ -675,7 +675,13 @@ export default function HomeworkPage() {
   const q = search.toLowerCase();
   const filtered = list.filter((h) => {
     if (typeFilter !== 'ALL' && h.type !== typeFilter) return false;
-    if (q && !h.name?.toLowerCase().includes(q) && !h.speakingText?.toLowerCase().includes(q)) return false;
+    if (q) {
+      const inName = h.name?.toLowerCase().includes(q);
+      const inText = h.speakingText?.toLowerCase().includes(q);
+      const inVocab = h.vocabItems?.some((vi) => vi.word.toLowerCase().includes(q));
+      const inListen = h.listenItems?.some((li) => li.expectedText.toLowerCase().includes(q) || li.keywords.toLowerCase().includes(q));
+      if (!inName && !inText && !inVocab && !inListen) return false;
+    }
     return true;
   });
 
@@ -827,7 +833,12 @@ export default function HomeworkPage() {
                             <CheckCircle2 size={13} />
                           </IconButton>
                           <IconButton size="small"
-                            onClick={() => h.type === 'READING' ? router.push(`/teacher/homework/${h.id}/edit`) : openEdit(h)}
+                            onClick={() => {
+                    if (h.type === 'READING') router.push(`/teacher/homework/${h.id}/edit`);
+                    else if (h.type === 'VOCABULARY') router.push(`/teacher/homework/${h.id}/edit/vocabulary`);
+                    else if (h.type === 'LISTEN') router.push(`/teacher/homework/${h.id}/edit/listen`);
+                    else openEdit(h);
+                  }}
                             sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
                             <Pencil size={13} />
                           </IconButton>

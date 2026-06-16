@@ -742,7 +742,7 @@ export default function SessionPage() {
                   textTransform: 'none',
                 }}
               >
-                Nộp bài!
+                Về trang chủ
               </Button>
             </Box>
           </Box>

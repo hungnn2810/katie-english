@@ -51,7 +51,7 @@ export default function StudentLoginPage() {
         const d = await res.json();
         throw new Error(d.error ?? 'Mã lớp hoặc tên không đúng');
       }
-      router.push('/game/homework');
+      window.location.href = '/game/homework';
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Mã lớp hoặc tên không đúng', 'error');
     } finally {
@@ -105,12 +105,12 @@ export default function StudentLoginPage() {
 
         {/* Name */}
         <Box>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, mb: '7px' }}>Tên của em</Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, mb: '7px' }}>Tên đăng nhập</Typography>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nhập tên của em"
-            autoComplete="name"
+            placeholder="Nhập tên đăng nhập"
+            autoComplete="username"
             style={{ ...FIELD_STYLE, borderColor: nameBad ? '#FF7B7B' : 'rgba(255,255,255,0.18)' }}
           />
         </Box>

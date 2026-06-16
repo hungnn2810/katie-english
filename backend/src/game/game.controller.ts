@@ -43,14 +43,17 @@ export class GameController {
     @Param('id', ParseIntPipe) id: number,
     @Body('wordId') wordId: string,
     @Body('transcribedText') transcribedText: string,
+    @Req() req: Request,
     @UploadedFile() audio?: Express.Multer.File,
   ) {
+    const requestingStudentId: number | undefined = (req as any).user?.studentId;
+    if (!requestingStudentId) throw new ForbiddenException('Student identity required');
     const wordIdNum = Number(wordId);
     if (!Number.isFinite(wordIdNum) || wordIdNum <= 0) {
       throw new BadRequestException('wordId must be a positive integer');
     }
     const dto: SavePhonicsResultDto = { wordId: wordIdNum, transcribedText };
-    return this.service.savePhonicsResult(id, dto, audio?.buffer, audio?.mimetype);
+    return this.service.savePhonicsResult(id, dto, requestingStudentId, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/speaking-result')

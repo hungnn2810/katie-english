@@ -29,6 +29,9 @@ export class GameLoginDto {
 
   @IsString() @IsNotEmpty() @MaxLength(100)
   name: string;
+
+  @IsString() @IsNotEmpty() @MaxLength(100)
+  password: string;
 }
 
 export class SaveListenResultDto {

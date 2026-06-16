@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException, UnauthorizedException, Logger } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { GameRepository } from './game.repository';
 import { StorageService } from '../storage/storage.service';
 import { BfaService } from '../bfa/bfa.service';
@@ -35,31 +36,29 @@ export class GameService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async gameLogin(classCode: string, name: string) {
-    const cls = await this.prisma.class.findUnique({
-      where: { code: classCode },
-      include: { students: true },
-    });
-    if (!cls) throw new NotFoundException('Class not found');
-
-    const student = cls.students.find(
-      (s) => s.fullname.toLowerCase() === name.toLowerCase().trim(),
-    );
-    if (!student) throw new UnauthorizedException('Student not found in this class');
-
+  async gameLogin(classCode: string, name: string, password: string) {
     const user = await this.prisma.user.findFirst({
-      where: { studentId: student.id, role: 'STUDENT' },
+      where: { upn: name, role: 'STUDENT' },
+      include: { student: { include: { class: true } } },
     });
-    if (!user) throw new UnauthorizedException('Student account not set up');
+    if (!user || !user.student) throw new UnauthorizedException('Student account not found');
+
+    if (!user.student.class || user.student.class.code !== classCode) {
+      throw new UnauthorizedException('Student not found in this class');
+    }
+
+    const validPw = await bcrypt.compare(password, user.password);
+    if (!validPw) throw new UnauthorizedException('Invalid password');
     if (!user.approved) throw new ForbiddenException('Account pending approval');
+    if (user.disabled) throw new ForbiddenException('Account disabled');
 
     const token = this.tokenService.sign({
       sub: user.id,
       upn: user.upn,
       role: 'STUDENT',
-      studentId: student.id,
+      studentId: user.student.id,
     });
-    return { token, user: { id: user.id, upn: user.upn, role: user.role, studentId: student.id } };
+    return { token, user: { id: user.id, upn: user.upn, role: user.role, studentId: user.student.id } };
   }
 
   async getAvailableAssignments(studentId: number) {
@@ -259,11 +258,13 @@ export class GameService {
   async savePhonicsResult(
     sessionId: number,
     dto: SavePhonicsResultDto,
+    requestingStudentId?: number,
     audioBuffer?: Buffer,
     mimeType?: string,
   ) {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
+    if (requestingStudentId !== undefined && session.studentId !== requestingStudentId) throw new ForbiddenException('Not your session');
     if (session.completedAt) throw new BadRequestException('Session already completed');
 
     const hw = session.assignment.homework;

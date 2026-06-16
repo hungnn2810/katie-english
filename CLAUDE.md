@@ -1,3 +1,27 @@
+## Backend Rule: Prisma Schema Changes
+
+**IMPORTANT: Whenever `backend/prisma/schema.prisma` is modified, you MUST also update `docs/db/`.**
+
+### What to update
+
+| Thay đổi schema | File docs/db cần sửa |
+|-----------------|----------------------|
+| Thêm/xóa/sửa model `User`, `Student`, `ParentInfo` | `users-auth.md` |
+| Thêm/xóa/sửa model `Class` | `classes.md` |
+| Thêm/xóa/sửa model `Homework`, `HomeworkPart`, `HomeworkWord`, `HomeworkAssignment`, `HomeworkAssignmentClass` | `homework.md` |
+| Thêm/xóa/sửa model `HomeworkSession`, `SpeakingResult`, `PhonicsItemResult`, `ReadingResult`, `ListenItemResult` | `sessions-results.md` |
+| Thêm/xóa/sửa model `VocabItem`, `ListenItem`, `ReadingActivity`, `MatchPair`, `FillBlank`, `FillBlankChoice` | `content.md` |
+| Thêm/xóa/sửa model `Phoneme`, `Word`, `WordPhoneme` | `phonics.md` |
+| Thêm/xóa/sửa model mới không thuộc nhóm trên | Tạo file mới + cập nhật `README.md` |
+| Thêm/xóa enum | `README.md` (bảng Enums) |
+| Thêm model mới hoặc đổi tên table | `README.md` (bảng Tables + sơ đồ quan hệ) |
+
+### Quy tắc
+
+- Cập nhật docs **trong cùng commit** với thay đổi schema — không để docs lạc hậu.
+- Mô tả column phải khớp với schema thực tế (type, nullable, default, FK, unique).
+- Nếu column có ý nghĩa đặc biệt (JSON structure, business logic), ghi chú rõ.
+
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph
 

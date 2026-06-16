@@ -12,6 +12,6 @@ export class GameAuthController {
   @UseGuards(ThrottlerGuard)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   gameLogin(@Body() dto: GameLoginDto) {
-    return this.service.gameLogin(dto.classCode, dto.name);
+    return this.service.gameLogin(dto.classCode, dto.name, dto.password);
   }
 }

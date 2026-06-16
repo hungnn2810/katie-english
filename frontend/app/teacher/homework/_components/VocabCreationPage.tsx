@@ -1,8 +1,10 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createVocabHomework,
+  updateVocabHomework,
+  getVocabHomework,
   uploadSpeakingImage,
 } from '@/lib/admin-api';
 import {
@@ -234,7 +236,7 @@ function SortableVocabItemCard({
 
 // ── VocabCreationPage ─────────────────────────────────────────────────────────
 
-export function VocabCreationPage() {
+export function VocabCreationPage({ editId }: { editId?: number }) {
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -244,6 +246,22 @@ export function VocabCreationPage() {
   const [loading, setLoading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!editId) return;
+    getVocabHomework(editId)
+      .then((hw) => {
+        setName(hw.name ?? '');
+        setItems(
+          hw.vocabItems.map((vi) => ({
+            clientId: crypto.randomUUID(),
+            imageUrl: vi.imageUrl,
+            word: vi.word,
+          }))
+        );
+      })
+      .catch(() => showToast('Failed to load homework.', 'error'));
+  }, [editId]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -324,10 +342,15 @@ export function VocabCreationPage() {
     setValidationError('');
     setLoading(true);
     try {
-      await createVocabHomework({
+      const payload = {
         name: name.trim(),
         items: items.map(({ clientId: _clientId, ...rest }) => rest),
-      });
+      };
+      if (editId) {
+        await updateVocabHomework(editId, payload);
+      } else {
+        await createVocabHomework(payload);
+      }
       router.push('/teacher/homework');
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
@@ -360,7 +383,7 @@ export function VocabCreationPage() {
       {/* Page heading */}
       <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>
         <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-          New ·{' '}
+          {editId ? 'Edit' : 'New'} ·{' '}
         </Box>
         <Box component="span" sx={{ color: '#FFB26B' }}>
           Vocabulary
