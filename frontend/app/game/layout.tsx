@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { ThemeProvider } from '@mui/material/styles';
 import { studentTheme } from '@/lib/student-theme';
+import { gradients } from '@/lib/colors';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -56,21 +57,22 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ThemeProvider theme={studentTheme}>
-      <Box sx={{ minHeight: '100vh', background: 'linear-gradient(160deg, #4F9DFF 0%, #A78BFA 55%, #FF9BD2 100%)', position: 'relative', overflow: 'hidden' }}>
-        {/* Concentric-circle arc decoration */}
+      <Box sx={{ minHeight: '100vh', background: gradients.gameBg, position: 'relative', overflow: 'hidden' }}>
+        {/* Jolly-Phonics-style soft blob decoration */}
         <Box
           component="svg"
-          sx={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden', opacity: 0.07, zIndex: 0 }}
+          viewBox="0 0 1440 900"
+          preserveAspectRatio="xMidYMid slice"
+          sx={{ position: 'fixed', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}
           xmlns="http://www.w3.org/2000/svg"
         >
-          {[150, 230, 320].map((r) => (
-            <circle key={`l${r}`} cx="-30" cy="320" r={r} fill="none" stroke="white" strokeWidth="1" />
-          ))}
-          <g transform="translate(100%, 320)">
-            {[150, 230, 320].map((r) => (
-              <circle key={`r${r}`} cx="0" cy="0" r={r} fill="none" stroke="white" strokeWidth="1" />
-            ))}
-          </g>
+          <ellipse cx="-60" cy="500" rx="200" ry="270" fill="#C4B5FD" opacity="0.22" transform="rotate(-15 -60 500)" />
+          <ellipse cx="1520" cy="160" rx="180" ry="250" fill="#C4B5FD" opacity="0.18" transform="rotate(12 1520 160)" />
+          <ellipse cx="170" cy="870" rx="160" ry="220" fill="#C4B5FD" opacity="0.16" transform="rotate(20 170 870)" />
+          <ellipse cx="1370" cy="700" rx="190" ry="260" fill="#C4B5FD" opacity="0.20" transform="rotate(-18 1370 700)" />
+          <ellipse cx="830" cy="-30" rx="140" ry="190" fill="#C4B5FD" opacity="0.13" transform="rotate(5 830 -30)" />
+          <ellipse cx="1100" cy="450" rx="100" ry="140" fill="#A78BFA" opacity="0.09" transform="rotate(-10 1100 450)" />
+          <ellipse cx="320" cy="200" rx="90" ry="120" fill="#A78BFA" opacity="0.08" transform="rotate(25 320 200)" />
         </Box>
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           {children}

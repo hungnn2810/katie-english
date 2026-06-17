@@ -224,9 +224,9 @@ export default function VocabGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
-            <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
+            <CircularProgress size={48} sx={{ color: '#4C4F7A' }} />
+            <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>
               {pageState === 'mic-check' ? 'Đang yêu cầu quyền mic…' : 'Đang tải…'}
             </Typography>
           </Box>
@@ -240,15 +240,15 @@ export default function VocabGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: { xs: 3, sm: 4 }, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: { xs: 3, sm: 4 }, background: 'transparent' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Mic size={32} color="white" />
+              <Box sx={{ width: 64, height: 64, bgcolor: '#F0EEFF', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Mic size={32} color="#1E1B4B" />
               </Box>
             </Box>
             <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
-              <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, maxWidth: 384 }}>
+              <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 16, maxWidth: 384 }}>
                 Em cần cấp quyền microphone để ghi âm. Hãy vào cài đặt trình duyệt, cấp quyền cho trang này, rồi nhấn Thử lại nhé.
               </Typography>
             </Box>
@@ -260,7 +260,7 @@ export default function VocabGamePage() {
             </Button>
             <Button
               onClick={() => router.push('/game/homework')}
-              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
+              sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
             >
               ← Về trang chủ
             </Button>
@@ -275,10 +275,10 @@ export default function VocabGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
             <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Không tìm thấy bài học.</Typography>
             <Button onClick={() => router.push('/game/homework')}
-              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
+              sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
               ← Quay lại
             </Button>
           </Box>
@@ -292,7 +292,7 @@ export default function VocabGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
             <CircularProgress size={48} sx={{ color: '#FFD166' }} />
             <Typography sx={{ color: '#FFD166', fontWeight: 600 }}>Đang chấm điểm và lưu…</Typography>
           </Box>
@@ -316,15 +316,15 @@ export default function VocabGamePage() {
             <Box sx={{ maxWidth: 560, mx: 'auto' }}>
               <Box sx={{ textAlign: 'center', mb: 5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                  <Box sx={{ width: 76, height: 76, bgcolor: 'rgba(255,255,255,0.12)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <PartyPopper size={38} color="white" />
+                  <Box sx={{ width: 76, height: 76, bgcolor: '#EEF2FF', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <PartyPopper size={38} color="#1E1B4B" />
                   </Box>
                 </Box>
-                <Typography sx={{ color: 'white', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
                 <Typography sx={{ fontSize: 78, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
                   {finalScore}%
                 </Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: 16, fontWeight: 700, mt: '4px' }}>
+                <Typography sx={{ color: '#1F2937', fontSize: 16, fontWeight: 700, mt: '4px' }}>
                   {RESULT_MSG(finalScore)}
                 </Typography>
                 {saveError && (
@@ -334,18 +334,18 @@ export default function VocabGamePage() {
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
                 {items.map((item, idx) => (
-                  <Box key={idx} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2.5, py: 2 }}>
+                  <Box key={idx} sx={{ bgcolor: '#FFFFFF', borderRadius: 3, px: 2.5, py: 2, boxShadow: '0 2px 8px rgba(124,58,237,0.08)' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       {/* Image thumbnail */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item.imageUrl}
                         alt={item.word}
-                        style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.2)', flexShrink: 0 }}
+                        style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(0,0,0,0.1)', flexShrink: 0 }}
                       />
                       {/* Word + chips */}
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography sx={{ color: 'white', fontWeight: 700, fontSize: 16 }}>{item.word}</Typography>
+                        <Typography sx={{ color: '#1E1B4B', fontWeight: 700, fontSize: 16 }}>{item.word}</Typography>
                         {item.bfaError && (
                           <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#fbbf24', mt: 0.5 }}>
                             {BFA_ERROR_MESSAGES[item.bfaError] ?? 'Có lỗi — thử lại nhé'}
@@ -393,7 +393,7 @@ export default function VocabGamePage() {
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: gradients.gameBg, px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 }, gap: 3 }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'transparent', px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 }, gap: 3 }}>
 
           {/* Progress header */}
           <Box sx={{ width: '100%', maxWidth: 480, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -402,12 +402,12 @@ export default function VocabGamePage() {
                 <Box key={i} sx={{
                   height: 8, width: 32, borderRadius: '9999px',
                   transition: 'all 0.15s',
-                  background: i < currentIndex ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#FFD166' : '#ffffff20',
+                  background: i < currentIndex ? '#A78BFA' : i === currentIndex && pageState === 'playing' ? '#FFD166' : '#E5E7EB',
                 }} />
               ))}
             </Box>
             {pageState === 'playing' && (
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600 }}>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 14, fontWeight: 600 }}>
                 {currentIndex + 1} / {items.length}
               </Typography>
             )}
@@ -416,8 +416,8 @@ export default function VocabGamePage() {
           {/* Ready state */}
           {pageState === 'ready' && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 3, maxWidth: 480, width: '100%' }}>
-              <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900 }}>Sẵn sàng chưa?</Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16 }}>
+              <Typography sx={{ color: '#1E1B4B', fontSize: 30, fontWeight: 900 }}>Sẵn sàng chưa?</Typography>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 16 }}>
                 Nhìn vào hình và nói từ đó
               </Typography>
               {items.length > 0 && (
@@ -426,7 +426,7 @@ export default function VocabGamePage() {
                     <Box key={i} component="span" sx={{
                       bgcolor: 'rgba(167,139,250,0.2)',
                       border: '1.5px solid rgba(167,139,250,0.5)',
-                      color: 'white', fontSize: 17, px: 2.5, py: 1,
+                      color: '#1E1B4B', fontSize: 17, px: 2.5, py: 1,
                       borderRadius: '12px', fontWeight: 700, letterSpacing: '0.02em',
                     }}>
                       {item.word}
@@ -453,7 +453,7 @@ export default function VocabGamePage() {
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, maxWidth: 480, width: '100%' }}>
 
               {/* Heading */}
-              <Typography sx={{ color: 'white', fontSize: 22, fontWeight: 900 }}>Chọn từ đúng</Typography>
+              <Typography sx={{ color: '#1E1B4B', fontSize: 22, fontWeight: 900 }}>Chọn từ đúng</Typography>
 
               {/* Image area — 240×200, shake on BFA error */}
               <Box sx={{
@@ -461,7 +461,7 @@ export default function VocabGamePage() {
                 maxWidth: { xs: '90vw', sm: 320 },
                 height: { xs: 'auto', sm: 200 },
                 maxHeight: { xs: '35vh', sm: 280 },
-                border: '4px solid rgba(255,255,255,0.2)',
+                border: '4px solid rgba(0,0,0,0.1)',
                 borderRadius: '22px',
                 overflow: 'hidden',
                 flexShrink: 0,
@@ -488,16 +488,16 @@ export default function VocabGamePage() {
                       sx={{
                         width: 104, height: 104, borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: '4px solid rgba(255,255,255,0.3)',
-                        background: 'rgba(255,255,255,0.1)',
+                        border: '4px solid rgba(0,0,0,0.12)',
+                        background: 'rgba(0,0,0,0.04)',
                         cursor: 'pointer',
                         transition: 'all 0.15s',
-                        '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
+                        '&:hover': { borderColor: 'rgba(0,0,0,0.3)', transform: 'scale(1.05)' },
                       }}
                     >
-                      <Mic size={42} color="white" />
+                      <Mic size={42} color="#1E1B4B" />
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 15 }}>Nhấn để ghi âm</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 15 }}>Nhấn để ghi âm</Typography>
                   </>
                 )}
 
@@ -539,19 +539,19 @@ export default function VocabGamePage() {
                     <Box sx={{
                       width: 104, height: 104, borderRadius: '50%',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      border: '4px solid rgba(255,255,255,0.3)',
-                      background: 'rgba(255,255,255,0.1)',
+                      border: '4px solid rgba(0,0,0,0.1)',
+                      background: 'rgba(0,0,0,0.04)',
                     }}>
                       <Box sx={{
                         width: 40, height: 40,
-                        border: '4px solid rgba(255,255,255,0.25)',
-                        borderTopColor: '#fff',
+                        border: '4px solid rgba(0,0,0,0.12)',
+                        borderTopColor: '#A78BFA',
                         borderRadius: '50%',
                         animation: 'spin 0.8s linear infinite',
                         '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } },
                       }} />
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 15 }}>Đang chấm điểm…</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 15 }}>Đang chấm điểm…</Typography>
                   </>
                 )}
 
@@ -587,9 +587,9 @@ export default function VocabGamePage() {
                   <Button
                     onClick={handleReRecord}
                     sx={{
-                      px: 4, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, fontSize: 16,
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+                      px: 4, py: 1.5, borderRadius: 3, color: '#1E1B4B', fontWeight: 700, fontSize: 16,
+                      border: '1px solid rgba(0,0,0,0.12)',
+                      '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' },
                       textTransform: 'none',
                     }}
                   >

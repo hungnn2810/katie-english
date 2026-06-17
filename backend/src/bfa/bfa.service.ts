@@ -141,13 +141,13 @@ export class BfaService {
     const nbest = ((paResult.NBest as any[]) ?? [{}])[0] ?? {};
     const azureWords: any[] = (nbest.Words as any[]) ?? [];
     // With enableMiscue=true, extra recognized sounds appear as Insertion words.
-    // Find the word matching the reference (non-Insertion); fall back to first non-Insertion, then first word.
+    // Find the word matching the reference (non-Insertion); fall back to first non-Insertion word.
+    // Never fall back to azureWords[0] — that could be an Insertion with score 0.
     const wordData = azureWords.find(
       (w: any) =>
         (w.PronunciationAssessment?.ErrorType ?? w.ErrorType ?? 'None') !== 'Insertion' &&
         (w.Word ?? '').toLowerCase() === word.toLowerCase(),
     ) ?? azureWords.find((w: any) => (w.PronunciationAssessment?.ErrorType ?? w.ErrorType ?? 'None') !== 'Insertion')
-      ?? azureWords[0]
       ?? {};
     const score = Math.round(Number(wordData.PronunciationAssessment?.AccuracyScore ?? wordData.AccuracyScore ?? 0));
     const ops = mapPhonemeOps(wordData);

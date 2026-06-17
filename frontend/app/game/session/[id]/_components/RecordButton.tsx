@@ -23,17 +23,17 @@ export default function RecordButton({ state, onStart, onStop }: RecordButtonPro
           aria-label="Nhấn để ghi âm"
           sx={{
             width: 104, height: 104, borderRadius: '50%',
-            border: '4px solid rgba(255,255,255,0.3)',
-            background: 'rgba(255,255,255,0.1)',
+            border: '4px solid rgba(0,0,0,0.12)',
+            background: 'rgba(0,0,0,0.04)',
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'all 0.15s',
-            '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
+            '&:hover': { borderColor: 'rgba(0,0,0,0.3)', transform: 'scale(1.05)' },
           }}
         >
-          <Mic size={42} color="#fff" />
+          <Mic size={42} color="#1E1B4B" />
         </Box>
-        <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 15 }}>Nhấn để ghi âm</Typography>
+        <Typography sx={{ color: '#6B7280', fontSize: 15 }}>Nhấn để ghi âm</Typography>
       </Box>
     );
   }
@@ -80,14 +80,14 @@ export default function RecordButton({ state, onStart, onStop }: RecordButtonPro
       <Box sx={wrap}>
         <Box sx={{
           width: 104, height: 104, borderRadius: '50%',
-          border: '4px solid rgba(255,255,255,0.3)',
-          background: 'rgba(255,255,255,0.1)',
+          border: '4px solid rgba(0,0,0,0.1)',
+          background: 'rgba(0,0,0,0.04)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <Box sx={{
             width: 40, height: 40,
-            border: '4px solid rgba(255,255,255,0.25)',
-            borderTopColor: '#fff',
+            border: '4px solid rgba(0,0,0,0.12)',
+            borderTopColor: '#A78BFA',
             borderRadius: '50%',
             animation: 'spin 0.8s linear infinite',
             '@keyframes spin': {
@@ -96,7 +96,7 @@ export default function RecordButton({ state, onStart, onStop }: RecordButtonPro
             },
           }} />
         </Box>
-        <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 15 }}>Đang chấm điểm…</Typography>
+        <Typography sx={{ color: '#6B7280', fontSize: 15 }}>Đang chấm điểm…</Typography>
       </Box>
     );
   }

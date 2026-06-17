@@ -2,7 +2,7 @@
  * Unit tests for BfaService — Azure Pronunciation Assessment integration.
  *
  * Covers: mapPhonemeOps score-band logic, analyze(), analyzeSpeaking(),
- * transcribe(), and scoreSemantic(). All external I/O (axios, ffmpeg, fs)
+ * transcribe(), and scoreSemantic(). All external I/O (axios, execFile, fs/promises)
  * is mocked — no live Azure calls or filesystem access.
  *
  * VOCAB-04: 'similar' status is purely score-band driven via Azure AccuracyScore.
@@ -11,21 +11,24 @@
 
 import { BfaService, mapPhonemeOps } from './bfa.service';
 import axios from 'axios';
-import { execFileSync } from 'child_process';
-import * as fs from 'fs';
+import { execFile } from 'child_process';
+import { writeFile, readFile, unlink } from 'fs/promises';
 import * as path from 'path';
 
 jest.mock('axios');
-jest.mock('child_process', () => ({ execFileSync: jest.fn() }));
-jest.mock('fs', () => ({
-  writeFileSync: jest.fn(),
-  readFileSync: jest.fn(),
-  unlinkSync: jest.fn(),
+jest.mock('child_process', () => ({ execFile: jest.fn() }));
+jest.mock('fs/promises', () => ({
+  writeFile: jest.fn(),
+  readFile: jest.fn(),
+  unlink: jest.fn(),
 }));
 
 const mockPost = axios.post as jest.Mock;
-const mockExec = execFileSync as jest.Mock;
-const mockReadFile = fs.readFileSync as jest.Mock;
+// execFile has complex overloads — cast through unknown so mockImplementation accepts any fn shape
+const mockExecFile = execFile as unknown as jest.Mock;
+const mockReadFile = readFile as unknown as jest.Mock;
+const mockWriteFile = writeFile as unknown as jest.Mock;
+const mockUnlink = unlink as unknown as jest.Mock;
 
 const WAV = Buffer.from('RIFF....wav');
 
@@ -184,12 +187,30 @@ describe('mapPhonemeOps — score-band [50, 80)', () => {
 // BfaService — Azure REST integration
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Helper: sets up execFile mock to call callback with null (success) or error.
+function mockExecSuccess() {
+  mockExecFile.mockImplementation((...args: any[]) => {
+    const cb = args[args.length - 1];
+    if (typeof cb === 'function') cb(null);
+  });
+}
+
+function mockExecFailOnce(message: string) {
+  mockExecFile.mockImplementationOnce((...args: any[]) => {
+    const cb = args[args.length - 1];
+    if (typeof cb === 'function') cb(new Error(message));
+  });
+}
+
 describe('BfaService', () => {
   let service: BfaService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockReadFile.mockReturnValue(WAV);
+    mockExecSuccess();
+    mockWriteFile.mockResolvedValue(undefined);
+    mockReadFile.mockResolvedValue(WAV);
+    mockUnlink.mockResolvedValue(undefined);
     service = new BfaService();
   });
 
@@ -221,7 +242,7 @@ describe('BfaService', () => {
     });
 
     it('ffmpeg failure → success:false, error:audio_conversion_failed, no Azure call', async () => {
-      mockExec.mockImplementationOnce(() => { throw new Error('ffmpeg not found'); });
+      mockExecFailOnce('ffmpeg not found');
 
       const result = await service.analyze(Buffer.from('audio'), 'audio/webm', 'cat', []);
 
@@ -248,20 +269,17 @@ describe('BfaService', () => {
       expect(result.error).toBe('speech_not_detected');
     });
 
-    it('sends WAV buffer to Azure PA with pronunciation.referenceText and correct Content-Type', async () => {
+    it('sends audio to Azure PA with Pronunciation-Assessment header containing referenceText', async () => {
       mockPost.mockResolvedValueOnce({ data: singleWordPA('cat', 90, []) });
 
       await service.analyze(Buffer.from('audio'), 'audio/webm', 'cat', []);
 
-      expect(mockPost).toHaveBeenCalledWith(
-        expect.stringContaining('pronunciation.referenceText=cat'),
-        WAV,
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
-          }),
-        }),
-      );
+      const [url, , config] = mockPost.mock.calls[0];
+      expect(url).toContain('language=en-US');
+      const paCfg = config.headers['Pronunciation-Assessment'] as string;
+      const decoded = JSON.parse(Buffer.from(paCfg, 'base64').toString('utf8')) as { ReferenceText: string };
+      expect(decoded.ReferenceText).toBe('cat');
+      expect(config.headers['Content-Type']).toBe('audio/wav; codecs=audio/pcm; samplerate=16000');
     });
   });
 
@@ -310,7 +328,7 @@ describe('BfaService', () => {
     });
 
     it('ffmpeg failure → success:false, correct total_words count, no Azure call', async () => {
-      mockExec.mockImplementationOnce(() => { throw new Error('ffmpeg error'); });
+      mockExecFailOnce('ffmpeg error');
 
       const result = await service.analyzeSpeaking(Buffer.from('audio'), 'audio/webm', 'hello world');
 
@@ -375,7 +393,7 @@ describe('BfaService', () => {
     });
 
     it('ffmpeg failure → empty text and words, no Azure call', async () => {
-      mockExec.mockImplementationOnce(() => { throw new Error('no ffmpeg'); });
+      mockExecFailOnce('no ffmpeg');
 
       const result = await service.transcribe(Buffer.from('audio'), 'audio/webm');
 
@@ -481,10 +499,10 @@ describe('BfaService', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Real .m4a fixture bytes — mocked ffmpeg + Azure (no live I/O)
+// Real .m4a fixture bytes — mocked execFile + fs/promises (no live I/O)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('analyze — real .m4a fixture bytes (mocked ffmpeg + Azure)', () => {
+describe('analyze — real .m4a fixture bytes (mocked execFile + fs/promises)', () => {
   const realFs = jest.requireActual<typeof import('fs')>('fs');
   const fixturesDir = path.join(__dirname, '..', 'game', '__fixtures__');
 
@@ -492,7 +510,13 @@ describe('analyze — real .m4a fixture bytes (mocked ffmpeg + Azure)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockReadFile.mockReturnValue(WAV);
+    mockExecFile.mockImplementation((...args: any[]) => {
+      const cb = args[args.length - 1];
+      if (typeof cb === 'function') cb(null);
+    });
+    mockWriteFile.mockResolvedValue(undefined);
+    mockReadFile.mockResolvedValue(WAV);
+    mockUnlink.mockResolvedValue(undefined);
     service = new BfaService();
   });
 
@@ -507,7 +531,7 @@ describe('analyze — real .m4a fixture bytes (mocked ffmpeg + Azure)', () => {
       const result = await service.analyze(m4aBuffer, 'audio/m4a', word, []);
 
       expect(result.success).toBe(true);
-      const ffmpegArgs = mockExec.mock.calls[0][1] as string[];
+      const ffmpegArgs = mockExecFile.mock.calls[0][1] as string[];
       expect(ffmpegArgs[ffmpegArgs.indexOf('-i') + 1]).toMatch(/apa-in-.*\.m4a$/);
     },
   );
@@ -518,7 +542,7 @@ describe('analyze — real .m4a fixture bytes (mocked ffmpeg + Azure)', () => {
 
     await service.analyze(m4aBuffer, 'audio/x-m4a', 'cat', []);
 
-    const ffmpegArgs = mockExec.mock.calls[0][1] as string[];
+    const ffmpegArgs = mockExecFile.mock.calls[0][1] as string[];
     expect(ffmpegArgs[ffmpegArgs.indexOf('-i') + 1]).toMatch(/apa-in-.*\.m4a$/);
   });
 
@@ -576,7 +600,7 @@ describe('analyze — real .m4a fixture bytes (mocked ffmpeg + Azure)', () => {
 
     await service.analyze(m4aBuffer, 'audio/m4a', 'cat', []);
 
-    const writtenBuffer = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as Buffer;
+    const writtenBuffer = mockWriteFile.mock.calls[0][1] as Buffer;
     expect(writtenBuffer).toEqual(m4aBuffer);
   });
 });
@@ -589,7 +613,13 @@ describe('analyzeSpeaking — real .m4a fixture bytes', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockReadFile.mockReturnValue(WAV);
+    mockExecFile.mockImplementation((...args: any[]) => {
+      const cb = args[args.length - 1];
+      if (typeof cb === 'function') cb(null);
+    });
+    mockWriteFile.mockResolvedValue(undefined);
+    mockReadFile.mockResolvedValue(WAV);
+    mockUnlink.mockResolvedValue(undefined);
     service = new BfaService();
   });
 
@@ -600,7 +630,7 @@ describe('analyzeSpeaking — real .m4a fixture bytes', () => {
     const result = await service.analyzeSpeaking(m4aBuffer, 'audio/m4a', 'the cat sat');
 
     expect(result.success).toBe(true);
-    const ffmpegArgs = mockExec.mock.calls[0][1] as string[];
+    const ffmpegArgs = mockExecFile.mock.calls[0][1] as string[];
     expect(ffmpegArgs[ffmpegArgs.indexOf('-i') + 1]).toMatch(/apa-in-.*\.m4a$/);
   });
 
@@ -610,7 +640,7 @@ describe('analyzeSpeaking — real .m4a fixture bytes', () => {
 
     await service.analyzeSpeaking(m4aBuffer, 'audio/x-m4a', 'the cat sat');
 
-    const ffmpegArgs = mockExec.mock.calls[0][1] as string[];
+    const ffmpegArgs = mockExecFile.mock.calls[0][1] as string[];
     expect(ffmpegArgs[ffmpegArgs.indexOf('-i') + 1]).toMatch(/apa-in-.*\.m4a$/);
   });
 });
@@ -623,7 +653,13 @@ describe('transcribe — real .m4a fixture bytes', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockReadFile.mockReturnValue(WAV);
+    mockExecFile.mockImplementation((...args: any[]) => {
+      const cb = args[args.length - 1];
+      if (typeof cb === 'function') cb(null);
+    });
+    mockWriteFile.mockResolvedValue(undefined);
+    mockReadFile.mockResolvedValue(WAV);
+    mockUnlink.mockResolvedValue(undefined);
     service = new BfaService();
   });
 
@@ -634,7 +670,7 @@ describe('transcribe — real .m4a fixture bytes', () => {
     const result = await service.transcribe(m4aBuffer, 'audio/m4a');
 
     expect(result.text).toBe('hello world');
-    const ffmpegArgs = mockExec.mock.calls[0][1] as string[];
+    const ffmpegArgs = mockExecFile.mock.calls[0][1] as string[];
     expect(ffmpegArgs[ffmpegArgs.indexOf('-i') + 1]).toMatch(/apa-in-.*\.m4a$/);
   });
 
@@ -644,7 +680,7 @@ describe('transcribe — real .m4a fixture bytes', () => {
 
     await service.transcribe(m4aBuffer, 'audio/m4a');
 
-    const writtenBuffer = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as Buffer;
+    const writtenBuffer = mockWriteFile.mock.calls[0][1] as Buffer;
     expect(writtenBuffer).toEqual(m4aBuffer);
   });
 });

@@ -167,13 +167,13 @@ function PageContent({ user }: { user: AuthUser }) {
       {/* GameHeader */}
       <Box component="header" sx={{ position: 'relative', zIndex: 10, px: { xs: 2, sm: 3, md: 4 }, py: { xs: 1.75, sm: 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-          <Box sx={{ width: 36, height: 36, borderRadius: '11px', bgcolor: 'white', color: '#4F9DFF', fontWeight: 900, fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
+          <Box sx={{ width: 36, height: 36, borderRadius: '11px', bgcolor: 'white', color: '#4F9DFF', fontWeight: 900, fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(124,58,237,0.15)' }}>
             K
           </Box>
-          <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 17 }}>Katie English</Typography>
+          <Typography sx={{ color: '#1E1B4B', fontWeight: 900, fontSize: 17 }}>Katie English</Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '12px', px: '12px', py: '6px', pl: '6px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px', bgcolor: 'rgba(0,0,0,0.05)', borderRadius: '12px', px: '12px', py: '6px', pl: '6px' }}>
             <Box sx={{
               width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center',
               justifyContent: 'center', fontSize: 13, fontWeight: 900, color: 'white',
@@ -181,13 +181,13 @@ function PageContent({ user }: { user: AuthUser }) {
             }}>
               {user.upn[0].toUpperCase()}
             </Box>
-            <Typography sx={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 600, display: { xs: 'none', sm: 'block' } }}>{displayName}</Typography>
+            <Typography sx={{ color: '#1E1B4B', fontSize: 14, fontWeight: 600, display: { xs: 'none', sm: 'block' } }}>{displayName}</Typography>
           </Box>
           <Button
             onClick={() => setShowPwModal(true)}
             sx={{
-              display: 'flex', alignItems: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)',
-              '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },
+              display: 'flex', alignItems: 'center', gap: 0.75, color: '#6B7280',
+              '&:hover': { color: '#1E1B4B', bgcolor: 'rgba(0,0,0,0.06)' },
               fontSize: 13, fontWeight: 500, px: 1, py: { xs: 1.25, sm: 0.75 }, borderRadius: 2, textTransform: 'none', minWidth: 0, minHeight: 44,
             }}
           >
@@ -196,8 +196,8 @@ function PageContent({ user }: { user: AuthUser }) {
           <Button
             onClick={() => { clearAuth(); router.push('/game/login'); }}
             sx={{
-              color: 'rgba(255,255,255,0.6)',
-              '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },
+              color: '#6B7280',
+              '&:hover': { color: '#1E1B4B', bgcolor: 'rgba(0,0,0,0.06)' },
               fontSize: 13, fontWeight: 500, px: 1, py: { xs: 1.25, sm: 0.75 }, borderRadius: 2, textTransform: 'none', minWidth: 0, minHeight: 44,
             }}
           >
@@ -208,41 +208,41 @@ function PageContent({ user }: { user: AuthUser }) {
 
       {/* Main */}
       <Box component="main" sx={{ position: 'relative', zIndex: 10, px: { xs: 2, sm: 3, md: 4 }, pb: { xs: 4, sm: 5 } }}>
-        <Typography sx={{ fontSize: { xs: 24, sm: 28, md: 30 }, fontWeight: 900, color: 'white', mb: '4px' }}>
+        <Typography sx={{ fontSize: { xs: 24, sm: 28, md: 30 }, fontWeight: 900, color: '#1E1B4B', mb: '4px' }}>
           Chào, {displayName}!
         </Typography>
-        <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: { xs: 14, sm: 15 }, fontWeight: 600, mb: '24px' }}>
+        <Typography sx={{ color: '#4C4F7A', fontSize: { xs: 14, sm: 15 }, fontWeight: 600, mb: '24px' }}>
           Hôm nay học gì nào?
         </Typography>
 
         {loading && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 12, gap: 2 }}>
-            <CircularProgress size={40} sx={{ color: 'rgba(255,255,255,0.7)' }} />
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, fontWeight: 600 }}>
+            <CircularProgress size={40} sx={{ color: '#A78BFA' }} />
+            <Typography sx={{ color: '#4C4F7A', fontSize: 15, fontWeight: 600 }}>
               Đang tải bài tập…
             </Typography>
           </Box>
         )}
 
         {!user.studentId && !loading && (
-          <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '20px', p: 5, textAlign: 'center', maxWidth: 448, mx: 'auto' }}>
+          <Box sx={{ bgcolor: '#FFFFFF', borderRadius: '20px', p: 5, textAlign: 'center', maxWidth: 448, mx: 'auto', boxShadow: '0 2px 12px rgba(124,58,237,0.1)' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
-              <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <School size={32} color="white" />
+              <Box sx={{ width: 64, height: 64, bgcolor: '#EDE9FE', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <School size={32} color="#7C3AED" />
               </Box>
             </Box>
-            <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 21, mb: 1.5 }}>Tài khoản chưa được liên kết</Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>Tài khoản của em chưa được liên kết với hồ sơ học sinh. Hỏi cô giáo nhé!</Typography>
+            <Typography sx={{ color: '#1E1B4B', fontWeight: 900, fontSize: 21, mb: 1.5 }}>Tài khoản chưa được liên kết</Typography>
+            <Typography sx={{ color: '#4C4F7A' }}>Tài khoản của em chưa được liên kết với hồ sơ học sinh. Hỏi cô giáo nhé!</Typography>
           </Box>
         )}
 
         {!loading && user.studentId && assignments.length === 0 && (
           <Box sx={{ textAlign: 'center', py: '70px' }}>
-            <Box sx={{ width: 76, height: 76, borderRadius: '20px', bgcolor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: '18px' }}>
-              <PartyPopper size={36} color="white" />
+            <Box sx={{ width: 76, height: 76, borderRadius: '20px', bgcolor: '#EDE9FE', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: '18px' }}>
+              <PartyPopper size={36} color="#7C3AED" />
             </Box>
-            <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 21 }}>Hôm nay chưa có bài tập!</Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mt: '8px' }}>Quay lại sau khi cô giao bài nhé.</Typography>
+            <Typography sx={{ color: '#1E1B4B', fontWeight: 900, fontSize: 21 }}>Hôm nay chưa có bài tập!</Typography>
+            <Typography sx={{ color: '#6B7280', fontSize: 14, mt: '8px' }}>Quay lại sau khi cô giao bài nhé.</Typography>
           </Box>
         )}
 

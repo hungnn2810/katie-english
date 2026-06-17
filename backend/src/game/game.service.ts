@@ -23,6 +23,8 @@ interface SessionWithListenResults {
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenService } from '../auth/jwt.service';
 
+const LISTEN_PRON_SEMANTIC_GATE = 0.2;
+
 @Injectable()
 export class GameService {
   private readonly logger = new Logger(GameService.name);
@@ -466,10 +468,10 @@ export class GameService {
         this.logger.warn(`[session=${sessionId}] scoreSemantic error: ${(err as Error).message}`);
       }
 
-      // Step 3: Pronunciation scoring — ONLY if semantic >= 0.2 (D-09)
+      // Step 3: Pronunciation scoring — ONLY if semantic >= threshold (D-09)
       // When keywords present, at least one must match; when none defined, semantic threshold alone gates.
       const keywordsOk = keywordsArr.length === 0 || matchedKeywords.length > 0;
-      if (semanticScore >= 0.2 && keywordsOk) {
+      if (semanticScore >= LISTEN_PRON_SEMANTIC_GATE && keywordsOk) {
         try {
           const bfaResult = await this.bfa.analyzeSpeaking(
             audioBuffer,

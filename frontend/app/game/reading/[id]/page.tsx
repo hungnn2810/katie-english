@@ -56,28 +56,28 @@ type ActivityState =
 
 function LoadingState() {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
-      <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
-      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Loading…</p>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+      <CircularProgress size={48} sx={{ color: '#4C4F7A' }} />
+      <p style={{ color: '#4C4F7A', fontSize: 14 }}>Loading…</p>
     </Box>
   );
 }
 
 function ErrorState({ kind, onBack }: { kind: ErrorKind; onBack: () => void }) {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg, px: 3 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, px: 3 }}>
       <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Homework not found</Typography>
       {kind === 'no-activities' && (
-        <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, textAlign: 'center', maxWidth: 320 }}>This reading homework has no activities yet.</Typography>
+        <Typography sx={{ color: '#4C4F7A', fontSize: 14, textAlign: 'center', maxWidth: 320 }}>This reading homework has no activities yet.</Typography>
       )}
-      <Button onClick={onBack} sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>← Back to Homework</Button>
+      <Button onClick={onBack} sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>← Back to Homework</Button>
     </Box>
   );
 }
 
 function SubmittingState() {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
       <CircularProgress size={48} sx={{ color: '#FFD166' }} />
       <p style={{ color: '#FFD166', fontWeight: 700 }}>Saving your score…</p>
     </Box>
@@ -97,16 +97,16 @@ function ResultsState({
 }) {
   const score = session?.score ?? 0;
   return (
-    <Box sx={{ minHeight: '100vh', py: { xs: 4, sm: 6 }, px: { xs: 2, sm: 4 }, background: gradients.gameBg }}>
+    <Box sx={{ minHeight: '100vh', py: { xs: 4, sm: 6 }, px: { xs: 2, sm: 4 } }}>
       <Box sx={{ maxWidth: 560, mx: 'auto', textAlign: 'center', mb: 5 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <PartyPopper size={32} color="white" />
+          <Box sx={{ width: 64, height: 64, bgcolor: '#FFFFFF', boxShadow: '0 2px 8px rgba(124,58,237,0.08)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <PartyPopper size={32} color="#1E1B4B" />
           </Box>
         </Box>
-        <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Homework Complete!</Typography>
+        <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Homework Complete!</Typography>
         <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2, color: scoreHexColor(score), fontVariantNumeric: 'tabular-nums' }}>{score}%</Typography>
-        <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 1 }}>Your score has been saved</Typography>
+        <Typography sx={{ color: '#4C4F7A', fontSize: 14, mt: 1 }}>Your score has been saved</Typography>
         {saveError && <Typography sx={{ color: '#FF7B7B', fontSize: 12, mt: 1 }}>{saveError}</Typography>}
       </Box>
 
@@ -129,10 +129,10 @@ function ResultsState({
           }
           const activityPct = total > 0 ? Math.round((correct / total) * 100) : 0;
           return (
-            <Box key={idx} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2.5, py: 2 }}>
-              <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', mb: 1 }}>{typeTag}</Typography>
+            <Box key={idx} sx={{ bgcolor: '#FFFFFF', boxShadow: '0 2px 8px rgba(124,58,237,0.08)', borderRadius: 3, px: 2.5, py: 2 }}>
+              <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', mb: 1 }}>{typeTag}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>{label}</Typography>
+                <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>{label}</Typography>
                 <Typography sx={{ fontSize: 18, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: scoreHexColor(activityPct) }}>
                   {activityPct}%
                 </Typography>
@@ -170,9 +170,9 @@ function PlayingShell({
   children: React.ReactNode;
 }) {
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: gradients.gameBgAlt }}>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: { xs: 2, sm: 4 }, py: 2, flexShrink: 0 }}>
-        <Button onClick={onBack} sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>← Back</Button>
+        <Button onClick={onBack} sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>← Back</Button>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {activityStates.map((_, i) => (
             <Box
@@ -181,15 +181,15 @@ function PlayingShell({
                 width: { xs: 20, sm: 32 }, height: 8, borderRadius: '9999px', transition: 'all 0.15s',
                 background:
                   i < currentActivityIndex
-                    ? 'rgba(255,255,255,0.5)'
+                    ? '#A78BFA'
                     : i === currentActivityIndex
                     ? '#FFD166'
-                    : 'rgba(255,255,255,0.2)',
+                    : '#E5E7EB',
               }}
             />
           ))}
         </Box>
-        <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 700 }}>
+        <Typography sx={{ color: '#4C4F7A', fontSize: 14, fontWeight: 700 }}>
           Activity {currentActivityIndex + 1} of {activityStates.length}
         </Typography>
       </Box>
@@ -275,7 +275,7 @@ function MatchingActivityRenderer({
 
   return (
     <Box sx={{ maxWidth: 768, mx: 'auto', width: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 4 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 4 }}>
         <ImageIcon size={16} />Match each image to its word
       </Box>
 
@@ -301,7 +301,7 @@ function MatchingActivityRenderer({
                   ? { borderColor: '#7BD88F', bgcolor: 'rgba(123,216,143,0.2)' }
                   : isSelected
                   ? { borderColor: 'primary.main', boxShadow: 3, transform: 'scale(1.05)' }
-                  : { borderColor: 'rgba(255,255,255,0.2)', bgcolor: 'rgba(255,255,255,0.1)' }),
+                  : { borderColor: 'rgba(0,0,0,0.1)', bgcolor: 'rgba(0,0,0,0.04)' }),
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -335,7 +335,7 @@ function MatchingActivityRenderer({
                 animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',
                 ...(isLocked
                   ? { bgcolor: 'rgba(123,216,143,0.2)', color: '#7BD88F', borderColor: '#7BD88F' }
-                  : { bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' } }),
+                  : { bgcolor: 'rgba(0,0,0,0.04)', color: '#1E1B4B', borderColor: 'rgba(0,0,0,0.1)', '&:hover': { bgcolor: 'rgba(0,0,0,0.08)', borderColor: 'rgba(0,0,0,0.2)' } }),
               }}
             >
               {p.pair.word}
@@ -410,7 +410,7 @@ function FillBlankActivityRenderer({
                   ? '#FF7B7B'
                   : i === state.currentItemIndex
                   ? '#FFD166'
-                  : 'rgba(255,255,255,0.2)',
+                  : '#E5E7EB',
             }}
           />
         ))}
@@ -421,14 +421,14 @@ function FillBlankActivityRenderer({
         {parts.flatMap((part, idx, arr) =>
           idx < arr.length - 1
             ? [
-                <Box component="span" key={`t${idx}`} sx={{ color: 'white', fontSize: { xs: 18, sm: 24 }, fontWeight: 900 }}>{part}</Box>,
+                <Box component="span" key={`t${idx}`} sx={{ color: '#1E1B4B', fontSize: { xs: 18, sm: 24 }, fontWeight: 900 }}>{part}</Box>,
                 <Box
                   component="span"
                   key={`b${idx}`}
-                  sx={{ display: 'inline-block', width: { xs: 72, sm: 96 }, height: 32, borderRadius: 2, border: '2px solid rgba(255,255,255,0.4)', bgcolor: 'rgba(255,255,255,0.1)', verticalAlign: 'middle', mx: 0.5 }}
+                  sx={{ display: 'inline-block', width: { xs: 72, sm: 96 }, height: 32, borderRadius: 2, border: '2px solid rgba(0,0,0,0.2)', bgcolor: 'rgba(0,0,0,0.04)', verticalAlign: 'middle', mx: 0.5 }}
                 />,
               ]
-            : [<Box component="span" key={`t${idx}`} sx={{ color: 'white', fontSize: { xs: 18, sm: 24 }, fontWeight: 900 }}>{part}</Box>]
+            : [<Box component="span" key={`t${idx}`} sx={{ color: '#1E1B4B', fontSize: { xs: 18, sm: 24 }, fontWeight: 900 }}>{part}</Box>]
         )}
       </Box>
 
@@ -452,10 +452,10 @@ function FillBlankActivityRenderer({
                 ...(isRight
                   ? { bgcolor: 'rgba(123,216,143,0.2)', color: '#7BD88F', borderColor: '#7BD88F' }
                   : isWrong
-                  ? { bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: '#FF7B7B' }
+                  ? { bgcolor: 'rgba(0,0,0,0.04)', color: '#1E1B4B', borderColor: '#FF7B7B' }
                   : answered
-                  ? { opacity: 0.4, cursor: 'not-allowed', bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }
-                  : { bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' } }),
+                  ? { opacity: 0.4, cursor: 'not-allowed', bgcolor: 'rgba(0,0,0,0.04)', color: '#1E1B4B', borderColor: 'rgba(0,0,0,0.1)' }
+                  : { bgcolor: 'rgba(0,0,0,0.04)', color: '#1E1B4B', borderColor: 'rgba(0,0,0,0.1)', '&:hover': { bgcolor: 'rgba(0,0,0,0.08)', borderColor: 'rgba(0,0,0,0.2)' } }),
               }}
             >
               {c.word}

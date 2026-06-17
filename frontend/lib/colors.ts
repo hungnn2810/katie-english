@@ -16,9 +16,9 @@ export const colors = {
 } as const;
 
 export const gradients = {
-  // Student game screens — bright, child-friendly gradient
-  gameBg: 'linear-gradient(160deg, #4F9DFF 0%, #A78BFA 55%, #FF9BD2 100%)',
-  gameBgAlt: 'linear-gradient(160deg, #4158D0 0%, #7C3AED 100%)',
+  // Student game screens — soft lavender, child-friendly (Jolly Phonics style)
+  gameBg: '#F5F3FF',
+  gameBgAlt: '#EEEEF8',
 
   // Bright card/button gradients using new palette
   primaryPurple: `linear-gradient(135deg, #4F9DFF, #A78BFA)`,

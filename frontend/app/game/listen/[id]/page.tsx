@@ -266,9 +266,9 @@ export default function ListenGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
-            <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
+            <CircularProgress size={48} sx={{ color: '#4C4F7A' }} />
+            <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>
               {pageState === 'mic-check' ? 'Đang yêu cầu quyền mic…' : 'Đang tải…'}
             </Typography>
           </Box>
@@ -282,15 +282,15 @@ export default function ListenGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: { xs: 3, sm: 4 }, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: { xs: 3, sm: 4 }, background: 'transparent' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Mic size={32} color="white" />
+              <Box sx={{ width: 64, height: 64, bgcolor: '#F0EEFF', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Mic size={32} color="#1E1B4B" />
               </Box>
             </Box>
             <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
-              <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, maxWidth: 384 }}>
+              <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 16, maxWidth: 384 }}>
                 Em cần cấp quyền microphone để ghi âm. Hãy vào cài đặt trình duyệt, cấp quyền cho trang này, rồi nhấn Thử lại nhé.
               </Typography>
             </Box>
@@ -302,7 +302,7 @@ export default function ListenGamePage() {
             </Button>
             <Button
               onClick={() => router.push('/game/homework')}
-              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
+              sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
             >
               ← Về trang chủ
             </Button>
@@ -317,10 +317,10 @@ export default function ListenGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
             <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Không tìm thấy bài học. Vui lòng quay lại và thử lại.</Typography>
             <Button onClick={() => router.push('/game/homework')}
-              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
+              sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
               ← Về trang chủ
             </Button>
           </Box>
@@ -334,7 +334,7 @@ export default function ListenGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
             <CircularProgress size={48} sx={{ color: '#FFD166' }} />
             <Typography sx={{ color: '#FFD166', fontWeight: 600 }}>Đang chấm điểm và lưu…</Typography>
           </Box>
@@ -358,15 +358,15 @@ export default function ListenGamePage() {
             <Box sx={{ maxWidth: 560, mx: 'auto' }}>
               <Box sx={{ textAlign: 'center', mb: 5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                  <Box sx={{ width: 76, height: 76, bgcolor: 'rgba(255,255,255,0.12)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <PartyPopper size={38} color="white" />
+                  <Box sx={{ width: 76, height: 76, bgcolor: '#EEF2FF', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <PartyPopper size={38} color="#1E1B4B" />
                   </Box>
                 </Box>
-                <Typography sx={{ color: 'white', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
                 <Typography sx={{ fontSize: 78, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
                   {finalScore}%
                 </Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: 16, fontWeight: 700, mt: '4px' }}>
+                <Typography sx={{ color: '#1F2937', fontSize: 16, fontWeight: 700, mt: '4px' }}>
                   {RESULT_MSG(finalScore)}
                 </Typography>
                 {saveError && (
@@ -376,13 +376,13 @@ export default function ListenGamePage() {
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
                 {items.map((item, idx) => (
-                  <Box key={idx} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2.5, py: 2 }}>
+                  <Box key={idx} sx={{ bgcolor: '#FFFFFF', borderRadius: 3, px: 2.5, py: 2, boxShadow: '0 2px 8px rgba(124,58,237,0.08)' }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       {/* Row 1: Question label + composite score */}
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Headphones size={24} color="rgba(255,255,255,0.5)" />
-                          <Typography sx={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
+                          <Headphones size={24} color="rgba(0,0,0,0.35)" />
+                          <Typography sx={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#6B7280', fontWeight: 700 }}>
                             Câu {idx + 1}
                           </Typography>
                         </Box>
@@ -392,7 +392,7 @@ export default function ListenGamePage() {
                       </Box>
                       {/* Row 2: Transcript */}
                       {item.transcript && (
-                        <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, fontStyle: 'italic' }}>
+                        <Typography sx={{ color: '#374151', fontSize: 14, fontStyle: 'italic' }}>
                           &quot;{item.transcript}&quot;
                         </Typography>
                       )}
@@ -411,7 +411,7 @@ export default function ListenGamePage() {
                         </Typography>
                       )}
                       {/* Row 5: Score breakdown */}
-                      <Typography sx={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
+                      <Typography sx={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
                         Ngữ nghĩa: {Math.round(item.semanticScore * 100)}% · Phát âm: {Math.round(item.pronScore)}%
                       </Typography>
                     </Box>
@@ -447,7 +447,7 @@ export default function ListenGamePage() {
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: gradients.gameBg, px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 }, gap: 3 }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'transparent', px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 }, gap: 3 }}>
 
           {/* Hidden audio element for prompt playback */}
           <audio ref={audioRef} style={{ display: 'none' }} />
@@ -459,12 +459,12 @@ export default function ListenGamePage() {
                 <Box key={i} sx={{
                   height: 8, width: 32, borderRadius: '9999px',
                   transition: 'all 0.15s',
-                  background: i < currentIndex ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#FFD166' : '#ffffff20',
+                  background: i < currentIndex ? '#A78BFA' : i === currentIndex && pageState === 'playing' ? '#FFD166' : '#E5E7EB',
                 }} />
               ))}
             </Box>
             {pageState === 'playing' && (
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600 }}>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 14, fontWeight: 600 }}>
                 {currentIndex + 1} / {items.length}
               </Typography>
             )}
@@ -473,8 +473,8 @@ export default function ListenGamePage() {
           {/* Ready state */}
           {pageState === 'ready' && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 3, maxWidth: 480, width: '100%' }}>
-              <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900 }}>Sẵn sàng chưa?</Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16 }}>
+              <Typography sx={{ color: '#1E1B4B', fontSize: 30, fontWeight: 900 }}>Sẵn sàng chưa?</Typography>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 16 }}>
                 Nghe câu hỏi rồi ghi lại câu trả lời nhé
               </Typography>
               {items.length > 0 && (
@@ -485,7 +485,7 @@ export default function ListenGamePage() {
                       bgcolor: 'rgba(79,157,255,0.2)',
                       border: '1.5px solid rgba(79,157,255,0.5)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', fontWeight: 800, fontSize: 16,
+                      color: '#1E1B4B', fontWeight: 800, fontSize: 16,
                     }}>
                       {i + 1}
                     </Box>
@@ -511,12 +511,12 @@ export default function ListenGamePage() {
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, maxWidth: 480, width: '100%' }}>
 
               {/* "Nghe và trả lời" heading */}
-              <Typography sx={{ color: 'white', fontSize: 22, fontWeight: 900, alignSelf: 'flex-start' }}>Nghe và trả lời</Typography>
+              <Typography sx={{ color: '#1E1B4B', fontSize: 22, fontWeight: 900, alignSelf: 'flex-start' }}>Nghe và trả lời</Typography>
 
               {/* Audio player panel */}
               <Box sx={{
                 width: '100%',
-                bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '20px', p: { xs: 2, sm: '22px' },
+                bgcolor: '#FFFFFF', borderRadius: '20px', p: { xs: 2, sm: '22px' }, boxShadow: '0 2px 8px rgba(124,58,237,0.08)',
                 display: 'flex', alignItems: 'center', gap: 2,
               }}>
                 {/* Play/Pause button — primaryPurple gradient */}
@@ -556,12 +556,12 @@ export default function ListenGamePage() {
                         key={i}
                         sx={{
                           flex: 1, height: h, borderRadius: '3px',
-                          background: audioPlayState === 'playing' && i < 9 ? '#A78BFA' : 'rgba(255,255,255,0.3)',
+                          background: audioPlayState === 'playing' && i < 9 ? '#A78BFA' : 'rgba(0,0,0,0.15)',
                         }}
                       />
                     ))}
                   </Box>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: 600, mt: '6px' }}>
+                  <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 600, mt: '6px' }}>
                     0:09 / 0:18
                   </Typography>
                 </Box>
@@ -578,16 +578,16 @@ export default function ListenGamePage() {
                       sx={{
                         width: 104, height: 104, borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: '4px solid rgba(255,255,255,0.3)',
-                        background: 'rgba(255,255,255,0.1)',
+                        border: '4px solid rgba(0,0,0,0.12)',
+                        background: 'rgba(0,0,0,0.04)',
                         cursor: 'pointer',
                         transition: 'all 0.15s',
-                        '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
+                        '&:hover': { borderColor: 'rgba(0,0,0,0.3)', transform: 'scale(1.05)' },
                       }}
                     >
-                      <Mic size={42} color="white" />
+                      <Mic size={42} color="#1E1B4B" />
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 15 }}>Nhấn để ghi âm</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 15 }}>Nhấn để ghi âm</Typography>
                   </>
                 )}
 
@@ -629,19 +629,19 @@ export default function ListenGamePage() {
                     <Box sx={{
                       width: 104, height: 104, borderRadius: '50%',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      border: '4px solid rgba(255,255,255,0.3)',
-                      background: 'rgba(255,255,255,0.1)',
+                      border: '4px solid rgba(0,0,0,0.1)',
+                      background: 'rgba(0,0,0,0.04)',
                     }}>
                       <Box sx={{
                         width: 40, height: 40,
-                        border: '4px solid rgba(255,255,255,0.25)',
-                        borderTopColor: '#fff',
+                        border: '4px solid rgba(0,0,0,0.12)',
+                        borderTopColor: '#A78BFA',
                         borderRadius: '50%',
                         animation: 'spin 0.8s linear infinite',
                         '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } },
                       }} />
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 15 }}>Đang chấm điểm…</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 15 }}>Đang chấm điểm…</Typography>
                   </>
                 )}
 
@@ -679,7 +679,7 @@ export default function ListenGamePage() {
                   )}
                   {/* Transcript */}
                   {current.transcript && (
-                    <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 16, fontStyle: 'italic' }}>
+                    <Typography sx={{ color: '#374151', fontSize: 16, fontStyle: 'italic' }}>
                       Bạn nói: &quot;{current.transcript}&quot;
                     </Typography>
                   )}
@@ -712,9 +712,9 @@ export default function ListenGamePage() {
                   <Button
                     onClick={handleReRecord}
                     sx={{
-                      px: 4, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, fontSize: 16,
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+                      px: 4, py: 1.5, borderRadius: 3, color: '#1E1B4B', fontWeight: 700, fontSize: 16,
+                      border: '1px solid rgba(0,0,0,0.12)',
+                      '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' },
                       textTransform: 'none',
                     }}
                   >

@@ -37,13 +37,13 @@ function shuffle<T>(arr: T[]): T[] {
 function PreviewBanner() {
   return (
     <Box sx={{
-      bgcolor: 'rgba(255,255,255,0.1)',
-      border: '1px solid rgba(255,255,255,0.2)',
+      bgcolor: 'rgba(0,0,0,0.05)',
+      border: '1px solid rgba(0,0,0,0.1)',
       borderRadius: 3,
       px: 2,
       py: 1,
       textAlign: 'center',
-      color: 'rgba(255,255,255,0.7)',
+      color: '#4C4F7A',
       fontSize: 12,
       fontWeight: 700,
       textTransform: 'uppercase',
@@ -116,7 +116,7 @@ function MatchingRenderer({
 
   return (
     <Box sx={{ maxWidth: 752, mx: 'auto', width: '100%' }}>
-      <Box sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 4, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+      <Box sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 4, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
         <ImageIcon style={{ width: 16, height: 16 }} />Match each image to its word
       </Box>
       <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', mb: 4 }}>
@@ -138,8 +138,8 @@ function MatchingRenderer({
                 overflow: 'hidden',
                 cursor: isLocked ? 'default' : 'pointer',
                 border: '4px solid',
-                borderColor: isLocked ? '#7BD88F' : isShaking ? '#FF7B7B' : isSelected ? '#4F9DFF' : 'rgba(255,255,255,0.2)',
-                bgcolor: isLocked ? 'rgba(123,216,143,0.2)' : isSelected ? 'transparent' : 'rgba(255,255,255,0.1)',
+                borderColor: isLocked ? '#7BD88F' : isShaking ? '#FF7B7B' : isSelected ? '#4F9DFF' : 'rgba(0,0,0,0.1)',
+                bgcolor: isLocked ? 'rgba(123,216,143,0.2)' : isSelected ? 'transparent' : 'rgba(0,0,0,0.04)',
                 transform: isSelected && !isLocked ? 'scale(1.05)' : 'none',
                 animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',
                 transition: 'all 0.2s',
@@ -177,13 +177,13 @@ function MatchingRenderer({
                 fontSize: 14,
                 fontWeight: 700,
                 border: '2px solid',
-                borderColor: isLocked ? '#7BD88F' : isShaking ? '#FF7B7B' : 'rgba(255,255,255,0.2)',
-                color: isLocked ? '#7BD88F' : 'white',
-                bgcolor: isLocked ? 'rgba(123,216,143,0.2)' : 'rgba(255,255,255,0.1)',
+                borderColor: isLocked ? '#7BD88F' : isShaking ? '#FF7B7B' : 'rgba(0,0,0,0.1)',
+                color: isLocked ? '#7BD88F' : '#1E1B4B',
+                bgcolor: isLocked ? 'rgba(123,216,143,0.2)' : 'rgba(0,0,0,0.04)',
                 cursor: isLocked ? 'default' : 'pointer',
                 animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',
                 transition: 'all 0.2s',
-                '&:hover': isLocked ? {} : { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' },
+                '&:hover': isLocked ? {} : { bgcolor: 'rgba(0,0,0,0.08)', borderColor: 'rgba(0,0,0,0.2)' },
                 background: 'none',
               }}
             >
@@ -239,7 +239,7 @@ function FillBlankRenderer({
             height: 10,
             borderRadius: '50%',
             transition: 'all 0.2s',
-            background: it.correct === true ? '#7BD88F' : it.correct === false ? '#FF7B7B' : i === state.currentItemIndex ? '#FFD166' : 'rgba(255,255,255,0.2)',
+            background: it.correct === true ? '#7BD88F' : it.correct === false ? '#FF7B7B' : i === state.currentItemIndex ? '#FFD166' : '#E5E7EB',
           }} />
         ))}
       </Box>
@@ -247,10 +247,10 @@ function FillBlankRenderer({
         {parts.flatMap((part, idx, arr) =>
           idx < arr.length - 1
             ? [
-                <Typography key={`t${idx}`} component="span" sx={{ color: 'white', fontSize: 24, fontWeight: 900 }}>{part}</Typography>,
-                <Box key={`b${idx}`} component="span" sx={{ display: 'inline-block', width: 96, height: 32, borderRadius: 2, border: '2px solid rgba(255,255,255,0.4)', bgcolor: 'rgba(255,255,255,0.1)', verticalAlign: 'middle', mx: 0.5 }} />,
+                <Typography key={`t${idx}`} component="span" sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900 }}>{part}</Typography>,
+                <Box key={`b${idx}`} component="span" sx={{ display: 'inline-block', width: 96, height: 32, borderRadius: 2, border: '2px solid rgba(0,0,0,0.2)', bgcolor: 'rgba(0,0,0,0.05)', verticalAlign: 'middle', mx: 0.5 }} />,
               ]
-            : [<Typography key={`t${idx}`} component="span" sx={{ color: 'white', fontSize: 24, fontWeight: 900 }}>{part}</Typography>]
+            : [<Typography key={`t${idx}`} component="span" sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900 }}>{part}</Typography>]
         )}
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
@@ -273,14 +273,14 @@ function FillBlankRenderer({
                 fontSize: 14,
                 fontWeight: 700,
                 border: '2px solid',
-                borderColor: isCorrect ? '#7BD88F' : isWrong ? '#FF7B7B' : 'rgba(255,255,255,0.2)',
-                color: isCorrect ? '#7BD88F' : 'white',
-                bgcolor: isCorrect ? 'rgba(123,216,143,0.2)' : 'rgba(255,255,255,0.1)',
+                borderColor: isCorrect ? '#7BD88F' : isWrong ? '#FF7B7B' : 'rgba(0,0,0,0.1)',
+                color: isCorrect ? '#7BD88F' : '#1E1B4B',
+                bgcolor: isCorrect ? 'rgba(123,216,143,0.2)' : 'rgba(0,0,0,0.04)',
                 opacity: isOther ? 0.4 : 1,
                 cursor: answered ? 'not-allowed' : 'pointer',
                 animation: isWrong ? `${shake} 0.4s ease-in-out` : 'none',
                 transition: 'all 0.2s',
-                '&:hover': answered ? {} : { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' },
+                '&:hover': answered ? {} : { bgcolor: 'rgba(0,0,0,0.08)', borderColor: 'rgba(0,0,0,0.2)' },
                 background: 'none',
               }}
             >
@@ -500,8 +500,8 @@ export default function TeacherTryHomeworkPage() {
   if (pageState === 'loading') {
     return (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
-            <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Loading…</Typography>
+            <CircularProgress size={48} sx={{ color: '#4C4F7A' }} />
+            <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>Loading…</Typography>
           </Box>
     );
   }
@@ -514,7 +514,7 @@ export default function TeacherTryHomeworkPage() {
             <Box
               component="button"
               onClick={() => router.push(backUrl)}
-              sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+              sx={{ color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
             >
               ← Back
             </Box>
@@ -534,31 +534,31 @@ export default function TeacherTryHomeworkPage() {
             <Box
               component="button"
               onClick={() => router.push(backUrl)}
-              sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+              sx={{ alignSelf: 'flex-start', color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
             >
               ← Back
             </Box>
             <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography sx={{ fontSize: 36, mb: 1.5 }}>{isFreespeak ? '🖼️' : '🎤'}</Typography>
-                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>{isFreespeak ? 'Free Speak' : 'Script Match'}</Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Record to preview scoring</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>{isFreespeak ? 'Free Speak' : 'Script Match'}</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Record to preview scoring</Typography>
               </Box>
               {isFreespeak && hw?.speakingPictureUrl && (
-                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(255,255,255,0.2)', maxWidth: 320, width: '100%' }}>
+                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(0,0,0,0.1)', maxWidth: 320, width: '100%' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={hw.speakingPictureUrl} alt="Speaking prompt" style={{ width: '100%', objectFit: 'contain' }} />
                 </Box>
               )}
               {!isFreespeak && hw?.speakingText && (
-                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 4, px: 3, py: 2.5, width: '100%', textAlign: 'center' }}>
-                  <Typography sx={{ color: 'white', fontSize: 20, fontWeight: 700, lineHeight: 1.6 }}>{hw.speakingText}</Typography>
+                <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4, px: 3, py: 2.5, width: '100%', textAlign: 'center' }}>
+                  <Typography sx={{ color: '#1E1B4B', fontSize: 20, fontWeight: 700, lineHeight: 1.6 }}>{hw.speakingText}</Typography>
                 </Box>
               )}
               {isFreespeak && hw?.speakingText && (
-                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2, py: 1.5, width: '100%' }}>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.5 }}>Talk about:</Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>{hw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</Typography>
+                <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 3, px: 2, py: 1.5, width: '100%' }}>
+                  <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.5 }}>Talk about:</Typography>
+                  <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>{hw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</Typography>
                 </Box>
               )}
 
@@ -571,15 +571,15 @@ export default function TeacherTryHomeworkPage() {
                       onClick={startSpeakRecording}
                       sx={{
                         width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: '4px solid rgba(255,255,255,0.3)', cursor: 'pointer',
-                        '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
+                        border: '4px solid rgba(0,0,0,0.12)', cursor: 'pointer',
+                        '&:hover': { borderColor: 'rgba(0,0,0,0.25)', transform: 'scale(1.05)' },
                         transition: 'all 0.2s',
                       }}
-                      style={{ background: 'rgba(255,255,255,0.1)' }}
+                      style={{ background: 'rgba(0,0,0,0.04)' }}
                     >
                       <span style={{ fontSize: 36 }}>🎤</span>
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Tap to start recording</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Tap to start recording</Typography>
                   </>
                 )}
                 {recordState === 'recording' && (
@@ -602,7 +602,7 @@ export default function TeacherTryHomeworkPage() {
                         <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: '#f87171' }} />
                       </Box>
                     </Box>
-                    <Typography sx={{ color: 'white', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#1E1B4B', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
                     <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600, animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } } }}>Recording… tap to stop</Typography>
                   </>
                 )}
@@ -611,12 +611,12 @@ export default function TeacherTryHomeworkPage() {
                     <Box sx={{ width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(52,211,153,0.5)' }} style={{ background: 'rgba(52,211,153,0.15)' }}>
                       <span style={{ fontSize: 36 }}>✅</span>
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
                       <Box
                         component="button"
                         onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
-                        sx={{ flex: 1, py: 1.5, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 14, border: '1px solid rgba(255,255,255,0.2)', bgcolor: 'transparent', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }, transition: 'colors 0.2s' }}
+                        sx={{ flex: 1, py: 1.5, borderRadius: 4, color: '#1E1B4B', fontWeight: 700, fontSize: 14, border: '1px solid rgba(0,0,0,0.12)', bgcolor: 'transparent', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' }, transition: 'colors 0.2s' }}
                       >
                         Re-record
                       </Box>
@@ -658,11 +658,11 @@ export default function TeacherTryHomeworkPage() {
               <PreviewBanner />
               <Box sx={{ textAlign: 'center', my: 5 }}>
                 <Typography sx={{ fontSize: 60, mb: 2 }}>🎉</Typography>
-                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Preview Complete!</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Preview Complete!</Typography>
                 <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(speakResult.score) }}>{speakResult.score}%</Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mt: 1 }}>This is how students experience the scoring</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14, mt: 1 }}>This is how students experience the scoring</Typography>
               </Box>
-              <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 4, px: 2.5, py: 2, mb: 4 }}>
+              <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4, px: 2.5, py: 2, mb: 4 }}>
                 {isFreespeak && speakResult.speakingPictureUrl && (
                   <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 1.5, maxHeight: 160 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -672,10 +672,10 @@ export default function TeacherTryHomeworkPage() {
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
                   <Box sx={{ flex: 1 }}>
                     {speakResult.transcribedText && (
-                      <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>You said: <em style={{ color: 'white' }}>&quot;{speakResult.transcribedText}&quot;</em></Typography>
+                      <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>You said: <em style={{ color: '#1E1B4B' }}>&quot;{speakResult.transcribedText}&quot;</em></Typography>
                     )}
                     {isFreespeak && (
-                      <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 0.5 }}>Keywords matched: {speakResult.matchedWords}/{speakResult.totalWords}</Typography>
+                      <Typography sx={{ color: '#4C4F7A', fontSize: 14, mt: 0.5 }}>Keywords matched: {speakResult.matchedWords}/{speakResult.totalWords}</Typography>
                     )}
                   </Box>
                   <Typography sx={{ fontSize: 24, fontWeight: 900, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }} style={{ color: scoreHexColor(speakResult.score) }}>{speakResult.score}%</Typography>
@@ -714,15 +714,15 @@ export default function TeacherTryHomeworkPage() {
             <Box
               component="button"
               onClick={() => router.push(backUrl)}
-              sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+              sx={{ alignSelf: 'flex-start', color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
             >
               ← Back
             </Box>
             <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography sx={{ fontSize: 36, mb: 1.5 }}>#️⃣</Typography>
-                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>Phonics Preview</Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Pick a word to test pronunciation scoring</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>Phonics Preview</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Pick a word to test pronunciation scoring</Typography>
               </Box>
               <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
                 {allWords.map((w) => (
@@ -732,9 +732,9 @@ export default function TeacherTryHomeworkPage() {
                     onClick={() => { setSelectedWord(w); setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); setPageState('phonics_upload'); }}
                     sx={{
                       px: 2.5, py: 1.25, borderRadius: '9999px', fontSize: 14, fontWeight: 700,
-                      border: '2px solid rgba(255,255,255,0.2)', bgcolor: 'rgba(255,255,255,0.1)', color: 'white',
+                      border: '2px solid rgba(0,0,0,0.1)', bgcolor: 'rgba(0,0,0,0.04)', color: '#1E1B4B',
                       cursor: 'pointer', transition: 'all 0.2s',
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.2)', borderColor: 'rgba(255,255,255,0.4)' },
+                      '&:hover': { bgcolor: 'rgba(0,0,0,0.08)', borderColor: 'rgba(0,0,0,0.2)' },
                       background: 'none',
                     }}
                   >
@@ -758,19 +758,19 @@ export default function TeacherTryHomeworkPage() {
             <Box
               component="button"
               onClick={() => { stopSpeakRecording(); setPageState('phonics_word_select'); }}
-              sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+              sx={{ alignSelf: 'flex-start', color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
             >
               ← Back
             </Box>
             <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography sx={{ fontSize: 36, mb: 1.5 }}>🎤</Typography>
-                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>Say the word</Typography>
-                <Typography sx={{ color: 'white', fontSize: 48, fontWeight: 900, mt: 1.5, mb: 0.5 }}>{selectedWord?.text}</Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Record to see phoneme scoring</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>Say the word</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 48, fontWeight: 900, mt: 1.5, mb: 0.5 }}>{selectedWord?.text}</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Record to see phoneme scoring</Typography>
               </Box>
               {selectedWord?.imageUrl && (
-                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(255,255,255,0.2)', maxWidth: 320, width: '100%' }}>
+                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(0,0,0,0.1)', maxWidth: 320, width: '100%' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={selectedWord.imageUrl} alt={selectedWord.text} style={{ width: '100%', objectFit: 'contain' }} />
                 </Box>
@@ -783,15 +783,15 @@ export default function TeacherTryHomeworkPage() {
                       onClick={startSpeakRecording}
                       sx={{
                         width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        border: '4px solid rgba(255,255,255,0.3)', cursor: 'pointer',
-                        '&:hover': { borderColor: 'rgba(255,255,255,0.6)', transform: 'scale(1.05)' },
+                        border: '4px solid rgba(0,0,0,0.12)', cursor: 'pointer',
+                        '&:hover': { borderColor: 'rgba(0,0,0,0.25)', transform: 'scale(1.05)' },
                         transition: 'all 0.2s',
                       }}
-                      style={{ background: 'rgba(255,255,255,0.1)' }}
+                      style={{ background: 'rgba(0,0,0,0.04)' }}
                     >
                       <span style={{ fontSize: 36 }}>🎤</span>
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Tap to start recording</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Tap to start recording</Typography>
                   </>
                 )}
                 {recordState === 'recording' && (
@@ -814,7 +814,7 @@ export default function TeacherTryHomeworkPage() {
                         <Box sx={{ width: 32, height: 32, borderRadius: 1, bgcolor: '#f87171' }} />
                       </Box>
                     </Box>
-                    <Typography sx={{ color: 'white', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#1E1B4B', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
                     <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600, animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } } }}>Recording… tap to stop</Typography>
                   </>
                 )}
@@ -823,12 +823,12 @@ export default function TeacherTryHomeworkPage() {
                     <Box sx={{ width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(52,211,153,0.5)' }} style={{ background: 'rgba(52,211,153,0.15)' }}>
                       <span style={{ fontSize: 36 }}>✅</span>
                     </Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
                       <Box
                         component="button"
                         onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
-                        sx={{ flex: 1, py: 1.5, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 14, border: '1px solid rgba(255,255,255,0.2)', bgcolor: 'transparent', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }, transition: 'colors 0.2s' }}
+                        sx={{ flex: 1, py: 1.5, borderRadius: 4, color: '#1E1B4B', fontWeight: 700, fontSize: 14, border: '1px solid rgba(0,0,0,0.12)', bgcolor: 'transparent', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' }, transition: 'colors 0.2s' }}
                       >
                         Re-record
                       </Box>
@@ -869,24 +869,24 @@ export default function TeacherTryHomeworkPage() {
               <PreviewBanner />
               <Box sx={{ textAlign: 'center', my: 5 }}>
                 <Typography sx={{ fontSize: 60, mb: 2 }}>🎤</Typography>
-                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Pronunciation Score</Typography>
-                <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mt: 1, mb: 0.5 }}>{phonicsResult.wordText}</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Pronunciation Score</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 30, fontWeight: 900, mt: 1, mb: 0.5 }}>{phonicsResult.wordText}</Typography>
                 <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(phonicsResult.score) }}>{phonicsResult.score}%</Typography>
               </Box>
-              <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 4, px: 2.5, py: 2, mb: 3 }}>
+              <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4, px: 2.5, py: 2, mb: 3 }}>
                 {phonicsResult.transcribedText && (
-                  <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mb: 1.5 }}>You said: <em style={{ color: 'white' }}>&quot;{phonicsResult.transcribedText}&quot;</em></Typography>
+                  <Typography sx={{ color: '#4C4F7A', fontSize: 14, mb: 1.5 }}>You said: <em style={{ color: '#1E1B4B' }}>&quot;{phonicsResult.transcribedText}&quot;</em></Typography>
                 )}
                 {phonicsResult.bfa?.feedback && phonicsResult.bfa.feedback.length > 0 && (
                   <Box>
-                    <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 1 }}>Phoneme breakdown</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 1 }}>Phoneme breakdown</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {phonicsResult.bfa.feedback.map((op, i) => <PhonemeTag key={i} op={op} />)}
                     </Box>
                   </Box>
                 )}
                 {phonicsResult.bfa?.espeak_fallback && (
-                  <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, mt: 1.5 }}>Used eSpeak fallback for expected phonemes</Typography>
+                  <Typography sx={{ color: '#9CA3AF', fontSize: 12, mt: 1.5 }}>Used eSpeak fallback for expected phonemes</Typography>
                 )}
               </Box>
               <Box sx={{ display: 'flex', gap: 1.5 }}>
@@ -930,7 +930,7 @@ export default function TeacherTryHomeworkPage() {
               <Box
                 component="button"
                 onClick={() => router.push(backUrl)}
-                sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: 'white' } }}
+                sx={{ color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
               >
                 ← Back
               </Box>
@@ -938,13 +938,13 @@ export default function TeacherTryHomeworkPage() {
                 {activityStates.map((_, i) => (
                   <Box key={i} sx={{
                     width: 32, height: 8, borderRadius: '9999px', transition: 'all 0.2s',
-                    background: i < currentActivityIndex ? 'rgba(255,255,255,0.5)' : i === currentActivityIndex ? '#FFD166' : 'rgba(255,255,255,0.2)',
+                    background: i < currentActivityIndex ? '#A78BFA' : i === currentActivityIndex ? '#FFD166' : '#E5E7EB',
                   }} />
                 ))}
               </Box>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 700 }}>Activity {currentActivityIndex + 1} of {activityStates.length}</Typography>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 14, fontWeight: 700 }}>Activity {currentActivityIndex + 1} of {activityStates.length}</Typography>
             </Box>
-            <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderBottom: '1px solid rgba(255,255,255,0.1)', px: 4, py: 0.75, textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>
+            <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(0,0,0,0.08)', px: 4, py: 0.75, textAlign: 'center', color: '#9CA3AF', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>
               Preview Mode — Not saved
             </Box>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 4, pb: 4, overflow: 'auto' }}>
@@ -989,9 +989,9 @@ export default function TeacherTryHomeworkPage() {
               <PreviewBanner />
               <Box sx={{ textAlign: 'center', my: 5 }}>
                 <Typography sx={{ fontSize: 60, mb: 2 }}>🎉</Typography>
-                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Preview Complete!</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Preview Complete!</Typography>
                 <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(score) }}>{score}%</Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mt: 1 }}>{correct} / {total} correct</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14, mt: 1 }}>{correct} / {total} correct</Typography>
               </Box>
               <Box sx={{ display: 'flex', gap: 1.5 }}>
                 <Box

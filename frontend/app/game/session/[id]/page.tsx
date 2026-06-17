@@ -32,6 +32,7 @@ interface SessionItem {
   state: ItemState;
   bfa?: BfaResult | null;
   bfaError?: string | null;
+  audioUrl?: string;
 }
 
 function itemTime(kind: ItemKind) {
@@ -60,7 +61,7 @@ function CircleTimer({ seconds, total }: { seconds: number; total: number }) {
   const color = timerHexColor(seconds);
   return (
     <Box component="svg" sx={{ width: { xs: 110, sm: 140 }, height: { xs: 110, sm: 140 }, transform: 'rotate(-90deg)' }} viewBox="0 0 120 120">
-      <circle cx="60" cy="60" r={r} fill="none" stroke="#ffffff15" strokeWidth="8" />
+      <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="8" />
       <circle cx="60" cy="60" r={r} fill="none" stroke={color} strokeWidth="8"
         strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
         style={{ transition: 'stroke-dasharray 0.9s linear, stroke 0.3s' }} />
@@ -363,6 +364,7 @@ export default function SessionPage() {
     setPageState('uploading');
     const currentItems = itemsRef.current;
     const scored = [...currentItems];
+    const audioUrls = audioBlobsRef.current.map((blob) => blob ? URL.createObjectURL(blob) : null);
 
     for (let i = 0; i < currentItems.length; i++) {
       const item = currentItems[i];
@@ -370,15 +372,16 @@ export default function SessionPage() {
       try {
         if (item.kind === 'speaking') {
           const r = await saveSpeakingResult(sessionId, audioBlob ?? undefined);
-          scored[i] = { ...scored[i], score: r.score };
+          scored[i] = { ...scored[i], score: r.score, audioUrl: audioUrls[i] ?? undefined };
         } else if (item.kind === 'phonics') {
           const r = await savePhonicsResult(sessionId, item.wordId!, audioBlob);
           const bfaError = r.bfa?.error ?? null;
-          scored[i] = { ...scored[i], score: bfaError ? 0 : r.score, bfa: r.bfa ?? null, bfaError };
+          scored[i] = { ...scored[i], score: bfaError ? 0 : r.score, bfa: r.bfa ?? null, bfaError, audioUrl: audioUrls[i] ?? undefined };
         }
       } catch (err) {
         console.error(`[score] item="${item.text}"`, err);
         setSaveError(true);
+        scored[i] = { ...scored[i], audioUrl: audioUrls[i] ?? undefined };
       }
     }
 
@@ -443,6 +446,7 @@ export default function SessionPage() {
 
   async function handleSpeakingUpload() {
     setPageState('uploading');
+    const audioUrl = recordedBlob ? URL.createObjectURL(recordedBlob) : undefined;
     try {
       const r = await saveSpeakingResult(sessionId, recordedBlob ?? undefined);
       const session = await completeSession(sessionId);
@@ -456,6 +460,7 @@ export default function SessionPage() {
         totalWords: r.totalWords,
         score: r.score,
         state: 'done',
+        audioUrl,
       }]);
     } catch (err) {
       console.error('[speakUpload] failed:', err);
@@ -474,6 +479,7 @@ export default function SessionPage() {
     if (speakTimerRef.current) clearInterval(speakTimerRef.current);
     if (speakRecorderRef.current?.state !== 'inactive') speakRecorderRef.current?.stop();
     speakStreamRef.current?.getTracks().forEach((t) => t.stop());
+    itemsRef.current.forEach((item) => { if (item.audioUrl) URL.revokeObjectURL(item.audioUrl); });
   }, [stopTimer, stopSpeech]);
 
   if (pageState === 'record' && speakHw) {
@@ -483,42 +489,42 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: { xs: 2, sm: 3 }, py: { xs: 4, sm: 5 }, gap: 3, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: { xs: 2, sm: 3 }, py: { xs: 4, sm: 5 }, gap: 3, background: 'transparent' }}>
             <Button onClick={() => router.push('/game/homework')}
-              sx={{ alignSelf: 'flex-start', color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
+              sx={{ alignSelf: 'flex-start', color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
               ← Quay lại
             </Button>
 
             <Box sx={{ width: '100%', maxWidth: { xs: '100%', sm: 384 }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
-                  <Box sx={{ width: 56, height: 56, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {isFreespeak ? <ImageIcon size={28} color="white" /> : <Mic size={28} color="white" />}
+                  <Box sx={{ width: 56, height: 56, bgcolor: '#F0EEFF', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isFreespeak ? <ImageIcon size={28} color="#1E1B4B" /> : <Mic size={28} color="#1E1B4B" />}
                   </Box>
                 </Box>
-                <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 0.5 }}>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>
                   {isFreespeak ? 'Nói tự do' : 'Đọc theo kịch bản'}
                 </Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Ghi âm câu trả lời của em</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Ghi âm câu trả lời của em</Typography>
               </Box>
 
               {isFreespeak && speakHw.speakingPictureUrl && (
-                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(255,255,255,0.2)', maxWidth: 320, width: '100%' }}>
+                <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(0,0,0,0.1)', maxWidth: 320, width: '100%' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={speakHw.speakingPictureUrl} alt="Speaking prompt" style={{ width: '100%', objectFit: 'contain' }} />
                 </Box>
               )}
 
               {!isFreespeak && speakHw.speakingText && (
-                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 4, px: 3, py: 2.5, width: '100%', textAlign: 'center' }}>
-                  <Typography sx={{ color: 'white', fontSize: 20, fontWeight: 700, lineHeight: 1.6 }}>{speakHw.speakingText}</Typography>
+                <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 4, px: 3, py: 2.5, width: '100%', textAlign: 'center' }}>
+                  <Typography sx={{ color: '#1E1B4B', fontSize: 20, fontWeight: 700, lineHeight: 1.6 }}>{speakHw.speakingText}</Typography>
                 </Box>
               )}
 
               {isFreespeak && speakHw.speakingText && (
-                <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2, py: 1.5, width: '100%' }}>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.5 }}>Nói về:</Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>{speakHw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</Typography>
+                <Box sx={{ bgcolor: '#FFFFFF', borderRadius: 3, px: 2, py: 1.5, width: '100%' }}>
+                  <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.5 }}>Nói về:</Typography>
+                  <Typography sx={{ color: '#374151', fontSize: 14 }}>{speakHw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</Typography>
                 </Box>
               )}
 
@@ -531,20 +537,20 @@ export default function SessionPage() {
                 {recordState === 'recording' && (
                   <>
                     <RecordButton state="recording" onStop={stopSpeakRecording} />
-                    <Typography sx={{ color: 'white', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#1E1B4B', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
                   </>
                 )}
 
                 {recordState === 'recorded' && (
                   <>
                     <RecordButton state="done" />
-                    <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Đã ghi: {mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Đã ghi: {mins}:{secs}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
                       <Button
                         onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
                         sx={{
-                          flex: 1, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, fontSize: 14,
-                          border: '1px solid rgba(255,255,255,0.2)', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
+                          flex: 1, py: 1.5, borderRadius: 3, color: '#1E1B4B', fontWeight: 700, fontSize: 14,
+                          border: '1px solid rgba(0,0,0,0.12)', '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' },
                           textTransform: 'none',
                         }}
                       >
@@ -576,9 +582,9 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
-            <CircularProgress size={48} sx={{ color: 'rgba(255,255,255,0.7)' }} />
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
+            <CircularProgress size={48} sx={{ color: '#4C4F7A' }} />
+            <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>
               {pageState === 'cam-check' ? 'Đang yêu cầu quyền mic…' : 'Đang tải…'}
             </Typography>
           </Box>
@@ -591,15 +597,15 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: { xs: 3, sm: 4 }, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: { xs: 3, sm: 4 }, background: 'transparent' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Mic size={32} color="white" />
+              <Box sx={{ width: 64, height: 64, bgcolor: '#F0EEFF', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Mic size={32} color="#1E1B4B" />
               </Box>
             </Box>
             <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
-              <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, maxWidth: 384 }}>
+              <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 14, maxWidth: 384 }}>
                 Em cần cấp quyền microphone để ghi âm. Hãy vào cài đặt trình duyệt, cấp quyền cho trang này, rồi nhấn Thử lại nhé.
               </Typography>
             </Box>
@@ -611,7 +617,7 @@ export default function SessionPage() {
             </Button>
             <Button
               onClick={() => router.push('/game/homework')}
-              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
+              sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
             >
               ← Về trang chủ
             </Button>
@@ -625,10 +631,10 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
             <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Session not found.</Typography>
             <Button onClick={() => router.push('/game/homework')}
-              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
+              sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
               ← Quay lại
             </Button>
           </Box>
@@ -641,7 +647,7 @@ export default function SessionPage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
             <CircularProgress size={48} sx={{ color: '#FFD166' }} />
             <Typography sx={{ color: '#FFD166', fontWeight: 600 }}>Đang chấm điểm và lưu…</Typography>
           </Box>
@@ -664,17 +670,17 @@ export default function SessionPage() {
             <Box sx={{ maxWidth: 560, mx: 'auto' }}>
               <Box sx={{ textAlign: 'center', mb: 5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                  <Box sx={{ width: 76, height: 76, bgcolor: 'rgba(255,255,255,0.12)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <PartyPopper size={38} color="white" />
+                  <Box sx={{ width: 76, height: 76, bgcolor: '#EEF2FF', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <PartyPopper size={38} color="#1E1B4B" />
                   </Box>
                 </Box>
-                <Typography sx={{ color: 'white', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
                 {items.length > 0 && (
                   <Typography sx={{ fontSize: 78, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
                     {finalScore}%
                   </Typography>
                 )}
-                <Typography sx={{ color: 'rgba(255,255,255,0.85)', fontSize: 16, fontWeight: 700, mt: '4px' }}>
+                <Typography sx={{ color: '#1F2937', fontSize: 16, fontWeight: 700, mt: '4px' }}>
                   {RESULT_MSG(finalScore)}
                 </Typography>
                 {saveError
@@ -685,18 +691,24 @@ export default function SessionPage() {
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
                 {items.map((item, idx) => (
-                  <Box key={idx} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, px: 2.5, py: 2 }}>
+                  <Box key={idx} sx={{ bgcolor: '#FFFFFF', borderRadius: 3, px: 2.5, py: 2, boxShadow: '0 2px 8px rgba(124,58,237,0.08)' }}>
                     {item.kind === 'phonics' ? (
                       <Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', mb: 0.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#6B7280', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', mb: 0.5 }}>
                               <Hash size={14} /> Phonics
                             </Box>
-                            <Typography sx={{ color: 'white', fontWeight: 700, fontSize: 18 }}>{item.text}</Typography>
-                            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 0.5 }}>
-                              Em nói: <Box component="span" sx={{ color: 'white', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
-                            </Typography>
+                            <Typography sx={{ color: '#1E1B4B', fontWeight: 700, fontSize: 18 }}>{item.text}</Typography>
+                            {item.audioUrl ? (
+                              <Box sx={{ mt: 0.5 }}>
+                                <audio controls src={item.audioUrl} style={{ width: '100%', height: 32 }} />
+                              </Box>
+                            ) : (
+                              <Typography sx={{ color: '#4C4F7A', fontSize: 14, mt: 0.5 }}>
+                                Em nói: <Box component="span" sx={{ color: '#1E1B4B', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
+                              </Typography>
+                            )}
                           </Box>
                           <Typography sx={{ fontSize: 24, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: scoreHexColor(item.score) }}>
                             {item.score}%
@@ -713,7 +725,7 @@ export default function SessionPage() {
                       </Box>
                     ) : (
                       <Box>
-                        <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', mb: 1 }}>
+                        <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', mb: 1 }}>
                           🎤 Speaking{speakHw?.speakingMode === 'FREE_SPEAK' ? ' · Free Speak' : speakHw?.speakingMode === 'SCRIPT_MATCH' ? ' · Script Match' : ''}
                         </Typography>
                         {speakHw?.speakingMode === 'FREE_SPEAK' && item.pictureUrl && (
@@ -725,13 +737,19 @@ export default function SessionPage() {
                         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
                           <Box sx={{ flex: 1 }}>
                             {speakHw?.speakingMode !== 'FREE_SPEAK' && (
-                              <Typography sx={{ color: 'white', fontWeight: 500, fontSize: 14, mb: 0.5 }}>{item.text}</Typography>
+                              <Typography sx={{ color: '#1E1B4B', fontWeight: 500, fontSize: 14, mb: 0.5 }}>{item.text}</Typography>
                             )}
-                            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
-                              Em nói: <Box component="span" sx={{ color: 'white', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
-                            </Typography>
+                            {item.audioUrl ? (
+                              <Box sx={{ mt: 0.5 }}>
+                                <audio controls src={item.audioUrl} style={{ width: '100%', height: 32 }} />
+                              </Box>
+                            ) : (
+                              <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>
+                                Em nói: <Box component="span" sx={{ color: '#1E1B4B', fontStyle: 'italic' }}>"{item.transcribed || '—'}"</Box>
+                              </Typography>
+                            )}
                             {speakHw?.speakingMode === 'FREE_SPEAK' && item.matchedWords !== undefined && item.totalWords !== undefined && (
-                              <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, mt: 0.5 }}>
+                              <Typography sx={{ color: '#4C4F7A', fontSize: 14, mt: 0.5 }}>
                                 Từ khớp: {item.matchedWords}/{item.totalWords}
                               </Typography>
                             )}
@@ -774,7 +792,7 @@ export default function SessionPage() {
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: { xs: 2, sm: 4 }, py: 2, flexShrink: 0 }}>
             <Button onClick={() => router.push('/game/homework')}
-              sx={{ color: 'rgba(255,255,255,0.6)', '&:hover': { color: 'white' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
+              sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
               ← Quay lại
             </Button>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -782,11 +800,11 @@ export default function SessionPage() {
                 <Box key={i} sx={{
                   height: 8, width: 32, borderRadius: '9999px',
                   transition: 'all 0.15s',
-                  background: item.state === 'done' ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#FFD166' : '#ffffff20',
+                  background: item.state === 'done' ? '#A78BFA' : i === currentIndex && pageState === 'playing' ? '#FFD166' : '#E5E7EB',
                 }} />
               ))}
             </Box>
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 600 }}>
+            <Typography sx={{ color: '#4C4F7A', fontSize: 14, fontWeight: 600 }}>
               {pageState === 'playing' ? `${doneCount + 1} / ${items.length}` : `${items.length} câu`}
             </Typography>
           </Box>
@@ -796,18 +814,18 @@ export default function SessionPage() {
               {pageState === 'ready' && (
                 <Box sx={{ textAlign: 'center' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-                    <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <School size={32} color="white" />
+                    <Box sx={{ width: 64, height: 64, bgcolor: '#F0EEFF', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <School size={32} color="#1E1B4B" />
                     </Box>
                   </Box>
-                  <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mb: 1.5 }}>Sẵn sàng chưa?</Typography>
-                  <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mb: 5 }}>Đọc to từng từ thật rõ ràng</Typography>
+                  <Typography sx={{ color: '#1E1B4B', fontSize: 30, fontWeight: 900, mb: 1.5 }}>Sẵn sàng chưa?</Typography>
+                  <Typography sx={{ color: '#6B7280', fontSize: 14, mb: 5 }}>Đọc to từng từ thật rõ ràng</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', mb: 5 }}>
                     {items.map((item, i) => (
                       <Box key={i} component="span" sx={{
                         bgcolor: item.kind === 'speaking' ? 'rgba(167,139,250,0.2)' : 'rgba(79,157,255,0.2)',
                         border: `1.5px solid ${item.kind === 'speaking' ? 'rgba(167,139,250,0.5)' : 'rgba(79,157,255,0.5)'}`,
-                        color: 'white', fontSize: 15, px: 2, py: 0.875, borderRadius: '10px', fontWeight: 700,
+                        color: '#1E1B4B', fontSize: 15, px: 2, py: 0.875, borderRadius: '10px', fontWeight: 700,
                         display: 'flex', alignItems: 'center', gap: 0.75,
                       }}>
                         {item.kind === 'speaking' ? <Mic size={13} style={{ opacity: 0.8 }} /> : <Hash size={13} style={{ opacity: 0.8 }} />}
@@ -839,7 +857,7 @@ export default function SessionPage() {
 
                   {current.kind === 'speaking' ? (
                     <>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#6B7280', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
                         <Mic size={16} /> Đọc to
                       </Box>
                       {current.pictureUrl && (
@@ -848,16 +866,16 @@ export default function SessionPage() {
                           <img src={current.pictureUrl} alt="Speaking prompt" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                         </Box>
                       )}
-                      <Typography sx={{ fontSize: 24, fontWeight: 700, color: 'white', mb: 2, lineHeight: 1.6, maxWidth: 512, mx: 'auto', textShadow: '0 0 20px rgba(255,155,210,0.4)' }}>
+                      <Typography sx={{ fontSize: 24, fontWeight: 700, color: '#1E1B4B', mb: 2, lineHeight: 1.6, maxWidth: 512, mx: 'auto' }}>
                         {current.text}
                       </Typography>
                     </>
                   ) : (
                     <>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#6B7280', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
                         <Hash size={16} /> Đọc to âm này
                       </Box>
-                      <Typography sx={{ fontSize: 72, fontWeight: 900, color: 'white', mb: 2, letterSpacing: '0.1em', textShadow: '0 0 40px rgba(167,139,250,0.6)' }}>
+                      <Typography sx={{ fontSize: 72, fontWeight: 900, color: '#1E1B4B', mb: 2, letterSpacing: '0.1em' }}>
                         {current.text}
                       </Typography>
                     </>
@@ -865,8 +883,8 @@ export default function SessionPage() {
 
                   <Box sx={{ minHeight: 48, mb: 4 }}>
                     {transcript
-                      ? <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 24, fontStyle: 'italic', fontWeight: 500 }}>"{transcript}"</Typography>
-                      : <Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}>Đang nghe…</Typography>
+                      ? <Typography sx={{ color: '#374151', fontSize: 24, fontStyle: 'italic', fontWeight: 500 }}>"{transcript}"</Typography>
+                      : <Typography sx={{ color: '#9CA3AF', fontSize: 18 }}>Đang nghe…</Typography>
                     }
                   </Box>
 
@@ -886,7 +904,7 @@ export default function SessionPage() {
                       {items.filter((w) => w.state === 'done').map((item, i) => (
                         <Box key={i} component="span" sx={{
                           fontSize: 12, px: 1.5, py: 0.5, borderRadius: '9999px', fontWeight: 700,
-                          background: '#ffffff15', color: '#ffffffcc',
+                          background: '#E5E7EB', color: '#4C4F7A',
                           display: 'flex', alignItems: 'center', gap: 0.5,
                         }}>
                           {item.kind === 'phonics' ? <><Hash size={12} /> {item.text}</> : <Mic size={12} />}
