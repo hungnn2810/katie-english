@@ -203,9 +203,16 @@ export default function SessionPage() {
     if (tracks.length === 0) return;
     const audioStream = new MediaStream(tracks);
     const mimeType = pickAudioMimeType();
-    const recorder = new MediaRecorder(audioStream, mimeType ? { mimeType } : undefined);
-    recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
-    recorder.start(100);
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(audioStream, mimeType ? { mimeType } : undefined);
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.start(100);
+    } catch {
+      recorder = new MediaRecorder(audioStream);
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.start(100);
+    }
     audioRecorderRef.current = recorder;
   }
 
@@ -393,9 +400,16 @@ export default function SessionPage() {
       speakStreamRef.current = stream;
       speakChunksRef.current = [];
       const mimeType = pickAudioMimeType();
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) speakChunksRef.current.push(e.data); };
-      recorder.start(100);
+      let recorder: MediaRecorder;
+      try {
+        recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+        recorder.ondataavailable = (e) => { if (e.data.size > 0) speakChunksRef.current.push(e.data); };
+        recorder.start(100);
+      } catch {
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = (e) => { if (e.data.size > 0) speakChunksRef.current.push(e.data); };
+        recorder.start(100);
+      }
       speakRecorderRef.current = recorder;
       setRecordingSeconds(0);
       setRecordState('recording');
@@ -586,11 +600,11 @@ export default function SessionPage() {
             <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
               <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, maxWidth: 384 }}>
-                Em cần cấp quyền microphone để ghi âm. Hãy cho phép và thử lại nhé.
+                Em cần cấp quyền microphone để ghi âm. Hãy vào cài đặt trình duyệt, cấp quyền cho trang này, rồi nhấn Thử lại nhé.
               </Typography>
             </Box>
             <Button
-              onClick={requestCamera}
+              onClick={() => window.location.reload()}
               sx={{ px: 3, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, background: gradients.pinkHighlight, '&:hover': { opacity: 0.9, background: gradients.pinkHighlight }, textTransform: 'none' }}
             >
               Thử lại
@@ -768,7 +782,7 @@ export default function SessionPage() {
                 <Box key={i} sx={{
                   height: 8, width: 32, borderRadius: '9999px',
                   transition: 'all 0.15s',
-                  background: item.state === 'done' ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#A78BFA' : '#ffffff20',
+                  background: item.state === 'done' ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#FFD166' : '#ffffff20',
                 }} />
               ))}
             </Box>
@@ -788,16 +802,17 @@ export default function SessionPage() {
                   </Box>
                   <Typography sx={{ color: 'white', fontSize: 30, fontWeight: 900, mb: 1.5 }}>Sẵn sàng chưa?</Typography>
                   <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, mb: 5 }}>Đọc to từng từ thật rõ ràng</Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center', mb: 5 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', mb: 5 }}>
                     {items.map((item, i) => (
                       <Box key={i} component="span" sx={{
-                        bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.8)',
-                        fontSize: 14, px: 1.5, py: 0.75, borderRadius: 2, fontWeight: 600,
+                        bgcolor: item.kind === 'speaking' ? 'rgba(167,139,250,0.2)' : 'rgba(79,157,255,0.2)',
+                        border: `1.5px solid ${item.kind === 'speaking' ? 'rgba(167,139,250,0.5)' : 'rgba(79,157,255,0.5)'}`,
+                        color: 'white', fontSize: 15, px: 2, py: 0.875, borderRadius: '10px', fontWeight: 700,
                         display: 'flex', alignItems: 'center', gap: 0.75,
                       }}>
-                        {item.kind === 'speaking' ? <Mic size={12} style={{ opacity: 0.6 }} /> : <Hash size={12} style={{ opacity: 0.6 }} />}
+                        {item.kind === 'speaking' ? <Mic size={13} style={{ opacity: 0.8 }} /> : <Hash size={13} style={{ opacity: 0.8 }} />}
                         {item.kind === 'speaking'
-                          ? `${item.text.slice(0, 24)}${item.text.length > 24 ? '…' : ''}`
+                          ? `${item.text.slice(0, 32)}${item.text.length > 32 ? '…' : ''}`
                           : item.text}
                       </Box>
                     ))}

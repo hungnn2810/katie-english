@@ -123,9 +123,16 @@ export default function ListenGamePage() {
     if (!stream) return;
     chunksRef.current = [];
     const mimeType = pickAudioMimeType();
-    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-    recorder.start(100);
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.start(100);
+    } catch {
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.start(100);
+    }
     recorderRef.current = recorder;
     setItems((prev) => prev.map((item, i) => i === currentIndex ? { ...item, recordState: 'recording' } : item));
   }
@@ -284,11 +291,11 @@ export default function ListenGamePage() {
             <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
               <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, maxWidth: 384 }}>
-                Em cần cấp quyền microphone để ghi âm. Hãy cho phép và thử lại nhé.
+                Em cần cấp quyền microphone để ghi âm. Hãy vào cài đặt trình duyệt, cấp quyền cho trang này, rồi nhấn Thử lại nhé.
               </Typography>
             </Box>
             <Button
-              onClick={requestMic}
+              onClick={() => window.location.reload()}
               sx={{ px: 3, py: 1.5, borderRadius: 3, color: 'white', fontWeight: 700, background: gradients.pinkHighlight, '&:hover': { opacity: 0.9, background: gradients.pinkHighlight }, textTransform: 'none' }}
             >
               Thử lại
@@ -452,7 +459,7 @@ export default function ListenGamePage() {
                 <Box key={i} sx={{
                   height: 8, width: 32, borderRadius: '9999px',
                   transition: 'all 0.15s',
-                  background: i < currentIndex ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#A78BFA' : '#ffffff20',
+                  background: i < currentIndex ? '#ffffff80' : i === currentIndex && pageState === 'playing' ? '#FFD166' : '#ffffff20',
                 }} />
               ))}
             </Box>
@@ -470,6 +477,21 @@ export default function ListenGamePage() {
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16 }}>
                 Nghe câu hỏi rồi ghi lại câu trả lời nhé
               </Typography>
+              {items.length > 0 && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', alignItems: 'center' }}>
+                  {items.map((_, i) => (
+                    <Box key={i} sx={{
+                      width: 44, height: 44, borderRadius: '50%',
+                      bgcolor: 'rgba(79,157,255,0.2)',
+                      border: '1.5px solid rgba(79,157,255,0.5)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'white', fontWeight: 800, fontSize: 16,
+                    }}>
+                      {i + 1}
+                    </Box>
+                  ))}
+                </Box>
+              )}
               <Button
                 onClick={() => setPageState('playing')}
                 sx={{

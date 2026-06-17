@@ -56,7 +56,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ThemeProvider theme={studentTheme}>
-      <Box sx={{ minHeight: '100vh', bgcolor: '#2D0B2E', position: 'relative', overflow: 'hidden' }}>
+      <Box sx={{ minHeight: '100vh', background: 'linear-gradient(160deg, #4F9DFF 0%, #A78BFA 55%, #FF9BD2 100%)', position: 'relative', overflow: 'hidden' }}>
         {/* Concentric-circle arc decoration */}
         <Box
           component="svg"
