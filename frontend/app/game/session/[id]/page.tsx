@@ -7,7 +7,7 @@ import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, Bf
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
 import PhonemeChips from './_components/PhonemeChips';
 import RecordButton from './_components/RecordButton';
-import { School, Mic, Hash, PartyPopper, CheckCircle2, ImageIcon } from 'lucide-react';
+import { School, Mic, Hash, PartyPopper, CheckCircle2, ImageIcon, Play, Pause } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -81,6 +81,58 @@ const BFA_ERROR_MESSAGES: Record<string, string> = {
   speech_not_detected: 'Không nghe rõ — nói to hơn nhé',
   wrong_language:      'Please speak in English',
 };
+
+function AudioPlayer({ src }: { src: string }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const toggle = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (playing) { a.pause(); } else { a.play(); }
+    setPlaying(!playing);
+  };
+
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.75, px: 1.25, py: 0.75, bgcolor: '#F5F3FF', borderRadius: 2 }}>
+      <audio ref={audioRef} src={src}
+        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
+        onEnded={() => { setPlaying(false); setCurrentTime(0); if (audioRef.current) audioRef.current.currentTime = 0; }}
+      />
+      <Box onClick={toggle} sx={{
+        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+        background: gradients.primaryPurple,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', transition: 'opacity 0.15s', '&:hover': { opacity: 0.82 },
+      }}>
+        {playing ? <Pause size={13} color="white" fill="white" /> : <Play size={13} color="white" fill="white" style={{ marginLeft: 1 }} />}
+      </Box>
+      <Box sx={{ flex: 1, position: 'relative', height: 4, bgcolor: '#DDD6FE', borderRadius: 2, cursor: 'pointer' }}
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const a = audioRef.current;
+          if (a && duration) { a.currentTime = ((e.clientX - rect.left) / rect.width) * duration; }
+        }}
+      >
+        <Box sx={{
+          position: 'absolute', left: 0, top: 0, bottom: 0,
+          width: duration > 0 ? `${(currentTime / duration) * 100}%` : '0%',
+          background: gradients.primaryPurple, borderRadius: 2,
+          transition: 'width 0.15s linear',
+        }} />
+      </Box>
+      <Typography sx={{ color: '#6B7280', fontSize: 11, fontVariantNumeric: 'tabular-nums', flexShrink: 0, minWidth: 36, textAlign: 'right' }}>
+        {duration > 0 ? fmt(currentTime) : '0:00'}
+        {duration > 0 ? ` / ${fmt(duration)}` : ''}
+      </Typography>
+    </Box>
+  );
+}
 
 export default function SessionPage() {
   const { id } = useParams<{ id: string }>();
@@ -364,7 +416,7 @@ export default function SessionPage() {
     setPageState('uploading');
     const currentItems = itemsRef.current;
     const scored = [...currentItems];
-    const audioUrls = audioBlobsRef.current.map((blob) => blob ? URL.createObjectURL(blob) : null);
+    const audioUrls = audioBlobsRef.current.map((blob) => blob ? URL.createObjectURL(blob) : undefined);
 
     for (let i = 0; i < currentItems.length; i++) {
       const item = currentItems[i];
@@ -372,16 +424,16 @@ export default function SessionPage() {
       try {
         if (item.kind === 'speaking') {
           const r = await saveSpeakingResult(sessionId, audioBlob ?? undefined);
-          scored[i] = { ...scored[i], score: r.score, audioUrl: audioUrls[i] ?? undefined };
+          scored[i] = { ...scored[i], score: r.score, audioUrl: audioUrls[i] };
         } else if (item.kind === 'phonics') {
           const r = await savePhonicsResult(sessionId, item.wordId!, audioBlob);
           const bfaError = r.bfa?.error ?? null;
-          scored[i] = { ...scored[i], score: bfaError ? 0 : r.score, bfa: r.bfa ?? null, bfaError, audioUrl: audioUrls[i] ?? undefined };
+          scored[i] = { ...scored[i], score: bfaError ? 0 : r.score, bfa: r.bfa ?? null, bfaError, audioUrl: audioUrls[i] };
         }
       } catch (err) {
         console.error(`[score] item="${item.text}"`, err);
         setSaveError(true);
-        scored[i] = { ...scored[i], audioUrl: audioUrls[i] ?? undefined };
+        scored[i] = { ...scored[i], audioUrl: audioUrls[i] };
       }
     }
 
@@ -463,6 +515,7 @@ export default function SessionPage() {
         audioUrl,
       }]);
     } catch (err) {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
       console.error('[speakUpload] failed:', err);
       setSaveError(true);
     }
@@ -702,7 +755,12 @@ export default function SessionPage() {
                             <Typography sx={{ color: '#1E1B4B', fontWeight: 700, fontSize: 18 }}>{item.text}</Typography>
                             {item.audioUrl ? (
                               <Box sx={{ mt: 0.5 }}>
-                                <audio controls src={item.audioUrl} style={{ width: '100%', height: 32 }} />
+                                <AudioPlayer src={item.audioUrl} />
+                                {item.transcribed && (
+                                  <Typography sx={{ color: '#4C4F7A', fontSize: 12, mt: 0.5 }}>
+                                    Em nói: <Box component="span" sx={{ color: '#1E1B4B', fontStyle: 'italic' }}>"{item.transcribed}"</Box>
+                                  </Typography>
+                                )}
                               </Box>
                             ) : (
                               <Typography sx={{ color: '#4C4F7A', fontSize: 14, mt: 0.5 }}>
@@ -741,7 +799,12 @@ export default function SessionPage() {
                             )}
                             {item.audioUrl ? (
                               <Box sx={{ mt: 0.5 }}>
-                                <audio controls src={item.audioUrl} style={{ width: '100%', height: 32 }} />
+                                <AudioPlayer src={item.audioUrl} />
+                                {item.transcribed && (
+                                  <Typography sx={{ color: '#4C4F7A', fontSize: 12, mt: 0.5 }}>
+                                    Em nói: <Box component="span" sx={{ color: '#1E1B4B', fontStyle: 'italic' }}>"{item.transcribed}"</Box>
+                                  </Typography>
+                                )}
                               </Box>
                             ) : (
                               <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>
