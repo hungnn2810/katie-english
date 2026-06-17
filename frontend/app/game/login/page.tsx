@@ -84,7 +84,7 @@ export default function StudentLoginPage() {
       </Box>
 
       {/* Heading */}
-      <Typography sx={{ fontSize: 34, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.02em', mb: '10px' }}>
+      <Typography sx={{ fontSize: { xs: 28, sm: 34 }, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.02em', mb: '10px' }}>
         Học tiếng Anh<br />
         <Box component="span" sx={{ color: ACCENT }}>thật vui!</Box>
       </Typography>
@@ -134,8 +134,8 @@ export default function StudentLoginPage() {
               onClick={() => setShowPw((v) => !v)}
               aria-label={showPw ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
               sx={{
-                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                width: 36, height: 36, borderRadius: '10px',
+                position: 'absolute', right: { xs: 4, sm: 8 }, top: '50%', transform: 'translateY(-50%)',
+                width: { xs: 44, sm: 36 }, height: { xs: 44, sm: 36 }, borderRadius: '10px',
                 background: 'rgba(255,255,255,0.08)',
                 color: 'rgba(255,255,255,0.6)',
                 '&:hover': { background: 'rgba(255,255,255,0.15)' },
@@ -171,6 +171,7 @@ export default function StudentLoginPage() {
             fontWeight: 900, fontSize: 18,
             borderRadius: '16px',
             py: '16px',
+            minHeight: 44,
             textTransform: 'none',
             '&:hover': { opacity: 0.9, background: ready ? 'linear-gradient(135deg, #4F9DFF, #A78BFA)' : 'rgba(255,255,255,0.15)' },
             '&.Mui-disabled': { color: 'rgba(255,255,255,0.4)' },

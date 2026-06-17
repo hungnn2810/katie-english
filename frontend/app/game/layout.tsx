@@ -66,9 +66,11 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
           {[150, 230, 320].map((r) => (
             <circle key={`l${r}`} cx="-30" cy="320" r={r} fill="none" stroke="white" strokeWidth="1" />
           ))}
-          {[150, 230, 320].map((r) => (
-            <circle key={`r${r}`} cx="420" cy="320" r={r} fill="none" stroke="white" strokeWidth="1" />
-          ))}
+          <g transform="translate(100%, 320)">
+            {[150, 230, 320].map((r) => (
+              <circle key={`r${r}`} cx="0" cy="0" r={r} fill="none" stroke="white" strokeWidth="1" />
+            ))}
+          </g>
         </Box>
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           {children}

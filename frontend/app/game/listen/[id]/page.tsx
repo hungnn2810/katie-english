@@ -275,13 +275,13 @@ export default function ListenGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: 4, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: { xs: 3, sm: 4 }, background: gradients.gameBg }}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Mic size={32} color="white" />
               </Box>
             </Box>
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
               <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, maxWidth: 384 }}>
                 Em cần cấp quyền microphone để ghi âm. Hãy cho phép và thử lại nhé.
@@ -347,7 +347,7 @@ export default function ListenGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', py: 6, px: 4 }}>
+          <Box sx={{ minHeight: '100vh', py: { xs: 4, sm: 6 }, px: { xs: 2, sm: 4 } }}>
             <Box sx={{ maxWidth: 560, mx: 'auto' }}>
               <Box sx={{ textAlign: 'center', mb: 5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
@@ -440,7 +440,7 @@ export default function ListenGamePage() {
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: gradients.gameBg, px: 3, py: 4, gap: 3 }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: gradients.gameBg, px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 }, gap: 3 }}>
 
           {/* Hidden audio element for prompt playback */}
           <audio ref={audioRef} style={{ display: 'none' }} />
@@ -494,7 +494,7 @@ export default function ListenGamePage() {
               {/* Audio player panel */}
               <Box sx={{
                 width: '100%',
-                bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '20px', p: '22px',
+                bgcolor: 'rgba(255,255,255,0.1)', borderRadius: '20px', p: { xs: 2, sm: '22px' },
                 display: 'flex', alignItems: 'center', gap: 2,
               }}>
                 {/* Play/Pause button — primaryPurple gradient */}

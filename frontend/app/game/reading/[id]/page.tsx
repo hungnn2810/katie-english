@@ -193,7 +193,7 @@ function PlayingShell({
           Activity {currentActivityIndex + 1} of {activityStates.length}
         </Typography>
       </Box>
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: { xs: 2, sm: 4 }, pb: 4, overflowY: 'auto' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: { xs: 2, sm: 4 }, pb: { xs: 3, sm: 4 }, overflowY: 'auto' }}>
         {children}
       </Box>
     </Box>
@@ -293,7 +293,7 @@ function MatchingActivityRenderer({
               onClick={() => handleImageClick(p.pair.id)}
               disabled={isLocked}
               sx={{
-                position: 'relative', width: { xs: 88, sm: 112 }, height: { xs: 88, sm: 112 }, borderRadius: 4,
+                position: 'relative', width: { xs: '45%', sm: 112 }, aspectRatio: '1 / 1', borderRadius: 4,
                 overflow: 'hidden', cursor: isLocked ? 'default' : 'pointer',
                 border: '4px solid', transition: 'all 0.15s', p: 0, background: 'none',
                 animation: isShaking ? `${shake} 0.4s ease-in-out` : 'none',

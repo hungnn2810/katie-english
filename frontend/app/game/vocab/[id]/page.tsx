@@ -233,13 +233,13 @@ export default function VocabGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: 4, background: gradients.gameBg }}>
+          <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, px: { xs: 3, sm: 4 }, background: gradients.gameBg }}>
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <Box sx={{ width: 64, height: 64, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Mic size={32} color="white" />
               </Box>
             </Box>
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: 'center', maxWidth: 480, mx: 'auto' }}>
               <Typography sx={{ color: 'white', fontSize: 24, fontWeight: 900, mb: 1 }}>Cần quyền Microphone</Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, maxWidth: 384 }}>
                 Em cần cấp quyền microphone để ghi âm. Hãy cho phép và thử lại nhé.
@@ -305,7 +305,7 @@ export default function VocabGamePage() {
     return (
       <AuthGate requiredRole="STUDENT">
         {() => (
-          <Box sx={{ minHeight: '100vh', py: 6, px: 4 }}>
+          <Box sx={{ minHeight: '100vh', py: { xs: 4, sm: 6 }, px: { xs: 2, sm: 4 } }}>
             <Box sx={{ maxWidth: 560, mx: 'auto' }}>
               <Box sx={{ textAlign: 'center', mb: 5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
@@ -386,7 +386,7 @@ export default function VocabGamePage() {
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: gradients.gameBg, px: 3, py: 4, gap: 3 }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: gradients.gameBg, px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 }, gap: 3 }}>
 
           {/* Progress header */}
           <Box sx={{ width: '100%', maxWidth: 480, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -436,7 +436,10 @@ export default function VocabGamePage() {
 
               {/* Image area — 240×200, shake on BFA error */}
               <Box sx={{
-                width: 240, height: 200,
+                width: { xs: '90vw', sm: 240 },
+                maxWidth: { xs: '90vw', sm: 320 },
+                height: { xs: 'auto', sm: 200 },
+                maxHeight: { xs: '35vh', sm: 280 },
                 border: '4px solid rgba(255,255,255,0.2)',
                 borderRadius: '22px',
                 overflow: 'hidden',

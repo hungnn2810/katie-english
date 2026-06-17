@@ -161,8 +161,11 @@ function PageContent({ user }: { user: AuthUser }) {
         </DialogContent>
       </Dialog>
 
+      {/* Content column: centered on desktop */}
+      <Box sx={{ maxWidth: { sm: 600, md: 640 }, mx: 'auto', width: '100%' }}>
+
       {/* GameHeader */}
-      <Box component="header" sx={{ position: 'relative', zIndex: 10, px: '18px', py: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box component="header" sx={{ position: 'relative', zIndex: 10, px: { xs: 2, sm: 3, md: 4 }, py: { xs: 1.75, sm: 2 }, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
           <Box sx={{ width: 36, height: 36, borderRadius: '11px', bgcolor: 'white', color: '#4F9DFF', fontWeight: 900, fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
             K
@@ -178,14 +181,14 @@ function PageContent({ user }: { user: AuthUser }) {
             }}>
               {user.upn[0].toUpperCase()}
             </Box>
-            <Typography sx={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 600 }}>{displayName}</Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: 600, display: { xs: 'none', sm: 'block' } }}>{displayName}</Typography>
           </Box>
           <Button
             onClick={() => setShowPwModal(true)}
             sx={{
               display: 'flex', alignItems: 'center', gap: 0.75, color: 'rgba(255,255,255,0.6)',
               '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },
-              fontSize: 13, fontWeight: 500, px: 1, py: 0.75, borderRadius: 2, textTransform: 'none', minWidth: 0,
+              fontSize: 13, fontWeight: 500, px: 1, py: { xs: 1.25, sm: 0.75 }, borderRadius: 2, textTransform: 'none', minWidth: 0, minHeight: 44,
             }}
           >
             <Lock size={13} />
@@ -195,7 +198,7 @@ function PageContent({ user }: { user: AuthUser }) {
             sx={{
               color: 'rgba(255,255,255,0.6)',
               '&:hover': { color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(255,255,255,0.1)' },
-              fontSize: 13, fontWeight: 500, px: 1, py: 0.75, borderRadius: 2, textTransform: 'none', minWidth: 0,
+              fontSize: 13, fontWeight: 500, px: 1, py: { xs: 1.25, sm: 0.75 }, borderRadius: 2, textTransform: 'none', minWidth: 0, minHeight: 44,
             }}
           >
             Đăng xuất
@@ -204,11 +207,11 @@ function PageContent({ user }: { user: AuthUser }) {
       </Box>
 
       {/* Main */}
-      <Box component="main" sx={{ position: 'relative', zIndex: 10, px: '18px', pb: '30px' }}>
-        <Typography sx={{ fontSize: 30, fontWeight: 900, color: 'white', mb: '4px' }}>
+      <Box component="main" sx={{ position: 'relative', zIndex: 10, px: { xs: 2, sm: 3, md: 4 }, pb: { xs: 4, sm: 5 } }}>
+        <Typography sx={{ fontSize: { xs: 24, sm: 28, md: 30 }, fontWeight: 900, color: 'white', mb: '4px' }}>
           Chào, {displayName}!
         </Typography>
-        <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, fontWeight: 600, mb: '24px' }}>
+        <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: { xs: 14, sm: 15 }, fontWeight: 600, mb: '24px' }}>
           Hôm nay học gì nào?
         </Typography>
 
@@ -355,6 +358,7 @@ function PageContent({ user }: { user: AuthUser }) {
           })}
         </Box>
       </Box>
+      </Box>{/* end maxWidth content column */}
     </Box>
   );
 }
