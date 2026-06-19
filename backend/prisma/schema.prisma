@@ -75,35 +75,38 @@ model WordPhoneme {
 }
 
 model Class {
-  id            Int                       @id @default(autoincrement())
-  name          String
-  code          String                    @unique
-  startDate     DateTime
-  endDate       DateTime
-  status        ClassStatus               @default(PENDING)
-  scheduleSlots Json                      @default("[]")
-  teacherId     Int?
-  teacher       User?                     @relation("TeacherClasses", fields: [teacherId], references: [id])
-  students      Student[]
-  assignments   HomeworkAssignmentClass[]
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
+  id             Int                       @id @default(autoincrement())
+  name           String
+  code           String                    @unique
+  startDate      DateTime
+  endDate        DateTime
+  status         ClassStatus               @default(PENDING)
+  scheduleSlots  Json                      @default("[]")
+  teacherId      Int?
+  teacher        User?                     @relation("TeacherClasses", fields: [teacherId], references: [id])
+  students       Student[]
+  assignments    HomeworkAssignmentClass[]
+  tuitionConfig  TuitionConfig?
+  tuitionRecords TuitionRecord[]
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
 
   @@map("classes")
 }
 
 model Student {
-  id          Int               @id @default(autoincrement())
-  fullname    String
-  sex         Sex
-  dateOfBirth DateTime
-  classId     Int?
-  class       Class?            @relation(fields: [classId], references: [id])
-  parents     ParentInfo[]
-  sessions    HomeworkSession[]
-  user        User?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id             Int               @id @default(autoincrement())
+  fullname       String
+  sex            Sex
+  dateOfBirth    DateTime
+  classId        Int?
+  class          Class?            @relation(fields: [classId], references: [id])
+  parents        ParentInfo[]
+  sessions       HomeworkSession[]
+  tuitionRecords TuitionRecord[]
+  user           User?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
   @@map("students")
 }
@@ -358,4 +361,58 @@ model User {
   createdAt              DateTime @default(now())
 
   @@map("users")
+}
+
+enum TuitionStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+model TuitionConfig {
+  id              Int      @id @default(autoincrement())
+  classId         Int      @unique
+  class           Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  pricePerSession Int      // VNĐ per session
+  bookFee         Int?     // nullable, VNĐ
+  dueDayOfMonth   Int      // 1-31
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("tuition_configs")
+}
+
+model TuitionRecord {
+  id               Int                      @id @default(autoincrement())
+  studentId        Int
+  student          Student                  @relation(fields: [studentId], references: [id])
+  classId          Int
+  class            Class                    @relation(fields: [classId], references: [id])
+  month            Int                      // 1-12
+  year             Int
+  tuitionAmount    Int                      // VNĐ
+  bookFee          Int                      // VNĐ (0 if not charged)
+  totalAmount      Int                      // VNĐ
+  dueDate          DateTime
+  status           TuitionStatus            @default(PENDING)
+  paidAt           DateTime?
+  paidBy           String?                  // admin/teacher username or ID
+  notificationLogs TuitionNotificationLog[]
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+
+  @@unique([studentId, classId, month, year])
+  @@map("tuition_records")
+}
+
+model TuitionNotificationLog {
+  id              Int           @id @default(autoincrement())
+  tuitionRecordId Int
+  tuitionRecord   TuitionRecord @relation(fields: [tuitionRecordId], references: [id], onDelete: Cascade)
+  sentAt          DateTime
+  zaloResponse    String        // JSON stringified Zalo API response
+  success         Boolean
+  createdAt       DateTime      @default(now())
+
+  @@map("tuition_notification_logs")
 }
