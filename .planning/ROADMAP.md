@@ -24,7 +24,7 @@
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
 | 13 | Landing Page | 1/3 | In Progress|  |
 | 14 | Game Responsive Layout | 0/3 | Pending |  |
-| 15 | Tuition Management | Quản lý học phí — cấu hình, phiếu thu, ZNS, báo cáo | v3 | 📋 Planned |
+| 15 | Tuition Management | 1/4 | In Progress|  |
 
 ---
 
@@ -601,7 +601,8 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 **Plans:**
 
-- [ ] 15-01-PLAN.md — Schema: TuitionStatus enum + TuitionConfig + TuitionRecord + TuitionNotificationLog + db push + docs/db (Wave 1)
+1/4 plans executed
+
 - [ ] 15-02-PLAN.md — Backend: TuitionModule (config CRUD, record generation, ZaloZnsService, payment mark, report, unit tests) (Wave 2)
 - [ ] 15-03-PLAN.md — Frontend admin/teacher: config form + generate records + payment dialog + ZNS modal (Wave 3)
 - [ ] 15-04-PLAN.md — Frontend: TuitionReportTable (filter/totals/status badges) wired into admin + teacher pages (Wave 3)
