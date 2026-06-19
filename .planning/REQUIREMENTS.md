@@ -71,6 +71,16 @@
 - **NOTIF-01**: Student receives notification when new homework is assigned
 - **NOTIF-02**: Teacher receives notification when student completes homework
 
+### Tuition Management
+
+- [ ] **TUITION-01**: Admin/Teacher cấu hình học phí theo lớp (VNĐ/buổi + tiền sách tùy chọn)
+- [ ] **TUITION-02**: Hệ thống tính học phí tháng = số buổi trong tháng × đơn giá + tiền sách (nếu có)
+- [ ] **TUITION-03**: Admin/Teacher thiết lập hạn đóng học phí (ngày trong tháng)
+- [ ] **TUITION-04**: Hệ thống tự động tạo phiếu thu học phí cho từng học sinh theo tháng
+- [ ] **TUITION-05**: Admin/Teacher ghi nhận đóng học phí thủ công (PAID / PENDING / OVERDUE)
+- [ ] **TUITION-06**: Hệ thống gửi thông báo Zalo ZNS đến phụ huynh (số điện thoại từ ParentInfo)
+- [ ] **TUITION-07**: Báo cáo học phí: lọc theo lớp/tháng, trạng thái (đã đóng / chưa đóng / quá hạn)
+
 ## Out of Scope
 
 | Feature | Reason |
@@ -114,10 +124,19 @@
 | BFA-04 | Phase 5 | Pending |
 | BFA-05 | Phase 5 | Pending |
 
+| TUITION-01 | Phase 15 | Pending |
+| TUITION-02 | Phase 15 | Pending |
+| TUITION-03 | Phase 15 | Pending |
+| TUITION-04 | Phase 15 | Pending |
+| TUITION-05 | Phase 15 | Pending |
+| TUITION-06 | Phase 15 | Pending |
+| TUITION-07 | Phase 15 | Pending |
+
 **Coverage:**
 - v1 requirements: 26 total
 - Mapped to phases: 26
 - Unmapped: 0 ✓
+- v3 (Tuition): 7 requirements mapped to Phase 15 ✓
 
 ---
 *Requirements defined: 2026-05-13*
