@@ -24,6 +24,7 @@
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
 | 13 | Landing Page | 1/3 | In Progress|  |
 | 14 | Game Responsive Layout | 0/3 | Pending |  |
+| 15 | Tuition Management | Quản lý học phí — cấu hình, phiếu thu, ZNS, báo cáo | v3 | 📋 Planned |
 
 ---
 
@@ -573,5 +574,39 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 ---
 
+---
+
+### Phase 15: Tuition Management
+
+**Goal:** Xây dựng hệ thống quản lý học phí — cấu hình học phí theo lớp, tự động tạo phiếu thu hàng tháng, gửi thông báo qua Zalo ZNS, ghi nhận đóng tiền, và báo cáo đóng học phí.
+**Mode:** mvp
+
+**Requirements:**
+
+- TUITION-01: Admin/Teacher cấu hình học phí theo lớp (VNĐ/buổi + tiền sách tùy chọn)
+- TUITION-02: Hệ thống tính học phí tháng = số buổi trong tháng × đơn giá + tiền sách (nếu có)
+- TUITION-03: Admin/Teacher thiết lập hạn đóng học phí (ngày trong tháng)
+- TUITION-04: Hệ thống tự động tạo phiếu thu học phí cho từng học sinh theo tháng
+- TUITION-05: Admin/Teacher ghi nhận đóng học phí thủ công (PAID / chưa đóng / quá hạn)
+- TUITION-06: Hệ thống gửi thông báo qua Zalo ZNS đến phụ huynh (số điện thoại từ ParentInfo)
+- TUITION-07: Báo cáo học phí: lọc theo lớp/tháng, trạng thái đóng (đã đóng / chưa đóng / quá hạn)
+
+**Success Criteria:**
+
+1. Admin cấu hình lớp A: 100,000 VNĐ/buổi + 50,000 VNĐ tiền sách — cấu hình lưu và hiển thị đúng.
+2. Nhấn "Tạo phiếu thu tháng 7/2026" cho lớp A — hệ thống tạo phiếu cho từng học sinh trong lớp với số tiền = số buổi × 100,000 + 50,000.
+3. Admin gửi thông báo ZNS — phụ huynh nhận Zalo message với tên con, số tiền, hạn đóng.
+4. Admin đánh dấu học sinh đã đóng — trạng thái chuyển PAID, hiển thị đúng trong báo cáo.
+5. Báo cáo tháng 7 lớp A hiển thị danh sách: đã đóng/chưa đóng/quá hạn với tổng tiền.
+
+**Plans:**
+
+- [ ] 15-01-PLAN.md — Schema: TuitionStatus enum + TuitionConfig + TuitionRecord + TuitionNotificationLog + db push + docs/db (Wave 1)
+- [ ] 15-02-PLAN.md — Backend: TuitionModule (config CRUD, record generation, ZaloZnsService, payment mark, report, unit tests) (Wave 2)
+- [ ] 15-03-PLAN.md — Frontend admin/teacher: config form + generate records + payment dialog + ZNS modal (Wave 3)
+- [ ] 15-04-PLAN.md — Frontend: TuitionReportTable (filter/totals/status badges) wired into admin + teacher pages (Wave 3)
+
+---
+
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-17 — Phase 14 added: Game Responsive Layout*
+*Last updated: 2026-06-19 — Phase 15 added: Tuition Management (Zalo ZNS)*
