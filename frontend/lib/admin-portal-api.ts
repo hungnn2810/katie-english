@@ -146,3 +146,107 @@ export interface AdminHomeworkItem {
 export const getAdminHomework = () => req<AdminHomeworkItem[]>('/admin/homework');
 export const deleteAdminHomework = (id: number) => req<{ deleted: true }>(`/admin/homework/${id}`, { method: 'DELETE' });
 export const deleteAdminSession = (sessionId: number) => req<{ deleted: true }>(`/admin/students/sessions/${sessionId}`, { method: 'DELETE' });
+
+// ─── Tuition ──────────────────────────────────────────────────────────────────
+
+export interface TuitionConfig {
+  id: number;
+  classId: number;
+  pricePerSession: number;
+  bookFee: number | null;
+  dueDayOfMonth: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TuitionRecord {
+  id: number;
+  studentId: number;
+  classId: number;
+  month: number;
+  year: number;
+  tuitionAmount: number;
+  bookFee: number;
+  totalAmount: number;
+  dueDate: string;
+  status: 'PENDING' | 'PAID' | 'OVERDUE';
+  paidAt: string | null;
+  paidBy: string | null;
+  createdAt: string;
+}
+
+export interface TuitionReportItem {
+  id: number;
+  studentId: number;
+  studentName: string;
+  tuitionAmount: number;
+  bookFee: number;
+  totalAmount: number;
+  dueDate: string;
+  paidAt: string | null;
+  status: 'PENDING' | 'PAID' | 'OVERDUE';
+  daysOverdue: number;
+}
+
+export interface CreateTuitionConfigInput {
+  pricePerSession: number;
+  bookFee?: number | null;
+  dueDayOfMonth: number;
+}
+
+export interface GenerateRecordsInput {
+  classId: number;
+  month: number;
+  year: number;
+}
+
+export interface RecordPaymentInput {
+  paidAt: string;
+  paidBy: string;
+}
+
+export interface SendNotificationsInput {
+  recordIds: number[];
+}
+
+export interface SendNotificationsResult {
+  totalRecords: number;
+  successCount: number;
+  results: Array<{ recordId: number; success: boolean; error?: string }>;
+}
+
+export const getTuitionConfig = (classId: number) =>
+  req<TuitionConfig>(`/admin/tuition/config/${classId}`);
+
+export const updateTuitionConfig = (classId: number, data: CreateTuitionConfigInput) =>
+  req<TuitionConfig>(`/admin/tuition/config/${classId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+export const createTuitionRecords = (data: GenerateRecordsInput) =>
+  req<TuitionRecord[]>('/admin/tuition/records/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+export const recordTuitionPayment = (recordId: number, data: RecordPaymentInput) =>
+  req<TuitionRecord>(`/admin/tuition/records/${recordId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+export const sendTuitionNotifications = (data: SendNotificationsInput) =>
+  req<SendNotificationsResult>('/admin/tuition/notify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+export const getTuitionReport = (params: { classId: number; month: number; year: number; statuses?: string[] }) =>
+  req<TuitionReportItem[]>(
+    `/admin/tuition/report?classId=${params.classId}&month=${params.month}&year=${params.year}${params.statuses?.length ? '&status=' + params.statuses.join(',') : ''}`,
+  );
