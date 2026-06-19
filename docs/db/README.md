@@ -13,6 +13,7 @@ PostgreSQL database, accessed via Prisma ORM. Provider: `postgresql`.
 | `Sex` | `MALE`, `FEMALE` |
 | `ParentType` | `FATHER`, `MOTHER` |
 | `UserRole` | `TEACHER`, `STUDENT`, `ADMIN` |
+| `TuitionStatus` | `PENDING`, `PAID`, `OVERDUE` |
 
 ## Tables
 
@@ -41,6 +42,9 @@ PostgreSQL database, accessed via Prisma ORM. Provider: `postgresql`.
 | `phonemes` | `Phoneme` | Phonics | Âm vị (IPA symbol) |
 | `words` | `Word` | Phonics | Từ phát âm có liên kết âm vị |
 | `word_phonemes` | `WordPhoneme` | Phonics | Quan hệ word ↔ phoneme (có thứ tự) |
+| `tuition_configs` | `TuitionConfig` | Tuition | Cấu hình học phí theo lớp |
+| `tuition_records` | `TuitionRecord` | Tuition | Phiếu thu học sinh/tháng |
+| `tuition_notification_logs` | `TuitionNotificationLog` | Tuition | Log gửi ZNS thông báo |
 
 ## Domain Files
 
@@ -50,6 +54,7 @@ PostgreSQL database, accessed via Prisma ORM. Provider: `postgresql`.
 - [sessions-results.md](sessions-results.md) — `homework_sessions`, `speaking_results`, `phonics_item_results`, `reading_results`, `listen_item_results`
 - [content.md](content.md) — `vocab_items`, `listen_items`, `reading_activities`, `match_pairs`, `fill_blanks`, `fill_blank_choices`
 - [phonics.md](phonics.md) — `phonemes`, `words`, `word_phonemes`
+- [tuition.md](tuition.md) — `tuition_configs`, `tuition_records`, `tuition_notification_logs`
 
 ## Key Relationships
 
@@ -72,4 +77,8 @@ HomeworkSession ──(1:1)──► SpeakingResult
 HomeworkSession ──(1:N)──► PhonicsItemResult  (link tới HomeworkWord hoặc VocabItem)
 HomeworkSession ──(1:1)──► ReadingResult
 HomeworkSession ──(1:N)──► ListenItemResult
+
+Class ──(1:1)──► TuitionConfig
+Class ──(1:N)──► TuitionRecord
+Student ──(1:N)──► TuitionRecord ──(1:N)──► TuitionNotificationLog
 ```
