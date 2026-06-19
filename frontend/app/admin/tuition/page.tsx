@@ -13,9 +13,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import FormLabel from '@mui/material/FormLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 import TuitionConfigForm from './_components/TuitionConfigForm';
 import GenerateRecordsModal from './_components/GenerateRecordsModal';
 import ZaloSendModal from './_components/ZaloSendModal';
+import TuitionReportTable from './_components/TuitionReportTable';
 
 export default function AdminTuitionPage() {
   const { showToast } = useToast();
@@ -27,6 +29,10 @@ export default function AdminTuitionPage() {
   // Modal state
   const [generateOpen, setGenerateOpen] = useState(false);
   const [zaloOpen, setZaloOpen] = useState(false);
+
+  // Report period state
+  const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
+  const [reportYear, setReportYear] = useState(new Date().getFullYear());
 
   const loadClasses = useCallback(async () => {
     setLoading(true);
@@ -151,9 +157,43 @@ export default function AdminTuitionPage() {
             )}
 
             {activeTab === 3 && (
-              <Typography color="text.secondary">
-                Báo cáo học phí — xem tại tab Báo cáo (Plan 04).
-              </Typography>
+              <Box>
+                <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <Box>
+                    <FormLabel sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5 }}>
+                      Tháng
+                    </FormLabel>
+                    <TextField
+                      type="number"
+                      size="small"
+                      value={reportMonth}
+                      onChange={(e) => setReportMonth(Number(e.target.value))}
+                      sx={{ width: 80 }}
+                    />
+                  </Box>
+                  <Box>
+                    <FormLabel sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5 }}>
+                      Năm
+                    </FormLabel>
+                    <TextField
+                      type="number"
+                      size="small"
+                      value={reportYear}
+                      onChange={(e) => setReportYear(Number(e.target.value))}
+                      sx={{ width: 110 }}
+                    />
+                  </Box>
+                </Box>
+                {classId !== 0 ? (
+                  <TuitionReportTable
+                    classId={classId}
+                    month={reportMonth}
+                    year={reportYear}
+                  />
+                ) : (
+                  <Typography color="text.secondary">Chọn lớp để xem báo cáo.</Typography>
+                )}
+              </Box>
             )}
           </CardContent>
         </Card>
