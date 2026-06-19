@@ -79,7 +79,7 @@
 - [ ] **TUITION-04**: Hệ thống tự động tạo phiếu thu học phí cho từng học sinh theo tháng
 - [ ] **TUITION-05**: Admin/Teacher ghi nhận đóng học phí thủ công (PAID / PENDING / OVERDUE)
 - [ ] **TUITION-06**: Hệ thống gửi thông báo Zalo ZNS đến phụ huynh (số điện thoại từ ParentInfo)
-- [ ] **TUITION-07**: Báo cáo học phí: lọc theo lớp/tháng, trạng thái (đã đóng / chưa đóng / quá hạn)
+- [x] **TUITION-07**: Báo cáo học phí: lọc theo lớp/tháng, trạng thái (đã đóng / chưa đóng / quá hạn)
 
 ## Out of Scope
 
@@ -130,7 +130,7 @@
 | TUITION-04 | Phase 15 | Pending |
 | TUITION-05 | Phase 15 | Pending |
 | TUITION-06 | Phase 15 | Pending |
-| TUITION-07 | Phase 15 | Pending |
+| TUITION-07 | Phase 15 | Complete |
 
 **Coverage:**
 - v1 requirements: 26 total

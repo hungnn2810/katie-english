@@ -23,7 +23,7 @@ decisions:
 metrics:
   duration: "2m 14s"
   completed: "2026-06-19"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 1
   files_modified: 2
@@ -39,6 +39,7 @@ metrics:
 |------|------|--------|-------|
 | 1 | Build TuitionReportTable component | a0b8f41 | `frontend/app/admin/tuition/_components/TuitionReportTable.tsx` (new) |
 | 2 | Wire TuitionReportTable into admin and teacher pages | 79e1f76 | `frontend/app/admin/tuition/page.tsx`, `frontend/app/teacher/tuition/page.tsx` |
+| 3 | checkpoint:human-verify — UI approved | (checkpoint) | User verified and approved Phase 15 tuition management UI |
 
 ## What Was Built
 
@@ -79,9 +80,9 @@ metrics:
 - **Files modified:** `frontend/app/admin/tuition/page.tsx`, `frontend/app/teacher/tuition/page.tsx`
 - **Commit:** 79e1f76
 
-## Checkpoint Pending
+## Checkpoint
 
-Task 3 is a `checkpoint:human-verify` — human verification of the full Phase 15 tuition management system UI is required before marking this plan complete.
+Task 3 was a `checkpoint:human-verify` — human verification of the full Phase 15 tuition management system UI. User approved on 2026-06-19. Plan is complete.
 
 ## Known Stubs
 
