@@ -12,6 +12,7 @@ import { GameModule } from './game/game.module';
 import { AuthModule } from './auth/auth.module';
 import { BfaModule } from './bfa/bfa.module';
 import { AdminModule } from './admin/admin.module';
+import { TuitionModule } from './tuition/tuition.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AdminModule } from './admin/admin.module';
       { name: 'admin-login', ttl: 60_000, limit: 5 },
     ]),
     AdminModule,
+    TuitionModule,
     BfaModule,
     PhonemeModule,
     WordModule,
