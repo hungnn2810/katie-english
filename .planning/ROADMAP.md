@@ -24,7 +24,7 @@
 | 12 | Multi-Subdomain Split | 3/3 | Complete   | 2026-06-02 |
 | 13 | Landing Page | 1/3 | In Progress|  |
 | 14 | Game Responsive Layout | 0/3 | Pending |  |
-| 15 | Tuition Management | 4/4 | Complete | 2026-06-19 |
+| 15 | Tuition Management | 6/6 (gap closure) | In Progress | 2026-06-19 |
 
 ---
 
@@ -601,13 +601,15 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 **Plans:**
 
-4/4 plans executed
+4/4 original + 2 gap closure (Wave 4)
 
 - [x] 15-02-PLAN.md — Backend: TuitionModule (config CRUD, record generation, ZaloZnsService, payment mark, report, unit tests) (Wave 2)
 - [x] 15-03-PLAN.md — Frontend admin/teacher: config form + generate records + payment dialog + ZNS modal (Wave 3)
 - [x] 15-04-PLAN.md — Frontend: TuitionReportTable (filter/totals/status badges) wired into admin + teacher pages (Wave 3)
+- [ ] 15-05-PLAN.md — Gap closure: TuitionGuard (ADMIN+TEACHER) + teacher-tuition-api.ts using teacher JWT (Wave 4)
+- [ ] 15-06-PLAN.md — Gap closure: PaymentRecordDialog wired + TuitionReportTable row selection + ZaloSendModal real IDs (Wave 4)
 
 ---
 
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-19 — Phase 15 added: Tuition Management (Zalo ZNS)*
+*Last updated: 2026-06-19 — Phase 15 gap closure plans 15-05 and 15-06 added (teacher auth + PaymentRecordDialog + ZNS selection)*
