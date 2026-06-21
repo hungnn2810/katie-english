@@ -451,7 +451,7 @@ export default function ClassesPage() {
                       <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{c._count.students}</Typography>,
                       hasTeacher ? (
                         <Button variant="text" size="small" onClick={() => setEditing(c)}
-                          sx={{ fontSize: 13, fontWeight: 600, p: 0, minWidth: 0, color: '#4F9DFF' }}>
+                          sx={{ fontSize: 13, fontWeight: 600, p: 0, minWidth: 0, color: '#6366F1' }}>
                           Reassign
                         </Button>
                       ) : (

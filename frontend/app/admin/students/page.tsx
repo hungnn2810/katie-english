@@ -297,8 +297,8 @@ export default function StudentsPage() {
                       onClick={() => toggleSelect(s.id)}
                       sx={{
                         width: 16, height: 16, borderRadius: '4px',
-                        border: selected.has(s.id) ? '1.5px solid #4F9DFF' : '1.5px solid #CBD5E1',
-                        bgcolor: selected.has(s.id) ? '#4F9DFF' : 'transparent',
+                        border: selected.has(s.id) ? '1.5px solid #6366F1' : '1.5px solid #CBD5E1',
+                        bgcolor: selected.has(s.id) ? '#6366F1' : 'transparent',
                         cursor: 'pointer', flexShrink: 0,
                       }}
                     />,
