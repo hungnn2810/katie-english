@@ -18,9 +18,9 @@ const FIELD_STYLE = {
   fontWeight: 600,
   padding: '15px 16px',
   borderRadius: 14,
-  border: '2px solid rgba(255,255,255,0.18)',
-  background: 'rgba(255,255,255,0.08)',
-  color: '#fff',
+  border: '2px solid rgba(167,139,250,0.25)',
+  background: 'rgba(255,255,255,0.85)',
+  color: '#1F2937',
   outline: 'none',
   boxSizing: 'border-box' as const,
 };
@@ -80,15 +80,15 @@ export default function StudentLoginPage() {
         }}>
           K
         </Box>
-        <Typography sx={{ color: '#fff', fontWeight: 900, fontSize: 20 }}>Katie English</Typography>
+        <Typography sx={{ color: '#4C1D95', fontWeight: 900, fontSize: 20 }}>Katie English</Typography>
       </Box>
 
       {/* Heading */}
-      <Typography sx={{ fontSize: { xs: 28, sm: 34 }, fontWeight: 900, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.02em', mb: '10px' }}>
+      <Typography sx={{ fontSize: { xs: 28, sm: 34 }, fontWeight: 900, color: '#1F2937', lineHeight: 1.1, letterSpacing: '-0.02em', mb: '10px' }}>
         Học tiếng Anh<br />
         <Box component="span" sx={{ color: ACCENT }}>thật vui!</Box>
       </Typography>
-      <Typography sx={{ color: 'rgba(255,255,255,0.65)', fontSize: 15, mb: '24px' }}>
+      <Typography sx={{ color: '#6B7280', fontSize: 15, mb: '24px' }}>
         Đăng nhập để bắt đầu nào.
       </Typography>
 
@@ -96,7 +96,7 @@ export default function StudentLoginPage() {
       <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {/* Class code */}
         <Box>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, mb: '7px' }}>Mã lớp</Typography>
+          <Typography sx={{ color: '#4B5563', fontSize: 13, fontWeight: 700, mb: '7px' }}>Mã lớp</Typography>
           <input
             value={classCode}
             onChange={(e) => setClassCode(e.target.value.toUpperCase())}
@@ -108,7 +108,7 @@ export default function StudentLoginPage() {
 
         {/* Name */}
         <Box>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, mb: '7px' }}>Tên đăng nhập</Typography>
+          <Typography sx={{ color: '#4B5563', fontSize: 13, fontWeight: 700, mb: '7px' }}>Tên đăng nhập</Typography>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -120,7 +120,7 @@ export default function StudentLoginPage() {
 
         {/* Password */}
         <Box>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, mb: '7px' }}>Mật khẩu</Typography>
+          <Typography sx={{ color: '#4B5563', fontSize: 13, fontWeight: 700, mb: '7px' }}>Mật khẩu</Typography>
           <Box sx={{ position: 'relative' }}>
             <input
               value={password}
@@ -136,9 +136,9 @@ export default function StudentLoginPage() {
               sx={{
                 position: 'absolute', right: { xs: 4, sm: 8 }, top: '50%', transform: 'translateY(-50%)',
                 width: { xs: 44, sm: 36 }, height: { xs: 44, sm: 36 }, borderRadius: '10px',
-                background: 'rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.6)',
-                '&:hover': { background: 'rgba(255,255,255,0.15)' },
+                background: 'rgba(167,139,250,0.1)',
+                color: '#6B7280',
+                '&:hover': { background: 'rgba(167,139,250,0.2)' },
                 p: 0,
               }}
             >
@@ -166,14 +166,14 @@ export default function StudentLoginPage() {
             mt: 2,
             background: ready
               ? 'linear-gradient(135deg, #4F9DFF, #A78BFA)'
-              : 'rgba(255,255,255,0.15)',
-            color: ready ? '#fff' : 'rgba(255,255,255,0.5)',
+              : '#E5E7EB',
+            color: ready ? '#fff' : '#9CA3AF',
             fontWeight: 900, fontSize: 18,
             borderRadius: '16px',
             py: '16px',
             minHeight: 44,
             textTransform: 'none',
-            '&:hover': { opacity: 0.9, background: ready ? 'linear-gradient(135deg, #4F9DFF, #A78BFA)' : 'rgba(255,255,255,0.15)' },
+            '&:hover': { opacity: 0.9, background: ready ? 'linear-gradient(135deg, #4F9DFF, #A78BFA)' : '#E5E7EB' },
             '&.Mui-disabled': { color: 'rgba(255,255,255,0.4)' },
           }}
         >
@@ -182,7 +182,7 @@ export default function StudentLoginPage() {
       </Box>
 
       {/* Footer */}
-      <Typography sx={{ textAlign: 'center', mt: '14px', color: 'rgba(255,255,255,0.55)', fontSize: 13, fontWeight: 600 }}>
+      <Typography sx={{ textAlign: 'center', mt: '14px', color: '#9CA3AF', fontSize: 13, fontWeight: 600 }}>
         Quên mật khẩu?{' '}
         <Box component="span" sx={{ color: ACCENT, cursor: 'pointer' }}>Hỏi cô giáo nhé</Box>
       </Typography>
