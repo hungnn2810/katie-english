@@ -25,6 +25,7 @@
 | 13 | Landing Page | 1/3 | In Progress|  |
 | 14 | Game Responsive Layout | 0/3 | Pending |  |
 | 15 | Tuition Management | 6/6 (gap closure) | In Progress | 2026-06-19 |
+| 16 | Teacher/Admin UI Redesign | Modern HeyWordVocab-inspired UI — light sidebar, card-grid homework library, blue accent | v3 | 📋 Pending |
 
 ---
 
@@ -611,5 +612,42 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 ---
 
+---
+
+### Phase 16: Teacher/Admin UI Redesign
+
+**Goal:** Nâng cấp toàn bộ giao diện Teacher portal và Admin portal theo phong cách hiện đại, lấy cảm hứng từ HeyWordVocab — sidebar sáng (light), card-grid cho homework library, màu accent blue hiện đại, dashboard thoáng hơn.
+**Mode:** mvp
+**Depends on:** Phase 11 (MUI refactor), Phase 15 (Tuition)
+
+**Reference:** heywordvocab.com/library — library card grid, light sidebar, category filter tabs, progress badges
+
+**Requirements:**
+
+- UI-01: TeacherShell sidebar đổi từ dark (#0C1220) sang white/light gray, nav items dùng màu blue accent (#3B82F6 / #6366F1)
+- UI-02: AdminShell sidebar đồng bộ cùng style light với TeacherShell
+- UI-03: Homework page hiển thị card-grid thay cho pure table — mỗi card hiển thị type badge màu, tên, class, due date, submission progress bar
+- UI-04: Teacher Dashboard redesign — stat cards với icon tươi sáng, upcoming classes widget, quick action tiles rõ ràng hơn
+- UI-05: Filter tabs trên homework page dùng pill style với count badge (giống HeyWordVocab category tabs)
+- UI-06: Admin pages (teachers, classes, students, homework) đồng bộ style với teacher portal
+- UI-07: Màu accent toàn bộ teacher+admin chuyển sang blue palette: primary #3B82F6, dark #2563EB, bg #EFF6FF
+
+**Success Criteria:**
+
+1. Sidebar teacher portal hiển thị nền trắng/xám nhạt, logo và nav items dùng màu xanh #3B82F6.
+2. Homework page hiển thị card grid (3-4 columns) thay bảng — mỗi card có type chip màu, progress "5/12 submitted", due date badge.
+3. Teacher dashboard có stat cards với gradient nhẹ, widget upcoming classes, quick link tiles với icon.
+4. Admin shell sidebar giống teacher shell — light background, blue accent.
+5. Tất cả pages pass TypeScript build (next build) và không có lỗi visual rõ ràng.
+
+**Plans:**
+
+- [x] 16-01-PLAN.md — TeacherShell + AdminShell: light sidebar redesign, blue accent system, header polish (Wave 1) ✅ 2026-06-21
+- [ ] 16-02-PLAN.md — Teacher Dashboard redesign: stat cards, upcoming classes widget, quick action tiles (Wave 2, depends 16-01)
+- [ ] 16-03-PLAN.md — Homework page: card-grid layout, pill filter tabs, submission progress bars (Wave 2, depends 16-01)
+- [ ] 16-04-PLAN.md — Admin pages sync: teachers/classes/students/homework pages adopt new blue accent + card patterns (Wave 3, depends 16-01)
+
+---
+
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-19 — Phase 15 gap closure plans 15-05 and 15-06 added (teacher auth + PaymentRecordDialog + ZNS selection)*
+*Last updated: 2026-06-21 — Phase 16 Teacher/Admin UI Redesign added (HeyWordVocab-inspired, blue accent)*
