@@ -19,9 +19,9 @@ import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import { LayoutDashboard, School, Users, BookOpen, Video, KeyRound, LogOut, X } from 'lucide-react';
 
-const ACCENT = '#F0623A';
-const ACCENT_BG = 'rgba(240, 98, 58, 0.12)';
-const ACCENT_TEXT = '#FDA087';
+const ACCENT = '#3B82F6';
+const ACCENT_BG = '#EFF6FF';
+const ACCENT_TEXT = '#1D4ED8';
 
 const NAV_GROUPS = [
   {
@@ -95,7 +95,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
       {/* Sidebar */}
       <Box sx={{
         width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
-        bgcolor: '#0C1220', boxShadow: '1px 0 0 rgba(255,255,255,0.05)',
+        bgcolor: '#FFFFFF', boxShadow: '1px 0 0 #E2E8F0',
       }}>
         {/* Logo */}
         <Box sx={{ px: '20px', pt: '28px', pb: '24px' }}>
@@ -107,7 +107,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
               <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 14 }}>K</Typography>
             </Box>
             <Box>
-              <Typography sx={{ color: 'white', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+              <Typography sx={{ color: '#0F172A', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
                 Katie English
               </Typography>
               <Typography sx={{ color: '#64748B', fontSize: 10, letterSpacing: '0.05em', mt: '3px' }}>
@@ -124,7 +124,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
               {group.label && (
                 <Typography variant="caption" sx={{
                   fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
-                  color: '#475569', px: '12px', mb: '6px', display: 'block', fontSize: 11,
+                  color: '#6B7280', px: '12px', mb: '6px', display: 'block', fontSize: 11,
                 }}>
                   {group.label}
                 </Typography>
@@ -142,8 +142,8 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                           borderRadius: '12px', py: '11px', px: '14px', position: 'relative',
                           '&.Mui-selected': { bgcolor: ACCENT_BG, color: ACCENT_TEXT },
                           '&.Mui-selected:hover': { bgcolor: ACCENT_BG },
-                          '&:not(.Mui-selected)': { color: '#94A3B8' },
-                          '&:not(.Mui-selected):hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#E2E8F0' },
+                          '&:not(.Mui-selected)': { color: '#374151' },
+                          '&:not(.Mui-selected):hover': { bgcolor: '#F1F5F9', color: '#1F2937' },
                         }}
                       >
                         {active && (
@@ -170,8 +170,8 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
 
         {/* Sidebar footer */}
         <Box sx={{ px: '20px', pb: '20px', pt: '12px' }}>
-          <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mb: '12px' }} />
-          <Typography sx={{ fontSize: 10, color: '#475569', textAlign: 'center' }}>
+          <Divider sx={{ borderColor: '#E2E8F0', mb: '12px' }} />
+          <Typography sx={{ fontSize: 10, color: '#94A3B8', textAlign: 'center' }}>
             © Katie English
           </Typography>
         </Box>
