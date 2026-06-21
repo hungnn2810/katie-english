@@ -48,7 +48,7 @@ function getNextOccurrence(slots: ScheduleSlot[]): Date | null {
 }
 
 const STAT_CARDS = [
-  { key: 'classes' as const, label: 'Total Classes', icon: School, color: ACCENT, bgColor: '#FFF2EF', href: '/teacher/classes' },
+  { key: 'classes' as const, label: 'Total Classes', icon: School, color: ACCENT, bgColor: '#EFF6FF', href: '/teacher/classes' },
   { key: 'students' as const, label: 'Total Students', icon: Users, color: '#6ED6C1', bgColor: '#F0FDFB', href: '/teacher/students' },
   { key: 'homework' as const, label: 'Homework Sets', icon: BookOpen, color: '#A78BFA', bgColor: '#F5F3FF', href: '/teacher/homework' },
 ];
@@ -102,16 +102,16 @@ export default function TeacherDashboard() {
     <Box>
       {/* Pending actions banner */}
       {(pendingCount > 0 || resetCount > 0) && (
-        <Box sx={{ mb: '20px', borderRadius: '12px', border: '1px solid #FCD34D', bgcolor: '#FFFBEB', px: '16px', py: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <AlertTriangle size={16} color="#F59E0B" style={{ flexShrink: 0 }} />
+        <Box sx={{ mb: '20px', borderRadius: '12px', border: '1px solid #BFDBFE', bgcolor: '#EFF6FF', px: '16px', py: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <AlertTriangle size={16} color="#3B82F6" style={{ flexShrink: 0 }} />
           <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
             {pendingCount > 0 && (
-              <Link href="/teacher/students" style={{ color: '#92400E', fontWeight: 600, fontSize: 14 }}>
+              <Link href="/teacher/students" style={{ color: '#1D4ED8', fontWeight: 600, fontSize: 14 }}>
                 {pendingCount} pending registration approval{pendingCount !== 1 ? 's' : ''}
               </Link>
             )}
             {resetCount > 0 && (
-              <Link href="/teacher/students" style={{ color: '#92400E', fontWeight: 600, fontSize: 14 }}>
+              <Link href="/teacher/students" style={{ color: '#1D4ED8', fontWeight: 600, fontSize: 14 }}>
                 {resetCount} password reset request{resetCount !== 1 ? 's' : ''}
               </Link>
             )}
@@ -183,14 +183,14 @@ export default function TeacherDashboard() {
                   const isToday = cls.nextAt.toDateString() === new Date().toDateString();
                   return (
                     <Box key={cls.id} sx={{ display: 'flex', alignItems: 'center', gap: '16px', py: '14px', borderBottom: i < Math.min(upcomingClasses.length, 6) - 1 ? '1px solid #E2E8F0' : 'none' }}>
-                      <Box sx={{ width: 36, height: 36, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: isToday ? '#FFF2EF' : '#F8FAFC' }}>
+                      <Box sx={{ width: 36, height: 36, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: isToday ? '#EFF6FF' : '#F8FAFC' }}>
                         <School size={16} color={isToday ? ACCENT : '#94A3B8'} />
                       </Box>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</Typography>
                         <Typography sx={{ fontSize: 12, color: '#64748B', mt: '2px' }}>{cls.code}</Typography>
                       </Box>
-                      <Box sx={{ fontSize: 12, fontWeight: 700, px: '10px', py: '4px', borderRadius: '999px', flexShrink: 0, bgcolor: isToday ? '#FFF2EF' : '#F1F5F9', color: isToday ? ACCENT : '#64748B' }}>
+                      <Box sx={{ fontSize: 12, fontWeight: 700, px: '10px', py: '4px', borderRadius: '999px', flexShrink: 0, bgcolor: isToday ? '#EFF6FF' : '#F1F5F9', color: isToday ? ACCENT : '#64748B' }}>
                         {formatRelativeTime(cls.nextAt)}
                       </Box>
                     </Box>
@@ -201,25 +201,28 @@ export default function TeacherDashboard() {
           </Box>
         </Card>
 
-        {/* Quick links */}
+        {/* Quick actions */}
         <Card sx={{ overflow: 'hidden' }}>
           <Box sx={{ px: '22px', py: '16px', borderBottom: '1px solid #E2E8F0' }}>
-            <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>Quick Links</Typography>
+            <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>Quick Actions</Typography>
           </Box>
-          <Box sx={{ px: '14px', py: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <Box sx={{ p: '14px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
             {QUICK_LINKS.map((link) => {
               const Icon = link.icon;
               return (
                 <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px', px: '12px', py: '12px', borderRadius: '12px', '&:hover': { bgcolor: '#F7F9FC' }, cursor: 'pointer' }}>
-                    <Box sx={{ width: 32, height: 32, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: `${link.color}18` }}>
-                      <Icon size={16} color={link.color} />
+                  <Box sx={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                    gap: '8px', p: '14px', borderRadius: '12px', border: '1px solid #E2E8F0',
+                    bgcolor: 'white', cursor: 'pointer',
+                    transition: 'all 0.15s',
+                    '&:hover': { bgcolor: '#EFF6FF', borderColor: '#BFDBFE' },
+                  }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: `${link.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={18} color={link.color} />
                     </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.label}</Typography>
-                      <Typography sx={{ fontSize: 12, color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{link.desc}</Typography>
-                    </Box>
-                    <ChevronRight size={14} color="#CBD5E1" style={{ flexShrink: 0 }} />
+                    <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#0F172A', lineHeight: 1.2, mt: 0.25 }}>{link.label}</Typography>
+                    <Typography sx={{ fontSize: 11, color: '#94A3B8', lineHeight: 1.3, mt: 0.25 }}>{link.desc}</Typography>
                   </Box>
                 </Link>
               );
