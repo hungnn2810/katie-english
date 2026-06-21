@@ -138,7 +138,7 @@ export default function TeacherDashboard() {
       <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '18px' }}>
         {/* Upcoming classes */}
         <Card sx={{ overflow: 'hidden' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: '22px', py: '16px', borderBottom: '1px solid #E2E8F0' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: '22px', py: '16px', borderBottom: '1px solid #E2E8F0', background: 'linear-gradient(90deg, #F0FDFB 0%, #EFF6FF 50%, #FFFFFF 100%)' }}>
             <Box>
               <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>Upcoming Classes</Typography>
               {!loading && (
@@ -182,7 +182,7 @@ export default function TeacherDashboard() {
                 {upcomingClasses.slice(0, 6).map((cls, i) => {
                   const isToday = cls.nextAt.toDateString() === new Date().toDateString();
                   return (
-                    <Box key={cls.id} sx={{ display: 'flex', alignItems: 'center', gap: '16px', py: '14px', borderBottom: i < Math.min(upcomingClasses.length, 6) - 1 ? '1px solid #E2E8F0' : 'none' }}>
+                    <Box key={cls.id} sx={{ display: 'flex', alignItems: 'center', gap: '16px', py: '14px', borderBottom: i < Math.min(upcomingClasses.length, 6) - 1 ? '1px solid #E2E8F0' : 'none', borderLeft: isToday ? `3px solid ${ACCENT}` : '3px solid transparent', pl: isToday ? '12px' : '0px', mx: '-22px', px: '22px' }}>
                       <Box sx={{ width: 36, height: 36, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: isToday ? '#EFF6FF' : '#F8FAFC' }}>
                         <School size={16} color={isToday ? ACCENT : '#94A3B8'} />
                       </Box>
@@ -203,7 +203,7 @@ export default function TeacherDashboard() {
 
         {/* Quick actions */}
         <Card sx={{ overflow: 'hidden' }}>
-          <Box sx={{ px: '22px', py: '16px', borderBottom: '1px solid #E2E8F0' }}>
+          <Box sx={{ px: '22px', py: '16px', borderBottom: '1px solid #E2E8F0', background: 'linear-gradient(90deg, #F5F3FF 0%, #EFF6FF 60%, #FFFFFF 100%)' }}>
             <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>Quick Actions</Typography>
           </Box>
           <Box sx={{ p: '14px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
@@ -213,13 +213,15 @@ export default function TeacherDashboard() {
                 <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
                   <Box sx={{
                     display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                    gap: '8px', p: '14px', borderRadius: '12px', border: '1px solid #E2E8F0',
+                    gap: '8px', p: '14px', borderRadius: '12px',
+                    border: '1px solid #E2E8F0',
+                    borderTop: `3px solid ${link.color}`,
                     bgcolor: 'white', cursor: 'pointer',
                     transition: 'all 0.15s',
-                    '&:hover': { bgcolor: '#EFF6FF', borderColor: '#BFDBFE' },
+                    '&:hover': { bgcolor: `${link.color}08`, borderColor: `${link.color}40`, borderTop: `3px solid ${link.color}` },
                   }}>
-                    <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: `${link.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon size={18} color={link.color} />
+                    <Box sx={{ width: 34, height: 34, borderRadius: '10px', bgcolor: `${link.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={17} color={link.color} />
                     </Box>
                     <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#0F172A', lineHeight: 1.2, mt: 0.25 }}>{link.label}</Typography>
                     <Typography sx={{ fontSize: 11, color: '#94A3B8', lineHeight: 1.3, mt: 0.25 }}>{link.desc}</Typography>
