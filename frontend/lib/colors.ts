@@ -16,6 +16,9 @@ export const colors = {
   adminAccent: '#6366F1',
   teacherAccentBg: '#EFF6FF',
   adminAccentBg: '#EEF2FF',
+  greenLight: '#BBF7D0',
+  greenMid: '#86EFAC',
+  greenDark: '#166534',
 } as const;
 
 export const gradients = {
