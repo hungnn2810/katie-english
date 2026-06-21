@@ -24,6 +24,18 @@ const FIELD_STYLE = {
   outline: 'none',
   boxSizing: 'border-box' as const,
 };
+const CLASS_CODE_STYLE = {
+  ...FIELD_STYLE,
+  fontSize: 22,
+  fontWeight: 900,
+  letterSpacing: '0.15em',
+  textTransform: 'uppercase' as const,
+  padding: '17px 16px',
+  background: '#FAF5FF',
+  border: '2.5px solid #C4B5FD',
+  borderRadius: 16,
+  color: '#5B21B6',
+};
 
 export default function StudentLoginPage() {
   const router = useRouter();
@@ -102,7 +114,7 @@ export default function StudentLoginPage() {
             onChange={(e) => setClassCode(e.target.value.toUpperCase())}
             placeholder="VD: SUN2A"
             autoComplete="off"
-            style={{ ...FIELD_STYLE, borderColor: codeBad ? '#FF7B7B' : 'rgba(255,255,255,0.18)' }}
+            style={{ ...CLASS_CODE_STYLE, borderColor: codeBad ? '#FF7B7B' : '#C4B5FD' }}
           />
         </Box>
 
