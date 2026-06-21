@@ -13,9 +13,9 @@ import { colors } from '@/lib/colors';
 const ACCENT = colors.purple;
 const FIELD_STYLE = {
   width: '100%',
-  fontFamily: 'Inter',
-  fontSize: 17,
-  fontWeight: 600,
+  fontFamily: 'var(--font-inter), Inter, system-ui, sans-serif',
+  fontSize: 16,
+  fontWeight: 400,
   padding: '15px 16px',
   borderRadius: 14,
   border: '2px solid rgba(167,139,250,0.25)',

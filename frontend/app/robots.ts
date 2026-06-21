@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/teacher', '/admin', '/game', '/api'],
       },
     ],
-    sitemap: 'https://katie.vn/sitemap.xml',
+    sitemap: 'https://katie-english.com.vn/sitemap.xml',
   };
 }

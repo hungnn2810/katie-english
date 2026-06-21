@@ -43,7 +43,7 @@ status: issues_found
 
 ## Summary
 
-This phase introduces a multi-subdomain architecture routing admin, teacher, and student users through separate subdomains (`admin.katie.vn`, `app.katie.vn`, `student.katie.vn`) with subdomain-specific JWT cookies and a new `GameAuthController` for student class-code login. The scope covers the NestJS game authentication endpoint, cookie-setting route handlers, a Next.js middleware routing gate, and several layout guards.
+This phase introduces a multi-subdomain architecture routing admin, teacher, and student users through separate subdomains (`admin.katie-english.com.vn`, `app.katie-english.com.vn`, `student.katie-english.com.vn`) with subdomain-specific JWT cookies and a new `GameAuthController` for student class-code login. The scope covers the NestJS game authentication endpoint, cookie-setting route handlers, a Next.js middleware routing gate, and several layout guards.
 
 The auth architecture has several correctness and security defects: hardcoded credentials in docker-compose, token value truncation for cookie values containing `=`, a missing rate limit on the student game-login endpoint, unverified JWT roles accepted as authorization proof in every client-side layout, and a logout handler that deletes cookies without the domain qualifier used at set time. Additionally the `NEXT_PUBLIC_SUBDOMAIN` env var is not forwarded to the Docker container, meaning subdomain detection silently falls back to host-header parsing in production.
 
@@ -115,10 +115,10 @@ export class GameAuthController {
 
 ---
 
-### CR-04: Logout route deletes cookies without subdomain `domain` attribute — cookies set with `domain=X.katie.vn` are not cleared
+### CR-04: Logout route deletes cookies without subdomain `domain` attribute — cookies set with `domain=X.katie-english.com.vn` are not cleared
 
 **File:** `frontend/app/api/auth/logout/route.ts:6-8`
-**Issue:** The three auth route handlers set cookies in production with a per-subdomain `domain` attribute (e.g. `domain: 'admin.katie.vn'`). The logout route clears all three cookies using only `{ maxAge: 0, path: '/' }` — no `domain` attribute. A cookie set with `domain=admin.katie.vn` and one set without a domain attribute are distinct browser cookie jars; clearing without the domain will leave the HttpOnly production cookie intact. After logout the session cookie persists and the middleware continues to grant access.
+**Issue:** The three auth route handlers set cookies in production with a per-subdomain `domain` attribute (e.g. `domain: 'admin.katie-english.com.vn'`). The logout route clears all three cookies using only `{ maxAge: 0, path: '/' }` — no `domain` attribute. A cookie set with `domain=admin.katie-english.com.vn` and one set without a domain attribute are distinct browser cookie jars; clearing without the domain will leave the HttpOnly production cookie intact. After logout the session cookie persists and the middleware continues to grant access.
 **Fix:**
 ```typescript
 // frontend/app/api/auth/logout/route.ts
@@ -131,9 +131,9 @@ export async function POST(_req: Request) {
       path: '/',
       ...(isProd && domain ? { domain } : {}),
     });
-  clear('teacher-token', 'app.katie.vn');
-  clear('admin-token', 'admin.katie.vn');
-  clear('student-token', 'student.katie.vn');
+  clear('teacher-token', 'app.katie-english.com.vn');
+  clear('admin-token', 'admin.katie-english.com.vn');
+  clear('student-token', 'student.katie-english.com.vn');
   return NextResponse.json({ ok: true });
 }
 ```
@@ -192,14 +192,14 @@ export class GameLoginDto {
 ### WR-03: Wildcard CORS on backend allows any origin to make credentialed-equivalent requests
 
 **File:** `backend/src/main.ts:35`
-**Issue:** `app.enableCors({ origin: '*' })` allows any origin to call the backend API. For this phase this creates a direct attack surface: any website can make cross-origin requests to `/game/auth/login` (no credentials required, but response body contains a JWT), and once the student has a cookie from `student.katie.vn`, any page loaded in the same browser can read the API response if `credentials: 'include'` is ever added. The admin and teacher login endpoints are similarly wide open: a phishing page can direct users to `POST /admin/auth/login` and harvest the token from the response JSON.
+**Issue:** `app.enableCors({ origin: '*' })` allows any origin to call the backend API. For this phase this creates a direct attack surface: any website can make cross-origin requests to `/game/auth/login` (no credentials required, but response body contains a JWT), and once the student has a cookie from `student.katie-english.com.vn`, any page loaded in the same browser can read the API response if `credentials: 'include'` is ever added. The admin and teacher login endpoints are similarly wide open: a phishing page can direct users to `POST /admin/auth/login` and harvest the token from the response JSON.
 **Fix:** Restrict CORS to the known frontend origins:
 ```typescript
 app.enableCors({
   origin: [
-    process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? 'https://admin.katie.vn',
-    process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://app.katie.vn',
-    process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? 'https://student.katie.vn',
+    process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? 'https://admin.katie-english.com.vn',
+    process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://app.katie-english.com.vn',
+    process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? 'https://student.katie-english.com.vn',
   ],
   credentials: true,
 });
@@ -215,12 +215,12 @@ app.enableCors({
 
 ---
 
-### WR-05: `app.katie.vn/login` redirect silently replaces teacher login bookmark but not student path — route containment gap
+### WR-05: `app.katie-english.com.vn/login` redirect silently replaces teacher login bookmark but not student path — route containment gap
 
 **File:** `frontend/middleware.ts:92-94`
-**Issue:** The `app` subdomain config lists `allowedPrefixes: ['/teacher']`. A request to `app.katie.vn/login` is special-cased to redirect to `/teacher/login` (line 92-94) before the allowedPrefixes check. However, the student login path `/login` is not in `allowedPrefixes` for `app`. If this special case is removed or mis-ordered, any `app.katie.vn/login` request (which is a common direct bookmark) would hit the "not allowed" rewrite and show `/not-found` instead of redirecting to the teacher login. The intent is correct but the guard is fragile — the order of conditions in the middleware is load-bearing and undocumented.
+**Issue:** The `app` subdomain config lists `allowedPrefixes: ['/teacher']`. A request to `app.katie-english.com.vn/login` is special-cased to redirect to `/teacher/login` (line 92-94) before the allowedPrefixes check. However, the student login path `/login` is not in `allowedPrefixes` for `app`. If this special case is removed or mis-ordered, any `app.katie-english.com.vn/login` request (which is a common direct bookmark) would hit the "not allowed" rewrite and show `/not-found` instead of redirecting to the teacher login. The intent is correct but the guard is fragile — the order of conditions in the middleware is load-bearing and undocumented.
 
-Additionally, the `/api` prefix is not in any subdomain's `allowedPrefixes`, meaning Next.js API routes (`/api/auth/admin-login`, etc.) on the `admin` subdomain would be blocked by the `isAllowed` check and rewritten to `/not-found` unless the matcher excludes them. The current matcher at line 133-135 only excludes `_next/static`, `_next/image`, and `favicon.ico` — not `/api/`. This means calls to `/api/auth/admin-login` from `admin.katie.vn` may fail in production.
+Additionally, the `/api` prefix is not in any subdomain's `allowedPrefixes`, meaning Next.js API routes (`/api/auth/admin-login`, etc.) on the `admin` subdomain would be blocked by the `isAllowed` check and rewritten to `/not-found` unless the matcher excludes them. The current matcher at line 133-135 only excludes `_next/static`, `_next/image`, and `favicon.ico` — not `/api/`. This means calls to `/api/auth/admin-login` from `admin.katie-english.com.vn` may fail in production.
 **Fix:** Add `/api` to `allowedPrefixes` for each subdomain (or add an early-return for `/api/` paths before the prefix check):
 ```typescript
 // middleware.ts — add before the isAllowed check
@@ -236,7 +236,7 @@ if (pathname.startsWith('/api/')) {
 ### IN-01: `app/login/page.tsx` is unreachable on the `app` subdomain — dead route
 
 **File:** `frontend/app/login/page.tsx`
-**Issue:** The `app` subdomain middleware redirects `/login` to `/teacher/login` (line 92-94 of middleware) before rendering the page at `/login`. The `app/login/page.tsx` file contains a role-picker for both Teacher and Student — but it is never rendered on `app.katie.vn` (redirected) and is not reachable on any other subdomain (the student subdomain shows `game/login/page.tsx`). This page is dead code under the new routing architecture.
+**Issue:** The `app` subdomain middleware redirects `/login` to `/teacher/login` (line 92-94 of middleware) before rendering the page at `/login`. The `app/login/page.tsx` file contains a role-picker for both Teacher and Student — but it is never rendered on `app.katie-english.com.vn` (redirected) and is not reachable on any other subdomain (the student subdomain shows `game/login/page.tsx`). This page is dead code under the new routing architecture.
 
 ---
 

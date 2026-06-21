@@ -105,7 +105,7 @@ function AdminShell({ active, onNav, title, subtitle, children }) {
                 <div style={{ position: 'absolute', right: 0, top: 44, width: 240, background: '#fff', borderRadius: 12, boxShadow: '0 12px 28px rgba(15,23,42,0.18)', padding: 8, zIndex: 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px', borderBottom: '1px solid #E2E8F0', marginBottom: 6 }}>
                     <div style={{ width: 36, height: 36, borderRadius: '50%', background: A_ACCENT, color: '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>A</div>
-                    <div><div style={{ fontSize: 14, fontWeight: 600 }}>admin@katie.vn</div><div style={{ fontSize: 12, color: '#64748B' }}>Administrator</div></div>
+                    <div><div style={{ fontSize: 14, fontWeight: 600 }}>admin@katie-english.com.vn</div><div style={{ fontSize: 12, color: '#64748B' }}>Administrator</div></div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 8px', borderRadius: 8, fontSize: 14, color: '#E11D48', cursor: 'pointer' }}><Icon name="log-out" size={14} /> Sign out</div>
                 </div>

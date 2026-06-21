@@ -75,7 +75,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'EducationalOrganization',
   name: 'Lớp Tiếng Anh Cô Katie',
-  url: 'https://katie.vn',
+  url: 'https://katie-english.com.vn',
   telephone: '+84-<REAL_PHONE>',   // must match heroContent.phoneHref
   address: { '@type': 'PostalAddress', addressLocality: 'Hà Nội', addressCountry: 'VN' },
   description: 'Lớp tiếng Anh cho trẻ 6-12 tuổi',
@@ -89,7 +89,7 @@ Derive the phone from a single source-of-truth constant shared with `heroContent
 
 **File:** `frontend/middleware.ts:80-88`
 
-**Issue:** When the root domain (`katie.vn` or `localhost`) is detected, the middleware rewrites **every** path to `/marketing`, with only `/sitemap.xml` and `/robots.txt` exempted. This means requests for paths like `/images/katie-avatar.jpg`, `/_next/static/...` JS chunks, and API calls to `/api/...` are all silently rewritten to the `/marketing` page. The matcher already exempts `_next/static` and `_next/image`, but it does **not** exempt `favicon.ico` assets other than the one at root, `/images/`, `/fonts/`, or `/api/` routes. Any API route served under the root domain will be unreachable.
+**Issue:** When the root domain (`katie-english.com.vn` or `localhost`) is detected, the middleware rewrites **every** path to `/marketing`, with only `/sitemap.xml` and `/robots.txt` exempted. This means requests for paths like `/images/katie-avatar.jpg`, `/_next/static/...` JS chunks, and API calls to `/api/...` are all silently rewritten to the `/marketing` page. The matcher already exempts `_next/static` and `_next/image`, but it does **not** exempt `favicon.ico` assets other than the one at root, `/images/`, `/fonts/`, or `/api/` routes. Any API route served under the root domain will be unreachable.
 
 The `/api/` passthrough guard (line 114) is unreachable for `subdomain === 'root'` because the root branch returns at line 87 before reaching that guard.
 

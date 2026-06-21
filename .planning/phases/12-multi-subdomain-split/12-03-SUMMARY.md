@@ -36,7 +36,7 @@ decisions:
   - "game/layout.tsx login-page bypass uses pathname === '/game/login' check inside useEffect (not a pathname guard before useEffect) — avoids rendering spinner on the login page itself"
   - "Wrong-role helpers (getAnyRoleCookie, decodeJwtRole) defined inline inside useEffect callback in both admin and teacher layouts — avoids closure issues and keeps helpers co-located with the guard logic"
   - "403 page uses process.env.NEXT_PUBLIC_SUBDOMAIN to pick accent color — env var set at build/start time, not user-controlled (T-12-03-02 accepted)"
-  - "not-found.tsx uses env var references with hardcoded fallbacks (admin.katie.vn, app.katie.vn, student.katie.vn) — static links, no XSS vector"
+  - "not-found.tsx uses env var references with hardcoded fallbacks (admin.katie-english.com.vn, app.katie-english.com.vn, student.katie-english.com.vn) — static links, no XSS vector"
 metrics:
   duration_seconds: 313
   completed_date: "2026-06-02"
@@ -82,7 +82,7 @@ Three new login pages, two error surfaces, and student auth guard — split-pane
 **frontend/app/not-found.tsx** (new — UI-SPEC Surface 3 / Next.js global 404):
 - `Globe` icon (40px) in 80x80 circle, background `rgba(79,157,255,0.15)`
 - "Page not found" h5, "This subdomain is not recognized." body
-- Three MUI Button links: admin.katie.vn/admin/login, app.katie.vn/teacher/login, student.katie.vn/login
+- Three MUI Button links: admin.katie-english.com.vn/admin/login, app.katie-english.com.vn/teacher/login, student.katie-english.com.vn/login
 - Uses `NEXT_PUBLIC_ADMIN_ORIGIN`, `NEXT_PUBLIC_APP_ORIGIN`, `NEXT_PUBLIC_STUDENT_ORIGIN` with hardcoded fallbacks
 
 **frontend/app/admin/layout.tsx** (modified — D-04 wrong-role detection):
@@ -105,7 +105,7 @@ Three new login pages, two error surfaces, and student auth guard — split-pane
 | `Globe` in not-found.tsx | PASS (2 — import + usage) |
 | `teacher-login\|/api/auth` in teacher/login | PASS (1) |
 | `student-login\|/api/auth` in game/login | PASS (1) |
-| `admin.katie.vn\|app.katie.vn\|student.katie.vn` in not-found.tsx | PASS (6) |
+| `admin.katie-english.com.vn\|app.katie-english.com.vn\|student.katie-english.com.vn` in not-found.tsx | PASS (6) |
 
 **TypeScript note:** tsc was run from `J:/sources/katie-english/frontend/` (main repo with `node_modules`) against the shared source tree. The worktree does not have its own `node_modules` — it shares the main repo's installation. This is correct behavior for a git worktree setup. Output: empty (0 errors).
 

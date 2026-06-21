@@ -87,10 +87,10 @@ function Teachers() {
     ? <div style={{ display: 'flex', gap: 8 }}><Btn style={{ padding: '6px 12px', fontSize: 13 }}>Approve</Btn><Btn variant="outline" danger style={{ padding: '6px 12px', fontSize: 13 }}>Reject</Btn></div>
     : <div style={{ display: 'flex', gap: 8 }}><Btn variant="outline" danger style={{ padding: '6px 12px', fontSize: 13 }}>Deactivate</Btn></div>;
   const rows = [
-    [<b>Katie Tran</b>, 'katie.tran@katie.vn', '5', APR, act()],
-    [<b>Hoàng Nam</b>, 'nam.hoang@katie.vn', '3', APR, act()],
-    [<b>Đỗ Thu Hà</b>, 'ha.do@katie.vn', '0', PEND, act('pending')],
-    [<b>Vũ Quang</b>, 'quang.vu@katie.vn', '2', OFF, <Btn variant="outline" style={{ padding: '6px 12px', fontSize: 13 }}>Reactivate</Btn>],
+    [<b>Katie Tran</b>, 'katie.tran@katie-english.com.vn', '5', APR, act()],
+    [<b>Hoàng Nam</b>, 'nam.hoang@katie-english.com.vn', '3', APR, act()],
+    [<b>Đỗ Thu Hà</b>, 'ha.do@katie-english.com.vn', '0', PEND, act('pending')],
+    [<b>Vũ Quang</b>, 'quang.vu@katie-english.com.vn', '2', OFF, <Btn variant="outline" style={{ padding: '6px 12px', fontSize: 13 }}>Reactivate</Btn>],
   ];
   return <div><Toolbar search="Search teachers…"><Btn><Icon name="plus" size={16} /> Add Teacher</Btn></Toolbar><Table cols={cols} rows={rows} /></div>;
 }

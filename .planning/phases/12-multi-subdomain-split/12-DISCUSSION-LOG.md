@@ -76,7 +76,7 @@
 |--------|-------------|----------|
 | Separate cookie names (admin-token, teacher-token, student-token) | Role isolation via naming, no domain scoping | |
 | Single 'token' cookie, role validated server-side | Keep existing name, decode JWT role in middleware | |
-| Subdomain-scoped cookie (Domain=admin.katie.vn) | Browser-enforced isolation, requires HTTPS | ✓ |
+| Subdomain-scoped cookie (Domain=admin.katie-english.com.vn) | Browser-enforced isolation, requires HTTPS | ✓ |
 
 **User's choice:** Subdomain-scoped cookies
 **Notes:** Strongest isolation. Local dev (same `localhost` domain across ports) uses separate cookie names as companion measure
@@ -87,11 +87,11 @@
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Root domain → redirect to app.katie.vn | katie.vn → teacher surface (primary user) | ✓ |
+| Root domain → redirect to app.katie-english.com.vn | katie-english.com.vn → teacher surface (primary user) | ✓ |
 | Root domain → landing/marketing page | Separate landing with links to each surface | |
 | No root domain handling — DNS covers it | DNS handles redirect at network level | |
 
-**User's choice:** Redirect root → app.katie.vn
+**User's choice:** Redirect root → app.katie-english.com.vn
 **Notes:** Teacher is primary user; unknown subdomains → 404
 
 ---

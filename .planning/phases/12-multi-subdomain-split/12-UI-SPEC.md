@@ -185,9 +185,9 @@ Shown when middleware encounters an unrecognized subdomain (D-09). Rendered as a
 - Heading: `"Page not found"` (fontSize 24, fontWeight 900, color `#0F172A`)
 - Body: `"This address isn't recognized. Use one of the links below to reach the right place."` (fontSize 14, color `#64748B`, lineHeight 1.6)
 - Link set (MuiLink or Button variant="text", stacked, gap: 1):
-  - "Teacher login" → `https://app.katie.vn/login`
-  - "Student login" → `https://student.katie.vn/login`
-  - "Admin login" → `https://admin.katie.vn/login`
+  - "Teacher login" → `https://app.katie-english.com.vn/login`
+  - "Student login" → `https://student.katie-english.com.vn/login`
+  - "Admin login" → `https://admin.katie-english.com.vn/login`
 
 **No full-page dark panels.** No branding left panel. Minimal, informative.
 

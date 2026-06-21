@@ -79,10 +79,10 @@ last_mapped_commit: 76a70d3d792f
 | `BFA_QUEUE_CONCURRENCY` | `1` | `backend/` GameJobsService (optional) |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:3001` | `frontend/` lib/api.ts |
 | `NEXT_PUBLIC_SUBDOMAIN` | `app` | `frontend/` subdomain routing |
-| `NEXT_PUBLIC_ADMIN_ORIGIN` | `http://admin.katie.vn` | `frontend/` |
-| `NEXT_PUBLIC_APP_ORIGIN` | `http://app.katie.vn` | `frontend/` |
-| `NEXT_PUBLIC_STUDENT_ORIGIN` | `http://student.katie.vn` | `frontend/` |
-| `NEXT_PUBLIC_LOGIN_URL` | `http://app.katie.vn/login` | `frontend/` |
+| `NEXT_PUBLIC_ADMIN_ORIGIN` | `http://admin.katie-english.com.vn` | `frontend/` |
+| `NEXT_PUBLIC_APP_ORIGIN` | `http://app.katie-english.com.vn` | `frontend/` |
+| `NEXT_PUBLIC_STUDENT_ORIGIN` | `http://student.katie-english.com.vn` | `frontend/` |
+| `NEXT_PUBLIC_LOGIN_URL` | `http://app.katie-english.com.vn/login` | `frontend/` |
 
 ## Build & Deployment
 

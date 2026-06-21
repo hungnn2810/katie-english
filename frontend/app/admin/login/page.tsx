@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
+import { setAdminAuth } from '@/lib/admin-auth';
 import { useToast } from '@/lib/toast-context';
 import { colors } from '@/lib/colors';
 
@@ -27,10 +28,11 @@ export default function AdminLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
+      const d = await res.json();
       if (!res.ok) {
-        const d = await res.json();
         throw new Error(d.error ?? 'Invalid email or password');
       }
+      setAdminAuth(d.token, d.user);
       router.push('/admin');
     } catch {
       showToast('Invalid email or password', 'error');

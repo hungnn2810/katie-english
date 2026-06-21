@@ -10,8 +10,8 @@ export async function POST(_req: Request) {
       path: '/',
       ...(isProd && domain ? { domain } : {}),
     });
-  clear('teacher-token', 'app.katie.vn');
-  clear('admin-token', 'admin.katie.vn');
-  clear('student-token', 'student.katie.vn');
+  clear('teacher-token', 'app.katie-english.com.vn');
+  clear('admin-token', 'admin.katie-english.com.vn');
+  clear('student-token', 'student.katie-english.com.vn');
   return NextResponse.json({ ok: true });
 }

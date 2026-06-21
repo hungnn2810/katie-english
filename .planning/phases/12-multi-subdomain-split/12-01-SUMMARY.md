@@ -43,7 +43,7 @@ New Next.js Edge middleware implementing all subdomain routing decisions:
 **Subdomain detection (`detectSubdomain`):**
 - Reads `NEXT_PUBLIC_SUBDOMAIN` env var first (D-02: local dev bypass)
 - Falls back to `Host` header: `admin.*` → admin, `app.*` → app, `student.*` → student
-- `katie.vn` / `www.katie.vn` → root, anything else → unknown
+- `katie-english.com.vn` / `www.katie-english.com.vn` → root, anything else → unknown
 
 **Route containment (D-10):**
 - admin subdomain: allows only `/admin/**`
@@ -56,7 +56,7 @@ New Next.js Edge middleware implementing all subdomain routing decisions:
 - Cookie present → `NextResponse.next()` (wrong-role deferred to layout guard per D-04)
 - JWT role decoded via `decodeJwtRole` using `atob()` — no signature verification (Edge-safe)
 
-**Root redirect (D-08):** `katie.vn` / `www.katie.vn` → 301 to `https://app.katie.vn{path}`
+**Root redirect (D-08):** `katie-english.com.vn` / `www.katie-english.com.vn` → 301 to `https://app.katie-english.com.vn{path}`
 
 **Unknown subdomain (D-09):** rewrites to `/not-found`
 
@@ -76,10 +76,10 @@ Excludes static assets and favicon from middleware processing.
 - `dev:student`: `NEXT_PUBLIC_SUBDOMAIN=student next dev -p 3011`
 
 **docker-compose.yml** — 4 new env vars in frontend service with `${VAR:-default}` syntax:
-- `NEXT_PUBLIC_ADMIN_ORIGIN: ${NEXT_PUBLIC_ADMIN_ORIGIN:-http://admin.katie.vn}`
-- `NEXT_PUBLIC_APP_ORIGIN: ${NEXT_PUBLIC_APP_ORIGIN:-http://app.katie.vn}`
-- `NEXT_PUBLIC_STUDENT_ORIGIN: ${NEXT_PUBLIC_STUDENT_ORIGIN:-http://student.katie.vn}`
-- `NEXT_PUBLIC_LOGIN_URL: ${NEXT_PUBLIC_LOGIN_URL:-http://app.katie.vn/login}`
+- `NEXT_PUBLIC_ADMIN_ORIGIN: ${NEXT_PUBLIC_ADMIN_ORIGIN:-http://admin.katie-english.com.vn}`
+- `NEXT_PUBLIC_APP_ORIGIN: ${NEXT_PUBLIC_APP_ORIGIN:-http://app.katie-english.com.vn}`
+- `NEXT_PUBLIC_STUDENT_ORIGIN: ${NEXT_PUBLIC_STUDENT_ORIGIN:-http://student.katie-english.com.vn}`
+- `NEXT_PUBLIC_LOGIN_URL: ${NEXT_PUBLIC_LOGIN_URL:-http://app.katie-english.com.vn/login}`
 
 ## Verification Results
 

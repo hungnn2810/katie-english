@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-Xây dựng marketing landing page tại katie.vn (root domain) — giới thiệu lớp tiếng Anh cô Katie cho phụ huynh học sinh. Trang tĩnh (static), tiếng Việt, deploy qua subdomain middleware của Phase 12. Không có backend mới, không CMS.
+Xây dựng marketing landing page tại katie-english.com.vn (root domain) — giới thiệu lớp tiếng Anh cô Katie cho phụ huynh học sinh. Trang tĩnh (static), tiếng Việt, deploy qua subdomain middleware của Phase 12. Không có backend mới, không CMS.
 
 </domain>
 
@@ -14,7 +14,7 @@ Xây dựng marketing landing page tại katie.vn (root domain) — giới thi�
 ## Implementation Decisions
 
 ### Deployment & Routing
-- **D-01:** Serve tại root domain `katie.vn` — extend middleware Phase 12 để route root domain về landing page route mới.
+- **D-01:** Serve tại root domain `katie-english.com.vn` — extend middleware Phase 12 để route root domain về landing page route mới.
 - **D-02:** Nằm trong cùng Next.js app hiện tại (`frontend/`), thêm route `/` hoặc subdomain routing mới trong middleware.
 - **D-03:** Không cần backend — toàn bộ content hardcode tĩnh.
 
@@ -53,7 +53,7 @@ Xây dựng marketing landing page tại katie.vn (root domain) — giới thi�
 - **D-19:** `robots.txt` allow crawl landing page, disallow `/teacher`, `/student`, `/admin`, `/api`.
 - **D-20:** Semantic HTML — dùng `<h1>` duy nhất, heading hierarchy đúng (`h2`/`h3`), `alt` text đầy đủ cho ảnh.
 - **D-21:** Core Web Vitals — lazy load ảnh (`next/image`), không block render, LCP target < 2.5s.
-- **D-22:** Structured data JSON-LD — `LocalBusiness` hoặc `EducationalOrganization` schema cho katie.vn.
+- **D-22:** Structured data JSON-LD — `LocalBusiness` hoặc `EducationalOrganization` schema cho katie-english.com.vn.
 
 ### Claude's Discretion
 - Layout cụ thể từng section (grid, flex, card style)
@@ -68,7 +68,7 @@ Xây dựng marketing landing page tại katie.vn (root domain) — giới thi�
 
 **Downstream agents MUST read these before planning or implementing.**
 
-### Phase 12 — Subdomain Routing (extend để support katie.vn root)
+### Phase 12 — Subdomain Routing (extend để support katie-english.com.vn root)
 - `frontend/middleware.ts` — Logic routing subdomain hiện tại; cần extend để handle root domain.
 - `.planning/phases/12-multi-subdomain-split/` — Context và plans của Phase 12.
 
@@ -91,7 +91,7 @@ No external specs — requirements fully captured in decisions above.
 ### Reusable Assets
 - `frontend/app/globals.css` — Tailwind base styles, có thể reuse CSS variables.
 - shadcn/ui components (Button, Card) — đã install, dùng cho landing page components.
-- `frontend/middleware.ts` — Subdomain routing logic cần extend để serve katie.vn root.
+- `frontend/middleware.ts` — Subdomain routing logic cần extend để serve katie-english.com.vn root.
 
 ### Established Patterns
 - App Router (Next.js 14) — tất cả routes đều theo App Router pattern (`app/` folder).
@@ -99,7 +99,7 @@ No external specs — requirements fully captured in decisions above.
 - Phase 12 tạo 3 subdomains (admin.*, app.*, student.*) — cần add 4th case: root/marketing domain.
 
 ### Integration Points
-- Middleware routing: thêm condition cho `katie.vn` (root) → route tới `/marketing` route mới.
+- Middleware routing: thêm condition cho `katie-english.com.vn` (root) → route tới `/marketing` route mới.
 - Screenshots của app: lấy từ teacher dashboard và student game routes hiện có.
 
 </code_context>

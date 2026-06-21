@@ -20,7 +20,7 @@ key_files:
   modified:
     - frontend/middleware.ts
 decisions:
-  - "Used NextResponse.rewrite to /marketing instead of redirect — allows transparent URL (katie.vn shows in browser, not /marketing)"
+  - "Used NextResponse.rewrite to /marketing instead of redirect — allows transparent URL (katie-english.com.vn shows in browser, not /marketing)"
   - "Passthrough guards for /sitemap.xml and /robots.txt placed BEFORE rewrite so Next.js serves generated files directly"
   - "NEXT_PUBLIC_SUBDOMAIN=marketing returns 'root' so same root handler fires for local dev"
   - "Route group (marketing) with independent html/body root layout — required to set lang=vi without affecting other routes"
@@ -36,28 +36,28 @@ metrics:
 
 # Phase 13 Plan 01: Middleware Marketing Route + SEO Scaffold Summary
 
-**One-liner:** Subdomain middleware rewrite to /marketing route group at katie.vn with full Next.js metadata API (OpenGraph, Twitter card, JSON-LD EducationalOrganization), sitemap.ts, robots.ts, and placeholder og-image.jpg.
+**One-liner:** Subdomain middleware rewrite to /marketing route group at katie-english.com.vn with full Next.js metadata API (OpenGraph, Twitter card, JSON-LD EducationalOrganization), sitemap.ts, robots.ts, and placeholder og-image.jpg.
 
 ## Tasks Completed
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
-| 1 | Extend middleware to serve marketing route at katie.vn | 0a48dc1 | frontend/middleware.ts |
+| 1 | Extend middleware to serve marketing route at katie-english.com.vn | 0a48dc1 | frontend/middleware.ts |
 | 2 | Create marketing route group scaffold with SEO metadata and JSON-LD | d05e636 | frontend/app/(marketing)/layout.tsx, page.tsx, app/sitemap.ts, app/robots.ts, public/og-image.jpg |
 
 ## What Was Built
 
 **Task 1 — middleware.ts:**
 - Added `envSubdomain === 'marketing'` check (returns `'root'`) before existing env var checks, enabling `NEXT_PUBLIC_SUBDOMAIN=marketing` for local dev
-- Replaced the `if (subdomain === 'root')` block's 301 redirect to app.katie.vn with a `NextResponse.rewrite` to `/marketing`
+- Replaced the `if (subdomain === 'root')` block's 301 redirect to app.katie-english.com.vn with a `NextResponse.rewrite` to `/marketing`
 - Added passthrough guards: `pathname === '/sitemap.xml' || pathname === '/robots.txt'` returns `NextResponse.next()` before the rewrite, so Next.js serves generated sitemap/robots files directly
 - All existing admin/app/student logic and SUBDOMAIN_CONFIG untouched
 
 **Task 2 — Marketing route group:**
 - `app/(marketing)/layout.tsx`: Independent root layout with `lang="vi"`, Inter font, MUI AppRouterCacheProvider + ThemeProvider(baseTheme) + CssBaseline. Exports `metadata` with title "Lớp Tiếng Anh Cô Katie | Dạy Tiếng Anh Trẻ Em", 156-char Vietnamese description, full OpenGraph (url, images, type: website), Twitter summary_large_image card, keywords array
 - `app/(marketing)/page.tsx`: Server component with `<main>`, inline JSON-LD `<script type="application/ld+json">` containing EducationalOrganization schema (name, url, telephone placeholder, PostalAddress Hà Nội VN, description), placeholder MUI Box+Typography h1
-- `app/sitemap.ts`: Next.js MetadataRoute.Sitemap returning single entry for https://katie.vn (monthly, priority 1)
-- `app/robots.ts`: Next.js MetadataRoute.Robots disallowing /teacher, /admin, /game, /api; sitemap at https://katie.vn/sitemap.xml
+- `app/sitemap.ts`: Next.js MetadataRoute.Sitemap returning single entry for https://katie-english.com.vn (monthly, priority 1)
+- `app/robots.ts`: Next.js MetadataRoute.Robots disallowing /teacher, /admin, /game, /api; sitemap at https://katie-english.com.vn/sitemap.xml
 - `public/og-image.jpg`: 1200x630 solid #4F9DFF JPEG (13 KB) created via Node.js PNG encoder + macOS `sips` JPEG conversion
 
 ## Verification Results
@@ -71,7 +71,7 @@ metrics:
 | layout.tsx renders `<html lang="vi">` | PASS |
 | page.tsx contains `application/ld+json` script | PASS |
 | page.tsx JSON-LD has `@type: EducationalOrganization` | PASS |
-| sitemap.ts returns https://katie.vn entry | PASS |
+| sitemap.ts returns https://katie-english.com.vn entry | PASS |
 | robots.ts disallows /teacher /admin /game /api | PASS |
 | public/og-image.jpg exists, valid 1200x630 JPEG | PASS |
 | admin/app/student SUBDOMAIN_CONFIG unchanged | PASS |

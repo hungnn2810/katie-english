@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     path: '/',
     maxAge: 60 * 60 * 24 * 7,
-    ...(process.env.NODE_ENV === 'production' && { domain: 'student.katie.vn' }),
+    ...(process.env.NODE_ENV === 'production' && { domain: 'student.katie-english.com.vn' }),
   });
 
   return NextResponse.json(data);

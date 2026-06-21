@@ -8,7 +8,7 @@
 ### 1. Deployment & Routing
 - **Question:** Landing page deploy ở đâu?
 - **Options:** Subdomain riêng / Route trong app hiện tại / Repo mới độc lập
-- **Decision:** Subdomain riêng → katie.vn (root domain) qua Phase 12 middleware
+- **Decision:** Subdomain riêng → katie-english.com.vn (root domain) qua Phase 12 middleware
 
 ### 2. Content Management
 - **Question:** Content lấy từ đâu? Ngôn ngữ?

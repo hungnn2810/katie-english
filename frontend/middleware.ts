@@ -55,7 +55,7 @@ function detectSubdomain(
   if (host.startsWith('admin.')) return 'admin';
   if (host.startsWith('app.')) return 'app';
   if (host.startsWith('student.')) return 'student';
-  if (host === 'katie.vn' || host === 'www.katie.vn') return 'root';
+  if (host === 'katie-english.com.vn' || host === 'www.katie-english.com.vn') return 'root';
   // Local dev: detect by convention port — 3001=admin, 3002=app, 3003=student
   if (host === 'localhost:3001') return 'admin';
   if (host === 'localhost:3002') return 'app';
@@ -112,7 +112,7 @@ export default function middleware(req: NextRequest): NextResponse {
   }
 
   // Always allow Next.js API routes through regardless of subdomain prefix config.
-  // Without this early-return, /api/auth/* calls from admin.katie.vn would be
+  // Without this early-return, /api/auth/* calls from admin.katie-english.com.vn would be
   // blocked by the isAllowed check below (since '/api' is not in allowedPrefixes)
   // and rewritten to /not-found, breaking all auth route handlers in production.
   if (pathname.startsWith('/api/')) {

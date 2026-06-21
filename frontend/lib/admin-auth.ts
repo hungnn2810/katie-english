@@ -18,6 +18,11 @@ export function getAdminUser(): AdminUser | null {
   try { return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
 
+export function setAdminAuth(token: string, user: AdminUser) {
+  localStorage.setItem('admin_token', token);
+  localStorage.setItem('admin_user', JSON.stringify(user));
+}
+
 export function clearAdminAuth() {
   localStorage.removeItem('admin_token');
   localStorage.removeItem('admin_user');

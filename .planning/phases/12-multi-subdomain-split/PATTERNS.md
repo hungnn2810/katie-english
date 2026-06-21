@@ -91,7 +91,7 @@ export function authHeaders(): HeadersInit {
 **What must differ from `auth.ts`:**
 - `getToken()` reads `document.cookie` (parse `token=...`) instead of `localStorage.getItem('token')`
 - `setAuth()` writes `document.cookie = \`token=...; path=/; SameSite=Lax\`` instead of `localStorage.setItem`
-- Cookie must be set with `domain=.katie.vn` in production so all three subdomains can read it
+- Cookie must be set with `domain=.katie-english.com.vn` in production so all three subdomains can read it
 - Keep `localStorage` reads as fallback during transition so existing sessions don't break
 
 **Interface to preserve (from `frontend/lib/auth.ts` lines 13–18):**
@@ -128,8 +128,8 @@ router.push(user.role === 'TEACHER' ? '/teacher' : '/game/homework');
 **What must differ for subdomain split:**
 - After successful login, instead of `router.push(...)`, redirect to the appropriate subdomain origin:
   ```typescript
-  // Teacher → app.katie.vn/teacher
-  // Student → student.katie.vn/game/homework
+  // Teacher → app.katie-english.com.vn/teacher
+  // Student → student.katie-english.com.vn/game/homework
   window.location.href = user.role === 'TEACHER'
     ? `${process.env.NEXT_PUBLIC_APP_ORIGIN}/teacher`
     : `${process.env.NEXT_PUBLIC_STUDENT_ORIGIN}/game/homework`;
@@ -185,7 +185,7 @@ useEffect(() => {
 }, [router]);
 ```
 
-**What must differ:** The `router.replace('/login')` target changes. On `app.katie.vn`, the login page lives at the main domain (or `app.katie.vn/login`). Use an env var:
+**What must differ:** The `router.replace('/login')` target changes. On `app.katie-english.com.vn`, the login page lives at the main domain (or `app.katie-english.com.vn/login`). Use an env var:
 ```typescript
 if (!u || u.role !== 'TEACHER') {
   window.location.replace(process.env.NEXT_PUBLIC_LOGIN_URL ?? '/login');
@@ -249,10 +249,10 @@ frontend:
 frontend:
   environment:
     NEXT_PUBLIC_API_URL: http://localhost:3001
-    NEXT_PUBLIC_ADMIN_ORIGIN: http://admin.katie.vn   # or http://localhost:3000 in dev
-    NEXT_PUBLIC_APP_ORIGIN: http://app.katie.vn
-    NEXT_PUBLIC_STUDENT_ORIGIN: http://student.katie.vn
-    NEXT_PUBLIC_LOGIN_URL: http://app.katie.vn/login   # canonical login page
+    NEXT_PUBLIC_ADMIN_ORIGIN: http://admin.katie-english.com.vn   # or http://localhost:3000 in dev
+    NEXT_PUBLIC_APP_ORIGIN: http://app.katie-english.com.vn
+    NEXT_PUBLIC_STUDENT_ORIGIN: http://student.katie-english.com.vn
+    NEXT_PUBLIC_LOGIN_URL: http://app.katie-english.com.vn/login   # canonical login page
 ```
 
 **Docker env var style to follow (from lines 49–50):**

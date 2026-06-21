@@ -488,9 +488,9 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 **Success Criteria:**
 
-1. Visiting `admin.katie.vn` serves the admin portal and rejects teacher/student JWT tokens.
-2. Visiting `app.katie.vn` serves the teacher dashboard and rejects admin/student JWT tokens.
-3. Visiting `student.katie.vn` serves the student game and rejects admin/teacher JWT tokens.
+1. Visiting `admin.katie-english.com.vn` serves the admin portal and rejects teacher/student JWT tokens.
+2. Visiting `app.katie-english.com.vn` serves the teacher dashboard and rejects admin/student JWT tokens.
+3. Visiting `student.katie-english.com.vn` serves the student game and rejects admin/teacher JWT tokens.
 4. Local dev can access all three entry points without DNS changes.
 5. Build and Docker Compose work with no regression on existing functionality.
 
@@ -504,13 +504,13 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 ### Phase 13: Landing Page
 
-**Goal:** Marketing website tại katie.vn giới thiệu lớp tiếng Anh cô Katie cho phụ huynh — tĩnh, tiếng Việt, giao diện xanh blue tươi sáng.
+**Goal:** Marketing website tại katie-english.com.vn giới thiệu lớp tiếng Anh cô Katie cho phụ huynh — tĩnh, tiếng Việt, giao diện xanh blue tươi sáng.
 **Mode:** mvp
 **Depends on:** Phase 12 (subdomain middleware)
 
 **Requirements:**
 
-- LAND-01: Trang hiển thị tại katie.vn (root domain) qua middleware Phase 12
+- LAND-01: Trang hiển thị tại katie-english.com.vn (root domain) qua middleware Phase 12
 - LAND-02: Section Hero — tagline, ảnh, mô tả lớp học
 - LAND-03: Section Profile giáo viên — ảnh cô Katie, kinh nghiệm, bằng cấp
 - LAND-04: Section Kết quả học sinh — before/after stories + điểm thi học kì + danh hiệu cuộc thi
@@ -523,7 +523,7 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 **Success Criteria:**
 
-1. Truy cập katie.vn hiển thị landing page (không phải teacher dashboard hay student game).
+1. Truy cập katie-english.com.vn hiển thị landing page (không phải teacher dashboard hay student game).
 2. Tất cả 6 sections hiển thị đầy đủ, không lỗi trên desktop và mobile.
 3. Testimonials carousel tự động chạy, có thể click chuyển slide.
 4. Nút Zalo mở Zalo chat đúng số.
@@ -533,7 +533,7 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 
 **Plans:** 1/3 plans executed
 
-- [x] 13-01-PLAN.md — Middleware rewrite katie.vn → /marketing + marketing route scaffold + SEO metadata (layout, sitemap, robots, JSON-LD) (Wave 1)
+- [x] 13-01-PLAN.md — Middleware rewrite katie-english.com.vn → /marketing + marketing route scaffold + SEO metadata (layout, sitemap, robots, JSON-LD) (Wave 1)
 - [ ] 13-02-PLAN.md — Hero, Teacher Profile, Student Results, Testimonials carousel — top half of landing page (Wave 2, depends 13-01)
 - [ ] 13-03-PLAN.md — Software section, CTA/Contact banner, wire all 6 sections, dev:marketing script + human verify (Wave 3, depends 13-02)
 

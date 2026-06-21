@@ -53,7 +53,7 @@ status: all_fixed
 
 **Files modified:** `frontend/app/api/auth/logout/route.ts`
 **Commit:** `b21eec5`
-**Applied fix:** Replaced the three bare `cookieStore.set(name, '', { maxAge: 0, path: '/' })` calls with a `clear(name, domain)` helper that conditionally includes `domain` when `NODE_ENV === 'production'`. Each cookie is now cleared with its corresponding subdomain (`app.katie.vn`, `admin.katie.vn`, `student.katie.vn`) so the browser expires the correct HttpOnly production cookie instead of a different same-name cookie without a domain qualifier.
+**Applied fix:** Replaced the three bare `cookieStore.set(name, '', { maxAge: 0, path: '/' })` calls with a `clear(name, domain)` helper that conditionally includes `domain` when `NODE_ENV === 'production'`. Each cookie is now cleared with its corresponding subdomain (`app.katie-english.com.vn`, `admin.katie-english.com.vn`, `student.katie-english.com.vn`) so the browser expires the correct HttpOnly production cookie instead of a different same-name cookie without a domain qualifier.
 
 ---
 
@@ -102,7 +102,7 @@ status: all_fixed
 
 **Files modified:** `frontend/middleware.ts`
 **Commit:** `359164f`
-**Applied fix:** Added an early-return `if (pathname.startsWith('/api/')) { return NextResponse.next(); }` before the `isAllowed` check in middleware. Without this, all Next.js API route calls (e.g. `/api/auth/admin-login` from `admin.katie.vn`) would be rewritten to `/not-found` since `/api` is absent from every subdomain's `allowedPrefixes`, breaking every auth flow in production.
+**Applied fix:** Added an early-return `if (pathname.startsWith('/api/')) { return NextResponse.next(); }` before the `isAllowed` check in middleware. Without this, all Next.js API route calls (e.g. `/api/auth/admin-login` from `admin.katie-english.com.vn`) would be rewritten to `/not-found` since `/api` is absent from every subdomain's `allowedPrefixes`, breaking every auth flow in production.
 
 ---
 

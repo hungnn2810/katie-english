@@ -27,16 +27,16 @@ gaps:
       - "Align middleware student loginPath with game/layout.tsx redirect target. If game/login is the correct student login URL, middleware loginPath must be '/game/login' (which is still within '/game' allowedPrefix)."
 deferred: []
 human_verification:
-  - test: "Navigate directly to student.katie.vn/login with no cookies"
+  - test: "Navigate directly to student.katie-english.com.vn/login with no cookies"
     expected: "Student should see the class code + name login form (purple #A78BFA, 'Enter Your Class' heading)"
     why_human: "Requires running the Next.js app with NEXT_PUBLIC_SUBDOMAIN=student to observe middleware redirect behavior in a real browser"
-  - test: "Navigate directly to student.katie.vn/game/homework with no cookies — observe which login page appears"
+  - test: "Navigate directly to student.katie-english.com.vn/game/homework with no cookies — observe which login page appears"
     expected: "Should redirect to /game/login showing the class-code form; currently will redirect to /login (old combined login)"
     why_human: "Requires running the app to see the end-to-end navigation behavior"
-  - test: "Log in as teacher, then navigate to admin.katie.vn/admin (not /admin/login)"
+  - test: "Log in as teacher, then navigate to admin.katie-english.com.vn/admin (not /admin/login)"
     expected: "Should show 403 page (wrong-role detection in admin/layout.tsx)"
     why_human: "Wrong-role 403 detection only fires on client-side navigation, not initial page loads. Behavior depends on how user navigates."
-  - test: "Log in as teacher on app.katie.vn, then navigate back to app.katie.vn/teacher/login"
+  - test: "Log in as teacher on app.katie-english.com.vn, then navigate back to app.katie-english.com.vn/teacher/login"
     expected: "Teacher login page at /teacher/login renders correctly (split panel, email+password form, #F0623A accent)"
     why_human: "Visual confirmation of teacher login page rendering"
 ---
@@ -56,9 +56,9 @@ Roadmap Success Criteria:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|---------|
-| SC1 | Visiting admin.katie.vn serves the admin portal and rejects teacher/student JWT tokens | VERIFIED | Middleware reads only admin-token; admin subdomain only serves /admin/** routes; admin/layout.tsx wrong-role guard redirects to /403 for non-ADMIN role cookies |
-| SC2 | Visiting app.katie.vn serves the teacher dashboard and rejects admin/student JWT tokens | VERIFIED | Middleware reads only teacher-token; app subdomain only serves /teacher/**; teacher/layout.tsx wrong-role guard redirects to /403 for non-TEACHER cookies |
-| SC3 | Visiting student.katie.vn serves the student game and rejects admin/teacher JWT tokens | VERIFIED | Cookie isolation effective — admin-token/teacher-token ignored on student subdomain; student-token gate in middleware and game/layout.tsx |
+| SC1 | Visiting admin.katie-english.com.vn serves the admin portal and rejects teacher/student JWT tokens | VERIFIED | Middleware reads only admin-token; admin subdomain only serves /admin/** routes; admin/layout.tsx wrong-role guard redirects to /403 for non-ADMIN role cookies |
+| SC2 | Visiting app.katie-english.com.vn serves the teacher dashboard and rejects admin/student JWT tokens | VERIFIED | Middleware reads only teacher-token; app subdomain only serves /teacher/**; teacher/layout.tsx wrong-role guard redirects to /403 for non-TEACHER cookies |
+| SC3 | Visiting student.katie-english.com.vn serves the student game and rejects admin/teacher JWT tokens | VERIFIED | Cookie isolation effective — admin-token/teacher-token ignored on student subdomain; student-token gate in middleware and game/layout.tsx |
 | SC4 | Local dev can access all three entry points without DNS changes | VERIFIED | package.json has dev:admin (port 3000), dev:teacher (port 3010), dev:student (port 3011) with NEXT_PUBLIC_SUBDOMAIN override |
 | SC5 | Build and Docker Compose work with no regression on existing functionality | VERIFIED | All 6 commits confirmed in git log; docker-compose.yml has 4 new NEXT_PUBLIC_*_ORIGIN vars; dual-write preserves localStorage auth |
 
@@ -69,7 +69,7 @@ Plan 01 must-have truths:
 | P01-T1 | dev:admin serves only /admin/** — other routes 404 | VERIFIED | middleware.ts SUBDOMAIN_CONFIG.admin.allowedPrefixes = ['/admin'], non-matching paths rewrite to /not-found |
 | P01-T2 | dev:teacher serves only /teacher/** — other routes 404 | VERIFIED | allowedPrefixes = ['/teacher'] |
 | P01-T3 | dev:student serves only /game/** and /login — other routes 404 | VERIFIED | allowedPrefixes = ['/game', '/login'] |
-| P01-T4 | katie.vn/www.katie.vn returns 301 to app.katie.vn | VERIFIED | middleware lines 76-81: subdomain === 'root' → NextResponse.redirect with 301 status |
+| P01-T4 | katie-english.com.vn/www.katie-english.com.vn returns 301 to app.katie-english.com.vn | VERIFIED | middleware lines 76-81: subdomain === 'root' → NextResponse.redirect with 301 status |
 | P01-T5 | Unrecognized subdomains return 404 | VERIFIED | middleware line 84-86: subdomain === 'unknown' → NextResponse.rewrite('/not-found') |
 | P01-T6 | _next/static, _next/image, favicon.ico pass through unmodified | VERIFIED | matcher: ['/((?!_next/static|_next/image|favicon\\.ico).*)'] line 133-135 |
 | P01-T7 | docker-compose.yml declares NEXT_PUBLIC_SUBDOMAIN, NEXT_PUBLIC_ADMIN_ORIGIN, NEXT_PUBLIC_APP_ORIGIN, NEXT_PUBLIC_STUDENT_ORIGIN | VERIFIED | docker-compose.yml lines 83-86 confirm all 4 vars with ${VAR:-default} syntax |
@@ -107,9 +107,9 @@ Plan 03 must-have truths:
 | `frontend/middleware.ts` | Subdomain detection, route containment, auth redirect | VERIFIED | 135 lines, detectSubdomain, decodeJwtRole, SUBDOMAIN_CONFIG, matcher |
 | `frontend/package.json` | dev:admin/dev:teacher/dev:student scripts | VERIFIED | Lines 6-8: all three scripts with NEXT_PUBLIC_SUBDOMAIN and correct ports |
 | `docker-compose.yml` | 4 NEXT_PUBLIC_* env vars | VERIFIED | Lines 83-86: all four vars with ${VAR:-default} syntax |
-| `frontend/app/api/auth/teacher-login/route.ts` | HttpOnly teacher-token cookie | VERIFIED | Sets httpOnly teacher-token, domain: 'app.katie.vn' in prod |
-| `frontend/app/api/auth/admin-login/route.ts` | HttpOnly admin-token cookie | VERIFIED | Sets httpOnly admin-token, domain: 'admin.katie.vn' in prod |
-| `frontend/app/api/auth/student-login/route.ts` | HttpOnly student-token cookie | VERIFIED | Sets httpOnly student-token, domain: 'student.katie.vn' in prod |
+| `frontend/app/api/auth/teacher-login/route.ts` | HttpOnly teacher-token cookie | VERIFIED | Sets httpOnly teacher-token, domain: 'app.katie-english.com.vn' in prod |
+| `frontend/app/api/auth/admin-login/route.ts` | HttpOnly admin-token cookie | VERIFIED | Sets httpOnly admin-token, domain: 'admin.katie-english.com.vn' in prod |
+| `frontend/app/api/auth/student-login/route.ts` | HttpOnly student-token cookie | VERIFIED | Sets httpOnly student-token, domain: 'student.katie-english.com.vn' in prod |
 | `frontend/app/api/auth/logout/route.ts` | Clears all three cookies | VERIFIED | maxAge: 0 for all three token cookies |
 | `backend/src/game/game.dto.ts` | GameLoginDto with classCode and name | VERIFIED | GameLoginDto exported with classCode: string, name: string |
 | `backend/src/game/game.service.ts` | gameLogin method | VERIFIED | Lines 25-50: gameLogin() with Class lookup, Student match, User verification, JWT sign |
@@ -158,7 +158,7 @@ Step 7c: No probe scripts declared in PLAN files. No conventional probe-*.sh scr
 | SUBDOMAIN-01 | 12-01 | Next.js middleware reads Host header and rewrites routing | SATISFIED | middleware.ts: detectSubdomain reads Host header, routes to admin/teacher/student entry points |
 | SUBDOMAIN-02 | 12-01 | Each subdomain serves only its appropriate routes | SATISFIED | SUBDOMAIN_CONFIG allowedPrefixes enforced by middleware route containment check |
 | SUBDOMAIN-03 | 12-03 | Each subdomain has its own login page with role-appropriate auth flow | PARTIAL | admin.* has /admin/login (verified); app.* has /teacher/login (verified); student.* has /game/login but it is unreachable without a cookie — BLOCKER |
-| SUBDOMAIN-04 | 12-02 | JWT cookies scoped per subdomain | SATISFIED | HttpOnly cookies with per-subdomain domain scoping (app.katie.vn, admin.katie.vn, student.katie.vn); middleware reads only subdomain-specific cookie |
+| SUBDOMAIN-04 | 12-02 | JWT cookies scoped per subdomain | SATISFIED | HttpOnly cookies with per-subdomain domain scoping (app.katie-english.com.vn, admin.katie-english.com.vn, student.katie-english.com.vn); middleware reads only subdomain-specific cookie |
 | SUBDOMAIN-05 | 12-01 | Local dev without DNS changes | SATISFIED | NEXT_PUBLIC_SUBDOMAIN env var in package.json dev scripts; middleware checks env var first |
 | SUBDOMAIN-06 | 12-01 | Docker Compose updated | SATISFIED | docker-compose.yml lines 83-86: all four NEXT_PUBLIC_* vars with ${VAR:-default} syntax |
 

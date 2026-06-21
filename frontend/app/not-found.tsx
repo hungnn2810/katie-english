@@ -53,29 +53,29 @@ export default function NotFound() {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
           <Button
             component="a"
-            href={`${process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? 'https://admin.katie.vn'}/admin/login`}
+            href={`${process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? 'https://admin.katie-english.com.vn'}/admin/login`}
             variant="text"
             sx={{ color: '#4F9DFF' }}
           >
-            Admin Login — admin.katie.vn
+            Admin Login — admin.katie-english.com.vn
           </Button>
 
           <Button
             component="a"
-            href={`${process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'https://app.katie.vn'}/teacher/login`}
+            href={`${process.env.NEXT_PUBLIC_TEACHER_ORIGIN ?? 'https://app.katie-english.com.vn'}/teacher/login`}
             variant="text"
             sx={{ color: '#F0623A' }}
           >
-            Teacher Login — app.katie.vn
+            Teacher Login — app.katie-english.com.vn
           </Button>
 
           <Button
             component="a"
-            href={`${process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? 'https://student.katie.vn'}/login`}
+            href={`${process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? 'https://student.katie-english.com.vn'}/login`}
             variant="text"
             sx={{ color: '#A78BFA' }}
           >
-            Student Login — student.katie.vn
+            Student Login — student.katie-english.com.vn
           </Button>
         </Box>
       </Box>

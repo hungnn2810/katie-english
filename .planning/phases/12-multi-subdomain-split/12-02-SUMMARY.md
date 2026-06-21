@@ -87,12 +87,12 @@ Added `UnauthorizedException` to `@nestjs/common` imports and `TokenService` inj
 
 | Route | Backend proxied | Cookie set | Prod domain |
 |-------|----------------|------------|-------------|
-| `/api/auth/teacher-login` | `POST /auth/login` | `teacher-token` | `app.katie.vn` |
-| `/api/auth/admin-login` | `POST /admin/auth/login` | `admin-token` | `admin.katie.vn` |
-| `/api/auth/student-login` | `POST /game/auth/login` | `student-token` | `student.katie.vn` |
+| `/api/auth/teacher-login` | `POST /auth/login` | `teacher-token` | `app.katie-english.com.vn` |
+| `/api/auth/admin-login` | `POST /admin/auth/login` | `admin-token` | `admin.katie-english.com.vn` |
+| `/api/auth/student-login` | `POST /game/auth/login` | `student-token` | `student.katie-english.com.vn` |
 | `/api/auth/logout` | — | clears all three (`maxAge: 0`) | — |
 
-All cookies: `httpOnly: true`, `secure: true` in production, `sameSite: strict` in production / `lax` in dev, `path: /`, `maxAge: 604800` (7 days). Per-subdomain domain scoping (D-05) — NOT `.katie.vn` wildcard. Route handlers return generic error messages, not raw backend error bodies (T-12-02-02).
+All cookies: `httpOnly: true`, `secure: true` in production, `sameSite: strict` in production / `lax` in dev, `path: /`, `maxAge: 604800` (7 days). Per-subdomain domain scoping (D-05) — NOT `.katie-english.com.vn` wildcard. Route handlers return generic error messages, not raw backend error bodies (T-12-02-02).
 
 **frontend/lib/auth.ts** — Modified three functions:
 - `setAuth`: dual-writes `teacher-token` cookie (`SameSite=Lax; max-age=604800`) alongside existing localStorage writes

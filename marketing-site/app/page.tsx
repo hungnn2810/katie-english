@@ -9,7 +9,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'EducationalOrganization',
   name: 'Lớp Tiếng Anh Cô Katie',
-  url: 'https://katie.vn',
+  url: 'https://katie-english.com.vn',
   telephone: '+84-xxx-xxx-xxxx',
   address: { '@type': 'PostalAddress', addressLocality: 'Hà Nội', addressCountry: 'VN' },
   description: 'Lớp tiếng Anh cho trẻ 6-12 tuổi',

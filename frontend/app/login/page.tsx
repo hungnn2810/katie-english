@@ -78,7 +78,7 @@ export default function LoginPage() {
           const d = await res.json();
           throw new Error(d.error ?? 'Invalid credentials');
         }
-        window.location.href = (process.env.NEXT_PUBLIC_APP_ORIGIN ?? '') + '/teacher';
+        window.location.href = (process.env.NEXT_PUBLIC_TEACHER_ORIGIN ?? '') + '/teacher';
       } else {
         // Student password login (existing flow — will be replaced by class-code login in plan 12-03)
         const user = await login(upn, password);

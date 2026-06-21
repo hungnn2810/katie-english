@@ -8,9 +8,9 @@
 
 Partition the single Next.js app into three subdomain entry points using Next.js middleware. Same codebase, single build — middleware reads `Host` header and routes each subdomain to the appropriate set of pages. Each subdomain enforces role isolation: pages, auth flows, and cookies are scoped per role.
 
-- `admin.katie.vn` → admin portal (`/admin/**`)
-- `app.katie.vn` → teacher dashboard (`/teacher/**`)
-- `student.katie.vn` → student game (`/game/**`, `/login` student flow)
+- `admin.katie-english.com.vn` → admin portal (`/admin/**`)
+- `app.katie-english.com.vn` → teacher dashboard (`/teacher/**`)
+- `student.katie-english.com.vn` → student game (`/game/**`, `/login` student flow)
 
 No new features. No monorepo split. No separate builds. Routing + auth hardening only.
 </domain>
@@ -30,12 +30,12 @@ No new features. No monorepo split. No separate builds. Routing + auth hardening
 - **D-04:** Wrong-role access (teacher token on `admin.*`) → 403 page ("You don't have access to this area"). No cross-subdomain redirect.
 
 ### Cookie & Token Isolation
-- **D-05:** Production cookies are subdomain-scoped (`Domain=admin.katie.vn`, `Domain=app.katie.vn`, `Domain=student.katie.vn`) with `Secure; HttpOnly; SameSite=Strict`. Requires HTTPS in prod.
+- **D-05:** Production cookies are subdomain-scoped (`Domain=admin.katie-english.com.vn`, `Domain=app.katie-english.com.vn`, `Domain=student.katie-english.com.vn`) with `Secure; HttpOnly; SameSite=Strict`. Requires HTTPS in prod.
 - **D-06:** Cookie names per role: `admin-token`, `teacher-token`, `student-token`. Provides isolation in local dev (different ports, same `localhost` domain) where `Domain=` scoping cannot apply.
 - **D-07:** Middleware reads only the cookie matching the current subdomain. Teacher cookie is invisible to admin middleware, and vice versa.
 
 ### Hostname Fallback
-- **D-08:** Root domain (`katie.vn`, `www.katie.vn`) → 301 redirect to `app.katie.vn` (teacher is primary user).
+- **D-08:** Root domain (`katie-english.com.vn`, `www.katie-english.com.vn`) → 301 redirect to `app.katie-english.com.vn` (teacher is primary user).
 - **D-09:** Unrecognized subdomains → 404 page.
 
 ### Route Protection Per Subdomain

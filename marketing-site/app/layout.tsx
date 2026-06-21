@@ -15,14 +15,14 @@ export const metadata: Metadata = {
     title,
     description,
     type: 'website',
-    url: 'https://katie.vn',
-    images: [{ url: 'https://katie.vn/og-image.jpg', width: 1200, height: 630, alt: 'Lớp tiếng Anh cô Katie' }],
+    url: 'https://katie-english.com.vn',
+    images: [{ url: 'https://katie-english.com.vn/og-image.jpg', width: 1200, height: 630, alt: 'Lớp tiếng Anh cô Katie' }],
   },
   twitter: {
     card: 'summary_large_image',
     title,
     description,
-    images: ['https://katie.vn/og-image.jpg'],
+    images: ['https://katie-english.com.vn/og-image.jpg'],
   },
 };
 
