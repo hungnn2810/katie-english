@@ -78,11 +78,11 @@ export default function LoginPage() {
           const d = await res.json();
           throw new Error(d.error ?? 'Invalid credentials');
         }
-        window.location.href = (process.env.NEXT_PUBLIC_TEACHER_ORIGIN ?? '') + '/teacher';
+        window.location.href = '/teacher';
       } else {
         // Student password login (existing flow — will be replaced by class-code login in plan 12-03)
         const user = await login(upn, password);
-        window.location.href = (process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? '') + '/game/homework';
+        window.location.href = '/game/homework';
         void user;
       }
     } catch (err: unknown) {

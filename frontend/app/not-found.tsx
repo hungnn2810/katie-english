@@ -47,35 +47,35 @@ export default function NotFound() {
         </Typography>
 
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          This subdomain is not recognized.
+          The page you&apos;re looking for doesn&apos;t exist.
         </Typography>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
           <Button
             component="a"
-            href={`${process.env.NEXT_PUBLIC_ADMIN_ORIGIN ?? 'https://admin.katie-english.com.vn'}/admin/login`}
+            href="/admin/login"
             variant="text"
             sx={{ color: '#4F9DFF' }}
           >
-            Admin Login — admin.katie-english.com.vn
+            Admin Login
           </Button>
 
           <Button
             component="a"
-            href={`${process.env.NEXT_PUBLIC_TEACHER_ORIGIN ?? 'https://app.katie-english.com.vn'}/teacher/login`}
+            href="/teacher/login"
             variant="text"
             sx={{ color: '#F0623A' }}
           >
-            Teacher Login — app.katie-english.com.vn
+            Teacher Login
           </Button>
 
           <Button
             component="a"
-            href={`${process.env.NEXT_PUBLIC_STUDENT_ORIGIN ?? 'https://student.katie-english.com.vn'}/login`}
+            href="/game/login"
             variant="text"
             sx={{ color: '#A78BFA' }}
           >
-            Student Login — student.katie-english.com.vn
+            Student Login
           </Button>
         </Box>
       </Box>

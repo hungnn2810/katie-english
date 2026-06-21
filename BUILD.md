@@ -63,18 +63,13 @@ docker run --rm \
 
 ### Frontend
 
-Frontend dùng Next.js standalone. Các biến `NEXT_PUBLIC_*` phải được truyền lúc **build** (chúng được nhúng vào JS bundle, không thể thay đổi lúc runtime).
+Frontend dùng Next.js standalone. Biến `NEXT_PUBLIC_*` phải được truyền lúc **build** (nhúng vào JS bundle, không thể thay đổi lúc runtime).
 
 ```bash
 docker build \
   -t katie-english-frontend:latest \
   -f frontend/Dockerfile \
   --build-arg NEXT_PUBLIC_API_URL=https://api.katie-english.com.vn \
-  --build-arg NEXT_PUBLIC_SUBDOMAIN=app \
-  --build-arg NEXT_PUBLIC_ADMIN_ORIGIN=https://admin.katie-english.com.vn \
-  --build-arg NEXT_PUBLIC_TEACHER_ORIGIN=https://app.katie-english.com.vn \
-  --build-arg NEXT_PUBLIC_STUDENT_ORIGIN=https://student.katie-english.com.vn \
-  --build-arg NEXT_PUBLIC_LOGIN_URL=https://app.katie-english.com.vn/login \
   ./frontend
 ```
 
@@ -108,7 +103,6 @@ DOCKER_BUILDKIT=1 docker build \
   -t katie-english-frontend:latest \
   -f frontend/Dockerfile \
   --build-arg NEXT_PUBLIC_API_URL=https://api.katie-english.com.vn \
-  ...
   ./frontend
 ```
 
@@ -149,11 +143,6 @@ Hai workflow đã được cấu hình trong `.github/workflows/`:
 | `DOCKERHUB_USERNAME` | Tên tài khoản Docker Hub |
 | `DOCKERHUB_TOKEN` | Access token Docker Hub (không dùng password) |
 | `NEXT_PUBLIC_API_URL` | URL API production (vd: `https://api.katie-english.com.vn`) |
-| `NEXT_PUBLIC_SUBDOMAIN` | Subdomain mặc định (vd: `app`) |
-| `NEXT_PUBLIC_ADMIN_ORIGIN` | `https://admin.katie-english.com.vn` |
-| `NEXT_PUBLIC_TEACHER_ORIGIN` | `https://app.katie-english.com.vn` |
-| `NEXT_PUBLIC_STUDENT_ORIGIN` | `https://student.katie-english.com.vn` |
-| `NEXT_PUBLIC_LOGIN_URL` | `https://app.katie-english.com.vn/login` |
 
 ---
 
@@ -181,9 +170,4 @@ File `.env` tại root cần có tối thiểu:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_SUBDOMAIN=app
-NEXT_PUBLIC_ADMIN_ORIGIN=https://admin.katie-english.com.vn
-NEXT_PUBLIC_TEACHER_ORIGIN=https://app.katie-english.com.vn
-NEXT_PUBLIC_STUDENT_ORIGIN=https://student.katie-english.com.vn
-NEXT_PUBLIC_LOGIN_URL=https://app.katie-english.com.vn/login
 ```

@@ -3,15 +3,17 @@ import { ShieldOff } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import { usePathname } from 'next/navigation';
 
-// Detect subdomain accent color from env var set at build/start time
-const subdomain = process.env.NEXT_PUBLIC_SUBDOMAIN ?? '';
-const accent =
-  subdomain === 'admin' ? '#4F9DFF' :
-  subdomain === 'student' ? '#A78BFA' :
-  '#F0623A'; // default: app/teacher subdomain
+function useAccentColor() {
+  const pathname = usePathname();
+  if (pathname.startsWith('/admin')) return '#4F9DFF';
+  if (pathname.startsWith('/game')) return '#A78BFA';
+  return '#F0623A';
+}
 
 export default function AccessDeniedPage() {
+  const accent = useAccentColor();
   return (
     <Box
       sx={{
