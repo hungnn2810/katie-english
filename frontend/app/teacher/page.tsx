@@ -48,7 +48,7 @@ function getNextOccurrence(slots: ScheduleSlot[]): Date | null {
 }
 
 const STAT_CARDS = [
-  { key: 'classes' as const, label: 'Total Classes', icon: School, color: ACCENT, bgColor: '#FFF2EF', href: '/teacher/classes' },
+  { key: 'classes' as const, label: 'Total Classes', icon: School, color: ACCENT, bgColor: '#EFF6FF', href: '/teacher/classes' },
   { key: 'students' as const, label: 'Total Students', icon: Users, color: '#6ED6C1', bgColor: '#F0FDFB', href: '/teacher/students' },
   { key: 'homework' as const, label: 'Homework Sets', icon: BookOpen, color: '#A78BFA', bgColor: '#F5F3FF', href: '/teacher/homework' },
 ];
@@ -102,16 +102,16 @@ export default function TeacherDashboard() {
     <Box>
       {/* Pending actions banner */}
       {(pendingCount > 0 || resetCount > 0) && (
-        <Box sx={{ mb: '20px', borderRadius: '12px', border: '1px solid #FCD34D', bgcolor: '#FFFBEB', px: '16px', py: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <AlertTriangle size={16} color="#F59E0B" style={{ flexShrink: 0 }} />
+        <Box sx={{ mb: '20px', borderRadius: '12px', border: '1px solid #BFDBFE', bgcolor: '#EFF6FF', px: '16px', py: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <AlertTriangle size={16} color="#3B82F6" style={{ flexShrink: 0 }} />
           <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
             {pendingCount > 0 && (
-              <Link href="/teacher/students" style={{ color: '#92400E', fontWeight: 600, fontSize: 14 }}>
+              <Link href="/teacher/students" style={{ color: '#1D4ED8', fontWeight: 600, fontSize: 14 }}>
                 {pendingCount} pending registration approval{pendingCount !== 1 ? 's' : ''}
               </Link>
             )}
             {resetCount > 0 && (
-              <Link href="/teacher/students" style={{ color: '#92400E', fontWeight: 600, fontSize: 14 }}>
+              <Link href="/teacher/students" style={{ color: '#1D4ED8', fontWeight: 600, fontSize: 14 }}>
                 {resetCount} password reset request{resetCount !== 1 ? 's' : ''}
               </Link>
             )}
@@ -183,14 +183,14 @@ export default function TeacherDashboard() {
                   const isToday = cls.nextAt.toDateString() === new Date().toDateString();
                   return (
                     <Box key={cls.id} sx={{ display: 'flex', alignItems: 'center', gap: '16px', py: '14px', borderBottom: i < Math.min(upcomingClasses.length, 6) - 1 ? '1px solid #E2E8F0' : 'none' }}>
-                      <Box sx={{ width: 36, height: 36, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: isToday ? '#FFF2EF' : '#F8FAFC' }}>
+                      <Box sx={{ width: 36, height: 36, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, bgcolor: isToday ? '#EFF6FF' : '#F8FAFC' }}>
                         <School size={16} color={isToday ? ACCENT : '#94A3B8'} />
                       </Box>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography sx={{ fontWeight: 600, fontSize: 14, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cls.name}</Typography>
                         <Typography sx={{ fontSize: 12, color: '#64748B', mt: '2px' }}>{cls.code}</Typography>
                       </Box>
-                      <Box sx={{ fontSize: 12, fontWeight: 700, px: '10px', py: '4px', borderRadius: '999px', flexShrink: 0, bgcolor: isToday ? '#FFF2EF' : '#F1F5F9', color: isToday ? ACCENT : '#64748B' }}>
+                      <Box sx={{ fontSize: 12, fontWeight: 700, px: '10px', py: '4px', borderRadius: '999px', flexShrink: 0, bgcolor: isToday ? '#EFF6FF' : '#F1F5F9', color: isToday ? ACCENT : '#64748B' }}>
                         {formatRelativeTime(cls.nextAt)}
                       </Box>
                     </Box>
