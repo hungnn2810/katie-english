@@ -12,7 +12,10 @@ export const colors = {
   border: '#E5E7EB',
   textPrimary: '#1F2937',
   textSecondary: '#6B7280',
-  teacherAccent: '#F0623A',
+  teacherAccent: '#3B82F6',
+  adminAccent: '#6366F1',
+  teacherAccentBg: '#EFF6FF',
+  adminAccentBg: '#EEF2FF',
 } as const;
 
 export const gradients = {
