@@ -13,7 +13,7 @@ function useAppContext() {
 }
 
 export default function AccessDeniedPage() {
-  const accent = useAccentColor();
+  const { accent, loginPath } = useAppContext();
   return (
     <Box
       sx={{
@@ -61,7 +61,7 @@ export default function AccessDeniedPage() {
 
         <Button
           variant="outlined"
-          onClick={() => { window.location.href = '/login'; }}
+          onClick={() => { window.location.href = loginPath; }}
           sx={{ mt: 3, borderColor: accent, color: accent, '&:hover': { borderColor: accent } }}
         >
           Go to Login
