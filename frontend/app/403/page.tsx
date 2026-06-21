@@ -5,11 +5,11 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { usePathname } from 'next/navigation';
 
-function useAccentColor() {
+function useAppContext() {
   const pathname = usePathname();
-  if (pathname.startsWith('/admin')) return '#4F9DFF';
-  if (pathname.startsWith('/game')) return '#A78BFA';
-  return '#F0623A';
+  if (pathname.startsWith('/admin')) return { accent: '#4F9DFF', loginPath: '/admin/login' };
+  if (pathname.startsWith('/game')) return { accent: '#A78BFA', loginPath: '/game/login' };
+  return { accent: '#F0623A', loginPath: '/teacher/login' };
 }
 
 export default function AccessDeniedPage() {
