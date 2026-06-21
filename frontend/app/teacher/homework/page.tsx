@@ -30,7 +30,7 @@ import { parseApiDateTime, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 import HwTypeChip from '@/components/ui/HwTypeChip';
 
-const ACCENT = '#F0623A';
+const ACCENT = '#3B82F6';
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   PHONICS:    { label: 'Phonics',    icon: Hash,       color: '#A78BFA', bg: '#A78BFA18' },

@@ -87,12 +87,12 @@ export const baseTheme = createTheme({
 
 export const teacherTheme = createTheme(baseTheme, {
   palette: {
-    primary: { main: '#F0623A', contrastText: '#ffffff' },
+    primary: { main: '#3B82F6', contrastText: '#ffffff' },
   },
 });
 
 export const adminTheme = createTheme(baseTheme, {
   palette: {
-    primary: { main: '#4F9DFF', contrastText: '#ffffff' },
+    primary: { main: '#6366F1', contrastText: '#ffffff' },
   },
 });
