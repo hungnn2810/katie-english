@@ -643,8 +643,8 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 **Plans:**
 
 - [x] 16-01-PLAN.md — TeacherShell + AdminShell: light sidebar redesign, blue accent system, header polish (Wave 1) ✅ 2026-06-21
-- [ ] 16-02-PLAN.md — Teacher Dashboard redesign: stat cards, upcoming classes widget, quick action tiles (Wave 2, depends 16-01)
-- [ ] 16-03-PLAN.md — Homework page: card-grid layout, pill filter tabs, submission progress bars (Wave 2, depends 16-01)
+- [x] 16-02-PLAN.md — Teacher Dashboard redesign: stat cards, upcoming classes widget, quick action tiles (Wave 2, depends 16-01) ✅ 2026-06-21
+- [x] 16-03-PLAN.md — Homework page: card-grid layout, pill filter tabs, submission progress bars (Wave 2, depends 16-01) ✅ 2026-06-21
 - [ ] 16-04-PLAN.md — Admin pages sync: teachers/classes/students/homework pages adopt new blue accent + card patterns (Wave 3, depends 16-01)
 
 ---
