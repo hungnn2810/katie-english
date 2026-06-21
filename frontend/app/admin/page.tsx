@@ -9,7 +9,7 @@ import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 
-const ACCENT = '#4F9DFF';
+const ACCENT = '#6366F1';
 
 // MiniStat: horizontal layout — 42×42 icon well + value (24px 900) + label (12.5px #64748B)
 function MiniStat({
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
 
       {/* 4 MiniStat cards */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, mb: '22px' }}>
-        <MiniStat icon={Users}         value={stats.teachers}    label="Teachers"  color={ACCENT}    bgColor="#EFF6FF"  loading={loading} />
+        <MiniStat icon={Users}         value={stats.teachers}    label="Teachers"  color={ACCENT}    bgColor="#EEF2FF"  loading={loading} />
         <MiniStat icon={School}        value={stats.classes}     label="Classes"   color="#6ED6C1"   bgColor="#F0FDFB"  loading={loading} />
         <MiniStat icon={GraduationCap} value={stats.students}    label="Students"  color="#A78BFA"   bgColor="#F5F3FF"  loading={loading} />
         <MiniStat icon={FileText}      value={stats.submissions} label="Homework"  color="#F97316"   bgColor="#FFF7ED"  loading={loading} />

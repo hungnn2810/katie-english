@@ -22,7 +22,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import CloseIcon from '@mui/icons-material/Close';
 import TableShell, { TableRow } from '@/components/ui/TableShell';
 
-const ACCENT = '#4F9DFF';
+const ACCENT = '#6366F1';
 
 const COLUMNS = [
   { label: 'Teacher', width: '1.8fr' },
