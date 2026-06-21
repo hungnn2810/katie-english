@@ -18,9 +18,9 @@ import {
   RecordPaymentDto,
   SendNotificationsDto,
 } from './tuition.dto';
-import { AdminGuard } from '../auth/auth.guard';
+import { TuitionGuard } from '../auth/auth.guard';
 
-@UseGuards(AdminGuard)
+@UseGuards(TuitionGuard)
 @Controller('admin/tuition')
 export class TuitionController {
   constructor(private readonly service: TuitionService) {}

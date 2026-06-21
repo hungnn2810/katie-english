@@ -1,4 +1,5 @@
 'use client';
+// Teacher tuition: uses authHeaders() (teacher JWT) via teacher-tuition-api for all direct API calls
 import { useCallback, useEffect, useState } from 'react';
 import { getClasses, ClassItem } from '@/lib/admin-api';
 import { useToast } from '@/lib/toast-context';
