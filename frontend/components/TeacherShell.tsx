@@ -19,9 +19,10 @@ import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import { LayoutDashboard, School, Users, BookOpen, Video, Receipt, KeyRound, LogOut, X } from 'lucide-react';
 
-const ACCENT = '#3B82F6';
-const ACCENT_BG = '#EFF6FF';
-const ACCENT_TEXT = '#1D4ED8';
+const SIDEBAR_BG = '#0F1B2D';
+const ACCENT = '#22C55E';
+const ACCENT_BG = 'rgba(34,197,94,0.15)';
+const ACCENT_TEXT = '#86EFAC';
 
 const NAV_GROUPS = [
   {
@@ -93,25 +94,25 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', minWidth: 1280 }}>
-      {/* Sidebar */}
+      {/* Sidebar — dark navy like HeyWord */}
       <Box sx={{
-        width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
-        bgcolor: '#FFFFFF', boxShadow: '1px 0 0 #E2E8F0',
+        width: 220, flexShrink: 0, display: 'flex', flexDirection: 'column',
+        bgcolor: SIDEBAR_BG,
       }}>
         {/* Logo */}
-        <Box sx={{ px: '20px', pt: '28px', pb: '24px' }}>
+        <Box sx={{ px: '20px', pt: '24px', pb: '20px' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Box sx={{
-              width: 36, height: 36, borderRadius: '12px', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.3)', bgcolor: ACCENT,
+              width: 34, height: 34, borderRadius: '10px', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', flexShrink: 0, bgcolor: ACCENT,
             }}>
               <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 14 }}>K</Typography>
             </Box>
             <Box>
-              <Typography sx={{ color: '#0F172A', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+              <Typography sx={{ color: '#F1F5F9', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
                 Katie English
               </Typography>
-              <Typography sx={{ color: '#64748B', fontSize: 10, letterSpacing: '0.05em', mt: '3px' }}>
+              <Typography sx={{ color: '#64748B', fontSize: 10, letterSpacing: '0.05em', mt: '2px' }}>
                 Teacher Portal
               </Typography>
             </Box>
@@ -119,18 +120,18 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
         </Box>
 
         {/* Nav */}
-        <Box sx={{ flex: 1, px: '12px', overflowY: 'auto' }}>
+        <Box sx={{ flex: 1, px: '10px', overflowY: 'auto' }}>
           {NAV_GROUPS.map((group, gi) => (
-            <Box key={gi} sx={{ mt: gi > 0 ? '20px' : 0 }}>
+            <Box key={gi} sx={{ mt: gi > 0 ? '18px' : 0 }}>
               {group.label && (
                 <Typography variant="caption" sx={{
                   fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
-                  color: '#6B7280', px: '12px', mb: '6px', display: 'block', fontSize: 11,
+                  color: '#475569', px: '12px', mb: '6px', display: 'block', fontSize: 10,
                 }}>
                   {group.label}
                 </Typography>
               )}
-              <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <List disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {group.items.map((item) => {
                   const active = pathname === item.href || (item.href !== '/teacher' && pathname.startsWith(item.href));
                   return (
@@ -140,25 +141,25 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                         href={item.href}
                         selected={active}
                         sx={{
-                          borderRadius: '12px', py: '11px', px: '14px', position: 'relative',
+                          borderRadius: '10px', py: '10px', px: '12px', position: 'relative',
                           '&.Mui-selected': { bgcolor: ACCENT_BG, color: ACCENT_TEXT },
                           '&.Mui-selected:hover': { bgcolor: ACCENT_BG },
-                          '&:not(.Mui-selected)': { color: '#374151' },
-                          '&:not(.Mui-selected):hover': { bgcolor: '#F1F5F9', color: '#1F2937' },
+                          '&:not(.Mui-selected)': { color: '#94A3B8' },
+                          '&:not(.Mui-selected):hover': { bgcolor: 'rgba(255,255,255,0.06)', color: '#E2E8F0' },
                         }}
                       >
                         {active && (
                           <Box sx={{
                             position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-                            width: 3, height: 20, borderRadius: '0 4px 4px 0', bgcolor: ACCENT,
+                            width: 3, height: 18, borderRadius: '0 4px 4px 0', bgcolor: ACCENT,
                           }} />
                         )}
-                        <ListItemIcon sx={{ minWidth: '32px', color: 'inherit' }}>
+                        <ListItemIcon sx={{ minWidth: '30px', color: 'inherit' }}>
                           <item.icon size={15} />
                         </ListItemIcon>
                         <ListItemText
                           primary={item.label}
-                          slotProps={{ primary: { sx: { fontSize: 14, fontWeight: active ? 600 : 500 } } }}
+                          slotProps={{ primary: { sx: { fontSize: 14, fontWeight: active ? 600 : 400 } } }}
                         />
                       </ListItemButton>
                     </ListItem>
@@ -170,9 +171,9 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
         </Box>
 
         {/* Sidebar footer */}
-        <Box sx={{ px: '20px', pb: '20px', pt: '12px' }}>
-          <Divider sx={{ borderColor: '#E2E8F0', mb: '12px' }} />
-          <Typography sx={{ fontSize: 10, color: '#94A3B8', textAlign: 'center' }}>
+        <Box sx={{ px: '20px', pb: '18px', pt: '12px' }}>
+          <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)', mb: '12px' }} />
+          <Typography sx={{ fontSize: 10, color: '#475569', textAlign: 'center' }}>
             © Katie English
           </Typography>
         </Box>
@@ -206,9 +207,9 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                 aria-haspopup="true"
                 aria-expanded={showUserMenu}
                 sx={{
-                  width: 36, height: 36, borderRadius: '50%', bgcolor: ACCENT,
+                  width: 36, height: 36, borderRadius: '50%', bgcolor: '#22C55E',
                   color: 'white', fontWeight: 700, fontSize: 14,
-                  '&:hover': { bgcolor: ACCENT, opacity: 0.8 },
+                  '&:hover': { bgcolor: '#16A34A' },
                 }}
               >
                 {(user.upn?.[0] ?? '?').toUpperCase()}
@@ -228,7 +229,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                     <Box sx={{
                       width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center',
                       justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'white',
-                      flexShrink: 0, bgcolor: ACCENT,
+                      flexShrink: 0, bgcolor: '#22C55E',
                     }}>
                       {(user.upn?.[0] ?? '?').toUpperCase()}
                     </Box>
@@ -283,7 +284,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                       variant="contained"
                       fullWidth
                       disabled={pwLoading}
-                      sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: 3, fontSize: 12 }}
+                      sx={{ bgcolor: '#22C55E', '&:hover': { bgcolor: '#16A34A' }, borderRadius: 3, fontSize: 12 }}
                     >
                       {pwLoading ? 'Updating...' : 'Update password'}
                     </Button>

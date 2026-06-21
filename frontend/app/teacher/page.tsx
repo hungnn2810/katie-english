@@ -12,7 +12,9 @@ import { useToast } from '@/lib/toast-context';
 import StatCard from '@/components/ui/StatCard';
 import { colors } from '@/lib/colors';
 
-const ACCENT = colors.teacherAccent;
+const ACCENT = '#22C55E';
+const ACCENT_BG = colors.greenLight;
+const ACCENT_TEXT = colors.greenDark;
 const DAY_ORDER = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 // Cycle colors for class avatars (HeyWord-style colored circles)
@@ -58,14 +60,14 @@ function getNextOccurrence(slots: ScheduleSlot[]): Date | null {
 }
 
 const STAT_CARDS = [
-  { key: 'classes' as const, label: 'Total Classes', icon: School, color: ACCENT, bgColor: '#EFF6FF', href: '/teacher/classes' },
+  { key: 'classes' as const, label: 'Total Classes', icon: School, color: ACCENT, bgColor: colors.greenLight, href: '/teacher/classes' },
   { key: 'students' as const, label: 'Total Students', icon: Users, color: '#6ED6C1', bgColor: '#F0FDFB', href: '/teacher/students' },
   { key: 'homework' as const, label: 'Homework Sets', icon: BookOpen, color: '#A78BFA', bgColor: '#F5F3FF', href: '/teacher/homework' },
 ];
 
 const QUICK_LINKS = [
   { href: '/teacher/classes', label: 'Manage Classes', desc: 'Create and schedule classes', icon: School, color: ACCENT },
-  { href: '/teacher/students', label: 'Manage Students', desc: 'Add students and parent contacts', icon: Users, color: colors.greenDark },
+  { href: '/teacher/students', label: 'Manage Students', desc: 'Add students and parent contacts', icon: Users, color: '#6ED6C1' },
   { href: '/teacher/homework', label: 'Assign Homework', desc: 'Create word-list homework', icon: BookOpen, color: '#A78BFA' },
   { href: '/teacher/sessions', label: 'View Sessions', desc: 'Review completed homework sessions', icon: Video, color: '#64748B' },
 ];
@@ -152,7 +154,7 @@ export default function TeacherDashboard() {
           <Box sx={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             px: '22px', py: '14px', borderBottom: '1px solid #DCFCE7',
-            background: 'linear-gradient(90deg, #F0FDF4 0%, #ECFDF5 50%, #FFFFFF 100%)',
+            bgcolor: '#F0FDF4',
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>Upcoming Classes</Typography>
@@ -242,8 +244,8 @@ export default function TeacherDashboard() {
         {/* Quick actions */}
         <Card sx={{ overflow: 'hidden' }}>
           <Box sx={{
-            px: '22px', py: '14px', borderBottom: '1px solid #E9D5FF',
-            background: 'linear-gradient(90deg, #F5F3FF 0%, #EFF6FF 60%, #FFFFFF 100%)',
+            px: '22px', py: '14px', borderBottom: '1px solid #DCFCE7',
+            bgcolor: '#F0FDF4',
           }}>
             <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>Quick Actions</Typography>
           </Box>
