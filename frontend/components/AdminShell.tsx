@@ -16,9 +16,9 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 
-const ACCENT = '#4F9DFF';
-const ACCENT_BG = 'rgba(79,157,255,0.12)';
-const ACCENT_TEXT = '#60A5FA';
+const ACCENT = '#6366F1';
+const ACCENT_BG = '#EEF2FF';
+const ACCENT_TEXT = '#818CF8';
 
 const NAV_GROUPS = [
   {
@@ -52,7 +52,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
       {/* Sidebar */}
       <Box sx={{
         width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
-        bgcolor: '#0C1220', boxShadow: '1px 0 0 rgba(255,255,255,0.05)',
+        bgcolor: '#FFFFFF', boxShadow: '1px 0 0 #E2E8F0',
       }}>
         {/* Logo */}
         <Box sx={{ px: 2.5, pt: 3.5, pb: 3 }}>
@@ -64,10 +64,10 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
               <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 14 }}>K</Typography>
             </Box>
             <Box>
-              <Typography sx={{ color: 'white', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+              <Typography sx={{ color: '#0F172A', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
                 Katie English
               </Typography>
-              <Typography sx={{ color: '#475569', fontSize: 10, letterSpacing: '0.05em', mt: 0.25 }}>
+              <Typography sx={{ color: '#6B7280', fontSize: 10, letterSpacing: '0.05em', mt: 0.25 }}>
                 Admin Portal
               </Typography>
             </Box>
@@ -81,7 +81,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
               {group.label && (
                 <Typography variant="caption" sx={{
                   fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
-                  color: '#475569', px: 1.5, mb: 0.5, display: 'block',
+                  color: '#6B7280', px: 1.5, mb: 0.5, display: 'block',
                 }}>
                   {group.label}
                 </Typography>
@@ -99,8 +99,8 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
                           borderRadius: 3, py: 1.25, position: 'relative',
                           '&.Mui-selected': { bgcolor: ACCENT_BG, color: ACCENT_TEXT },
                           '&.Mui-selected:hover': { bgcolor: ACCENT_BG },
-                          '&:not(.Mui-selected)': { color: '#94A3B8' },
-                          '&:not(.Mui-selected):hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#E2E8F0' },
+                          '&:not(.Mui-selected)': { color: '#374151' },
+                          '&:not(.Mui-selected):hover': { bgcolor: '#F1F5F9', color: '#1F2937' },
                         }}
                       >
                         {active && (
@@ -127,8 +127,8 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
 
         {/* Sidebar footer */}
         <Box sx={{ px: 2.5, pb: 2.5, pt: 1.5 }}>
-          <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mb: 1.5 }} />
-          <Typography sx={{ fontSize: 10, color: '#475569', display: 'block', textAlign: 'center' }}>
+          <Divider sx={{ borderColor: '#E2E8F0', mb: 1.5 }} />
+          <Typography sx={{ fontSize: 10, color: '#94A3B8', display: 'block', textAlign: 'center' }}>
             © Katie English
           </Typography>
         </Box>

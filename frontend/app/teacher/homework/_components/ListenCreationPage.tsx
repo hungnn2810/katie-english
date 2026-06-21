@@ -530,8 +530,8 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
           sx={{
             borderRadius: 3,
             fontWeight: 700,
-            bgcolor: '#F0623A',
-            '&:hover': { bgcolor: '#F0623A', opacity: 0.9 },
+            bgcolor: '#3B82F6',
+            '&:hover': { bgcolor: '#3B82F6', opacity: 0.9 },
             '&:disabled': { opacity: 0.6 },
             gap: 1,
           }}

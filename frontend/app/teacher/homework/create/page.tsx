@@ -164,7 +164,7 @@ export default function CreateHomeworkPage() {
             sx={{ flex: 1 }}
           />
           <Button type="submit" variant="contained"
-            sx={{ bgcolor: '#F0623A', '&:hover': { bgcolor: '#F0623A', opacity: 0.9 }, borderRadius: '8px', gap: 0.5, flexShrink: 0 }}>
+            sx={{ bgcolor: '#3B82F6', '&:hover': { bgcolor: '#3B82F6', opacity: 0.9 }, borderRadius: '8px', gap: 0.5, flexShrink: 0 }}>
             <Plus size={16} />
             Add
           </Button>
@@ -178,7 +178,7 @@ export default function CreateHomeworkPage() {
           Cancel
         </Button>
         <Button variant="contained" onClick={handlePublish}
-          sx={{ bgcolor: '#F0623A', '&:hover': { bgcolor: '#F0623A', opacity: 0.9 }, borderRadius: '8px', gap: 0.5 }}>
+          sx={{ bgcolor: '#3B82F6', '&:hover': { bgcolor: '#3B82F6', opacity: 0.9 }, borderRadius: '8px', gap: 0.5 }}>
           <Check size={16} />
           Publish homework
         </Button>
