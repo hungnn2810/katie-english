@@ -25,7 +25,7 @@
 | 13 | Landing Page | 1/3 | In Progress|  |
 | 14 | Game Responsive Layout | 0/3 | Pending |  |
 | 15 | Tuition Management | 6/6 (gap closure) | In Progress | 2026-06-19 |
-| 16 | Teacher/Admin UI Redesign | Modern HeyWordVocab-inspired UI — light sidebar, card-grid homework library, blue accent | v3 | 📋 Pending |
+| 16 | Teacher/Admin UI Redesign | Modern HeyWordVocab-inspired UI — light sidebar, card-grid homework library, blue accent | v3 | ✅ Complete 2026-06-21 |
 
 ---
 
@@ -645,7 +645,7 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 - [x] 16-01-PLAN.md — TeacherShell + AdminShell: light sidebar redesign, blue accent system, header polish (Wave 1) ✅ 2026-06-21
 - [x] 16-02-PLAN.md — Teacher Dashboard redesign: stat cards, upcoming classes widget, quick action tiles (Wave 2, depends 16-01) ✅ 2026-06-21
 - [x] 16-03-PLAN.md — Homework page: card-grid layout, pill filter tabs, submission progress bars (Wave 2, depends 16-01) ✅ 2026-06-21
-- [~] 16-04-PLAN.md — Admin pages sync: teachers/classes/students/homework pages adopt new blue accent + card patterns (Wave 3, depends 16-01) [Tasks 1-2 done, awaiting visual checkpoint]
+- [x] 16-04-PLAN.md — Admin pages sync: teachers/classes/students/homework pages adopt new blue accent + card patterns (Wave 3, depends 16-01) ✅ 2026-06-21
 
 ---
 
