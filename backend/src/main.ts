@@ -40,14 +40,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   const isProd = process.env.NODE_ENV === 'production';
   const allowedOrigins = [
-    process.env.ADMIN_ORIGIN ?? (isProd ? 'https://admin.katie-english.com.vn' : null),
-    process.env.TEACHER_ORIGIN ?? (isProd ? 'https://app.katie-english.com.vn' : null),
-    process.env.STUDENT_ORIGIN ?? (isProd ? 'https://student.katie-english.com.vn' : null),
+    process.env.FRONTEND_ORIGIN ?? (isProd ? 'https://katie-english.com.vn' : null),
     ...(!isProd ? [
       'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'http://localhost:3003',
     ] : []),
   ].filter(Boolean) as string[];
   app.enableCors({ origin: allowedOrigins, credentials: true });
