@@ -5,6 +5,7 @@ RUN npm ci
 COPY . .
 RUN npx prisma generate
 RUN npm run build
+RUN npx tsc prisma/seed.ts --outDir prisma --module commonjs --esModuleInterop --skipLibCheck --resolveJsonModule
 
 FROM node:20-alpine
 RUN apk add --no-cache ffmpeg openssl
