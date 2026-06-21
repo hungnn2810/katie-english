@@ -103,7 +103,7 @@ export default function AdminDashboard() {
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
         {/* Approvals pending */}
         <Card sx={{ overflow: 'hidden' }}>
-          <Box sx={{ px: '22px', py: '15px', borderBottom: '1px solid #E2E8F0', fontWeight: 700, fontSize: 14 }}>
+          <Box sx={{ px: '22px', py: '15px', borderBottom: '1px solid #E0E7FF', bgcolor: '#EEF2FF', fontWeight: 700, fontSize: 14, color: '#1E1B4B' }}>
             Approvals pending
           </Box>
           <Box sx={{ px: '22px', py: '6px' }}>
@@ -127,7 +127,7 @@ export default function AdminDashboard() {
 
         {/* Recent activity */}
         <Card sx={{ overflow: 'hidden' }}>
-          <Box sx={{ px: '22px', py: '15px', borderBottom: '1px solid #E2E8F0', fontWeight: 700, fontSize: 14 }}>
+          <Box sx={{ px: '22px', py: '15px', borderBottom: '1px solid #E0E7FF', bgcolor: '#EEF2FF', fontWeight: 700, fontSize: 14, color: '#1E1B4B' }}>
             Recent activity
           </Box>
           <Box sx={{ px: '22px', py: '6px' }}>

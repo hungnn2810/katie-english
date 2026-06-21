@@ -16,9 +16,10 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 
+const SIDEBAR_BG = '#0F1B2D';
 const ACCENT = '#6366F1';
-const ACCENT_BG = '#EEF2FF';
-const ACCENT_TEXT = '#818CF8';
+const ACCENT_BG = 'rgba(99,102,241,0.15)';
+const ACCENT_TEXT = '#A5B4FC';
 
 const NAV_GROUPS = [
   {
@@ -50,25 +51,25 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', minWidth: 1280 }}>
-      {/* Sidebar */}
+      {/* Sidebar — dark navy, indigo accent */}
       <Box sx={{
-        width: 240, flexShrink: 0, display: 'flex', flexDirection: 'column',
-        bgcolor: '#FFFFFF', boxShadow: '1px 0 0 #E2E8F0',
+        width: 220, flexShrink: 0, display: 'flex', flexDirection: 'column',
+        bgcolor: SIDEBAR_BG,
       }}>
         {/* Logo */}
-        <Box sx={{ px: 2.5, pt: 3.5, pb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+        <Box sx={{ px: '20px', pt: '24px', pb: '20px' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Box sx={{
-              width: 36, height: 36, borderRadius: 3, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', flexShrink: 0, bgcolor: ACCENT, boxShadow: 3,
+              width: 34, height: 34, borderRadius: '10px', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', flexShrink: 0, bgcolor: ACCENT,
             }}>
               <Typography sx={{ color: 'white', fontWeight: 900, fontSize: 14 }}>K</Typography>
             </Box>
             <Box>
-              <Typography sx={{ color: '#0F172A', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
+              <Typography sx={{ color: '#F1F5F9', fontWeight: 700, fontSize: 14, lineHeight: 1.2, letterSpacing: '-0.02em' }}>
                 Katie English
               </Typography>
-              <Typography sx={{ color: '#6B7280', fontSize: 10, letterSpacing: '0.05em', mt: 0.25 }}>
+              <Typography sx={{ color: '#64748B', fontSize: 10, letterSpacing: '0.05em', mt: '2px' }}>
                 Admin Portal
               </Typography>
             </Box>
@@ -76,18 +77,18 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
         </Box>
 
         {/* Nav */}
-        <Box sx={{ flex: 1, px: 1.5, overflowY: 'auto' }}>
+        <Box sx={{ flex: 1, px: '10px', overflowY: 'auto' }}>
           {NAV_GROUPS.map((group, gi) => (
-            <Box key={gi} sx={{ mt: gi > 0 ? 2.5 : 0 }}>
+            <Box key={gi} sx={{ mt: gi > 0 ? '18px' : 0 }}>
               {group.label && (
                 <Typography variant="caption" sx={{
                   fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
-                  color: '#6B7280', px: 1.5, mb: 0.5, display: 'block',
+                  color: '#475569', px: '12px', mb: '6px', display: 'block', fontSize: 10,
                 }}>
                   {group.label}
                 </Typography>
               )}
-              <List dense disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+              <List dense disablePadding sx={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {group.items.map((item) => {
                   const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
                   return (
@@ -97,25 +98,25 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
                         href={item.href}
                         selected={active}
                         sx={{
-                          borderRadius: 3, py: 1.25, position: 'relative',
+                          borderRadius: '10px', py: '10px', px: '12px', position: 'relative',
                           '&.Mui-selected': { bgcolor: ACCENT_BG, color: ACCENT_TEXT },
                           '&.Mui-selected:hover': { bgcolor: ACCENT_BG },
-                          '&:not(.Mui-selected)': { color: '#374151' },
-                          '&:not(.Mui-selected):hover': { bgcolor: '#F1F5F9', color: '#1F2937' },
+                          '&:not(.Mui-selected)': { color: '#94A3B8' },
+                          '&:not(.Mui-selected):hover': { bgcolor: 'rgba(255,255,255,0.06)', color: '#E2E8F0' },
                         }}
                       >
                         {active && (
                           <Box sx={{
                             position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-                            width: 3, height: 20, borderRadius: '0 4px 4px 0', bgcolor: ACCENT,
+                            width: 3, height: 18, borderRadius: '0 4px 4px 0', bgcolor: ACCENT,
                           }} />
                         )}
-                        <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
+                        <ListItemIcon sx={{ minWidth: '30px', color: 'inherit' }}>
                           <item.icon size={15} />
                         </ListItemIcon>
                         <ListItemText
                           primary={item.label}
-                          slotProps={{ primary: { sx: { fontSize: 14, fontWeight: active ? 600 : 500 } } }}
+                          slotProps={{ primary: { sx: { fontSize: 14, fontWeight: active ? 600 : 400 } } }}
                         />
                       </ListItemButton>
                     </ListItem>
@@ -127,9 +128,9 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
         </Box>
 
         {/* Sidebar footer */}
-        <Box sx={{ px: 2.5, pb: 2.5, pt: 1.5 }}>
-          <Divider sx={{ borderColor: '#E2E8F0', mb: 1.5 }} />
-          <Typography sx={{ fontSize: 10, color: '#94A3B8', display: 'block', textAlign: 'center' }}>
+        <Box sx={{ px: '20px', pb: '18px', pt: '12px' }}>
+          <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)', mb: '12px' }} />
+          <Typography sx={{ fontSize: 10, color: '#475569', textAlign: 'center' }}>
             © Katie English
           </Typography>
         </Box>
@@ -138,19 +139,20 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
       {/* Main */}
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Box component="main" sx={{ flex: 1, overflowY: 'auto' }}>
-          {/* Page header */}
-          <Box sx={{ px: 4, pt: 4, pb: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          {/* Page header — HeyWord style: greeting + bold title */}
+          <Box sx={{ px: '32px', pt: '28px', pb: '20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <Box>
-              <Typography sx={{ fontSize: 12, color: 'text.secondary', mb: 1, display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                Admin Portal
-                <Box component="span" sx={{ opacity: 0.4, mx: 0.25 }}>›</Box>
-                <Box component="span" sx={{ color: 'text.primary', opacity: 0.5, fontWeight: 500 }}>{title}</Box>
+              <Typography sx={{ fontSize: 12, color: '#F97316', fontWeight: 700, mb: '5px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                👋 Chào {user.email?.split('@')[0] ?? 'Admin'},
               </Typography>
-              <Typography sx={{ fontSize: 26, fontWeight: 900, color: 'text.primary', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                {title}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Typography sx={{ fontSize: 26, fontWeight: 800, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                  {title}
+                </Typography>
+                <Box component="span" sx={{ fontSize: 20, lineHeight: 1 }}>✨</Box>
+              </Box>
               {subtitle && (
-                <Typography sx={{ fontSize: 14, color: 'text.secondary', mt: 0.75 }}>{subtitle}</Typography>
+                <Typography sx={{ fontSize: 13, color: '#6B7280', mt: '6px' }}>{subtitle}</Typography>
               )}
             </Box>
 
@@ -163,7 +165,7 @@ export default function AdminShell({ user, children, title, subtitle }: Props) {
                 aria-expanded={Boolean(anchorEl)}
                 sx={{
                   width: 36, height: 36, bgcolor: ACCENT, color: 'white', fontSize: 14,
-                  fontWeight: 700, borderRadius: '50%', '&:hover': { bgcolor: ACCENT, opacity: 0.8 },
+                  fontWeight: 700, borderRadius: '50%', '&:hover': { bgcolor: '#4F46E5' },
                 }}
               >
                 {(user.email?.[0] ?? '?').toUpperCase()}
