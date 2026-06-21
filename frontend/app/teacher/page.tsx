@@ -110,23 +110,6 @@ export default function TeacherDashboard() {
 
   return (
     <Box>
-      {/* Hero band — HeyWord-style green-teal gradient page header */}
-      <Box sx={{
-        mb: '22px', mx: '-24px', px: '28px', pt: '18px', pb: '16px',
-        background: 'linear-gradient(90deg, #F0FDF4 0%, #ECFDF5 35%, #EFF6FF 70%, #F5F3FF 100%)',
-        borderBottom: '1px solid #E2E8F0',
-      }}>
-        <Typography sx={{ fontSize: 11, color: '#6B7280', fontWeight: 500, mb: '6px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-          Teacher Portal › Dashboard
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Typography sx={{ fontSize: 24, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>Dashboard</Typography>
-          <Box sx={{ px: '10px', py: '3px', borderRadius: '999px', bgcolor: colors.greenLight, color: colors.greenDark, fontSize: 12, fontWeight: 700 }}>
-            Teacher
-          </Box>
-        </Box>
-      </Box>
-
       {/* Pending actions banner */}
       {(pendingCount > 0 || resetCount > 0) && (
         <Box sx={{ mb: '20px', borderRadius: '12px', border: '1px solid #BFDBFE', bgcolor: '#EFF6FF', px: '16px', py: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>

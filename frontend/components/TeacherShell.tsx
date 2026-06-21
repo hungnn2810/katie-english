@@ -181,19 +181,29 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
       {/* Main */}
       <Box sx={{ flex: 1, bgcolor: '#F7F9FC', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Box component="main" sx={{ flex: 1, overflowY: 'auto' }}>
-          {/* Page header */}
-          <Box sx={{ px: '32px', pt: '32px', pb: '24px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          {/* Page header — HeyWord-style gradient band */}
+          <Box sx={{
+            px: '32px', pt: '20px', pb: '18px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'linear-gradient(90deg, #F0FDF4 0%, #ECFDF5 30%, #EFF6FF 65%, #F5F3FF 100%)',
+            borderBottom: '1px solid #E2E8F0',
+          }}>
             <Box>
-              <Typography sx={{ fontSize: 12, color: '#64748B', mb: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Typography sx={{ fontSize: 11, color: '#6B7280', mb: '6px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 500, letterSpacing: '0.03em', textTransform: 'uppercase' }}>
                 Teacher Portal
                 <Box component="span" sx={{ opacity: 0.4 }}>›</Box>
-                <Box component="span" sx={{ color: '#0F172A', opacity: 0.5, fontWeight: 500 }}>{title}</Box>
+                <Box component="span" sx={{ color: '#374151' }}>{title}</Box>
               </Typography>
-              <Typography sx={{ fontSize: 26, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                {title}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Typography sx={{ fontSize: 24, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', lineHeight: 1 }}>
+                  {title}
+                </Typography>
+                <Box sx={{ px: '10px', py: '3px', borderRadius: '999px', bgcolor: '#BBF7D0', color: '#166534', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                  Teacher
+                </Box>
+              </Box>
               {subtitle && (
-                <Typography sx={{ fontSize: 14, color: '#64748B', mt: '8px' }}>{subtitle}</Typography>
+                <Typography sx={{ fontSize: 13, color: '#64748B', mt: '6px' }}>{subtitle}</Typography>
               )}
             </Box>
 
