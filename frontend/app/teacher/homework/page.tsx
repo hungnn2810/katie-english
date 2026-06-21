@@ -25,12 +25,15 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useToast } from '@/lib/toast-context';
-import { Plus, X, Loader2, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2, Headphones, Pencil, Trash2, Eye } from 'lucide-react';
+import LinearProgress from '@mui/material/LinearProgress';
+import Card from '@mui/material/Card';
+import Divider from '@mui/material/Divider';
+import { Plus, X, Loader2, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2, Headphones, Pencil, Trash2, Eye, LayoutGrid, List as ListIcon } from 'lucide-react';
 import { parseApiDateTime, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 import HwTypeChip from '@/components/ui/HwTypeChip';
 
-const ACCENT = '#3B82F6';
+const ACCENT = colors.teacherAccent;
 
 const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   PHONICS:    { label: 'Phonics',    icon: Hash,       color: '#A78BFA', bg: '#A78BFA18' },
@@ -628,6 +631,113 @@ function AssignModal({
   );
 }
 
+// â"€â"€ HwCard â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+
+interface HwCardProps {
+  h: HomeworkItem;
+  now: Date;
+  deletingId: number | null;
+  onAssign: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onDeleteCancel: () => void;
+  onDeleteConfirm: () => Promise<void>;
+}
+
+function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel, onDeleteConfirm }: HwCardProps) {
+  const meta = TYPE_META[h.type];
+
+  // Derived values
+  const submittedStudentIds = new Set<number>();
+  for (const assignment of h.assignments) {
+    for (const session of assignment.sessions ?? []) {
+      submittedStudentIds.add(session.studentId);
+    }
+  }
+  const submittedCount = submittedStudentIds.size;
+  const totalEnrolled = h.assignments.reduce(
+    (sum, a) => sum + a.classes.reduce((s, ac) => s + (ac.class._count?.students ?? 0), 0), 0,
+  );
+  const classNames = Array.from(new Set(h.assignments.flatMap((a) => a.classes.map((ac) => ac.class.name)))).join(', ') || '—';
+  const nearestDue = h.assignments
+    .map((a) => parseApiDateTime(a.endDate))
+    .filter((d): d is Date => d !== null)
+    .sort((a, b) => a.getTime() - b.getTime())[0];
+  const dueText = nearestDue
+    ? nearestDue < now ? 'Overdue' : nearestDue.toLocaleDateString()
+    : '—';
+  const isOverdue = nearestDue ? nearestDue < now : false;
+  const hwName = h.name || (h.speakingText ? h.speakingText.slice(0, 32) + (h.speakingText.length > 32 ? '…' : '') : meta.label);
+  const progressValue = totalEnrolled > 0 ? (submittedCount / totalEnrolled) * 100 : 0;
+
+  return (
+    <Card sx={{
+      borderRadius: '16px', border: '1px solid #E2E8F0', bgcolor: 'white', boxShadow: 'none',
+      transition: 'all 0.2s', '&:hover': { boxShadow: '0 8px 24px rgba(15,23,42,0.12)', transform: 'translateY(-1px)' },
+    }}>
+      {/* Header: type chip + overdue badge */}
+      <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <HwTypeChip type={h.type as 'PHONICS' | 'SPEAKING' | 'VOCABULARY' | 'LISTEN' | 'READING'} />
+        {isOverdue && (
+          <Chip label="Overdue" size="small" sx={{ bgcolor: '#FEE2E2', color: '#DC2626', fontWeight: 700, fontSize: 10 }} />
+        )}
+      </Box>
+
+      {/* Title section */}
+      <Box sx={{ px: 2.5, pb: 1.5 }}>
+        <Typography sx={{ fontWeight: 700, fontSize: 15, color: '#0F172A', lineHeight: 1.3 }}>{hwName}</Typography>
+        <Typography sx={{ fontSize: 12, color: '#64748B', mt: 0.5 }}>{classNames}</Typography>
+      </Box>
+
+      <Divider sx={{ mx: 2.5 }} />
+
+      {/* Footer */}
+      <Box sx={{ px: 2.5, py: 1.5 }}>
+        {/* Submitted / due row */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+          <Typography sx={{ fontSize: 11, color: '#64748B' }}>{submittedCount}/{totalEnrolled} submitted</Typography>
+          <Typography sx={{ fontSize: 11, color: isOverdue ? '#DC2626' : '#64748B' }}>{dueText}</Typography>
+        </Box>
+        {/* Progress bar */}
+        <LinearProgress
+          variant="determinate"
+          value={progressValue}
+          sx={{
+            height: 6, borderRadius: 99, bgcolor: '#E2E8F0',
+            '& .MuiLinearProgress-bar': { bgcolor: '#3B82F6', borderRadius: 99 },
+          }}
+        />
+        {/* Actions */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.25, mt: 1.5 }}>
+          {deletingId === h.id ? (
+            <>
+              <Typography sx={{ fontSize: 12, color: 'text.secondary', alignSelf: 'center', mr: 0.5 }}>Delete?</Typography>
+              <Button size="small" onClick={onDeleteCancel} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+              <Button size="small" variant="contained" onClick={onDeleteConfirm}
+                sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
+            </>
+          ) : (
+            <>
+              <IconButton size="small" onClick={onAssign} sx={{ color: '#059669', width: 26, height: 26 }} title="Assign">
+                <CheckCircle2 size={13} />
+              </IconButton>
+              <IconButton size="small" onClick={onEdit} sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
+                <Pencil size={13} />
+              </IconButton>
+              <IconButton size="small" component={Link} href={'/teacher/homework/' + h.id + '/try'} sx={{ color: '#A855F7', width: 26, height: 26 }} title="Try">
+                <Eye size={13} />
+              </IconButton>
+              <IconButton size="small" onClick={onDelete} sx={{ color: 'error.main', width: 26, height: 26 }} title="Delete">
+                <Trash2 size={13} />
+              </IconButton>
+            </>
+          )}
+        </Box>
+      </Box>
+    </Card>
+  );
+}
+
 // â"€â"€ Page â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const emptyForm = (): CreateHomeworkInput => ({ type: 'PHONICS', speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingPictureUrl: '', speakingText: '' });
@@ -644,6 +754,7 @@ export default function HomeworkPage() {
   const [typeFilter, setTypeFilter] = useState<HomeworkType | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   const load = () => getHomeworkList().then(setList).catch(() => {});
   useEffect(() => { load(); getClasses().then(setClasses).catch(() => {}); }, []);
@@ -721,17 +832,35 @@ export default function HomeworkPage() {
               { key: 'VOCABULARY', label: 'Vocab' },
               { key: 'LISTEN', label: 'Listen' },
             ] as const).map((t) => (
-              <Button key={t.key} variant="outlined" size="small" onClick={() => setTypeFilter(t.key)}
+              <Button key={t.key} size="small" onClick={() => setTypeFilter(t.key)}
                 sx={{
-                  px: 1.5, py: 0.75, borderRadius: '8px', fontSize: 12, fontWeight: 600, border: '1px solid',
+                  px: 1.75, py: 0.5, borderRadius: '999px', fontSize: 12, fontWeight: 600, border: 'none',
+                  minWidth: 0, textTransform: 'none',
                   ...(typeFilter === t.key
-                    ? { bgcolor: '#FFF2EF', color: ACCENT, borderColor: ACCENT }
-                    : { bgcolor: 'white', color: '#64748B', borderColor: '#E2E8F0' }),
+                    ? { bgcolor: '#EFF6FF', color: '#3B82F6', '&:hover': { bgcolor: '#DBEAFE' } }
+                    : { bgcolor: 'transparent', color: '#64748B', '&:hover': { bgcolor: '#F1F5F9' } }),
                 }}>
                 {t.label}
-                <Box component="span" sx={{ ml: 0.5, opacity: 0.6 }}>({counts[t.key]})</Box>
+                <Box component="span" sx={{
+                  ml: 0.75, px: 0.75, py: 0.125, borderRadius: '999px',
+                  fontSize: 10, fontWeight: 700,
+                  bgcolor: typeFilter === t.key ? '#DBEAFE' : '#F1F5F9',
+                  color: typeFilter === t.key ? '#3B82F6' : '#94A3B8',
+                }}>{counts[t.key]}</Box>
               </Button>
             ))}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 0.5, ml: 1 }}>
+            <IconButton size="small" onClick={() => setViewMode('grid')}
+              sx={{ borderRadius: 1.5, color: viewMode === 'grid' ? '#3B82F6' : '#94A3B8',
+                    bgcolor: viewMode === 'grid' ? '#EFF6FF' : 'transparent', width: 32, height: 32 }}>
+              <LayoutGrid size={15} />
+            </IconButton>
+            <IconButton size="small" onClick={() => setViewMode('table')}
+              sx={{ borderRadius: 1.5, color: viewMode === 'table' ? '#3B82F6' : '#94A3B8',
+                    bgcolor: viewMode === 'table' ? '#EFF6FF' : 'transparent', width: 32, height: 32 }}>
+              <ListIcon size={15} />
+            </IconButton>
           </Box>
         </Box>
         <Button variant="contained" onClick={openCreate}
@@ -741,7 +870,7 @@ export default function HomeworkPage() {
         </Button>
       </Box>
 
-      {/* Table */}
+      {/* Content: empty state / grid / table */}
       {list.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
@@ -750,6 +879,40 @@ export default function HomeworkPage() {
           <Typography sx={{ fontWeight: 500 }}>No homework yet</Typography>
           <Typography sx={{ fontSize: 14, mt: 0.5 }}>Create a reusable homework template</Typography>
         </Box>
+      ) : viewMode === 'grid' ? (
+        filtered.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
+            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>No homework matches filter</Typography>
+          </Box>
+        ) : (
+          <Box sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+            gap: '18px',
+          }}>
+            {filtered.map((h) => (
+              <HwCard
+                key={h.id}
+                h={h}
+                now={now}
+                deletingId={deletingId}
+                onAssign={() => setAssigningHw(h)}
+                onEdit={() => {
+                  if (h.type === 'READING') router.push(`/teacher/homework/${h.id}/edit`);
+                  else if (h.type === 'VOCABULARY') router.push(`/teacher/homework/${h.id}/edit/vocabulary`);
+                  else if (h.type === 'LISTEN') router.push(`/teacher/homework/${h.id}/edit/listen`);
+                  else openEdit(h);
+                }}
+                onDelete={() => setDeletingId(h.id)}
+                onDeleteCancel={() => setDeletingId(null)}
+                onDeleteConfirm={async () => {
+                  try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.', 'success'); }
+                  catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.', 'error'); }
+                }}
+              />
+            ))}
+          </Box>
+        )
       ) : (
         <TableShell columns={[
           { label: 'Homework', width: '2.2fr' },
@@ -765,10 +928,6 @@ export default function HomeworkPage() {
           ) : (
             filtered.map((h, i) => {
               const meta = TYPE_META[h.type];
-              const activeAssignments = h.assignments.filter((a) => {
-                const endDate = parseApiDateTime(a.endDate);
-                return endDate ? endDate >= now : false;
-              });
               const submittedStudentIds = new Set<number>();
               for (const assignment of h.assignments) {
                 for (const session of assignment.sessions ?? []) {
@@ -788,7 +947,6 @@ export default function HomeworkPage() {
                 ? nearestDue < now ? 'Overdue' : nearestDue.toLocaleDateString()
                 : '—';
               const isOverdue = nearestDue ? nearestDue < now : false;
-
               const hwName = h.name || (h.speakingText ? h.speakingText.slice(0, 32) + (h.speakingText.length > 32 ? '…' : '') : meta.label);
 
               return (
@@ -834,11 +992,11 @@ export default function HomeworkPage() {
                           </IconButton>
                           <IconButton size="small"
                             onClick={() => {
-                    if (h.type === 'READING') router.push(`/teacher/homework/${h.id}/edit`);
-                    else if (h.type === 'VOCABULARY') router.push(`/teacher/homework/${h.id}/edit/vocabulary`);
-                    else if (h.type === 'LISTEN') router.push(`/teacher/homework/${h.id}/edit/listen`);
-                    else openEdit(h);
-                  }}
+                              if (h.type === 'READING') router.push(`/teacher/homework/${h.id}/edit`);
+                              else if (h.type === 'VOCABULARY') router.push(`/teacher/homework/${h.id}/edit/vocabulary`);
+                              else if (h.type === 'LISTEN') router.push(`/teacher/homework/${h.id}/edit/listen`);
+                              else openEdit(h);
+                            }}
                             sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
                             <Pencil size={13} />
                           </IconButton>

@@ -166,7 +166,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
                     <Button key={day} type="button" variant="outlined" size="small"
                       onClick={() => toggleDay(day)}
                       sx={{ borderRadius: 2, fontSize: 12, fontWeight: 700, minWidth: 0, px: 1.5, border: '2px solid',
-                        ...(active ? { bgcolor: '#FFF2EF', color: ACCENT, borderColor: ACCENT, '&:hover': { bgcolor: '#FFF2EF' } }
+                        ...(active ? { bgcolor: '#EFF6FF', color: ACCENT, borderColor: ACCENT, '&:hover': { bgcolor: '#EFF6FF' } }
                           : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
                       {DAY_LABELS[day]}
                     </Button>
@@ -279,12 +279,12 @@ export default function ClassesPage() {
               <Button key={t.key} variant="outlined" size="small" onClick={() => setStatusFilter(t.key)}
                 sx={{ borderRadius: 3, fontSize: 12, fontWeight: 600, gap: 0.75, border: '1px solid',
                   ...(active
-                    ? { bgcolor: sc ? sc.bg : '#FFF2EF', color: sc ? sc.color : ACCENT, borderColor: sc ? sc.dot : ACCENT, '&:hover': { bgcolor: sc ? sc.bg : '#FFF2EF' } }
+                    ? { bgcolor: sc ? sc.bg : '#EFF6FF', color: sc ? sc.color : ACCENT, borderColor: sc ? sc.dot : ACCENT, '&:hover': { bgcolor: sc ? sc.bg : '#EFF6FF' } }
                     : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
                 {sc && <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: sc.dot, display: 'inline-block' }} />}
                 {t.label}
                 <Box component="span" sx={{ fontSize: 10, fontWeight: 700, px: 0.75, py: 0.25, borderRadius: '99px',
-                  bgcolor: active ? (sc ? sc.dot + '25' : '#FFF2EF') : '#F3F4F6',
+                  bgcolor: active ? (sc ? sc.dot + '25' : '#EFF6FF') : '#F3F4F6',
                   color: active ? (sc ? sc.color : ACCENT) : 'text.secondary' }}>
                   {counts[t.key] ?? 0}
                 </Box>
