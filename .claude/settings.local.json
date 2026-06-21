@@ -189,7 +189,8 @@
       "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/frontend-design/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
       "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/mcp-builder/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
       "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/glebis/claude-skills/main/tdd/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
-      "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)"
+      "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
+      "Skill(code-review)"
     ]
   },
   "enableAllProjectMcpServers": true,
