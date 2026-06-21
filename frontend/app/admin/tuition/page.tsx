@@ -18,6 +18,7 @@ import TuitionConfigForm from './_components/TuitionConfigForm';
 import GenerateRecordsModal from './_components/GenerateRecordsModal';
 import ZaloSendModal from './_components/ZaloSendModal';
 import TuitionReportTable from './_components/TuitionReportTable';
+import PaymentRecordDialog from './_components/PaymentRecordDialog';
 
 export default function AdminTuitionPage() {
   const { showToast } = useToast();
@@ -30,9 +31,19 @@ export default function AdminTuitionPage() {
   const [generateOpen, setGenerateOpen] = useState(false);
   const [zaloOpen, setZaloOpen] = useState(false);
 
+  // Record selection + payment dialog state
+  const [selectedRecordIds, setSelectedRecordIds] = useState<number[]>([]);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<{ id: number; studentName: string; totalAmount: number } | null>(null);
+
   // Report period state
   const [reportMonth, setReportMonth] = useState(new Date().getMonth() + 1);
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
+
+  function handlePaymentRecord(recordId: number, studentName: string, totalAmount: number) {
+    setSelectedRecord({ id: recordId, studentName, totalAmount });
+    setPaymentDialogOpen(true);
+  }
 
   const loadClasses = useCallback(async () => {
     setLoading(true);
@@ -138,8 +149,17 @@ export default function AdminTuitionPage() {
             {activeTab === 2 && (
               <Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Chọn học sinh từ tab Báo cáo để gửi ZNS. Hiện tại, nhấn nút bên dưới để gửi thông báo cho tất cả phiếu thu chưa đóng.
+                  Chọn phiếu thu từ tab Báo cáo để gửi thông báo ZNS.
                 </Typography>
+                {selectedRecordIds.length > 0 ? (
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Đã chọn {selectedRecordIds.length} phiếu thu.
+                  </Typography>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Chọn phiếu thu từ tab Báo cáo để gửi thông báo ZNS.
+                  </Typography>
+                )}
                 <Button
                   variant="contained"
                   onClick={() => setZaloOpen(true)}
@@ -149,7 +169,7 @@ export default function AdminTuitionPage() {
                 </Button>
                 <ZaloSendModal
                   open={zaloOpen}
-                  recordIds={[]}
+                  recordIds={selectedRecordIds}
                   onClose={() => setZaloOpen(false)}
                   onSent={() => {}}
                 />
@@ -189,6 +209,8 @@ export default function AdminTuitionPage() {
                     classId={classId}
                     month={reportMonth}
                     year={reportYear}
+                    onSelectionChange={(ids) => setSelectedRecordIds(ids)}
+                    onPaymentRecord={handlePaymentRecord}
                   />
                 ) : (
                   <Typography color="text.secondary">Chọn lớp để xem báo cáo.</Typography>
@@ -198,6 +220,18 @@ export default function AdminTuitionPage() {
           </CardContent>
         </Card>
       )}
+
+      <PaymentRecordDialog
+        open={paymentDialogOpen}
+        recordId={selectedRecord?.id ?? 0}
+        studentName={selectedRecord?.studentName ?? ''}
+        totalAmount={selectedRecord?.totalAmount ?? 0}
+        onClose={() => setPaymentDialogOpen(false)}
+        onSaved={() => {
+          setPaymentDialogOpen(false);
+          setSelectedRecordIds([]);
+        }}
+      />
     </Box>
   );
 }
