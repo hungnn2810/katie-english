@@ -47,7 +47,7 @@ export function PhonemeChips({ feedback }: PhonemeChipsProps) {
   if (chips.length === 0) return null;
 
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }} data-testid="phoneme-chips">
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 0.75, sm: 1 }, mt: 1 }} data-testid="phoneme-chips">
       {chips.map(({ op, variant, key }) => (
         <Chip
           key={key}

@@ -105,7 +105,7 @@ function ResultsState({
           </Box>
         </Box>
         <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Homework Complete!</Typography>
-        <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2, color: scoreHexColor(score), fontVariantNumeric: 'tabular-nums' }}>{score}%</Typography>
+        <Typography sx={{ fontSize: { xs: 48, sm: 72 }, fontWeight: 900, mt: 2, color: scoreHexColor(score), fontVariantNumeric: 'tabular-nums' }}>{score}%</Typography>
         <Typography sx={{ color: '#4C4F7A', fontSize: 14, mt: 1 }}>Your score has been saved</Typography>
         {saveError && <Typography sx={{ color: '#FF7B7B', fontSize: 12, mt: 1 }}>{saveError}</Typography>}
       </Box>
@@ -170,15 +170,15 @@ function PlayingShell({
   children: React.ReactNode;
 }) {
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Box sx={{ height: '100vh', '@supports (height: 100dvh)': { height: '100dvh' }, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: { xs: 2, sm: 4 }, py: 2, flexShrink: 0 }}>
         <Button onClick={onBack} sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>← Back</Button>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden', flex: 1, mx: 1 }}>
           {activityStates.map((_, i) => (
             <Box
               key={i}
               sx={{
-                width: { xs: 20, sm: 32 }, height: 8, borderRadius: '9999px', transition: 'all 0.15s',
+                width: { xs: 20, sm: 32 }, height: 8, borderRadius: '9999px', transition: 'all 0.15s', flexShrink: 0,
                 background:
                   i < currentActivityIndex
                     ? '#A78BFA'
@@ -425,7 +425,7 @@ function FillBlankActivityRenderer({
                 <Box
                   component="span"
                   key={`b${idx}`}
-                  sx={{ display: 'inline-block', width: { xs: 72, sm: 96 }, height: 32, borderRadius: 2, border: '2px solid rgba(0,0,0,0.2)', bgcolor: 'rgba(0,0,0,0.04)', verticalAlign: 'middle', mx: 0.5 }}
+                  sx={{ display: 'inline-block', width: { xs: 72, sm: 96 }, height: { xs: 24, sm: 32 }, borderRadius: 2, border: '2px solid rgba(0,0,0,0.2)', bgcolor: 'rgba(0,0,0,0.04)', verticalAlign: 'middle', mx: 0.5 }}
                 />,
               ]
             : [<Box component="span" key={`t${idx}`} sx={{ color: '#1E1B4B', fontSize: { xs: 18, sm: 24 }, fontWeight: 900 }}>{part}</Box>]

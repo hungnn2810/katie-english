@@ -90,7 +90,7 @@ export default function GamePage() {
                   key={l}
                   onClick={() => { setLevel(l); loadWord(l); }}
                   sx={{
-                    width: 32, height: 32, minWidth: 32, borderRadius: '50%',
+                    width: 44, height: 44, minWidth: 44, borderRadius: '50%',
                     fontSize: 14, fontWeight: 700, p: 0,
                     ...(level === l
                       ? { bgcolor: 'primary.main', color: 'white', '&:hover': { bgcolor: 'primary.dark' } }

@@ -225,7 +225,7 @@ function PageContent({ user }: { user: AuthUser }) {
         )}
 
         {!user.studentId && !loading && (
-          <Box sx={{ bgcolor: '#FFFFFF', borderRadius: '20px', p: 5, textAlign: 'center', maxWidth: 448, mx: 'auto', boxShadow: '0 2px 12px rgba(124,58,237,0.1)' }}>
+          <Box sx={{ bgcolor: '#FFFFFF', borderRadius: '20px', p: 5, textAlign: 'center', maxWidth: { xs: '100%', sm: 448 }, mx: 'auto', boxShadow: '0 2px 12px rgba(124,58,237,0.1)' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
               <Box sx={{ width: 64, height: 64, bgcolor: '#EDE9FE', borderRadius: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <School size={32} color="#7C3AED" />
@@ -265,7 +265,7 @@ function PageContent({ user }: { user: AuthUser }) {
                 sx={{
                   background: grad,
                   borderRadius: '24px',
-                  padding: '20px',
+                  padding: { xs: '16px', sm: '20px' },
                   boxShadow: '0 12px 28px rgba(0,0,0,0.3)',
                   cursor: 'pointer',
                   transition: 'transform 0.15s',

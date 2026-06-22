@@ -60,7 +60,7 @@ function CircleTimer({ seconds, total }: { seconds: number; total: number }) {
   const dash = circ * progress;
   const color = timerHexColor(seconds);
   return (
-    <Box component="svg" sx={{ width: { xs: 110, sm: 140 }, height: { xs: 110, sm: 140 }, transform: 'rotate(-90deg)' }} viewBox="0 0 120 120">
+    <Box component="svg" sx={{ width: { xs: 110, sm: 140 }, height: { xs: 110, sm: 140 }, maxWidth: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 120 120">
       <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="8" />
       <circle cx="60" cy="60" r={r} fill="none" stroke={color} strokeWidth="8"
         strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
@@ -729,7 +729,7 @@ export default function SessionPage() {
                 </Box>
                 <Typography sx={{ color: '#1E1B4B', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
                 {items.length > 0 && (
-                  <Typography sx={{ fontSize: 78, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
+                  <Typography sx={{ fontSize: { xs: 48, sm: 78 }, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
                     {finalScore}%
                   </Typography>
                 )}
@@ -852,7 +852,7 @@ export default function SessionPage() {
   return (
     <AuthGate requiredRole="STUDENT">
       {() => (
-        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Box sx={{ height: '100vh', '@supports (height: 100dvh)': { height: '100dvh' }, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: { xs: 2, sm: 4 }, py: 2, flexShrink: 0 }}>
             <Button onClick={() => router.push('/game/homework')}
               sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
@@ -938,7 +938,7 @@ export default function SessionPage() {
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.75, color: '#6B7280', fontSize: 14, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1.5 }}>
                         <Hash size={16} /> Đọc to âm này
                       </Box>
-                      <Typography sx={{ fontSize: 72, fontWeight: 900, color: '#1E1B4B', mb: 2, letterSpacing: '0.1em' }}>
+                      <Typography sx={{ fontSize: { xs: 40, sm: 72 }, fontWeight: 900, color: '#1E1B4B', mb: 2, letterSpacing: '0.1em' }}>
                         {current.text}
                       </Typography>
                     </>

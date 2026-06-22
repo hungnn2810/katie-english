@@ -79,7 +79,7 @@ export default function StudentLoginPage() {
   const pwBad = tried && password.length < 4;
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: { sm: 'center' }, justifyContent: { sm: 'center' }, px: { xs: '26px', sm: 3 }, py: '32px' }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: { sm: 'center' }, justifyContent: { sm: 'center' }, px: { xs: '26px', sm: 3 }, pt: '32px', pb: { xs: 6, sm: '32px' } }}>
       <Box sx={{ width: '100%', maxWidth: { sm: 440 }, display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF', borderRadius: { sm: '24px' }, p: { xs: '28px', sm: '40px' }, boxShadow: { sm: '0 8px 40px rgba(109,40,217,0.12), 0 2px 8px rgba(0,0,0,0.06)' }, border: { sm: '1.5px solid rgba(167,139,250,0.2)' } }}>
       {/* K monogram + brand name */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: '11px', mb: '28px' }}>

@@ -192,7 +192,7 @@ export default function ListenGamePage() {
         try { kwArr = JSON.parse(item.keywords); } catch { /* ignore */ }
         // Show keywords where student transcript contains them (word-boundary match)
         matchedKeywords = result.semanticScore >= 0.2 ? kwArr.filter((kw) =>
-          new RegExp('\\b' + kw.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test(result.transcript.toLowerCase())
+          new RegExp('\\b' + kw.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test((result.transcript ?? '').toLowerCase())
         ) : [];
       } catch { /* ignore */ }
       setItems((prev) => prev.map((it, i) => i === capturedIndex ? {
@@ -363,7 +363,7 @@ export default function ListenGamePage() {
                   </Box>
                 </Box>
                 <Typography sx={{ color: '#1E1B4B', fontSize: 26, fontWeight: 900, mb: 1 }}>Hoàn thành bài tập!</Typography>
-                <Typography sx={{ fontSize: 78, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
+                <Typography sx={{ fontSize: { xs: 48, sm: 78 }, fontWeight: 900, mt: 2, color: scoreColor, fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>
                   {finalScore}%
                 </Typography>
                 <Typography sx={{ color: '#1F2937', fontSize: 16, fontWeight: 700, mt: '4px' }}>
@@ -550,7 +550,7 @@ export default function ListenGamePage() {
 
                 {/* Waveform bars + timestamp */}
                 <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', gap: '3px', alignItems: 'center', height: 34 }}>
+                  <Box sx={{ display: 'flex', gap: '3px', alignItems: 'center', height: 34, overflow: 'hidden' }}>
                     {[12, 22, 30, 18, 26, 14, 30, 20, 10, 24, 16, 28, 12, 22, 18, 26, 14, 20].map((h, i) => (
                       <Box
                         key={i}
