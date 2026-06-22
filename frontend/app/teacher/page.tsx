@@ -7,7 +7,8 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CircularProgress from '@mui/material/CircularProgress';
-import { RefreshCw, School, Users, BookOpen, Video, ChevronRight, AlertTriangle } from 'lucide-react';
+import { RefreshCw, School, Users, BookOpen, Video, ChevronRight, AlertTriangle, CalendarDays } from 'lucide-react';
+import WeeklyCalendar from '@/components/WeeklyCalendar';
 import { useToast } from '@/lib/toast-context';
 import StatCard from '@/components/ui/StatCard';
 import { colors } from '@/lib/colors';
@@ -75,6 +76,7 @@ const QUICK_LINKS = [
 export default function TeacherDashboard() {
   const [stats, setStats] = useState({ classes: 0, students: 0, homework: 0 });
   const [upcomingClasses, setUpcomingClasses] = useState<(ClassItem & { nextAt: Date })[]>([]);
+  const [allClasses, setAllClasses] = useState<ClassItem[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [resetCount, setResetCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -89,6 +91,7 @@ export default function TeacherDashboard() {
         getPasswordResetRequests().catch(() => []),
       ]);
       setStats({ classes: c.length, students: s.length, homework: h.length });
+      setAllClasses(c);
       setPendingCount(pending.length);
       setResetCount(resets.length);
       const withNext = c
@@ -145,6 +148,21 @@ export default function TeacherDashboard() {
           </Link>
         ))}
       </Box>
+
+      {/* Weekly schedule calendar */}
+      {(() => {
+        const scheduleClasses = allClasses.filter(
+          c => c.status !== 'ENDED'
+            && Array.isArray(c.scheduleSlots)
+            && c.scheduleSlots.some(s => s.time),
+        );
+        if (scheduleClasses.length === 0) return null;
+        return (
+          <Box sx={{ mb: '22px' }}>
+            <WeeklyCalendar classes={scheduleClasses} accentColor={ACCENT} />
+          </Box>
+        );
+      })()}
 
       {/* Body: upcoming classes (2fr) + quick links (1fr) */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '18px' }}>

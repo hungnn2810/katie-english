@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getAdminStats, AdminStats } from '@/lib/admin-portal-api';
+import { getAdminStats, getAdminClasses, AdminStats, AdminClassItem } from '@/lib/admin-portal-api';
 import { useToast } from '@/lib/toast-context';
 import { Users, School, GraduationCap, FileText, KeyRound } from 'lucide-react';
+import WeeklyCalendar from '@/components/WeeklyCalendar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -72,13 +73,18 @@ const ACTIVITY = [
 export default function AdminDashboard() {
   const { showToast } = useToast();
   const [stats, setStats] = useState<AdminStats>({ teachers: 0, classes: 0, students: 0, submissions: 0 });
+  const [allClasses, setAllClasses] = useState<AdminClassItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function loadDashboard() {
     setLoading(true);
     try {
-      const data = await getAdminStats();
+      const [data, classes] = await Promise.all([
+        getAdminStats(),
+        getAdminClasses().catch(() => [] as AdminClassItem[]),
+      ]);
       setStats(data);
+      setAllClasses(classes);
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to load dashboard.', 'error');
     } finally {
@@ -98,6 +104,21 @@ export default function AdminDashboard() {
         <MiniStat icon={GraduationCap} value={stats.students}    label="Students"  color="#A78BFA"   bgColor="#F5F3FF"  loading={loading} />
         <MiniStat icon={FileText}      value={stats.submissions} label="Homework"  color="#F97316"   bgColor="#FFF7ED"  loading={loading} />
       </Box>
+
+      {/* Weekly schedule calendar */}
+      {(() => {
+        const scheduleClasses = allClasses.filter(
+          c => c.status !== 'ENDED'
+            && Array.isArray(c.scheduleSlots)
+            && c.scheduleSlots.some(s => s.time),
+        );
+        if (scheduleClasses.length === 0) return null;
+        return (
+          <Box sx={{ mb: '22px' }}>
+            <WeeklyCalendar classes={scheduleClasses} accentColor={ACCENT} />
+          </Box>
+        );
+      })()}
 
       {/* Bottom 2-column grid */}
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
