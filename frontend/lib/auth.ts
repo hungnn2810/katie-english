@@ -22,6 +22,12 @@ export function getToken(): string | null {
   return localStorage.getItem('token');
 }
 
+export function getStudentToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const raw = document.cookie.split(';').find(c => c.trim().startsWith('student-token='));
+  return raw ? raw.split('=').slice(1).join('=') : null;
+}
+
 export function getUser(): AuthUser | null {
   if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem('user');

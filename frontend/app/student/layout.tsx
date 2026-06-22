@@ -7,11 +7,7 @@ import { gradients } from '@/lib/colors';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-function getStudentToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  const raw = document.cookie.split(';').find(c => c.trim().startsWith('student-token='));
-  return raw ? raw.split('=').slice(1).join('=') : null;
-}
+import { getStudentToken } from '@/lib/auth';
 
 // SECURITY NOTE (WR-01): JWT role is decoded client-side WITHOUT signature
 // verification. This is intentional defense-in-depth UX only — it prevents

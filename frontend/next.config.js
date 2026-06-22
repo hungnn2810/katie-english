@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  async redirects() {
+    return [
+      { source: '/game/:path*', destination: '/student/:path*', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

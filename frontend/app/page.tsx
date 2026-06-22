@@ -1,19 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getUser } from '@/lib/auth';
-
-function getStudentToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  const raw = document.cookie.split(';').find(c => c.trim().startsWith('student-token='));
-  return raw ? raw.split('=').slice(1).join('=') : null;
-}
+import { getUser, getStudentToken } from '@/lib/auth';
+import { getAdminUser } from '@/lib/admin-auth';
 
 export default function Home() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (getAdminUser()) { router.replace('/admin'); return; }
     const user = getUser();
     if (user?.role === 'TEACHER') { router.replace('/teacher'); return; }
     if (user?.role === 'STUDENT') { router.replace('/student/homework'); return; }

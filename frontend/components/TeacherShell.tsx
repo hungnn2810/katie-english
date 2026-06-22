@@ -65,7 +65,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
     return () => { if (pwTimerRef.current) clearTimeout(pwTimerRef.current); };
   }, []);
 
-  function logout() { clearAuth(); router.push('/login'); }
+  function logout() { clearAuth(); router.push('/teacher/login'); }
 
   function handleMenuOpen(event: React.MouseEvent<HTMLElement>) {
     setAnchorEl(event.currentTarget);

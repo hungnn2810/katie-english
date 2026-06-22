@@ -22,6 +22,39 @@
 - Mô tả column phải khớp với schema thực tế (type, nullable, default, FK, unique).
 - Nếu column có ý nghĩa đặc biệt (JSON structure, business logic), ghi chú rõ.
 
+## Rule: Test & Review After Every Code Change
+
+**IMPORTANT: After writing or modifying any code, ALWAYS:**
+
+1. **Test** — run relevant tests (`npm test`, type-check, or manual verification) to confirm the change works and doesn't break existing behavior.
+2. **Review** — use `detect_changes` + `get_review_context` (graph tools) or `/code-review` to self-review the diff before marking work done.
+
+### Checklist
+
+- [ ] Tests pass (unit/integration/type-check)
+- [ ] No regressions in related flows (`get_affected_flows`)
+- [ ] Diff reviewed for bugs, security issues, unintended side effects
+- [ ] If UI change: start dev server and verify visually
+
+**No exceptions.** Do not report a task complete without running through this checklist.
+
+## Rule: New Feature → Write Tests
+
+**IMPORTANT: When adding any new feature, you MUST write tests for it before marking done.**
+
+- Unit test for logic/service layer
+- Integration test if it touches API or DB
+- Test must cover: happy path + at least one edge/error case
+- Do not skip tests with "will add later" — tests go in the same PR/commit as the feature
+
+## Rule: Update/Refactor → Re-test
+
+**IMPORTANT: When updating existing code (bug fix, refactor, config change), you MUST re-run all related tests.**
+
+- Run tests for the changed module AND its dependents (`get_impact_radius` to find scope)
+- If no existing tests cover the change, write one before proceeding
+- Confirm no regression before reporting done
+
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph
 

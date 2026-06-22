@@ -192,7 +192,8 @@
       "PowerShell(Invoke-WebRequest -Uri \"https://raw.githubusercontent.com/anthropics/skills/main/skills/skill-creator/SKILL.md\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
       "Skill(code-review)",
       "mcp__ide__getDiagnostics",
-      "PowerShell(Copy-Item *)"
+      "PowerShell(Copy-Item *)",
+      "Skill(artifact-design)"
     ]
   },
   "enableAllProjectMcpServers": true,
