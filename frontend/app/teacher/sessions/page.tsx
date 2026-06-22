@@ -19,6 +19,7 @@ import { ChevronDown, AlignLeft, Mic, ExternalLink } from 'lucide-react';
 import { useToast } from '@/lib/toast-context';
 import { formatDate } from '@/lib/datetime';
 import { colors } from '@/lib/colors';
+import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 
 function ScoreBadge({ score }: { score?: number | null }) {
@@ -57,7 +58,7 @@ export default function SessionsPage() {
     } catch (e: unknown) {
       showToast(e instanceof Error ? e.message : 'Failed to load sessions', 'error');
     } finally {
-      setTimeout(() => setLoading(false), 800);
+      setTimeout(() => setLoading(false), PAGE_LOADING_DELAY);
     }
   }, [assignmentFilter, studentFilter, showToast]);
 
@@ -141,9 +142,7 @@ export default function SessionsPage() {
       )}
 
       {loading && sessions.length === 0 ? (
-        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <PageLoading />
       ) : displayed.length === 0 ? (
         <Paper variant="outlined" sx={{ borderRadius: 4, textAlign: 'center', py: 8, color: 'text.secondary', fontSize: 14 }}>
           <Mic size={32} color="#CBD5E1" style={{ margin: '0 auto 12px' }} />

@@ -21,6 +21,7 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import CloseIcon from '@mui/icons-material/Close';
 import TableShell, { TableRow } from '@/components/ui/TableShell';
+import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 const ACCENT = '#6366F1';
 
@@ -251,7 +252,7 @@ export default function TeachersPage() {
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to load teachers.', 'error');
     } finally {
-      setTimeout(() => setLoading(false), 800);
+      setTimeout(() => setLoading(false), PAGE_LOADING_DELAY);
     }
   }
 
@@ -316,9 +317,7 @@ export default function TeachersPage() {
 
       {/* Empty state / loading / table */}
       {loading ? (
-        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <PageLoading />
       ) : filtered.length === 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>

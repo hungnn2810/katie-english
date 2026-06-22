@@ -24,6 +24,7 @@ import { Search, Plus, Calendar, Pencil, Trash2, Users, X } from 'lucide-react';
 import { formatDate, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 import { colors } from '@/lib/colors';
+import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 const ACCENT = colors.teacherAccent;
 
@@ -226,7 +227,7 @@ export default function ClassesPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const { showToast } = useToast();
 
-  const load = () => { setPageLoading(true); getClasses().then(setClasses).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800)); };
+  const load = () => { setPageLoading(true); getClasses().then(setClasses).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), PAGE_LOADING_DELAY)); };
   useEffect(() => { load(); }, []);
 
   function openCreate() { setEditing(null); setInitialForm(emptyForm()); setShowModal(true); }
@@ -302,9 +303,7 @@ export default function ClassesPage() {
 
       {/* Table */}
       {pageLoading ? (
-        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <PageLoading />
       ) : classes.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>

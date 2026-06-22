@@ -32,6 +32,7 @@ import { Plus, X, Loader2, Mic, Hash, BookOpen, ImageIcon, Search, CheckCircle2,
 import { parseApiDateTime, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 import HwTypeChip from '@/components/ui/HwTypeChip';
+import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 const ACCENT = colors.teacherAccent;
 
@@ -759,7 +760,7 @@ export default function HomeworkPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [pageLoading, setPageLoading] = useState(true);
 
-  const load = () => { setPageLoading(true); getHomeworkList().then(setList).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800)); };
+  const load = () => { setPageLoading(true); getHomeworkList().then(setList).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), PAGE_LOADING_DELAY)); };
   useEffect(() => { load(); getClasses().then(setClasses).catch(() => {}); }, []);
 
   function openCreate() { setForm(emptyForm()); setShowModal(true); }
@@ -875,9 +876,7 @@ export default function HomeworkPage() {
 
       {/* Content: skeleton / empty state / grid / table */}
       {pageLoading ? (
-        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <PageLoading />
       ) : list.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>

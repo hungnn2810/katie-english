@@ -10,7 +10,7 @@ import CardContent from '@mui/material/CardContent';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
+import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 import FormLabel from '@mui/material/FormLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -41,7 +41,7 @@ export default function TeacherTuitionPage() {
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Tải danh sách lớp thất bại', 'error');
     } finally {
-      setTimeout(() => setLoading(false), 800);
+      setTimeout(() => setLoading(false), PAGE_LOADING_DELAY);
     }
   }, [showToast]);
 
@@ -50,11 +50,7 @@ export default function TeacherTuitionPage() {
   }, [loadClasses]);
 
   if (loading) {
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
-        <CircularProgress size={32} />
-      </Box>
-    );
+    return <PageLoading />;
   }
 
   if (classes.length === 0) {

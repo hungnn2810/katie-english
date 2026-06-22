@@ -34,6 +34,7 @@ import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Chip from '@mui/material/Chip';
+import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 import CloseIcon from '@mui/icons-material/Close';
 import TableShell, { TableRow } from '@/components/ui/TableShell';
 
@@ -321,7 +322,7 @@ export default function ClassesPage() {
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to load classes.', 'error');
     } finally {
-      setTimeout(() => setLoading(false), 800);
+      setTimeout(() => setLoading(false), PAGE_LOADING_DELAY);
     }
   }, []);
 
@@ -408,9 +409,7 @@ export default function ClassesPage() {
       </Box>
 
       {loading ? (
-        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <PageLoading />
       ) : filtered.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary' }}>
           {teacherFilter === 'ALL' ? (

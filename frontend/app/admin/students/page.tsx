@@ -20,6 +20,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
 import TableShell, { TableRow } from '@/components/ui/TableShell';
+import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 // ─── ScoreBadge ─────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
       .catch((err: unknown) => {
         showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
       })
-      .finally(() => setTimeout(() => setLoading(false), 800));
+      .finally(() => setTimeout(() => setLoading(false), PAGE_LOADING_DELAY));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [student.id]);
 
@@ -126,9 +127,7 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
       )}
 
       {loading ? (
-        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <PageLoading />
       ) : results.length > 0 && (
         <TableShell columns={RESULT_COLS}>
           {results.map((r, i) => (
@@ -187,7 +186,7 @@ export default function StudentsPage() {
       .catch((err: unknown) => {
         showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
       })
-      .finally(() => setTimeout(() => setLoading(false), 800));
+      .finally(() => setTimeout(() => setLoading(false), PAGE_LOADING_DELAY));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -268,9 +267,7 @@ export default function StudentsPage() {
       </Box>
 
       {loading ? (
-        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <PageLoading />
       ) : filtered.length === 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No students yet</Typography>

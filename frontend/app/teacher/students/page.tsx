@@ -33,6 +33,7 @@ import { Search, Plus, User, Users, Clock, KeyRound, UserMinus, Pencil, X, Check
 import { DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 import { colors } from '@/lib/colors';
+import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 const ACCENT = colors.teacherAccent;
 
@@ -506,7 +507,7 @@ export default function StudentsPage() {
 
   const load = useCallback((cid?: number) => {
     setPageLoading(true);
-    getStudents(cid).then(setStudents).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800));
+    getStudents(cid).then(setStudents).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), PAGE_LOADING_DELAY));
   }, []);
 
   const loadPending = useCallback(() => {
@@ -636,9 +637,7 @@ export default function StudentsPage() {
 
       {/* Table */}
       {pageLoading ? (
-        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
+        <PageLoading />
       ) : students.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 56, height: 56, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>

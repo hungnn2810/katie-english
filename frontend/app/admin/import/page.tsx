@@ -12,6 +12,7 @@ import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import Paper from '@mui/material/Paper';
 import CircularProgress from '@mui/material/CircularProgress';
+import PageLoading from '@/components/ui/PageLoading';
 import { Download, Upload } from 'lucide-react';
 
 export default function AdminImportPage() {
@@ -107,11 +108,7 @@ export default function AdminImportPage() {
       </Paper>
 
       {/* Loading spinner during upload */}
-      {loading && (
-        <Box sx={{ py: 6, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
-      )}
+      {loading && <PageLoading />}
 
       {/* Result display */}
       {!loading && result && (
