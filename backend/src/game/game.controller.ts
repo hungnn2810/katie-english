@@ -19,7 +19,12 @@ export class GameController {
   ) {}
 
   @Get('homework/:studentId')
-  getHomework(@Param('studentId', ParseIntPipe) studentId: number) {
+  getHomework(@Param('studentId', ParseIntPipe) studentId: number, @Req() req: Request) {
+    const callerStudentId: number | undefined = (req as any).user?.studentId;
+    const role: string = (req as any).user?.role;
+    if (role === 'STUDENT' && callerStudentId !== studentId) {
+      throw new ForbiddenException('Cannot access another student\'s homework');
+    }
     return this.service.getAvailableAssignments(studentId);
   }
 

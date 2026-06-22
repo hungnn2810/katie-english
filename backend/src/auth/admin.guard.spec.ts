@@ -42,15 +42,17 @@ describe('TokenService with ADMIN role', () => {
 describe('AdminGuard', () => {
   let adminGuard: AdminGuard;
   let tokenService: TokenService;
+  let prismaFindUnique: jest.Mock;
 
   beforeEach(async () => {
+    prismaFindUnique = jest.fn().mockResolvedValue({ approved: true, disabled: false, role: 'ADMIN' });
     const module = await Test.createTestingModule({
       imports: [JwtModule.register({})],
       providers: [
         TokenService,
         {
           provide: AdminGuard,
-          useFactory: (ts: TokenService) => new AdminGuard(ts, {} as any),
+          useFactory: (ts: TokenService) => new AdminGuard(ts, { user: { findUnique: prismaFindUnique } } as any),
           inject: [TokenService],
         },
       ],
