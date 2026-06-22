@@ -5,6 +5,7 @@ dotenv.config();
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { LoggingInterceptor } from './logging.interceptor';
 import { PrismaService } from './prisma/prisma.service';
 import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
@@ -38,6 +39,7 @@ async function bootstrap() {
     logger: ['log', 'warn', 'error', 'debug', 'verbose'],
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
+  app.useGlobalInterceptors(new LoggingInterceptor());
   const isProd = process.env.NODE_ENV === 'production';
   const allowedOrigins = [
     process.env.FRONTEND_ORIGIN ?? (isProd ? 'https://katie-english.com.vn' : null),
