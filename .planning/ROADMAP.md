@@ -652,11 +652,11 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 **Goal:** Admin and teacher can upload a single .xlsx file to bulk-create classes (with tuition config), students (with parent info), and PHONICS homework; the system validates all rows before writing anything and returns a row-level error report on failure.
 **Requirements:** IMPORT-01, IMPORT-02, IMPORT-03, IMPORT-04, IMPORT-05, IMPORT-06, IMPORT-07, IMPORT-08, IMPORT-09
 **Depends on:** Phase 16
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 17-01-PLAN.md — Backend ImportModule: xlsx install, ImportService (parse/validate/import/template), ImportController (POST /import/upload + GET /import/template), unit tests (Wave 1)
+- [x] 17-01-PLAN.md — Backend ImportModule: xlsx install, ImportService (parse/validate/import/template), ImportController (POST /import/upload + GET /import/template), unit tests (Wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
