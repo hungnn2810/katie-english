@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { clearAdminAuth, AdminUser } from '@/lib/admin-auth';
-import { LayoutDashboard, Users, School, GraduationCap, FileText, Receipt, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, School, GraduationCap, FileText, Receipt, Upload, LogOut } from 'lucide-react';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -31,6 +31,7 @@ const NAV_GROUPS = [
       { href: '/admin/students', label: 'Students', icon: GraduationCap },
       { href: '/admin/homework', label: 'Homework', icon: FileText },
       { href: '/admin/tuition', label: 'Tuition', icon: Receipt },
+      { href: '/admin/import', label: 'Import', icon: Upload },
     ],
   },
 ];

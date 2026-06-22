@@ -17,6 +17,7 @@ const TITLES: Record<string, string> = {
   '/teacher/homework': 'Homework',
   '/teacher/sessions': 'Sessions',
   '/teacher/tuition': 'Tuition',
+  '/teacher/import': 'Import',
 };
 
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {
