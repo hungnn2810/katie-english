@@ -505,6 +505,7 @@ export default function StudentsPage() {
   const { showToast } = useToast();
 
   const load = useCallback((cid?: number) => {
+    setPageLoading(true);
     getStudents(cid).then(setStudents).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800));
   }, []);
 

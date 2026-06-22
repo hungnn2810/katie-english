@@ -226,7 +226,7 @@ export default function ClassesPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const { showToast } = useToast();
 
-  const load = () => getClasses().then(setClasses).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800));
+  const load = () => { setPageLoading(true); getClasses().then(setClasses).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800)); };
   useEffect(() => { load(); }, []);
 
   function openCreate() { setEditing(null); setInitialForm(emptyForm()); setShowModal(true); }

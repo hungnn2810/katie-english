@@ -759,7 +759,7 @@ export default function HomeworkPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [pageLoading, setPageLoading] = useState(true);
 
-  const load = () => getHomeworkList().then(setList).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800));
+  const load = () => { setPageLoading(true); getHomeworkList().then(setList).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800)); };
   useEffect(() => { load(); getClasses().then(setClasses).catch(() => {}); }, []);
 
   function openCreate() { setForm(emptyForm()); setShowModal(true); }
