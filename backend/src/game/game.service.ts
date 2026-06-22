@@ -385,9 +385,12 @@ export class GameService {
     return { ...result, bfa: bfaResult };
   }
 
-  async saveReadingResult(sessionId: number, dto: SaveReadingResultDto) {
+  async saveReadingResult(sessionId: number, dto: SaveReadingResultDto, requestingStudentId?: number) {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
+    if (requestingStudentId !== undefined && session.studentId !== requestingStudentId) {
+      throw new ForbiddenException('Cannot submit result for another student\'s session');
+    }
     if (session.completedAt) throw new BadRequestException('Session already completed');
 
     const hw = session.assignment.homework;

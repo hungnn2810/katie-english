@@ -33,8 +33,14 @@ export class GameController {
   }
 
   @Get('session/:id')
-  getSession(@Param('id', ParseIntPipe) id: number) {
-    return this.service.getSession(id);
+  async getSession(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const session = await this.service.getSession(id);
+    const callerStudentId: number | undefined = (req as any).user?.studentId;
+    const role: string = (req as any).user?.role;
+    if (role === 'STUDENT' && session.studentId !== callerStudentId) {
+      throw new ForbiddenException('Cannot access another student\'s session');
+    }
+    return session;
   }
 
   @Post('session/:id/phonics-result')
@@ -127,13 +133,17 @@ export class GameController {
   saveReadingResult(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: SaveReadingResultDto,
+    @Req() req: Request,
   ) {
-    return this.service.saveReadingResult(id, dto);
+    const requestingStudentId: number | undefined = (req as any).user?.studentId;
+    if (!requestingStudentId) throw new ForbiddenException('Student identity required');
+    return this.service.saveReadingResult(id, dto, requestingStudentId);
   }
 
   @Get('job/:jobId')
-  getJobStatus(@Param('jobId') jobId: string) {
-    return this.jobs.getJobStatus(jobId);
+  getJobStatus(@Param('jobId') jobId: string, @Req() req: Request) {
+    const callerStudentId: number | undefined = (req as any).user?.studentId;
+    return this.jobs.getJobStatus(jobId, callerStudentId);
   }
 
   @Post('session/:id/complete')

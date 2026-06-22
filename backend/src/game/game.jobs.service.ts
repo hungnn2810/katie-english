@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import axios from 'axios';
 import { Queue, Worker, Job } from 'bullmq';
@@ -131,10 +131,19 @@ export class GameJobsService implements OnModuleInit, OnModuleDestroy {
     return { jobId, statusUrl: `/game/job/${jobId}` };
   }
 
-  async getJobStatus(jobId: string) {
+  async getJobStatus(jobId: string, requestingStudentId?: number) {
     const job = await this.queue.getJob(jobId);
     if (!job) {
       throw new NotFoundException(`Job ${jobId} not found`);
+    }
+    if (requestingStudentId !== undefined) {
+      const sessionId: number | undefined = (job.data as BfaJobData)?.sessionId;
+      if (sessionId !== undefined) {
+        const session = await this.gameService.getSession(sessionId);
+        if (session.studentId !== requestingStudentId) {
+          throw new ForbiddenException('Cannot access another student\'s job');
+        }
+      }
     }
     const state = await job.getState();
     return {
