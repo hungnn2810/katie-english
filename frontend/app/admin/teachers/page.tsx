@@ -251,7 +251,7 @@ export default function TeachersPage() {
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to load teachers.', 'error');
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 800);
     }
   }
 
@@ -314,8 +314,12 @@ export default function TeachersPage() {
         </Button>
       </Box>
 
-      {/* Empty state */}
-      {!loading && filtered.length === 0 ? (
+      {/* Empty state / loading / table */}
+      {loading ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : filtered.length === 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>
             {search ? 'No teachers match your search' : 'No teachers yet'}
@@ -326,37 +330,26 @@ export default function TeachersPage() {
         </Box>
       ) : (
         <TableShell columns={COLUMNS}>
-          {loading
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <TableRow
-                  key={i}
-                  columns={COLUMNS}
-                  last={i === 3}
-                  cells={COLUMNS.map((_, ci) => (
-                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
-                  ))}
-                />
-              ))
-            : filtered.map((t, i) => (
-                <TableRow
-                  key={t.id}
-                  columns={COLUMNS}
-                  last={i === filtered.length - 1}
-                  cells={[
-                    <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
-                      {t.name ?? <Box component="span" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>No name</Box>}
-                    </Typography>,
-                    <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{t.upn}</Typography>,
-                    <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>—</Typography>,
-                    <StatusChip teacher={t} />,
-                    <ActionCell
-                      teacher={t}
-                      onEdit={() => setEditing(t)}
-                      onConfirm={() => setConfirmTarget(t)}
-                    />,
-                  ]}
-                />
-              ))}
+          {filtered.map((t, i) => (
+            <TableRow
+              key={t.id}
+              columns={COLUMNS}
+              last={i === filtered.length - 1}
+              cells={[
+                <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>
+                  {t.name ?? <Box component="span" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>No name</Box>}
+                </Typography>,
+                <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{t.upn}</Typography>,
+                <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>—</Typography>,
+                <StatusChip teacher={t} />,
+                <ActionCell
+                  teacher={t}
+                  onEdit={() => setEditing(t)}
+                  onConfirm={() => setConfirmTarget(t)}
+                />,
+              ]}
+            />
+          ))}
         </TableShell>
       )}
     </Box>

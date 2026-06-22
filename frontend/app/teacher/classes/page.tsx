@@ -222,9 +222,11 @@ export default function ClassesPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | ClassStatus>('ALL');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const { showToast } = useToast();
 
-  const load = () => getClasses().then(setClasses).catch(() => {});
+  const load = () => getClasses().then(setClasses).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800));
   useEffect(() => { load(); }, []);
 
   function openCreate() { setEditing(null); setInitialForm(emptyForm()); setShowModal(true); }
@@ -299,7 +301,11 @@ export default function ClassesPage() {
       </Box>
 
       {/* Table */}
-      {classes.length === 0 ? (
+      {pageLoading ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : classes.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <Users size={28} color="#94A3B8" />
@@ -378,8 +384,9 @@ export default function ClassesPage() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
                         <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
-                        <Button size="small" variant="contained" onClick={async () => { try { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); } catch { setDeletingId(null); } }}
-                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
+                        <Button size="small" variant="contained" disabled={submitting}
+                          onClick={async () => { setSubmitting(true); try { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); } catch { setDeletingId(null); } finally { setSubmitting(false); } }}
+                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : 'Yes'}</Button>
                       </Box>
                     ) : (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

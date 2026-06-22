@@ -65,7 +65,7 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
       .catch((err: unknown) => {
         showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
       })
-      .finally(() => setLoading(false));
+      .finally(() => setTimeout(() => setLoading(false), 800));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [student.id]);
 
@@ -125,30 +125,26 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
         </Box>
       )}
 
-      {(loading || results.length > 0) && (
+      {loading ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : results.length > 0 && (
         <TableShell columns={RESULT_COLS}>
-          {loading
-            ? Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i} columns={RESULT_COLS} last={i === 2}
-                  cells={RESULT_COLS.map((_, ci) => (
-                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
-                  ))}
-                />
-              ))
-            : results.map((r, i) => (
-                <TableRow key={r.id} columns={RESULT_COLS} last={i === results.length - 1}
-                  cells={[
-                    <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{r.assignment.homework.name ?? r.assignment.homework.type}</Typography>,
-                    <ScoreBadge score={r.score} />,
-                    <Typography sx={{ fontSize: 14 }}>{new Date(r.startedAt).toLocaleString()}</Typography>,
-                    <Typography sx={{ fontSize: 14 }}>{r.completedAt ? new Date(r.completedAt).toLocaleString() : '—'}</Typography>,
-                    <Button variant="text" size="small" onClick={() => setConfirmDelete(r)}
-                      sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}>
-                      Delete
-                    </Button>,
-                  ]}
-                />
-              ))}
+          {results.map((r, i) => (
+            <TableRow key={r.id} columns={RESULT_COLS} last={i === results.length - 1}
+              cells={[
+                <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{r.assignment.homework.name ?? r.assignment.homework.type}</Typography>,
+                <ScoreBadge score={r.score} />,
+                <Typography sx={{ fontSize: 14 }}>{new Date(r.startedAt).toLocaleString()}</Typography>,
+                <Typography sx={{ fontSize: 14 }}>{r.completedAt ? new Date(r.completedAt).toLocaleString() : '—'}</Typography>,
+                <Button variant="text" size="small" onClick={() => setConfirmDelete(r)}
+                  sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}>
+                  Delete
+                </Button>,
+              ]}
+            />
+          ))}
         </TableShell>
       )}
     </Box>
@@ -191,7 +187,7 @@ export default function StudentsPage() {
       .catch((err: unknown) => {
         showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
       })
-      .finally(() => setLoading(false));
+      .finally(() => setTimeout(() => setLoading(false), 800));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -271,50 +267,46 @@ export default function StudentsPage() {
         </Button>
       </Box>
 
-      {!loading && filtered.length === 0 ? (
+      {loading ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : filtered.length === 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 10, textAlign: 'center' }}>
           <Typography sx={{ fontSize: 18, fontWeight: 700, color: 'text.primary', mb: 1 }}>No students yet</Typography>
           <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>Students are added to classes by teachers.</Typography>
         </Box>
       ) : (
         <TableShell columns={STUDENT_COLS}>
-          {loading
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} columns={STUDENT_COLS} last={i === 4}
-                  cells={STUDENT_COLS.map((_, ci) => (
-                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
-                  ))}
-                />
-              ))
-            : filtered.map((s, i) => (
-                <TableRow
-                  key={s.id}
-                  columns={STUDENT_COLS}
-                  last={i === filtered.length - 1}
-                  cells={[
-                    /* Checkbox */
-                    <Box
-                      onClick={() => toggleSelect(s.id)}
-                      sx={{
-                        width: 16, height: 16, borderRadius: '4px',
-                        border: selected.has(s.id) ? '1.5px solid #6366F1' : '1.5px solid #CBD5E1',
-                        bgcolor: selected.has(s.id) ? '#6366F1' : 'transparent',
-                        cursor: 'pointer', flexShrink: 0,
-                      }}
-                    />,
-                    /* Student name — clickable to view results */
-                    <Button variant="text" size="small" onClick={() => setSelectedStudent(s)}
-                      sx={{ fontSize: 14, fontWeight: 600, p: 0, minWidth: 0, color: 'text.primary', textAlign: 'left', '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } }}>
-                      {s.fullname}
-                    </Button>,
-                    <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{s.class ? s.class.name : '—'}</Typography>,
-                    <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-                      {s.class?.teacher ? (s.class.teacher.name ?? s.class.teacher.upn) : '—'}
-                    </Typography>,
-                    <StudentStatusChip student={s} />,
-                  ]}
-                />
-              ))}
+          {filtered.map((s, i) => (
+            <TableRow
+              key={s.id}
+              columns={STUDENT_COLS}
+              last={i === filtered.length - 1}
+              cells={[
+                /* Checkbox */
+                <Box
+                  onClick={() => toggleSelect(s.id)}
+                  sx={{
+                    width: 16, height: 16, borderRadius: '4px',
+                    border: selected.has(s.id) ? '1.5px solid #6366F1' : '1.5px solid #CBD5E1',
+                    bgcolor: selected.has(s.id) ? '#6366F1' : 'transparent',
+                    cursor: 'pointer', flexShrink: 0,
+                  }}
+                />,
+                /* Student name — clickable to view results */
+                <Button variant="text" size="small" onClick={() => setSelectedStudent(s)}
+                  sx={{ fontSize: 14, fontWeight: 600, p: 0, minWidth: 0, color: 'text.primary', textAlign: 'left', '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } }}>
+                  {s.fullname}
+                </Button>,
+                <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{s.class ? s.class.name : '—'}</Typography>,
+                <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
+                  {s.class?.teacher ? (s.class.teacher.name ?? s.class.teacher.upn) : '—'}
+                </Typography>,
+                <StudentStatusChip student={s} />,
+              ]}
+            />
+          ))}
         </TableShell>
       )}
     </Box>

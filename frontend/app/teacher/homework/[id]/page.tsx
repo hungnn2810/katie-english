@@ -43,6 +43,7 @@ export default function TeacherHomeworkDetailPage() {
   const router = useRouter();
   const [hw, setHw] = useState<HomeworkDetail | null>(null);
   const [deletingAssignmentId, setDeletingAssignmentId] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const load = () => getHomework(hwId).then(setHw).catch(() => {});
   useEffect(() => { load(); }, [hwId]);
@@ -198,7 +199,7 @@ export default function TeacherHomeworkDetailPage() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                       <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Remove?</Typography>
                       <Button size="small" onClick={() => setDeletingAssignmentId(null)} sx={{ fontSize: 12, borderRadius: 2, color: 'text.secondary', minWidth: 0, px: 1 }}>Cancel</Button>
-                      <Button size="small" variant="contained" onClick={async () => { try { await deleteAssignment(a.id); setDeletingAssignmentId(null); load(); } catch { setDeletingAssignmentId(null); } }} sx={{ fontSize: 12, borderRadius: 2, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 1 }}>Yes</Button>
+                      <Button size="small" variant="contained" disabled={submitting} onClick={async () => { setSubmitting(true); try { await deleteAssignment(a.id); setDeletingAssignmentId(null); load(); } catch { setDeletingAssignmentId(null); } finally { setSubmitting(false); } }} sx={{ fontSize: 12, borderRadius: 2, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 1 }}>{submitting ? '…' : 'Yes'}</Button>
                     </Box>
                   ) : (
                     <Box

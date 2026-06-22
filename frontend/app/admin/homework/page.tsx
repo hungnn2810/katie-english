@@ -73,7 +73,7 @@ export default function HomeworkPage() {
       .catch((err: unknown) => {
         showToast(err instanceof Error ? err.message : 'Something went wrong. Please try again.', 'error');
       })
-      .finally(() => setLoading(false));
+      .finally(() => setTimeout(() => setLoading(false), 800));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -183,47 +183,43 @@ export default function HomeworkPage() {
       )}
 
       {/* Table */}
-      {(loading || filtered.length > 0) && (
+      {loading ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : filtered.length > 0 && (
         <TableShell columns={COLUMNS}>
-          {loading
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} columns={COLUMNS} last={i === 4}
-                  cells={COLUMNS.map((_, ci) => (
-                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
-                  ))}
-                />
-              ))
-            : filtered.map((h, i) => {
-                // Compute completion: submissionCount / (assignments * estimated class size)
-                // Since we don't have per-assignment student count, use submissionCount vs assignments as proxy
-                const total = h._count.assignments > 0 ? h._count.assignments : 1;
-                const pct = Math.min(100, Math.round((h.submissionCount / total) * 100));
-                const color = completionColor(pct);
-                const hwType = h.type as 'PHONICS' | 'SPEAKING' | 'VOCABULARY' | 'LISTEN' | 'READING';
+          {filtered.map((h, i) => {
+            // Compute completion: submissionCount / (assignments * estimated class size)
+            // Since we don't have per-assignment student count, use submissionCount vs assignments as proxy
+            const total = h._count.assignments > 0 ? h._count.assignments : 1;
+            const pct = Math.min(100, Math.round((h.submissionCount / total) * 100));
+            const color = completionColor(pct);
+            const hwType = h.type as 'PHONICS' | 'SPEAKING' | 'VOCABULARY' | 'LISTEN' | 'READING';
 
-                return (
-                  <TableRow
-                    key={h.id}
-                    columns={COLUMNS}
-                    last={i === filtered.length - 1}
-                    cells={[
-                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>{h.name ?? '—'}</Typography>,
-                      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>—</Typography>,
-                      <HwTypeChip type={hwType} />,
-                      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>—</Typography>,
-                      <CompletionBar pct={pct} color={color} />,
-                      <Button
-                        variant="text"
-                        size="small"
-                        onClick={() => setConfirmDelete(h)}
-                        sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}
-                      >
-                        Delete
-                      </Button>,
-                    ]}
-                  />
-                );
-              })}
+            return (
+              <TableRow
+                key={h.id}
+                columns={COLUMNS}
+                last={i === filtered.length - 1}
+                cells={[
+                  <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary' }}>{h.name ?? '—'}</Typography>,
+                  <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>—</Typography>,
+                  <HwTypeChip type={hwType} />,
+                  <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>—</Typography>,
+                  <CompletionBar pct={pct} color={color} />,
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => setConfirmDelete(h)}
+                    sx={{ fontSize: 12, fontWeight: 600, color: 'error.main', borderRadius: 2, px: 1.5, py: 0.75, minWidth: 0, '&:hover': { bgcolor: '#FEF2F2' } }}
+                  >
+                    Delete
+                  </Button>,
+                ]}
+              />
+            );
+          })}
         </TableShell>
       )}
     </Box>

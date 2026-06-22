@@ -321,7 +321,7 @@ export default function ClassesPage() {
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to load classes.', 'error');
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 800);
     }
   }, []);
 
@@ -407,7 +407,11 @@ export default function ClassesPage() {
         </Button>
       </Box>
 
-      {!loading && filtered.length === 0 ? (
+      {loading ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : filtered.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary' }}>
           {teacherFilter === 'ALL' ? (
             <>
@@ -423,47 +427,39 @@ export default function ClassesPage() {
         </Box>
       ) : (
         <TableShell columns={COLUMNS}>
-          {loading
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <TableRow key={i} columns={COLUMNS} last={i === 3}
-                  cells={COLUMNS.map((_, ci) => (
-                    <Box key={ci} sx={{ height: 16, bgcolor: 'grey.100', borderRadius: 1, width: '80%', animation: 'pulse 1.5s ease-in-out infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.4 } } }} />
-                  ))}
-                />
-              ))
-            : filtered.map((c, i) => {
-                const badge = STATUS_BADGE[c.status];
-                const hasTeacher = !!c.teacher;
-                return (
-                  <TableRow
-                    key={c.id}
-                    columns={COLUMNS}
-                    last={i === filtered.length - 1}
-                    cells={[
-                      <Box>
-                        <Typography sx={{ fontWeight: 600, fontSize: 14, color: 'text.primary' }}>{c.name}</Typography>
-                        <Typography sx={{ fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }}>{c.code}</Typography>
-                      </Box>,
-                      <Typography sx={{ fontSize: 14, color: 'text.secondary', fontFamily: 'monospace' }}>{c.code}</Typography>,
-                      <Typography sx={{ fontSize: 14, color: hasTeacher ? 'text.primary' : '#94A3B8' }}>
-                        {hasTeacher ? (c.teacher!.name ?? c.teacher!.upn) : 'Unassigned'}
-                      </Typography>,
-                      <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{c._count.students}</Typography>,
-                      hasTeacher ? (
-                        <Button variant="text" size="small" onClick={() => setEditing(c)}
-                          sx={{ fontSize: 13, fontWeight: 600, p: 0, minWidth: 0, color: '#6366F1' }}>
-                          Reassign
-                        </Button>
-                      ) : (
-                        <Button variant="contained" size="small" onClick={() => setEditing(c)}
-                          sx={{ fontSize: 13, fontWeight: 600, borderRadius: 2, px: '12px', py: '6px', minWidth: 0 }}>
-                          Assign teacher
-                        </Button>
-                      ),
-                    ]}
-                  />
-                );
-              })}
+          {filtered.map((c, i) => {
+            const badge = STATUS_BADGE[c.status];
+            const hasTeacher = !!c.teacher;
+            return (
+              <TableRow
+                key={c.id}
+                columns={COLUMNS}
+                last={i === filtered.length - 1}
+                cells={[
+                  <Box>
+                    <Typography sx={{ fontWeight: 600, fontSize: 14, color: 'text.primary' }}>{c.name}</Typography>
+                    <Typography sx={{ fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }}>{c.code}</Typography>
+                  </Box>,
+                  <Typography sx={{ fontSize: 14, color: 'text.secondary', fontFamily: 'monospace' }}>{c.code}</Typography>,
+                  <Typography sx={{ fontSize: 14, color: hasTeacher ? 'text.primary' : '#94A3B8' }}>
+                    {hasTeacher ? (c.teacher!.name ?? c.teacher!.upn) : 'Unassigned'}
+                  </Typography>,
+                  <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{c._count.students}</Typography>,
+                  hasTeacher ? (
+                    <Button variant="text" size="small" onClick={() => setEditing(c)}
+                      sx={{ fontSize: 13, fontWeight: 600, p: 0, minWidth: 0, color: '#6366F1' }}>
+                      Reassign
+                    </Button>
+                  ) : (
+                    <Button variant="contained" size="small" onClick={() => setEditing(c)}
+                      sx={{ fontSize: 13, fontWeight: 600, borderRadius: 2, px: '12px', py: '6px', minWidth: 0 }}>
+                      Assign teacher
+                    </Button>
+                  ),
+                ]}
+              />
+            );
+          })}
         </TableShell>
       )}
     </Box>

@@ -42,7 +42,7 @@ export default function SessionsPage() {
   const [dateTo, setDateTo] = useState('');
   const [expanded, setExpanded] = useState<number | null>(null);
   const [details, setDetails] = useState<Record<number, GameSession>>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
 
   const doSearch = useCallback(async () => {
@@ -57,7 +57,7 @@ export default function SessionsPage() {
     } catch (e: unknown) {
       showToast(e instanceof Error ? e.message : 'Failed to load sessions', 'error');
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 800);
     }
   }, [assignmentFilter, studentFilter, showToast]);
 
@@ -140,14 +140,18 @@ export default function SessionsPage() {
         </Typography>
       )}
 
-      {displayed.length === 0 && !loading && (
+      {loading && sessions.length === 0 ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : displayed.length === 0 ? (
         <Paper variant="outlined" sx={{ borderRadius: 4, textAlign: 'center', py: 8, color: 'text.secondary', fontSize: 14 }}>
           <Mic size={32} color="#CBD5E1" style={{ margin: '0 auto 12px' }} />
           {sessions.length === 0
             ? 'No sessions yet. Adjust filters and try Search.'
             : 'No sessions match the date filter.'}
         </Paper>
-      )}
+      ) : null}
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {displayed.map(s => {

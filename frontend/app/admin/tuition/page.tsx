@@ -54,7 +54,7 @@ export default function AdminTuitionPage() {
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Tải danh sách lớp thất bại', 'error');
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 800);
     }
   }, [showToast]);
 

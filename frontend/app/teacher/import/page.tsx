@@ -106,8 +106,15 @@ export default function TeacherImportPage() {
         </Box>
       </Paper>
 
+      {/* Upload loading */}
+      {loading && (
+        <Box sx={{ py: 6, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      )}
+
       {/* Result display */}
-      {result && (
+      {!loading && result && (
         <Box sx={{ mb: 3 }}>
           {isImportError(result) ? (
             <>
@@ -152,7 +159,7 @@ export default function TeacherImportPage() {
       )}
 
       {/* Error fallback */}
-      {error && (
+      {!loading && error && (
         <Alert severity="error" sx={{ borderRadius: 2 }}>
           {error}
         </Alert>

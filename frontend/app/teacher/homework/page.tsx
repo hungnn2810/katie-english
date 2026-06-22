@@ -642,9 +642,10 @@ interface HwCardProps {
   onDelete: () => void;
   onDeleteCancel: () => void;
   onDeleteConfirm: () => Promise<void>;
+  submitting?: boolean;
 }
 
-function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel, onDeleteConfirm }: HwCardProps) {
+function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel, onDeleteConfirm, submitting }: HwCardProps) {
   const meta = TYPE_META[h.type];
 
   // Derived values
@@ -713,8 +714,8 @@ function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel
             <>
               <Typography sx={{ fontSize: 12, color: 'text.secondary', alignSelf: 'center', mr: 0.5 }}>Delete?</Typography>
               <Button size="small" onClick={onDeleteCancel} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
-              <Button size="small" variant="contained" onClick={onDeleteConfirm}
-                sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
+              <Button size="small" variant="contained" onClick={onDeleteConfirm} disabled={submitting}
+                sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : 'Yes'}</Button>
             </>
           ) : (
             <>
@@ -754,9 +755,11 @@ export default function HomeworkPage() {
   const [typeFilter, setTypeFilter] = useState<HomeworkType | 'ALL'>('ALL');
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [pageLoading, setPageLoading] = useState(true);
 
-  const load = () => getHomeworkList().then(setList).catch(() => {});
+  const load = () => getHomeworkList().then(setList).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800));
   useEffect(() => { load(); getClasses().then(setClasses).catch(() => {}); }, []);
 
   function openCreate() { setForm(emptyForm()); setShowModal(true); }
@@ -870,8 +873,12 @@ export default function HomeworkPage() {
         </Button>
       </Box>
 
-      {/* Content: empty state / grid / table */}
-      {list.length === 0 ? (
+      {/* Content: skeleton / empty state / grid / table */}
+      {pageLoading ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : list.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <BookOpen size={32} color="#94A3B8" />
@@ -905,9 +912,12 @@ export default function HomeworkPage() {
                 }}
                 onDelete={() => setDeletingId(h.id)}
                 onDeleteCancel={() => setDeletingId(null)}
+                submitting={submitting}
                 onDeleteConfirm={async () => {
+                  setSubmitting(true);
                   try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.', 'success'); }
                   catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.', 'error'); }
+                  finally { setSubmitting(false); }
                 }}
               />
             ))}
@@ -979,9 +989,9 @@ export default function HomeworkPage() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
                         <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
-                        <Button size="small" variant="contained"
-                          onClick={async () => { try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.', 'success'); } catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.', 'error'); } }}
-                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>Yes</Button>
+                        <Button size="small" variant="contained" disabled={submitting}
+                          onClick={async () => { setSubmitting(true); try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.', 'success'); } catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.', 'error'); } finally { setSubmitting(false); } }}
+                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : 'Yes'}</Button>
                       </Box>
                     ) : (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

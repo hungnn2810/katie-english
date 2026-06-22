@@ -500,10 +500,12 @@ export default function StudentsPage() {
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState<string>(() => searchParams.get('classId') ?? '');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const { showToast } = useToast();
 
   const load = useCallback((cid?: number) => {
-    getStudents(cid).then(setStudents).catch(() => {});
+    getStudents(cid).then(setStudents).catch(() => {}).finally(() => setTimeout(() => setPageLoading(false), 800));
   }, []);
 
   const loadPending = useCallback(() => {
@@ -632,7 +634,11 @@ export default function StudentsPage() {
       )}
 
       {/* Table */}
-      {students.length === 0 ? (
+      {pageLoading ? (
+        <Box sx={{ py: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : students.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 10, color: 'text.secondary', bgcolor: 'white', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ width: 56, height: 56, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <Users size={24} color="#94A3B8" />
@@ -659,8 +665,9 @@ export default function StudentsPage() {
                   <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
                   <Button size="small" onClick={() => setDeletingId(null)}
                     sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
-                  <Button size="small" variant="contained"
+                  <Button size="small" variant="contained" disabled={submitting}
                     onClick={async () => {
+                      setSubmitting(true);
                       try {
                         await deleteStudent(s.id);
                         setDeletingId(null);
@@ -669,10 +676,12 @@ export default function StudentsPage() {
                       } catch (err) {
                         setDeletingId(null);
                         showToast(err instanceof Error ? err.message : 'Failed to remove student.', 'error');
+                      } finally {
+                        setSubmitting(false);
                       }
                     }}
                     sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>
-                    Yes
+                    {submitting ? '…' : 'Yes'}
                   </Button>
                 </Box>
               ) : (
