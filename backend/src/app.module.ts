@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { BfaModule } from './bfa/bfa.module';
 import { AdminModule } from './admin/admin.module';
 import { TuitionModule } from './tuition/tuition.module';
+import { ImportModule } from './import/import.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TuitionModule } from './tuition/tuition.module';
     ]),
     AdminModule,
     TuitionModule,
+    ImportModule,
     BfaModule,
     PhonemeModule,
     WordModule,
