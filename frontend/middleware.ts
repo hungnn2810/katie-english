@@ -18,14 +18,14 @@ const APP_CONFIG: Record<AppContext, AppConfig> = {
   },
   student: {
     cookieName: 'student-token',
-    loginPath: '/game/login',
+    loginPath: '/student/login',
   },
 };
 
 function detectAppContext(pathname: string): AppContext | null {
   if (pathname.startsWith('/admin')) return 'admin';
   if (pathname.startsWith('/teacher')) return 'teacher';
-  if (pathname.startsWith('/game')) return 'student';
+  if (pathname.startsWith('/student')) return 'student';
   return null;
 }
 

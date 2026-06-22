@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 function useAppContext() {
   const pathname = usePathname();
   if (pathname.startsWith('/admin')) return { accent: '#4F9DFF', loginPath: '/admin/login' };
-  if (pathname.startsWith('/game')) return { accent: '#A78BFA', loginPath: '/game/login' };
+  if (pathname.startsWith('/student')) return { accent: '#A78BFA', loginPath: '/student/login' };
   return { accent: '#F0623A', loginPath: '/teacher/login' };
 }
 

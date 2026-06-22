@@ -10,7 +10,7 @@ import {
   ReadingActivityResult, MatchingItemResult, FillInBlankItemResult, SentenceSegment, VocabItem,
 } from '@/lib/admin-api';
 import { Check, X, ChevronDown, ChevronRight, Hash, Mic, BookOpen, ImageIcon } from 'lucide-react';
-import { PhonemeChips } from '@/app/game/session/[id]/_components/PhonemeChips';
+import { PhonemeChips } from '@/app/student/session/[id]/_components/PhonemeChips';
 
 function scoreHex(score: number) {
   if (score >= 80) return '#22C55E';

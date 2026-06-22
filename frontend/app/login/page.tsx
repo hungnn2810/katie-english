@@ -82,7 +82,7 @@ export default function LoginPage() {
       } else {
         // Student password login (existing flow — will be replaced by class-code login in plan 12-03)
         const user = await login(upn, password);
-        window.location.href = '/game/homework';
+        window.location.href = '/student/homework';
         void user;
       }
     } catch (err: unknown) {

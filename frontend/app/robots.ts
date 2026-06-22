@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/teacher', '/admin', '/game', '/api'],
+        disallow: ['/teacher', '/admin', '/student', '/api'],
       },
     ],
     sitemap: 'https://katie-english.com.vn/sitemap.xml',

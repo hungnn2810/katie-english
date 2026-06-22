@@ -555,14 +555,14 @@ export default function ReadingGamePage() {
     <AuthGate requiredRole="STUDENT">
       {() => {
         if (pageState === 'loading') return <LoadingState />;
-        if (pageState === 'error') return <ErrorState kind={errorKind} onBack={() => router.push('/game/homework')} />;
+        if (pageState === 'error') return <ErrorState kind={errorKind} onBack={() => router.push('/student/homework')} />;
         if (pageState === 'submitting') return <SubmittingState />;
         if (pageState === 'results')
           return (
             <ResultsState
               session={finalResult}
               activityStates={activityStates}
-              onFinish={() => router.push('/game/homework')}
+              onFinish={() => router.push('/student/homework')}
               saveError={saveError}
             />
           );
@@ -574,7 +574,7 @@ export default function ReadingGamePage() {
           <PlayingShell
             activityStates={activityStates}
             currentActivityIndex={currentActivityIndex}
-            onBack={() => router.push('/game/homework')}
+            onBack={() => router.push('/student/homework')}
           >
             {cur ? (
               cur.type === 'MATCH' ? (

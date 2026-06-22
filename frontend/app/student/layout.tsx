@@ -29,7 +29,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     // Bypass auth check on the login page to prevent redirect loop
-    if (pathname === '/game/login') {
+    if (pathname === '/student/login') {
       setAuthed(true);
       return;
     }
@@ -38,7 +38,7 @@ export default function GameLayout({ children }: { children: React.ReactNode }) 
     if (role === 'STUDENT') {
       setAuthed(true);
     } else {
-      window.location.replace('/game/login');
+      window.location.replace('/student/login');
       setAuthed(false);
     }
   }, [pathname]);

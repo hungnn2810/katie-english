@@ -86,11 +86,11 @@ function PageContent({ user }: { user: AuthUser }) {
       const session = await startSession(user.studentId, assignmentId);
       const hwType = session.assignment?.homework?.type;
       if (hwType === 'READING') {
-        router.push(`/game/reading/${session.id}`);
+        router.push(`/student/reading/${session.id}`);
       } else if (hwType === 'VOCABULARY') {
-        router.push(`/game/vocab/${session.id}`);
+        router.push(`/student/vocab/${session.id}`);
       } else {
-        router.push(`/game/session/${session.id}`);
+        router.push(`/student/session/${session.id}`);
       }
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to start', 'error');
@@ -194,7 +194,7 @@ function PageContent({ user }: { user: AuthUser }) {
             <Lock size={13} />
           </Button>
           <Button
-            onClick={() => { clearAuth(); router.push('/game/login'); }}
+            onClick={() => { clearAuth(); router.push('/student/login'); }}
             sx={{
               color: '#6B7280',
               '&:hover': { color: '#1E1B4B', bgcolor: 'rgba(0,0,0,0.06)' },

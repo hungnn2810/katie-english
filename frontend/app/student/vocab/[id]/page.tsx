@@ -3,37 +3,33 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import AuthGate from '@/components/AuthGate';
 import { authHeaders } from '@/lib/auth';
-import { saveListenResult, completeSession, GameSession, ListenItem, ListenItemResult } from '@/lib/admin-api';
+import { saveVocabResult, completeSession, GameSession, BfaResult, VocabItem, PhonemeOp } from '@/lib/admin-api';
 import { gradients, scoreHexColor } from '@/lib/colors';
-import { fadeIn } from '@/lib/theme';
-import { Mic, CheckCircle2, PartyPopper, Headphones, Play, RotateCcw } from 'lucide-react';
+import PhonemeChips from '@/app/student/session/[id]/_components/PhonemeChips';
+import { shake, fadeIn } from '@/lib/theme';
+import { Mic, CheckCircle2, PartyPopper } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
 type PageState = 'loading' | 'mic-check' | 'mic-denied' | 'ready' | 'playing' | 'uploading' | 'results' | 'error';
 type RecordState = 'idle' | 'recording' | 'recorded' | 'scoring';
-type AudioPlayState = 'idle' | 'playing' | 'played';
 
-interface ListenGameItem {
-  listenItemId: number;
-  audioUrl: string;
-  keywords: string;         // JSON array string
-  expectedText: string;
-  compositeScore: number;   // 0.0–1.0 from API
-  semanticScore: number;    // 0.0–1.0
-  pronScore: number;        // 0.0–100
-  transcript: string;
-  matchedKeywords: string[];
-  scoreError: string | null;
+interface VocabGameItem {
+  vocabItemId: number;
+  imageUrl: string;
+  word: string;
+  score: number;
+  bfa: BfaResult | null;
+  bfaError: string | null;
   recordState: RecordState;
+  feedback: PhonemeOp[];
 }
 
-const SCORE_ERROR_MESSAGES: Record<string, string> = {
+const BFA_ERROR_MESSAGES: Record<string, string> = {
   audio_too_short:     'Bấm lâu hơn nhé — ghi âm quá ngắn',
   audio_too_long:      'Ghi âm quá dài — nói dưới 15 giây',
   recording_too_noisy: 'Mic quá ồn — tìm chỗ yên tĩnh hơn',
@@ -52,42 +48,38 @@ async function fetchSession(id: number): Promise<GameSession> {
   return res.json();
 }
 
-function buildItems(session: GameSession): ListenGameItem[] {
+function buildItems(session: GameSession): VocabGameItem[] {
+  // vocabItems may be on the session directly or via assignment.homework
   const hw = session.assignment?.homework;
-  const listenItems: ListenItem[] =
-    (session.listenItems ?? (hw as any)?.listenItems ?? []).slice().sort((a: ListenItem, b: ListenItem) => a.order - b.order);
-  return listenItems.map((li) => ({
-    listenItemId: li.id,
-    audioUrl: li.audioUrl,
-    keywords: li.keywords,
-    expectedText: li.expectedText,
-    compositeScore: 0,
-    semanticScore: 0,
-    pronScore: 0,
-    transcript: '',
-    matchedKeywords: [],
-    scoreError: null,
-    recordState: 'idle' as RecordState,
+  const vocabItems: VocabItem[] =
+    (session.vocabItems ?? hw?.vocabItems ?? []).slice().sort((a, b) => a.order - b.order);
+  return vocabItems.map((v) => ({
+    vocabItemId: v.id,
+    imageUrl: v.imageUrl,
+    word: v.word,
+    score: 0,
+    bfa: null,
+    bfaError: null,
+    recordState: 'idle',
+    feedback: [],
   }));
 }
 
-export default function ListenGamePage() {
+export default function VocabGamePage() {
   const { id } = useParams<{ id: string }>();
   const sessionId = Number(id);
   const router = useRouter();
 
   const [pageState, setPageState] = useState<PageState>('loading');
-  const [items, setItems] = useState<ListenGameItem[]>([]);
+  const [items, setItems] = useState<VocabGameItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<GameSession | null>(null);
   const [saveError, setSaveError] = useState(false);
-  const [audioPlayState, setAudioPlayState] = useState<AudioPlayState>('idle');
 
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const itemsRef = useRef<ListenGameItem[]>([]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const itemsRef = useRef<VocabGameItem[]>([]);
 
   useEffect(() => { itemsRef.current = items; }, [items]);
 
@@ -158,56 +150,29 @@ export default function ListenGamePage() {
     });
   }
 
-  // Auto-play audio prompt when item changes (D-08)
-  useEffect(() => {
-    if (pageState !== 'playing') return;
-    setAudioPlayState('idle');
-    const audio = audioRef.current;
-    if (!audio) return;
-    const current = itemsRef.current[currentIndex];
-    if (!current) return;
-    audio.src = current.audioUrl;
-    audio.load();
-    setAudioPlayState('playing');
-    audio.play().catch(() => {
-      // Browser may block autoplay — fall back to idle state so student can tap Play
-      setAudioPlayState('idle');
-    });
-    audio.onended = () => setAudioPlayState('played');
-  }, [currentIndex, pageState]);
-
   const handleStopAndScore = useCallback(async () => {
-    const capturedIndex = currentIndex;
+    const capturedIndex = currentIndex;  // capture synchronously before any await
     setItems((prev) => prev.map((item, i) => i === capturedIndex ? { ...item, recordState: 'scoring' } : item));
     const blob = await stopRecording();
     const item = itemsRef.current[capturedIndex];
     if (!item) return;
     try {
-      const result: ListenItemResult = await saveListenResult(sessionId, item.listenItemId, blob ?? undefined);
-      const scoreError = (result as any).error ?? null;
-      // Parse matched keywords from item keywords list, matched against transcript
-      let matchedKeywords: string[] = [];
-      try {
-        let kwArr: string[] = [];
-        try { kwArr = JSON.parse(item.keywords); } catch { /* ignore */ }
-        // Show keywords where student transcript contains them (word-boundary match)
-        matchedKeywords = result.semanticScore >= 0.2 ? kwArr.filter((kw) =>
-          new RegExp('\\b' + kw.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test((result.transcript ?? '').toLowerCase())
-        ) : [];
-      } catch { /* ignore */ }
+      const result = await saveVocabResult(sessionId, item.vocabItemId, blob ?? undefined);
+      const bfa = result.bfa ?? null;
+      const bfaError = bfa?.error ?? null;
+      const score = bfaError ? 0 : result.score;
+      const feedback = bfa?.feedback ?? [];
       setItems((prev) => prev.map((it, i) => i === capturedIndex ? {
         ...it,
-        compositeScore: result.compositeScore,
-        semanticScore: result.semanticScore,
-        pronScore: result.pronScore,
-        transcript: result.transcript,
-        matchedKeywords,
-        scoreError,
+        score,
+        bfa,
+        bfaError,
+        feedback,
         recordState: 'recorded',
       } : it));
     } catch {
       setSaveError(true);
-      setItems((prev) => prev.map((it, i) => i === capturedIndex ? { ...it, recordState: 'recorded', scoreError: 'speech_not_detected' } : it));
+      setItems((prev) => prev.map((it, i) => i === capturedIndex ? { ...it, recordState: 'recorded', bfaError: 'speech_not_detected' } : it));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, sessionId]);
@@ -215,7 +180,6 @@ export default function ListenGamePage() {
   async function handleNext() {
     const next = currentIndex + 1;
     if (next < items.length) {
-      setAudioPlayState('idle');
       setCurrentIndex(next);
       setItems((prev) => prev.map((item, i) => i === next ? { ...item, recordState: 'idle' } : item));
     } else {
@@ -240,12 +204,10 @@ export default function ListenGamePage() {
     setItems((prev) => prev.map((item, i) => i === currentIndex ? {
       ...item,
       recordState: 'idle',
-      compositeScore: 0,
-      semanticScore: 0,
-      pronScore: 0,
-      transcript: '',
-      matchedKeywords: [],
-      scoreError: null,
+      bfa: null,
+      bfaError: null,
+      score: 0,
+      feedback: [],
     } : item));
   }
 
@@ -255,10 +217,6 @@ export default function ListenGamePage() {
       try { recorderRef.current?.stop(); } catch {}
     }
     streamRef.current?.getTracks().forEach((t) => t.stop());
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = '';
-    }
   }, []);
 
   // ── Loading / mic-check ────────────────────────────────────────────────────
@@ -301,7 +259,7 @@ export default function ListenGamePage() {
               Thử lại
             </Button>
             <Button
-              onClick={() => router.push('/game/homework')}
+              onClick={() => router.push('/student/homework')}
               sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
             >
               ← Về trang chủ
@@ -318,10 +276,10 @@ export default function ListenGamePage() {
       <AuthGate requiredRole="STUDENT">
         {() => (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
-            <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Không tìm thấy bài học. Vui lòng quay lại và thử lại.</Typography>
-            <Button onClick={() => router.push('/game/homework')}
+            <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Không tìm thấy bài học.</Typography>
+            <Button onClick={() => router.push('/student/homework')}
               sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
-              ← Về trang chủ
+              ← Quay lại
             </Button>
           </Box>
         )}
@@ -348,7 +306,7 @@ export default function ListenGamePage() {
 
   if (pageState === 'results') {
     const finalScore = results?.score ?? (items.length > 0
-      ? Math.round(items.reduce((s, it) => s + it.compositeScore * 100, 0) / items.length)
+      ? Math.round(items.reduce((s, it) => s + it.score, 0) / items.length)
       : 0);
     const scoreColor = scoreHexColor(finalScore);
     return (
@@ -377,42 +335,29 @@ export default function ListenGamePage() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 4 }}>
                 {items.map((item, idx) => (
                   <Box key={idx} sx={{ bgcolor: '#FFFFFF', borderRadius: 3, px: 2.5, py: 2, boxShadow: '0 2px 8px rgba(124,58,237,0.08)' }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {/* Row 1: Question label + composite score */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Headphones size={24} color="rgba(0,0,0,0.35)" />
-                          <Typography sx={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#6B7280', fontWeight: 700 }}>
-                            Câu {idx + 1}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      {/* Image thumbnail */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.imageUrl}
+                        alt={item.word}
+                        style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(0,0,0,0.1)', flexShrink: 0 }}
+                      />
+                      {/* Word + chips */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ color: '#1E1B4B', fontWeight: 700, fontSize: 16 }}>{item.word}</Typography>
+                        {item.bfaError && (
+                          <Typography sx={{ fontSize: 13, fontWeight: 600, color: '#fbbf24', mt: 0.5 }}>
+                            {BFA_ERROR_MESSAGES[item.bfaError] ?? 'Có lỗi — thử lại nhé'}
                           </Typography>
-                        </Box>
-                        <Typography sx={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: scoreHexColor(Math.round(item.compositeScore * 100)) }}>
-                          {Math.round(item.compositeScore * 100)}%
-                        </Typography>
+                        )}
+                        {!item.bfaError && item.feedback.length > 0 && (
+                          <PhonemeChips feedback={item.feedback} />
+                        )}
                       </Box>
-                      {/* Row 2: Transcript */}
-                      {item.transcript && (
-                        <Typography sx={{ color: '#374151', fontSize: 14, fontStyle: 'italic' }}>
-                          &quot;{item.transcript}&quot;
-                        </Typography>
-                      )}
-                      {/* Row 3: Matched keyword chips */}
-                      {item.matchedKeywords.length > 0 && (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {item.matchedKeywords.map((kw) => (
-                            <Chip key={kw} label={kw} size="small" sx={{ bgcolor: 'rgba(52,211,153,0.2)', color: '#34d399', fontWeight: 700, border: 0 }} />
-                          ))}
-                        </Box>
-                      )}
-                      {/* Row 4: Error state */}
-                      {item.scoreError && (
-                        <Typography sx={{ fontSize: '0.75rem', color: '#fbbf24', fontWeight: 600 }}>
-                          {item.semanticScore < 0.2 ? 'hãy thử lại, nghe kỹ câu hỏi nhé' : (SCORE_ERROR_MESSAGES[item.scoreError] ?? 'Có lỗi')}
-                        </Typography>
-                      )}
-                      {/* Row 5: Score breakdown */}
-                      <Typography sx={{ fontSize: '0.75rem', color: '#9CA3AF' }}>
-                        Ngữ nghĩa: {Math.round(item.semanticScore * 100)}% · Phát âm: {Math.round(item.pronScore)}%
+                      {/* Score */}
+                      <Typography sx={{ fontSize: 24, fontWeight: 700, fontVariantNumeric: 'tabular-nums', flexShrink: 0, color: scoreHexColor(item.score) }}>
+                        {item.score}%
                       </Typography>
                     </Box>
                   </Box>
@@ -420,7 +365,7 @@ export default function ListenGamePage() {
               </Box>
 
               <Button
-                onClick={() => router.push('/game/homework')}
+                onClick={() => router.push('/student/homework')}
                 fullWidth
                 sx={{
                   py: 2, borderRadius: '16px', color: 'white', fontWeight: 900, fontSize: 19,
@@ -441,6 +386,7 @@ export default function ListenGamePage() {
   // ── Ready / Playing ───────────────────────────────────────────────────────
   const current = items[currentIndex];
   const isLastItem = currentIndex === items.length - 1;
+  const isBfaError = current?.bfaError != null;
   const isScored = current?.recordState === 'recorded';
   const isScoring = current?.recordState === 'scoring';
 
@@ -448,9 +394,6 @@ export default function ListenGamePage() {
     <AuthGate requiredRole="STUDENT">
       {() => (
         <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'transparent', px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 }, gap: 3 }}>
-
-          {/* Hidden audio element for prompt playback */}
-          <audio ref={audioRef} style={{ display: 'none' }} />
 
           {/* Progress header */}
           <Box sx={{ width: '100%', maxWidth: 480, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -475,19 +418,18 @@ export default function ListenGamePage() {
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 3, maxWidth: 480, width: '100%' }}>
               <Typography sx={{ color: '#1E1B4B', fontSize: 30, fontWeight: 900 }}>Sẵn sàng chưa?</Typography>
               <Typography sx={{ color: '#4C4F7A', fontSize: 16 }}>
-                Nghe câu hỏi rồi ghi lại câu trả lời nhé
+                Nhìn vào hình và nói từ đó
               </Typography>
               {items.length > 0 && (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center', alignItems: 'center' }}>
-                  {items.map((_, i) => (
-                    <Box key={i} sx={{
-                      width: 44, height: 44, borderRadius: '50%',
-                      bgcolor: 'rgba(79,157,255,0.2)',
-                      border: '1.5px solid rgba(79,157,255,0.5)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#1E1B4B', fontWeight: 800, fontSize: 16,
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
+                  {items.map((item, i) => (
+                    <Box key={i} component="span" sx={{
+                      bgcolor: 'rgba(167,139,250,0.2)',
+                      border: '1.5px solid rgba(167,139,250,0.5)',
+                      color: '#1E1B4B', fontSize: 17, px: 2.5, py: 1,
+                      borderRadius: '12px', fontWeight: 700, letterSpacing: '0.02em',
                     }}>
-                      {i + 1}
+                      {item.word}
                     </Box>
                   ))}
                 </Box>
@@ -510,61 +452,29 @@ export default function ListenGamePage() {
           {pageState === 'playing' && current && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, maxWidth: 480, width: '100%' }}>
 
-              {/* "Nghe và trả lời" heading */}
-              <Typography sx={{ color: '#1E1B4B', fontSize: 22, fontWeight: 900, alignSelf: 'flex-start' }}>Nghe và trả lời</Typography>
+              {/* Heading */}
+              <Typography sx={{ color: '#1E1B4B', fontSize: 22, fontWeight: 900 }}>Chọn từ đúng</Typography>
 
-              {/* Audio player panel */}
+              {/* Image area — 240×200, shake on BFA error */}
               <Box sx={{
-                width: '100%',
-                bgcolor: '#FFFFFF', borderRadius: '20px', p: { xs: 2, sm: '22px' }, boxShadow: '0 2px 8px rgba(124,58,237,0.08)',
-                display: 'flex', alignItems: 'center', gap: 2,
+                width: { xs: '90vw', sm: 240 },
+                maxWidth: { xs: '90vw', sm: 320 },
+                height: { xs: 'auto', sm: 200 },
+                maxHeight: { xs: '35vh', sm: 280 },
+                border: '4px solid rgba(0,0,0,0.1)',
+                borderRadius: '22px',
+                overflow: 'hidden',
+                flexShrink: 0,
+                background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                animation: isBfaError ? `${shake} 0.4s` : undefined,
               }}>
-                {/* Play/Pause button — primaryPurple gradient */}
-                <Box
-                  component="button"
-                  aria-label={audioPlayState === 'idle' ? 'Phát câu hỏi' : 'Phát lại'}
-                  onClick={() => {
-                    const audio = audioRef.current;
-                    if (!audio) return;
-                    setAudioPlayState('playing');
-                    audio.currentTime = 0;
-                    audio.play().catch(() => setAudioPlayState('idle'));
-                    audio.onended = () => setAudioPlayState('played');
-                  }}
-                  disabled={audioPlayState === 'playing'}
-                  sx={{
-                    width: 60, height: 60, borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #4F9DFF, #A78BFA)',
-                    cursor: audioPlayState === 'playing' ? 'default' : 'pointer',
-                    flexShrink: 0,
-                  }}
-                >
-                  {audioPlayState === 'playing'
-                    ? <CircularProgress size={26} sx={{ color: '#fff' }} />
-                    : audioPlayState === 'played'
-                    ? <RotateCcw size={26} color="white" />
-                    : <Play size={26} color="white" />}
-                </Box>
-
-                {/* Waveform bars + timestamp */}
-                <Box sx={{ flex: 1 }}>
-                  <Box sx={{ display: 'flex', gap: '3px', alignItems: 'center', height: 34, overflow: 'hidden' }}>
-                    {[12, 22, 30, 18, 26, 14, 30, 20, 10, 24, 16, 28, 12, 22, 18, 26, 14, 20].map((h, i) => (
-                      <Box
-                        key={i}
-                        sx={{
-                          flex: 1, height: h, borderRadius: '3px',
-                          background: audioPlayState === 'playing' && i < 9 ? '#A78BFA' : 'rgba(0,0,0,0.15)',
-                        }}
-                      />
-                    ))}
-                  </Box>
-                  <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 600, mt: '6px' }}>
-                    0:09 / 0:18
-                  </Typography>
-                </Box>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={current.imageUrl}
+                  alt={current.word}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               </Box>
 
               {/* Record button */}
@@ -657,58 +567,23 @@ export default function ListenGamePage() {
                 )}
               </Box>
 
-              {/* Feedback zone (visible when recorded) */}
-              {current.recordState === 'recorded' && (
-                <Box sx={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {/* D-09: semantic error banner */}
-                  {current.semanticScore < 0.2 && (
-                    <Box sx={{
-                      bgcolor: 'rgba(251,191,36,0.15)', border: '1px solid #fbbf24',
-                      borderRadius: 2, px: 2, py: 1,
-                    }}>
-                      <Typography sx={{ color: '#fbbf24', fontSize: 14, fontWeight: 600 }}>
-                        hãy thử lại, nghe kỹ câu hỏi nhé
-                      </Typography>
-                    </Box>
-                  )}
-                  {/* BFA/score error (not semantic threshold) */}
-                  {current.scoreError && current.semanticScore >= 0.2 && (
-                    <Typography sx={{ color: '#fbbf24', fontSize: 14, fontWeight: 600 }}>
-                      {SCORE_ERROR_MESSAGES[current.scoreError] ?? 'Có lỗi — thử lại nhé'}
-                    </Typography>
-                  )}
-                  {/* Transcript */}
-                  {current.transcript && (
-                    <Typography sx={{ color: '#374151', fontSize: 16, fontStyle: 'italic' }}>
-                      Bạn nói: &quot;{current.transcript}&quot;
-                    </Typography>
-                  )}
-                  {/* Matched keywords chips */}
-                  {current.matchedKeywords.length > 0 && (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, animation: `${fadeIn} 0.3s ease` }}>
-                      {current.matchedKeywords.map((kw) => (
-                        <Chip
-                          key={kw}
-                          label={kw}
-                          size="small"
-                          sx={{ bgcolor: 'rgba(52,211,153,0.2)', color: '#34d399', fontWeight: 700, border: 0 }}
-                        />
-                      ))}
-                    </Box>
-                  )}
-                  {/* Composite score */}
-                  <Typography sx={{
-                    fontSize: 48, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
-                    color: scoreHexColor(Math.round(current.compositeScore * 100)),
-                  }}>
-                    {Math.round(current.compositeScore * 100)}%
-                  </Typography>
+              {/* BFA error message */}
+              {isBfaError && isScored && (
+                <Typography sx={{ color: '#fbbf24', fontSize: 14, fontWeight: 600, textAlign: 'center' }}>
+                  {BFA_ERROR_MESSAGES[current.bfaError!] ?? 'Có lỗi — thử lại nhé'}
+                </Typography>
+              )}
+
+              {/* Phoneme chips — fadeIn on reveal */}
+              {isScored && !isBfaError && current.feedback.length > 0 && (
+                <Box sx={{ animation: `${fadeIn} 0.3s ease` }}>
+                  <PhonemeChips feedback={current.feedback} />
                 </Box>
               )}
 
               {/* Action buttons */}
               {isScored && !isScoring && (
-                current.scoreError ? (
+                isBfaError ? (
                   <Button
                     onClick={handleReRecord}
                     sx={{

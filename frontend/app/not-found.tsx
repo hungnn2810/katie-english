@@ -71,7 +71,7 @@ export default function NotFound() {
 
           <Button
             component="a"
-            href="/game/login"
+            href="/student/login"
             variant="text"
             sx={{ color: '#A78BFA' }}
           >

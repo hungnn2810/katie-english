@@ -66,7 +66,7 @@ export default function StudentLoginPage() {
       }
       const data = await res.json();
       setAuth(data.token, data.user);
-      window.location.href = '/game/homework';
+      window.location.href = '/student/homework';
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Mã lớp hoặc tên không đúng', 'error');
     } finally {

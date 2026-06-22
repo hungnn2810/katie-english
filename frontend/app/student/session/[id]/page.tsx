@@ -543,7 +543,7 @@ export default function SessionPage() {
       <AuthGate requiredRole="STUDENT">
         {() => (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: { xs: 2, sm: 3 }, py: { xs: 4, sm: 5 }, gap: 3, background: 'transparent' }}>
-            <Button onClick={() => router.push('/game/homework')}
+            <Button onClick={() => router.push('/student/homework')}
               sx={{ alignSelf: 'flex-start', color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
               ← Quay lại
             </Button>
@@ -669,7 +669,7 @@ export default function SessionPage() {
               Thử lại
             </Button>
             <Button
-              onClick={() => router.push('/game/homework')}
+              onClick={() => router.push('/student/homework')}
               sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}
             >
               ← Về trang chủ
@@ -686,7 +686,7 @@ export default function SessionPage() {
         {() => (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, background: 'transparent' }}>
             <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Session not found.</Typography>
-            <Button onClick={() => router.push('/game/homework')}
+            <Button onClick={() => router.push('/student/homework')}
               sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
               ← Quay lại
             </Button>
@@ -828,7 +828,7 @@ export default function SessionPage() {
               </Box>
 
               <Button
-                onClick={() => router.push('/game/homework')}
+                onClick={() => router.push('/student/homework')}
                 fullWidth
                 sx={{
                   py: 2, borderRadius: '16px', color: 'white', fontWeight: 900, fontSize: 19,
@@ -854,7 +854,7 @@ export default function SessionPage() {
       {() => (
         <Box sx={{ height: '100vh', '@supports (height: 100dvh)': { height: '100dvh' }, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: { xs: 2, sm: 4 }, py: 2, flexShrink: 0 }}>
-            <Button onClick={() => router.push('/game/homework')}
+            <Button onClick={() => router.push('/student/homework')}
               sx={{ color: '#6B7280', '&:hover': { color: '#1E1B4B' }, fontSize: 14, textTransform: 'none', minWidth: 0 }}>
               ← Quay lại
             </Button>
