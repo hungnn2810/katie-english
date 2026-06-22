@@ -462,17 +462,19 @@ export async function downloadTemplate(authHeaders: HeadersInit): Promise<void> 
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Student accounts at import time**
    - What we know: Existing `student.service.ts` creates both a `Student` record AND a `User` record (with `upn` + hashed password) in the same transaction.
    - What's unclear: Should imported students get auto-generated `User` accounts? The CONTEXT.md student sheet columns do not include `upn` or `password` columns.
    - Recommendation: Import creates `Student` + `ParentInfo` only, no `User` account. This matches the existing "Student can register themselves" flow or admin-approval flow. If accounts are needed, a separate "generate accounts" step would be added post-import.
+   - RESOLVED: ImportService creates `Student` + `ParentInfo` only — no `User` account created at import time.
 
 2. **Class code auto-generation when blank**
    - What we know: `Class.code` is `@unique` in the schema. The CONTEXT.md says `code` is optional and auto-generated if blank.
    - What's unclear: The existing `ClassRepository.create()` does not auto-generate codes — the caller must provide them.
    - Recommendation: ImportService generates a code when the cell is blank: e.g., `CLS${Date.now().toString(36).toUpperCase()}` or sequential `CLS001`, `CLS002`.
+   - RESOLVED: ImportService generates code as `CLS${Date.now().toString(36).toUpperCase()}` when the `code` cell is blank.
 
 ---
 

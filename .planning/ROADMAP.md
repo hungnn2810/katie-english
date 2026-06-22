@@ -653,10 +653,13 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 **Requirements:** IMPORT-01, IMPORT-02, IMPORT-03, IMPORT-04, IMPORT-05, IMPORT-06, IMPORT-07, IMPORT-08, IMPORT-09
 **Depends on:** Phase 16
 **Plans:** 2 plans
-
 Plans:
+**Wave 1**
 
 - [ ] 17-01-PLAN.md — Backend ImportModule: xlsx install, ImportService (parse/validate/import/template), ImportController (POST /import/upload + GET /import/template), unit tests (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 17-02-PLAN.md — Frontend: import-api.ts helpers + admin/import + teacher/import pages + nav items in AdminShell/TeacherShell + TITLES in layouts (Wave 2, depends 17-01)
 
 ---
