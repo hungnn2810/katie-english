@@ -1,4 +1,5 @@
 import { authHeaders } from './auth';
+import { fetchWithRetry } from './fetch-with-retry';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
@@ -14,7 +15,7 @@ async function parseApiError(res: Response): Promise<never> {
 
 async function req<T>(path: string, options?: RequestInit): Promise<T> {
   const isJsonBody = options?.body && typeof options.body === 'string';
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetchWithRetry(`${API_URL}${path}`, {
     headers: {
       ...authHeaders(),
       ...(isJsonBody ? { 'Content-Type': 'application/json' } : {}),

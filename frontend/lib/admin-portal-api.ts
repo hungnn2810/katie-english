@@ -1,5 +1,6 @@
 import { adminAuthHeaders } from './admin-auth';
 import type { ScheduleSlot, ClassStatus } from './admin-api';
+import { fetchWithRetry } from './fetch-with-retry';
 
 export type { ScheduleSlot, ClassStatus };
 
@@ -16,7 +17,7 @@ async function parseApiError(res: Response): Promise<never> {
 }
 
 async function req<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetchWithRetry(`${API_URL}${path}`, {
     headers: { ...adminAuthHeaders(), ...(options?.headers ?? {}) },
     ...options,
   });

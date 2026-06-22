@@ -1,5 +1,6 @@
 import { getAdminToken } from '@/lib/admin-auth';
 import { getToken } from '@/lib/auth';
+import { fetchWithRetry } from '@/lib/fetch-with-retry';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
@@ -49,7 +50,7 @@ export async function uploadImportFile(
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch(`${API_URL}/import/upload`, {
+  const res = await fetchWithRetry(`${API_URL}/import/upload`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
@@ -70,7 +71,7 @@ export async function uploadImportFile(
 export async function downloadTemplate(role: 'admin' | 'teacher'): Promise<void> {
   const token = role === 'admin' ? getAdminToken() : getToken();
 
-  const res = await fetch(`${API_URL}/import/template`, {
+  const res = await fetchWithRetry(`${API_URL}/import/template`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

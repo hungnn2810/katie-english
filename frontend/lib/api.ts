@@ -1,4 +1,5 @@
 import { authHeaders } from './auth';
+import { fetchWithRetry } from './fetch-with-retry';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
@@ -20,7 +21,7 @@ export interface SubmitResult {
 }
 
 export async function fetchRandomWord(level = 1): Promise<WordData> {
-  const res = await fetch(`${API_URL}/phonics/words/random?level=${level}`, {
+  const res = await fetchWithRetry(`${API_URL}/phonics/words/random?level=${level}`, {
     headers: { ...authHeaders() },
   });
   if (!res.ok) throw new Error('Failed to fetch word');
@@ -31,7 +32,7 @@ export async function submitAnswer(
   wordId: number,
   selectedPhonemes: string[],
 ): Promise<SubmitResult> {
-  const res = await fetch(`${API_URL}/phonics/submit`, {
+  const res = await fetchWithRetry(`${API_URL}/phonics/submit`, {
     method: 'POST',
     headers: { ...authHeaders() },
     body: JSON.stringify({ wordId, selectedPhonemes }),

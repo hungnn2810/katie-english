@@ -1,4 +1,5 @@
 import { authHeaders } from './auth';
+import { fetchWithRetry } from './fetch-with-retry';
 import type {
   TuitionConfig,
   TuitionRecord,
@@ -34,7 +35,7 @@ async function parseApiError(res: Response): Promise<never> {
 }
 
 async function req<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetchWithRetry(`${API_URL}${path}`, {
     headers: { ...authHeaders(), ...(options?.headers ?? {}) },
     ...options,
   });
