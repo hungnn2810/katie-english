@@ -65,10 +65,15 @@ export class GameController {
   @Post('session/:id/speaking-result')
   @HttpCode(202)
   @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 100 * 1024 * 1024 } }))
-  saveSpeakingResult(
+  async saveSpeakingResult(
     @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
     @UploadedFile() audio?: Express.Multer.File,
   ) {
+    const requestingStudentId: number | undefined = (req as any).user?.studentId;
+    if (!requestingStudentId) throw new ForbiddenException('Student identity required');
+    const session = await this.service.getSession(id);
+    if (session.studentId !== requestingStudentId) throw new ForbiddenException('Cannot submit result for another student\'s session');
     return this.jobs.enqueueSpeakingResult(id, audio?.buffer, audio?.mimetype);
   }
 
@@ -88,7 +93,11 @@ export class GameController {
     @Body('wordId') wordId: string,
     @UploadedFile() audio?: Express.Multer.File,
   ) {
-    return this.service.tryPhonicsHomework(hwId, Number(wordId), audio?.buffer, audio?.mimetype);
+    const wordIdNum = Number(wordId);
+    if (!Number.isFinite(wordIdNum) || wordIdNum <= 0) {
+      throw new BadRequestException('wordId must be a positive integer');
+    }
+    return this.service.tryPhonicsHomework(hwId, wordIdNum, audio?.buffer, audio?.mimetype);
   }
 
   @Post('session/:id/vocab-result')
@@ -147,8 +156,10 @@ export class GameController {
   }
 
   @Post('session/:id/complete')
-  completeSession(@Param('id', ParseIntPipe) id: number) {
-    return this.service.completeSession(id);
+  async completeSession(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const requestingStudentId: number | undefined = (req as any).user?.studentId;
+    if (!requestingStudentId) throw new ForbiddenException('Student identity required');
+    return this.service.completeSession(id, requestingStudentId);
   }
 
   @Get('sessions')

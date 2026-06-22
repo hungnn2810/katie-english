@@ -508,9 +508,12 @@ export class GameService {
     );
   }
 
-  async completeSession(sessionId: number) {
+  async completeSession(sessionId: number, requestingStudentId?: number) {
     const session = await this.repo.getSession(sessionId);
     if (!session) throw new NotFoundException(`Session ${sessionId} not found`);
+    if (requestingStudentId !== undefined && session.studentId !== requestingStudentId) {
+      throw new ForbiddenException('Cannot complete another student\'s session');
+    }
 
     const hw = session.assignment.homework;
     let avgScore = 0;
