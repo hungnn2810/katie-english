@@ -647,7 +647,19 @@ Azure PA gives higher accuracy than text-based G2P comparison before those exerc
 - [x] 16-03-PLAN.md — Homework page: card-grid layout, pill filter tabs, submission progress bars (Wave 2, depends 16-01) ✅ 2026-06-21
 - [x] 16-04-PLAN.md — Admin pages sync: teachers/classes/students/homework pages adopt new blue accent + card patterns (Wave 3, depends 16-01) ✅ 2026-06-21
 
+### Phase 17: Import: classes (tuition + books) + students + homework
+
+**Goal:** Admin and teacher can upload a single .xlsx file to bulk-create classes (with tuition config), students (with parent info), and PHONICS homework; the system validates all rows before writing anything and returns a row-level error report on failure.
+**Requirements:** IMPORT-01, IMPORT-02, IMPORT-03, IMPORT-04, IMPORT-05, IMPORT-06, IMPORT-07, IMPORT-08, IMPORT-09
+**Depends on:** Phase 16
+**Plans:** 2 plans
+
+Plans:
+
+- [ ] 17-01-PLAN.md — Backend ImportModule: xlsx install, ImportService (parse/validate/import/template), ImportController (POST /import/upload + GET /import/template), unit tests (Wave 1)
+- [ ] 17-02-PLAN.md — Frontend: import-api.ts helpers + admin/import + teacher/import pages + nav items in AdminShell/TeacherShell + TITLES in layouts (Wave 2, depends 17-01)
+
 ---
 
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-21 — Phase 16 Teacher/Admin UI Redesign added (HeyWordVocab-inspired, blue accent)*
+*Last updated: 2026-06-22 — Phase 17 Import bulk feature planned (2 plans, 2 waves)*
