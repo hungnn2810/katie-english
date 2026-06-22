@@ -17,7 +17,7 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
-import { LayoutDashboard, School, Users, BookOpen, Video, Receipt, KeyRound, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, School, Users, BookOpen, Video, Receipt, Upload, KeyRound, LogOut, X } from 'lucide-react';
 
 const SIDEBAR_BG = '#0F1B2D';
 const ACCENT = '#22C55E';
@@ -37,6 +37,7 @@ const NAV_GROUPS = [
       { href: '/teacher/homework', label: 'Homework', icon: BookOpen },
       { href: '/teacher/sessions', label: 'Sessions', icon: Video },
       { href: '/teacher/tuition', label: 'Tuition', icon: Receipt },
+      { href: '/teacher/import', label: 'Import', icon: Upload },
     ],
   },
 ];

@@ -16,6 +16,7 @@ const TITLES: Record<string, { title: string; subtitle: string }> = {
   '/admin/students': { title: 'Students', subtitle: 'Filter by class and bulk-approve registrations' },
   '/admin/homework': { title: 'Homework', subtitle: 'Cross-teacher homework overview' },
   '/admin/tuition': { title: 'Tuition', subtitle: 'Manage tuition fees and payment records' },
+  '/admin/import': { title: 'Import', subtitle: 'Bulk import classes, students, and homework from Excel' },
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
