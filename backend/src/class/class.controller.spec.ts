@@ -34,10 +34,6 @@ describe('ClassController', () => {
     jest.clearAllMocks();
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
   describe('findAll()', () => {
     it('should call classService.findAll() and return its result', async () => {
       const result = [{ id: 1, name: 'Class A' }];

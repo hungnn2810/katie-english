@@ -29,10 +29,6 @@ describe('AdminTeachersController', () => {
     controller = module.get<AdminTeachersController>(AdminTeachersController);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
   describe('findAll', () => {
     it('should call service.findAll and return its result', async () => {
       const expected = [{ id: 1, name: 'Teacher A' }];

@@ -27,10 +27,6 @@ describe('AdminClassesController', () => {
     controller = module.get<AdminClassesController>(AdminClassesController);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
   describe('findAll', () => {
     it('should call service.findAll(undefined) when no query param provided', () => {
       service.findAll.mockReturnValue([]);

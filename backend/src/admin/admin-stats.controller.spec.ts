@@ -23,10 +23,6 @@ describe('AdminStatsController', () => {
     controller = module.get<AdminStatsController>(AdminStatsController);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
   describe('get', () => {
     it('should call service.getStats() and return its result', () => {
       const expected = { totalStudents: 42, totalClasses: 7 };

@@ -25,10 +25,6 @@ describe('AdminAuthController', () => {
     controller = module.get<AdminAuthController>(AdminAuthController);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-
   describe('login', () => {
     it('should call authService.login with the provided dto', async () => {
       const dto: AdminLoginDto = { email: 'admin@katie.com', password: 'secret' };

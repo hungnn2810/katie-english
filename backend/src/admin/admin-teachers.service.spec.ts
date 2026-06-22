@@ -213,11 +213,3 @@ describe('AdminTeachersService', () => {
   });
 });
 
-// Test 7: auth.service - disabled teacher login
-// This is tested in a separate describe for clarity with auth.service context
-describe('AuthService - disabled teacher login gate', () => {
-  // Import is circular if done here; auth.service.spec.ts will be extended directly.
-  // This placeholder is here to document the test requirement.
-  it.todo('login throws ForbiddenException("Account disabled") for disabled teachers');
-  it.todo('login succeeds for non-disabled teacher');
-});
