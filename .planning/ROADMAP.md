@@ -11,7 +11,7 @@
 | # | Phase | Goal | Milestone | Status |
 |---|-------|------|-----------|--------|
 | 1 | Speaking Homework | Teacher creates, student records, system scores | v1 | ✅ Complete 2026-05-13 |
-| 2 | Reading Homework | Matching + fill-in-blank, score stored | v1 | 🔄 In progress |
+| 2 | Reading Homework | 5/5 | Complete    | 2026-06-23 |
 | 3 | Teacher Dashboard | Unified creation, assignment, results review | v1 | ✅ Complete |
 | 4 | Student Page UI/UX | Kid-friendly polish, due-date ordering | v1 | ✅ Complete |
 | 5 | BFA Quality & Performance | Pipeline fixes, Groq ASR, phoneme feedback | v1 | 🔄 In progress (plan 07) |
@@ -74,11 +74,12 @@
 
 **Plans:**
 
-- [x] 02-01-PLAN.md — Backend data spine: Prisma schema + migration + DTOs + repositories + service scoring + REST endpoint (Wave 1)
+5/5 plans complete
+
 - [x] 02-02-PLAN.md — Frontend API contract: types + saveReadingResult + student routing + teacher entry points (Wave 1)
 - [x] 02-03-PLAN.md — Teacher creation page: image-word matching + fill-in-blank + sequence reorder via @dnd-kit (Wave 2)
 - [x] 02-04-PLAN.md — Student reading game: matching click-to-pair + fill-in-blank + scoring + result screen (Wave 2)
-- [ ] 02-05-PLAN.md — Human verification checkpoint (Wave 3)
+- [x] 02-05-PLAN.md — Human verification checkpoint (Wave 3)
 
 ---
 
