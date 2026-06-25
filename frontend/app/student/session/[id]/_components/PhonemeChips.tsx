@@ -26,7 +26,7 @@ const VARIANT_SX: Record<Variant, object> = {
 };
 
 function labelFor(op: PhonemeOp): string {
-  if (op.status === 'substituted' && op.expected && op.aligned) {
+  if (op.status === 'substituted' && op.expected && op.aligned && op.expected !== op.aligned) {
     return `${op.expected} -> ${op.aligned}`;
   }
   if (op.status === 'extra') {

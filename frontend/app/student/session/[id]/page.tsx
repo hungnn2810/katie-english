@@ -101,7 +101,7 @@ function AudioPlayer({ src }: { src: string }) {
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.75, px: 1.25, py: 0.75, bgcolor: '#F5F3FF', borderRadius: 2 }}>
       <audio ref={audioRef} src={src}
         onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
-        onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
+        onLoadedMetadata={() => { const d = audioRef.current?.duration; if (d != null && isFinite(d) && d > 0) setDuration(d); }}
         onEnded={() => { setPlaying(false); setCurrentTime(0); if (audioRef.current) audioRef.current.currentTime = 0; }}
       />
       <Box onClick={toggle} sx={{
@@ -428,7 +428,8 @@ export default function SessionPage() {
         } else if (item.kind === 'phonics') {
           const r = await savePhonicsResult(sessionId, item.wordId!, audioBlob);
           const bfaError = r.bfa?.error ?? null;
-          scored[i] = { ...scored[i], score: bfaError ? 0 : r.score, bfa: r.bfa ?? null, bfaError, audioUrl: audioUrls[i] };
+          const azureTranscribed = r.bfa?.transcription?.text || r.transcribedText;
+          scored[i] = { ...scored[i], score: bfaError ? 0 : r.score, bfa: r.bfa ?? null, bfaError, audioUrl: audioUrls[i], ...(azureTranscribed ? { transcribed: azureTranscribed } : {}) };
         }
       } catch (err) {
         console.error(`[score] item="${item.text}"`, err);

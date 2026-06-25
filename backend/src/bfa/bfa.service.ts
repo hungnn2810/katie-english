@@ -73,7 +73,9 @@ export function mapPhonemeOps(wordData: Record<string, any>) {
     return {
       status,
       expected: symbol,
-      aligned: status === 'missing' ? null : symbol,
+      // Azure PA only gives accuracy score — it never tells us what phoneme was actually said.
+      // 'substituted' means "expected but mispronounced"; aligned is unknown, set null.
+      aligned: (status === 'missing' || status === 'substituted') ? null : symbol,
       start: status === 'missing' ? undefined : start,
       end: status === 'missing' ? undefined : Math.round((start + dur) * 10000) / 10000,
       duration: status === 'missing' ? undefined : dur,

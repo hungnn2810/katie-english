@@ -181,6 +181,27 @@ describe('mapPhonemeOps — score-band [50, 80)', () => {
     const ops = mapPhonemeOps({ Phonemes: [{ Phoneme: 't', Offset: 0, Duration: 0 }] });
     expect(ops[0].status).toBe('substituted');
   });
+
+  it('substituted → aligned is null (Azure does not reveal what was said)', () => {
+    const ops = mapPhonemeOps(makeWordData({ accuracyScore: 30, phonemeSymbol: 'k' }));
+    expect(ops[0].status).toBe('substituted');
+    expect(ops[0].aligned).toBeNull();
+    expect(ops[0].expected).toBe('k');
+  });
+
+  it('correct → aligned equals expected symbol', () => {
+    const ops = mapPhonemeOps(makeWordData({ accuracyScore: 90, phonemeSymbol: 'p' }));
+    expect(ops[0].status).toBe('correct');
+    expect(ops[0].aligned).toBe('p');
+    expect(ops[0].expected).toBe('p');
+  });
+
+  it('similar → aligned equals expected symbol', () => {
+    const ops = mapPhonemeOps(makeWordData({ accuracyScore: 65, phonemeSymbol: 't' }));
+    expect(ops[0].status).toBe('similar');
+    expect(ops[0].aligned).toBe('t');
+    expect(ops[0].expected).toBe('t');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
