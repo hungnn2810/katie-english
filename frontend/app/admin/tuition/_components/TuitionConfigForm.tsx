@@ -93,6 +93,7 @@ export default function TuitionConfigForm({
           onChange={(e) => setField('pricePerSession', parseInt(e.target.value) || 0)}
           slotProps={{ htmlInput: { min: 0 } }}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          helperText={form.pricePerSession > 0 ? `${form.pricePerSession.toLocaleString('vi-VN')} đ` : undefined}
         />
       </Box>
 
@@ -110,6 +111,7 @@ export default function TuitionConfigForm({
           }
           slotProps={{ htmlInput: { min: 0 } }}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          helperText={form.bookFee && form.bookFee > 0 ? `${form.bookFee.toLocaleString('vi-VN')} đ` : undefined}
         />
       </Box>
 
