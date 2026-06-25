@@ -22,6 +22,14 @@ import { colors } from '@/lib/colors';
 import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 
+function formatDuration(startedAt: string, completedAt: string): string {
+  const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
+  if (ms <= 0) return '—';
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
 function ScoreBadge({ score }: { score?: number | null }) {
   if (score === null || score === undefined) return <Typography component="span" sx={{ color: 'text.secondary' }}>—</Typography>;
   const pct = Math.round(score);
@@ -175,6 +183,7 @@ export default function SessionsPage() {
                   </Typography>
                   <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
                     {hw?.name ?? hw?.type ?? 'Unknown'} · {new Date(s.startedAt).toLocaleString()}
+                    {s.completedAt && <Box component="span"> · {formatDuration(s.startedAt, s.completedAt)}</Box>}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>

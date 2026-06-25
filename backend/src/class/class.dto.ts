@@ -16,6 +16,10 @@ export class ScheduleSlot {
   time: string;
 
   @IsOptional()
+  @IsString()
+  endTime?: string;
+
+  @IsOptional()
   @IsNumber()
   duration?: number;
 }

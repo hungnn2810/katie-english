@@ -49,7 +49,7 @@ const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const DAY_LABELS: Record<string, string> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' };
 
 const emptyForm = () => ({ name: '', code: '', startDate: '', endDate: '', status: 'PENDING' as ClassStatus, scheduleSlots: [] as ScheduleSlot[] });
-const DEFAULT_DURATION = 1.5;
+
 
 function ClassModal({ editing, initial, onClose, onSaved }: {
   editing: ClassItem | null;
@@ -69,7 +69,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
       ...f,
       scheduleSlots: f.scheduleSlots.find((s) => s.day === day)
         ? f.scheduleSlots.filter((s) => s.day !== day)
-        : [...f.scheduleSlots, { day, time: '', duration: DEFAULT_DURATION }],
+        : [...f.scheduleSlots, { day, time: '', endTime: '' }],
     }));
   }
 
@@ -77,8 +77,8 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
     setForm((f) => ({ ...f, scheduleSlots: f.scheduleSlots.map((s) => s.day === day ? { ...s, time } : s) }));
   }
 
-  function setSlotDuration(day: string, duration: number) {
-    setForm((f) => ({ ...f, scheduleSlots: f.scheduleSlots.map((s) => s.day === day ? { ...s, duration } : s) }));
+  function setSlotEndTime(day: string, endTime: string) {
+    setForm((f) => ({ ...f, scheduleSlots: f.scheduleSlots.map((s) => s.day === day ? { ...s, endTime } : s) }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -176,24 +176,18 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
               </Box>
               {form.scheduleSlots.length > 0 && (
                 <Paper variant="outlined" sx={{ borderRadius: 3, p: 2, bgcolor: 'background.default' }}>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 100px', gap: 1, mb: 1 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', gap: 1, mb: 1 }}>
                     <Box />
                     <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Start time</Typography>
-                    <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Duration</Typography>
+                    <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>End time</Typography>
                   </Box>
                   {DAYS.filter((d) => form.scheduleSlots.find((s) => s.day === d)).map((day) => {
                     const slot = form.scheduleSlots.find((s) => s.day === day)!;
                     return (
-                      <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 100px', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', alignItems: 'center', gap: 1, mb: 1 }}>
                         <Typography sx={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>{DAY_LABELS[day]}</Typography>
                         <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-                        <TextField
-                          type="number" required size="small"
-                          slotProps={{ htmlInput: { min: 0.5, max: 8, step: 0.5 }, input: { endAdornment: <InputAdornment position="end">h</InputAdornment> } }}
-                          value={slot.duration ?? DEFAULT_DURATION}
-                          onChange={(e) => setSlotDuration(day, parseFloat(e.target.value) || DEFAULT_DURATION)}
-                          sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                        />
+                        <TextField type="time" required size="small" value={slot.endTime ?? ''} onChange={(e) => setSlotEndTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                       </Box>
                     );
                   })}

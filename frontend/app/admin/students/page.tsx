@@ -24,6 +24,15 @@ import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 // ─── ScoreBadge ─────────────────────────────────────────────────────────────
 
+function formatDuration(startedAt: string, completedAt: string | null): string {
+  if (!completedAt) return '—';
+  const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
+  if (ms <= 0) return '—';
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
 function ScoreBadge({ score }: { score?: number | null }) {
   if (score === null || score === undefined) return <Typography component="span" sx={{ color: 'text.secondary' }}>—</Typography>;
   const pct = Math.round(score);
@@ -73,8 +82,9 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
   const RESULT_COLS = [
     { label: 'Homework', width: '2fr' },
     { label: 'Score', width: '0.8fr' },
-    { label: 'Started', width: '1.4fr' },
-    { label: 'Completed', width: '1.4fr' },
+    { label: 'Duration', width: '0.8fr' },
+    { label: 'Started', width: '1.3fr' },
+    { label: 'Completed', width: '1.3fr' },
     { label: '', width: '0.8fr' },
   ];
 
@@ -135,6 +145,7 @@ function StudentResults({ student, onBack }: { student: AdminStudentItem; onBack
               cells={[
                 <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{r.assignment.homework.name ?? r.assignment.homework.type}</Typography>,
                 <ScoreBadge score={r.score} />,
+                <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{formatDuration(r.startedAt, r.completedAt)}</Typography>,
                 <Typography sx={{ fontSize: 14 }}>{new Date(r.startedAt).toLocaleString()}</Typography>,
                 <Typography sx={{ fontSize: 14 }}>{r.completedAt ? new Date(r.completedAt).toLocaleString() : '—'}</Typography>,
                 <Button variant="text" size="small" onClick={() => setConfirmDelete(r)}

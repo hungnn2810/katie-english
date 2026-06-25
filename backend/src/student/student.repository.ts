@@ -24,7 +24,7 @@ export class StudentRepository {
   findByClass(classId: number) {
     return this.prisma.student.findMany({
       where: { classId },
-      include: { parents: true, user: { select: { upn: true } } },
+      include: { class: true, parents: true, user: { select: { upn: true } } },
     });
   }
 

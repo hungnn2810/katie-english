@@ -40,7 +40,6 @@ import TableShell, { TableRow } from '@/components/ui/TableShell';
 
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const DAY_LABELS: Record<string, string> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' };
-const DEFAULT_DURATION = 1.5;
 
 const STATUS_BADGE: Record<ClassStatus, { label: string; color: string; bg: string }> = {
   PENDING:    { label: 'Pending',     color: '#92400E', bg: '#FFFBEB' },
@@ -88,7 +87,7 @@ function EditClassModal({
       'scheduleSlots',
       slots.find((s) => s.day === day)
         ? slots.filter((s) => s.day !== day)
-        : [...slots, { day, time: '', duration: DEFAULT_DURATION }],
+        : [...slots, { day, time: '', endTime: '' }],
     );
   }
 
@@ -96,8 +95,8 @@ function EditClassModal({
     setField('scheduleSlots', (form.scheduleSlots ?? []).map((s) => (s.day === day ? { ...s, time } : s)));
   }
 
-  function setSlotDuration(day: string, duration: number) {
-    setField('scheduleSlots', (form.scheduleSlots ?? []).map((s) => (s.day === day ? { ...s, duration } : s)));
+  function setSlotEndTime(day: string, endTime: string) {
+    setField('scheduleSlots', (form.scheduleSlots ?? []).map((s) => (s.day === day ? { ...s, endTime } : s)));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -200,27 +199,18 @@ function EditClassModal({
 
               {slots.length > 0 && (
                 <Box sx={{ borderRadius: 3, p: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 100px', gap: 1, mb: 0.5 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', gap: 1, mb: 0.5 }}>
                     <Box />
                     <Typography sx={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Start time</Typography>
-                    <Typography sx={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Duration</Typography>
+                    <Typography sx={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>End time</Typography>
                   </Box>
                   {DAYS.filter((d) => slots.find((s) => s.day === d)).map((day) => {
                     const slot = slots.find((s) => s.day === day)!;
                     return (
-                      <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 100px', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', alignItems: 'center', gap: 1, mb: 1 }}>
                         <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#2563EB' }}>{DAY_LABELS[day]}</Typography>
                         <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-                        <Box sx={{ position: 'relative' }}>
-                          <TextField
-                            type="number" required size="small"
-                            slotProps={{ htmlInput: { min: 0.5, max: 8, step: 0.5 } }}
-                            value={slot.duration ?? DEFAULT_DURATION}
-                            onChange={(e) => setSlotDuration(day, parseFloat(e.target.value) || DEFAULT_DURATION)}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 }, '& input': { pr: 4 } }}
-                          />
-                          <Typography sx={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'text.secondary', fontWeight: 500, pointerEvents: 'none' }}>h</Typography>
-                        </Box>
+                        <TextField type="time" required size="small" value={slot.endTime ?? ''} onChange={(e) => setSlotEndTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                       </Box>
                     );
                   })}

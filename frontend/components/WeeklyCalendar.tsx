@@ -65,6 +65,14 @@ function parseHHMM(t: string): number {
   return (h || 0) + (m || 0) / 60;
 }
 
+function slotDuration(slot: ScheduleSlot): number {
+  if (slot.endTime && slot.time) {
+    const diff = parseHHMM(slot.endTime) - parseHHMM(slot.time);
+    if (diff > 0) return diff;
+  }
+  return slot.duration ?? 1.5;
+}
+
 function fmtWeek(mon: Date, sun: Date): string {
   const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   return `${fmt(mon)} – ${fmt(sun)}, ${mon.getFullYear()}`;
@@ -228,7 +236,7 @@ export default function WeeklyCalendar({ classes, accentColor }: Props) {
                 {/* Events */}
                 {eventsPerDay[di].map(({ cls, slot }) => {
                   const t = parseHHMM(slot.time);
-                  const dur = slot.duration ?? 1.5;
+                  const dur = slotDuration(slot);
                   const top = (t - START_H) * HOUR_H;
                   const rawHeight = dur * HOUR_H;
                   const p = colorMap.get(cls.id) ?? PALETTES[0];
@@ -246,7 +254,7 @@ export default function WeeklyCalendar({ classes, accentColor }: Props) {
                         <Box sx={{ p: 0.5 }}>
                           <Typography sx={{ fontWeight: 700, fontSize: 13 }}>{cls.name}</Typography>
                           <Typography sx={{ fontSize: 11 }}>
-                            {slot.time} · {dur}h · {cls._count?.students ?? 0} học sinh
+                            {slot.time}{slot.endTime ? ` – ${slot.endTime}` : ` · ${dur}h`} · {cls._count?.students ?? 0} học sinh
                           </Typography>
                           <Typography sx={{ fontSize: 11, opacity: 0.8 }}>{cls.code}</Typography>
                         </Box>
