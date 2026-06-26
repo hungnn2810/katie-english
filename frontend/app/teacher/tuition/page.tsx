@@ -2,6 +2,12 @@
 // Teacher tuition: uses authHeaders() (teacher JWT) via teacher-tuition-api for all direct API calls
 import { useCallback, useEffect, useState } from 'react';
 import { getClasses, ClassItem } from '@/lib/admin-api';
+import {
+  getTuitionConfig,
+  updateTuitionConfig,
+  createTuitionRecords,
+  getTuitionReport,
+} from '@/lib/teacher-tuition-api';
 import { useToast } from '@/lib/toast-context';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -108,6 +114,8 @@ export default function TeacherTuitionPage() {
                 classId={classId}
                 onClose={() => {}}
                 onSaved={() => {}}
+                getConfigFn={getTuitionConfig}
+                updateConfigFn={updateTuitionConfig}
               />
             )}
 
@@ -128,6 +136,7 @@ export default function TeacherTuitionPage() {
                   classId={classId}
                   onClose={() => setGenerateOpen(false)}
                   onSaved={() => {}}
+                  createRecordsFn={createTuitionRecords}
                 />
               </Box>
             )}
@@ -165,6 +174,7 @@ export default function TeacherTuitionPage() {
                     classId={classId}
                     month={reportMonth}
                     year={reportYear}
+                    getReportFn={getTuitionReport}
                   />
                 ) : (
                   <Typography color="text.secondary">Chọn lớp để xem báo cáo.</Typography>

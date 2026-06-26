@@ -106,10 +106,17 @@ export class ImportService {
   private parseScheduleSlots(slotsStr: string): { dayOfWeek: number; startTime: string; endTime: string }[] {
     if (!slotsStr) return [];
     return slotsStr.split(',').map(s => {
-      const day = s.trim().toLowerCase();
+      const parts = s.trim().split(/\s+/);
+      const day = parts[0].toLowerCase();
       const dayOfWeek = DAY_MAP[day] ?? -1;
-      return { dayOfWeek, startTime: '', endTime: '' };
+      const timeRange = parts[1] ?? '';
+      const [startTime = '', endTime = ''] = timeRange.includes('-') ? timeRange.split('-') : ['', ''];
+      return { dayOfWeek, startTime, endTime };
     }).filter(slot => slot.dayOfWeek >= 0);
+  }
+
+  private isValidTime(t: string): boolean {
+    return /^\d{2}:\d{2}$/.test(t);
   }
 
   private generateClassCode(): string {
@@ -160,6 +167,27 @@ export class ImportService {
       } else {
         const d = this.toDate(row.endDate);
         if (!d) errors.push({ sheet: 'Classes', row: rowNum, column: 'endDate', message: 'endDate is not a valid date' });
+      }
+
+      if (row.scheduleSlots) {
+        const slots = this.parseScheduleSlots(row.scheduleSlots);
+        const rawTokens = row.scheduleSlots.split(',');
+        rawTokens.forEach((token, ti) => {
+          const parts = token.trim().split(/\s+/);
+          if (parts.length > 1) {
+            const timeRange = parts[1];
+            const [start, end] = timeRange.split('-');
+            if (!this.isValidTime(start)) {
+              errors.push({ sheet: 'Classes', row: rowNum, column: 'scheduleSlots', message: `scheduleSlots token ${ti + 1}: startTime "${start}" must be HH:MM` });
+            }
+            if (!this.isValidTime(end ?? '')) {
+              errors.push({ sheet: 'Classes', row: rowNum, column: 'scheduleSlots', message: `scheduleSlots token ${ti + 1}: endTime "${end ?? ''}" must be HH:MM` });
+            }
+          }
+        });
+        if (slots.length === 0) {
+          errors.push({ sheet: 'Classes', row: rowNum, column: 'scheduleSlots', message: 'scheduleSlots has no valid day names (use Mon,Tue,Wed,Thu,Fri,Sat,Sun)' });
+        }
       }
 
       if (row.pricePerSession !== undefined) {
@@ -385,7 +413,7 @@ export class ImportService {
         code: 'LA01',
         startDate: '2026-01-01',
         endDate: '2026-06-30',
-        scheduleSlots: 'Mon,Wed,Fri',
+        scheduleSlots: 'Mon 08:00-09:30,Wed 08:00-09:30,Fri 08:00-09:30',
         pricePerSession: 100000,
         bookFee: 50000,
         dueDayOfMonth: 5,

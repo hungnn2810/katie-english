@@ -9,19 +9,14 @@ import { Search } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormLabel from '@mui/material/FormLabel';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import CloseIcon from '@mui/icons-material/Close';
 import TableShell, { TableRow } from '@/components/ui/TableShell';
 import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
+import ModalShell, { sectionInputSx } from '@/components/ui/ModalShell';
+import FormSection from '@/components/ui/FormSection';
 
 const ACCENT = '#6366F1';
 
@@ -70,52 +65,26 @@ function TeacherModal({ editing, onClose, onSaved }: {
   }
 
   return (
-    <Dialog open onClose={onClose} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
-      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 900 }}>{editing ? 'Edit Teacher' : 'Create Teacher'}</Typography>
-          <Typography variant="caption" color="text.secondary">{editing ? 'Update teacher details.' : 'Add a new teacher account.'}</Typography>
-        </Box>
-        <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: -0.5 }}>
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </DialogTitle>
-
-      <Box component="form" onSubmit={handleSubmit}>
-        <DialogContent sx={{ px: 4, py: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box>
-            <FormLabel htmlFor="teacher-name" sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', display: 'block', mb: 0.5 }}>Name</FormLabel>
-            <TextField id="teacher-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" required fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-          </Box>
-          <Box>
-            <FormLabel htmlFor="teacher-email" sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', display: 'block', mb: 0.5 }}>Email</FormLabel>
-            <TextField id="teacher-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teacher@example.com" required fullWidth size="small" disabled={!!editing} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-          </Box>
-          <Box>
-            <FormLabel htmlFor="teacher-phone" sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', display: 'block', mb: 0.5 }}>Phone</FormLabel>
-            <TextField id="teacher-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone number" required fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-          </Box>
-          <Box>
-            <FormLabel htmlFor="teacher-password" sx={{ fontSize: 13, fontWeight: 600, color: 'text.primary', display: 'block', mb: 0.5 }}>
-              {editing ? 'New Password' : 'Password'}
-            </FormLabel>
-            <TextField id="teacher-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editing ? 'Leave blank to keep current' : 'Password'} required={!editing} fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
-          <Button type="button" variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Keep teacher</Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={loading}
-            startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
-            sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 700 }}
-          >
-            {loading ? 'Saving...' : editing ? 'Save Changes' : 'Create Teacher'}
-          </Button>
-        </DialogActions>
-      </Box>
-    </Dialog>
+    <ModalShell
+      title={editing ? 'Edit Teacher' : 'Create Teacher'}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      submitLabel={loading ? 'Saving...' : editing ? 'Save Changes' : 'Create Teacher'}
+      loading={loading}
+    >
+      <FormSection label="Name">
+        <TextField id="teacher-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" required fullWidth size="small" sx={sectionInputSx} />
+      </FormSection>
+      <FormSection label="Email">
+        <TextField id="teacher-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teacher@example.com" required fullWidth size="small" disabled={!!editing} sx={sectionInputSx} />
+      </FormSection>
+      <FormSection label="Phone">
+        <TextField id="teacher-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone number" required fullWidth size="small" sx={sectionInputSx} />
+      </FormSection>
+      <FormSection label={editing ? 'New Password' : 'Password'}>
+        <TextField id="teacher-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={editing ? 'Leave blank to keep current' : 'Password'} required={!editing} fullWidth size="small" sx={sectionInputSx} />
+      </FormSection>
+    </ModalShell>
   );
 }
 
@@ -147,43 +116,38 @@ function ConfirmDialog({ target, onClose, onConfirmed }: {
   }
 
   return (
-    <Dialog open onClose={onClose} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
-      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography variant="h6" sx={{ fontWeight: 900 }}>{isDisabling ? 'Disable teacher?' : 'Enable teacher?'}</Typography>
-      </DialogTitle>
-      <DialogContent sx={{ px: 4, py: 3 }}>
-        <Typography variant="body2" color="text.secondary">
-          {isDisabling
-            ? `Disable teacher? ${target.name ?? target.upn} will no longer be able to log in until re-enabled.`
-            : `Enable teacher? ${target.name ?? target.upn} will be able to log in again.`}
-        </Typography>
-      </DialogContent>
-      <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
-        <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Keep teacher</Button>
-        {isDisabling ? (
-          <Button
-            variant="contained"
-            color="error"
-            disabled={loading}
-            onClick={handleConfirm}
-            startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
-            sx={{ flex: 1, borderRadius: 3, fontWeight: 700 }}
-          >
-            {loading ? 'Disabling...' : 'Disable account'}
+    <ModalShell
+      title={isDisabling ? 'Disable teacher?' : 'Enable teacher?'}
+      onClose={onClose}
+      maxWidth="xs"
+      actions={
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Button variant="outlined" onClick={onClose}
+            sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>
+            Keep teacher
           </Button>
-        ) : (
-          <Button
-            variant="contained"
-            disabled={loading}
-            onClick={handleConfirm}
-            startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
-            sx={{ flex: 1, borderRadius: 3, fontWeight: 700, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 } }}
-          >
-            {loading ? 'Enabling...' : 'Enable account'}
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+          {isDisabling ? (
+            <Button variant="contained" color="error" disabled={loading} onClick={handleConfirm}
+              startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
+              sx={{ borderRadius: '50px', fontWeight: 700, px: 2.5, textTransform: 'none' }}>
+              {loading ? 'Disabling...' : 'Disable account'}
+            </Button>
+          ) : (
+            <Button variant="contained" disabled={loading} onClick={handleConfirm}
+              startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
+              sx={{ borderRadius: '50px', fontWeight: 700, px: 2.5, textTransform: 'none', bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 } }}>
+              {loading ? 'Enabling...' : 'Enable account'}
+            </Button>
+          )}
+        </Box>
+      }
+    >
+      <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
+        {isDisabling
+          ? `Disable teacher? ${target.name ?? target.upn} will no longer be able to log in until re-enabled.`
+          : `Enable teacher? ${target.name ?? target.upn} will be able to log in again.`}
+      </Typography>
+    </ModalShell>
   );
 }
 

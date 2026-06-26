@@ -45,12 +45,14 @@ export default function TuitionReportTable({
   year,
   onSelectionChange,
   onPaymentRecord,
+  getReportFn = getTuitionReport,
 }: {
   classId: number;
   month: number;
   year: number;
   onSelectionChange?: (selectedIds: number[]) => void;
   onPaymentRecord?: (recordId: number, studentName: string, totalAmount: number) => void;
+  getReportFn?: (params: { classId: number; month: number; year: number; statuses?: string[] }) => Promise<TuitionReportItem[]>;
 }) {
   const { showToast } = useToast();
   const [rows, setRows] = useState<TuitionReportItem[]>([]);
@@ -66,7 +68,7 @@ export default function TuitionReportTable({
   async function fetchReport() {
     setLoading(true);
     try {
-      const data = await getTuitionReport({
+      const data = await getReportFn({
         classId,
         month,
         year,

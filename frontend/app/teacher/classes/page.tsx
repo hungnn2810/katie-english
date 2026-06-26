@@ -5,22 +5,17 @@ import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStat
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormLabel from '@mui/material/FormLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
+import ModalShell, { sectionInputSx } from '@/components/ui/ModalShell';
+import FormSection from '@/components/ui/FormSection';
 import { useToast } from '@/lib/toast-context';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Search, Plus, Calendar, Pencil, Trash2, Users, X } from 'lucide-react';
+import { Search, Plus, Calendar, Pencil, Trash2, Users } from 'lucide-react';
 import { formatDate, DATE_FORMAT } from '@/lib/datetime';
 import TableShell, { TableRow as TableShellRow } from '@/components/ui/TableShell';
 import { colors } from '@/lib/colors';
@@ -94,117 +89,94 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Dialog open onClose={onClose} maxWidth="md" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
-        <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 900 }}>
-              {editing
-                ? <><Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Edit </Box><Box component="span" sx={{ color: ACCENT }}>{editing.name}</Box></>
-                : 'New Class'}
-            </Typography>
-            <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>{editing ? 'Update class details and schedule.' : 'Create a new class for your students.'}</Typography>
-          </Box>
-          <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: -0.5 }}><X size={16} /></IconButton>
-        </DialogTitle>
-
-        <Box component="form" onSubmit={handleSubmit}>
-          <DialogContent sx={{ px: 4, py: 3 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-              <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Class Name</FormLabel>
-                <TextField size="small" fullWidth required value={form.name} onChange={(e) => setField('name', e.target.value)} placeholder="e.g. English Beginners" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-              </Box>
-              <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Class Code</FormLabel>
-                <TextField size="small" fullWidth required value={form.code} onChange={(e) => setField('code', e.target.value)} placeholder="e.g. ENG-01" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-              </Box>
-              <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>Start Date ({DATE_FORMAT})</FormLabel>
-                <DatePicker
-                  format={DATE_FORMAT}
-                  value={form.startDate ? new Date(form.startDate) : null}
-                  onChange={(v: Date | null) => setField('startDate', v ? v.toISOString().split('T')[0] : '')}
-                  slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
-                />
-              </Box>
-              <Box>
-                <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.75 }}>End Date ({DATE_FORMAT})</FormLabel>
-                <DatePicker
-                  format={DATE_FORMAT}
-                  value={form.endDate ? new Date(form.endDate) : null}
-                  onChange={(v: Date | null) => setField('endDate', v ? v.toISOString().split('T')[0] : '')}
-                  slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
-                />
-              </Box>
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>Status</FormLabel>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                {(['PENDING', 'INPROGRESS', 'ENDED'] as ClassStatus[]).map((s) => {
-                  const sc = STATUS_CONFIG[s];
-                  const active = form.status === s;
-                  return (
-                    <Button key={s} type="button" variant="outlined" size="small"
-                      onClick={() => setField('status', s)}
-                      sx={{ borderRadius: 3, fontSize: 12, fontWeight: 600, gap: 0.75, border: '2px solid',
-                        ...(active ? { bgcolor: sc.bg, color: sc.color, borderColor: sc.dot, '&:hover': { bgcolor: sc.bg } }
-                          : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
-                      <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: active ? sc.dot : 'divider', display: 'inline-block' }} />
-                      {sc.label}
-                    </Button>
-                  );
-                })}
-              </Box>
-            </Box>
-
-            <Box>
-              <FormLabel sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>Schedule</FormLabel>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
-                {DAYS.map((day) => {
-                  const active = !!form.scheduleSlots.find((s) => s.day === day);
-                  return (
-                    <Button key={day} type="button" variant="outlined" size="small"
-                      onClick={() => toggleDay(day)}
-                      sx={{ borderRadius: 2, fontSize: 12, fontWeight: 700, minWidth: 0, px: 1.5, border: '2px solid',
-                        ...(active ? { bgcolor: '#EFF6FF', color: ACCENT, borderColor: ACCENT, '&:hover': { bgcolor: '#EFF6FF' } }
-                          : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
-                      {DAY_LABELS[day]}
-                    </Button>
-                  );
-                })}
-              </Box>
-              {form.scheduleSlots.length > 0 && (
-                <Paper variant="outlined" sx={{ borderRadius: 3, p: 2, bgcolor: 'background.default' }}>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', gap: 1, mb: 1 }}>
-                    <Box />
-                    <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Start time</Typography>
-                    <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>End time</Typography>
-                  </Box>
-                  {DAYS.filter((d) => form.scheduleSlots.find((s) => s.day === d)).map((day) => {
-                    const slot = form.scheduleSlots.find((s) => s.day === day)!;
-                    return (
-                      <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>{DAY_LABELS[day]}</Typography>
-                        <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-                        <TextField type="time" required size="small" value={slot.endTime ?? ''} onChange={(e) => setSlotEndTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-                      </Box>
-                    );
-                  })}
-                </Paper>
-              )}
-            </Box>
-          </DialogContent>
-
-          <DialogActions sx={{ px: 4, pb: 3.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
-            <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-              {loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
-            </Button>
-          </DialogActions>
+      <ModalShell
+        title={editing ? `Edit ${editing.name}` : 'New Class'}
+        onClose={onClose}
+        onSubmit={handleSubmit}
+        submitLabel={loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
+        loading={loading}
+        maxWidth="md"
+      >
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+          <FormSection label="Class Name">
+            <TextField size="small" fullWidth required value={form.name} onChange={(e) => setField('name', e.target.value)} placeholder="e.g. English Beginners" sx={sectionInputSx} />
+          </FormSection>
+          <FormSection label="Class Code">
+            <TextField size="small" fullWidth required value={form.code} onChange={(e) => setField('code', e.target.value)} placeholder="e.g. ENG-01" sx={sectionInputSx} />
+          </FormSection>
+          <FormSection label={`Start Date (${DATE_FORMAT})`}>
+            <DatePicker
+              format={DATE_FORMAT}
+              value={form.startDate ? new Date(form.startDate) : null}
+              onChange={(v: Date | null) => setField('startDate', v ? v.toISOString().split('T')[0] : '')}
+              slotProps={{ textField: { size: 'small', fullWidth: true, sx: sectionInputSx } }}
+            />
+          </FormSection>
+          <FormSection label={`End Date (${DATE_FORMAT})`}>
+            <DatePicker
+              format={DATE_FORMAT}
+              value={form.endDate ? new Date(form.endDate) : null}
+              onChange={(v: Date | null) => setField('endDate', v ? v.toISOString().split('T')[0] : '')}
+              slotProps={{ textField: { size: 'small', fullWidth: true, sx: sectionInputSx } }}
+            />
+          </FormSection>
         </Box>
-      </Dialog>
+
+        <FormSection label="Status" showPencil={false}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {(['PENDING', 'INPROGRESS', 'ENDED'] as ClassStatus[]).map((s) => {
+              const sc = STATUS_CONFIG[s];
+              const active = form.status === s;
+              return (
+                <Button key={s} type="button" variant="outlined" size="small"
+                  onClick={() => setField('status', s)}
+                  sx={{ borderRadius: 3, fontSize: 12, fontWeight: 600, gap: 0.75, border: '2px solid',
+                    ...(active ? { bgcolor: sc.bg, color: sc.color, borderColor: sc.dot, '&:hover': { bgcolor: sc.bg } }
+                      : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
+                  <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: active ? sc.dot : 'divider', display: 'inline-block' }} />
+                  {sc.label}
+                </Button>
+              );
+            })}
+          </Box>
+        </FormSection>
+
+        <FormSection label="Schedule" showPencil={false}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: form.scheduleSlots.length > 0 ? 1.5 : 0 }}>
+            {DAYS.map((day) => {
+              const active = !!form.scheduleSlots.find((s) => s.day === day);
+              return (
+                <Button key={day} type="button" variant="outlined" size="small"
+                  onClick={() => toggleDay(day)}
+                  sx={{ borderRadius: 2, fontSize: 12, fontWeight: 700, minWidth: 0, px: 1.5, border: '2px solid',
+                    ...(active ? { bgcolor: '#EFF6FF', color: ACCENT, borderColor: ACCENT, '&:hover': { bgcolor: '#EFF6FF' } }
+                      : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
+                  {DAY_LABELS[day]}
+                </Button>
+              );
+            })}
+          </Box>
+          {form.scheduleSlots.length > 0 && (
+            <Box sx={{ borderRadius: 2, p: 1.5, bgcolor: 'white' }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', gap: 1, mb: 1 }}>
+                <Box />
+                <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Start time</Typography>
+                <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>End time</Typography>
+              </Box>
+              {DAYS.filter((d) => form.scheduleSlots.find((s) => s.day === d)).map((day) => {
+                const slot = form.scheduleSlots.find((s) => s.day === day)!;
+                return (
+                  <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>{DAY_LABELS[day]}</Typography>
+                    <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                    <TextField type="time" required size="small" value={slot.endTime ?? ''} onChange={(e) => setSlotEndTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  </Box>
+                );
+              })}
+            </Box>
+          )}
+        </FormSection>
+      </ModalShell>
     </LocalizationProvider>
   );
 }

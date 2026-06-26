@@ -12,7 +12,6 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import FormLabel from '@mui/material/FormLabel';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import MuiSelect from '@mui/material/Select';
@@ -21,6 +20,7 @@ import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import FormSection from '@/components/ui/FormSection';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -47,16 +47,19 @@ const fLabelSx = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as 
 const sectionSx = { borderRadius: 3, p: 2, bgcolor: 'background.default', display: 'flex', flexDirection: 'column' as const, gap: 1.5, mb: 2 };
 const sectionTitleSx = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.05em', color: 'text.secondary' };
 
-function Modal({ title, subtitle, onClose, children }: { title: React.ReactNode; subtitle?: React.ReactNode; onClose: () => void; children: React.ReactNode }) {
+function Modal({ title, onClose, children }: { title: React.ReactNode; subtitle?: React.ReactNode; onClose: () => void; children: React.ReactNode }) {
   return (
-    <Dialog open onClose={onClose} maxWidth="md" fullWidth slotProps={{ paper: { sx: { borderRadius: 4, maxHeight: '90vh' } } }}>
-      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 900 }}>{title}</Typography>
-          {subtitle && <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>{subtitle}</Typography>}
-        </Box>
-        <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: -0.5 }}><X size={16} /></IconButton>
-      </DialogTitle>
+    <Dialog open onClose={onClose} maxWidth="md" fullWidth
+      slotProps={{ paper: { sx: { borderRadius: '20px', boxShadow: '0 20px 60px rgba(0,0,0,0.12)', maxHeight: '92vh' } } }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3.5, pt: 3, pb: 2 }}>
+        <Typography sx={{ fontSize: 22, fontWeight: 700, color: '#1A1A2E', letterSpacing: '-0.02em' }}>
+          {title}
+        </Typography>
+        <IconButton size="small" onClick={onClose}
+          sx={{ bgcolor: '#F0F2F8', borderRadius: '50%', width: 32, height: 32, '&:hover': { bgcolor: '#E5E8F2' } }}>
+          <X size={15} color="#6B7280" />
+        </IconButton>
+      </Box>
       {children}
     </Dialog>
   );
@@ -153,11 +156,10 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Modal title="Add Student" onClose={onClose}>
         <Box component="form" onSubmit={handleSubmit}>
-          <DialogContent sx={{ px: 4, py: 3 }}>
+          <DialogContent sx={{ px: 3.5, py: 0, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
 
             {/* Section: Auth */}
-            <Paper variant="outlined" sx={sectionSx}>
-              <Typography sx={sectionTitleSx}>Auth</Typography>
+            <FormSection label="Auth" showPencil={false}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box>
                   <FormLabel sx={fLabelSx}>Username</FormLabel>
@@ -175,11 +177,10 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                 </Box>
               </Box>
-            </Paper>
+            </FormSection>
 
             {/* Section: Student Info */}
-            <Paper variant="outlined" sx={sectionSx}>
-              <Typography sx={sectionTitleSx}>Student Info</Typography>
+            <FormSection label="Student Info" showPencil={false}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box sx={{ gridColumn: '1/-1' }}>
                   <FormLabel sx={fLabelSx}>Full Name</FormLabel>
@@ -212,16 +213,15 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
                   </FormControl>
                 </Box>
               </Box>
-            </Paper>
+            </FormSection>
 
             {/* Section: Parent / Guardian */}
-            <Paper variant="outlined" sx={{ ...sectionSx, mb: 0 }}>
-              <Typography sx={sectionTitleSx}>Parent / Guardian</Typography>
+            <FormSection label="Parent / Guardian" showPencil={false}>
               <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
-            </Paper>
+            </FormSection>
 
           </DialogContent>
-          <DialogActions sx={{ px: 4, pb: 3.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', gap: 1.5, alignItems: 'stretch' }}>
+          <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
             <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
               {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
@@ -269,11 +269,10 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
         onClose={onClose}
       >
         <Box component="form" onSubmit={handleSubmit}>
-          <DialogContent sx={{ px: 4, py: 3 }}>
+          <DialogContent sx={{ px: 3.5, py: 0, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
 
             {/* Section: Auth */}
-            <Paper variant="outlined" sx={sectionSx}>
-              <Typography sx={sectionTitleSx}>Auth</Typography>
+            <FormSection label="Auth" showPencil={false}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box>
                   <FormLabel sx={fLabelSx}>Username</FormLabel>
@@ -281,11 +280,10 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                 </Box>
               </Box>
-            </Paper>
+            </FormSection>
 
             {/* Section: Student Info */}
-            <Paper variant="outlined" sx={sectionSx}>
-              <Typography sx={sectionTitleSx}>Student Info</Typography>
+            <FormSection label="Student Info" showPencil={false}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box sx={{ gridColumn: '1/-1' }}>
                   <FormLabel sx={fLabelSx}>Full Name</FormLabel>
@@ -318,16 +316,15 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
                   </FormControl>
                 </Box>
               </Box>
-            </Paper>
+            </FormSection>
 
             {/* Section: Parent / Guardian */}
-            <Paper variant="outlined" sx={{ ...sectionSx, mb: 0 }}>
-              <Typography sx={sectionTitleSx}>Parent / Guardian</Typography>
+            <FormSection label="Parent / Guardian" showPencil={false}>
               <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
-            </Paper>
+            </FormSection>
 
           </DialogContent>
-          <DialogActions sx={{ px: 4, pb: 3.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', gap: 1.5, alignItems: 'stretch' }}>
+          <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
             <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
               {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
@@ -383,7 +380,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
         onClose={onClose}
       >
         <Box component="form" onSubmit={handleSubmit}>
-          <DialogContent sx={{ px: 4, py: 3 }}>
+          <DialogContent sx={{ px: 3.5, py: 0, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Alert severity="warning" sx={{ borderRadius: 3, mb: 2, fontSize: 13 }}>
               <strong>Login:</strong> {pending.upn} &middot; Registered {new Date(pending.createdAt).toLocaleDateString()}
             </Alert>
@@ -417,12 +414,11 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
                 </FormControl>
               </Box>
             </Box>
-            <Paper variant="outlined" sx={{ borderRadius: 3, p: 2, bgcolor: 'background.default', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Typography sx={sectionTitleSx}>Parent / Guardian</Typography>
+            <FormSection label="Parent / Guardian" showPencil={false}>
               <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
-            </Paper>
+            </FormSection>
           </DialogContent>
-          <DialogActions sx={{ px: 4, pb: 3.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', gap: 1.5, alignItems: 'stretch' }}>
+          <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
             <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
             <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: '#10B981', '&:hover': { bgcolor: '#059669' }, gap: 1 }}>
               {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
@@ -472,7 +468,7 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
             slotProps={{ htmlInput: { minLength: 6 } }} autoFocus
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
         </DialogContent>
-        <DialogActions sx={{ px: 4, pb: 3.5, pt: 2, borderTop: '1px solid', borderColor: 'divider', gap: 1.5, alignItems: 'stretch' }}>
+        <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
           <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
           <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
             {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}

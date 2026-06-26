@@ -20,23 +20,18 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Chip from '@mui/material/Chip';
 import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
-import CloseIcon from '@mui/icons-material/Close';
 import TableShell, { TableRow } from '@/components/ui/TableShell';
+import ModalShell, { sectionInputSx } from '@/components/ui/ModalShell';
+import FormSection from '@/components/ui/FormSection';
 
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const DAY_LABELS: Record<string, string> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' };
@@ -117,124 +112,95 @@ function EditClassModal({
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Dialog open onClose={onClose} maxWidth="md" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
-        <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 900 }}>Edit Class</Typography>
-            <Typography variant="caption" color="text.secondary">Update class details and schedule.</Typography>
-          </Box>
-          <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: -0.5 }}>
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </DialogTitle>
-
-        <Box component="form" onSubmit={handleSubmit}>
-          <DialogContent sx={{ px: 4, py: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <Box>
-                <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>Class Name</FormLabel>
-                <TextField size="small" fullWidth required value={form.name ?? ''} onChange={(e) => setField('name', e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-              </Box>
-              <Box>
-                <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>Class Code</FormLabel>
-                <TextField size="small" fullWidth required value={form.code ?? ''} onChange={(e) => setField('code', e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-              </Box>
-              <Box>
-                <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>Start Date ({DATE_FORMAT})</FormLabel>
-                <DatePicker
-                  format={DATE_FORMAT}
-                  value={form.startDate ? new Date(form.startDate) : null}
-                  onChange={(v) => setField('startDate', v ? v.toISOString().split('T')[0] : '')}
-                  slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
-                />
-              </Box>
-              <Box>
-                <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>End Date ({DATE_FORMAT})</FormLabel>
-                <DatePicker
-                  format={DATE_FORMAT}
-                  value={form.endDate ? new Date(form.endDate) : null}
-                  onChange={(v) => setField('endDate', v ? v.toISOString().split('T')[0] : '')}
-                  slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
-                />
-              </Box>
-            </Box>
-
-            <Box>
-              <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1 }}>Status</FormLabel>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                {(['PENDING', 'INPROGRESS', 'ENDED'] as ClassStatus[]).map((s) => {
-                  const badge = STATUS_BADGE[s];
-                  const active = form.status === s;
-                  return (
-                    <Button key={s} type="button" variant="outlined" size="small"
-                      onClick={() => setField('status', s)}
-                      sx={{ fontSize: 12, fontWeight: 600, borderRadius: 3, px: 1.75, py: 1, borderWidth: 2,
-                        ...(active
-                          ? { color: badge.color, bgcolor: badge.bg, borderColor: badge.color, '&:hover': { bgcolor: badge.bg, borderColor: badge.color } }
-                          : { color: 'text.secondary', bgcolor: 'white', borderColor: 'divider', '&:hover': { bgcolor: 'grey.50' } }) }}>
-                      {badge.label}
-                    </Button>
-                  );
-                })}
-              </Box>
-            </Box>
-
-            <Box>
-              <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 1 }}>Schedule</FormLabel>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1.5 }}>
-                {DAYS.map((day) => {
-                  const active = !!slots.find((s) => s.day === day);
-                  return (
-                    <Button key={day} type="button" variant="outlined" size="small"
-                      onClick={() => toggleDay(day)}
-                      sx={{ fontSize: 12, fontWeight: 700, borderRadius: 2, px: 1.5, py: 0.75, borderWidth: 2,
-                        ...(active
-                          ? { color: '#2563EB', bgcolor: '#EFF6FF', borderColor: '#60A5FA', '&:hover': { bgcolor: '#EFF6FF', borderColor: '#60A5FA' } }
-                          : { color: 'text.secondary', bgcolor: 'white', borderColor: 'divider', '&:hover': { bgcolor: 'grey.50' } }) }}>
-                      {DAY_LABELS[day]}
-                    </Button>
-                  );
-                })}
-              </Box>
-
-              {slots.length > 0 && (
-                <Box sx={{ borderRadius: 3, p: 2, border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', gap: 1, mb: 0.5 }}>
-                    <Box />
-                    <Typography sx={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Start time</Typography>
-                    <Typography sx={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>End time</Typography>
-                  </Box>
-                  {DAYS.filter((d) => slots.find((s) => s.day === d)).map((day) => {
-                    const slot = slots.find((s) => s.day === day)!;
-                    return (
-                      <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#2563EB' }}>{DAY_LABELS[day]}</Typography>
-                        <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-                        <TextField type="time" required size="small" value={slot.endTime ?? ''} onChange={(e) => setSlotEndTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
-                      </Box>
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
-          </DialogContent>
-
-          <DialogActions sx={{ px: 4, pb: 3.5, pt: 2.5, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', gap: 0 }}>
-            <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
-              <Button type="button" variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3, fontWeight: 600 }}>Keep class</Button>
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={loading}
-                startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
-                sx={{ flex: 1, borderRadius: 3, fontWeight: 700, bgcolor: '#3B82F6', '&:hover': { bgcolor: '#2563EB' } }}
-              >
-                {loading ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </Box>
-          </DialogActions>
+      <ModalShell
+        title="Edit Class"
+        onClose={onClose}
+        onSubmit={handleSubmit}
+        submitLabel={loading ? 'Saving...' : 'Save Changes'}
+        loading={loading}
+        maxWidth="md"
+      >
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+          <FormSection label="Class Name">
+            <TextField size="small" fullWidth required value={form.name ?? ''} onChange={(e) => setField('name', e.target.value)} sx={sectionInputSx} />
+          </FormSection>
+          <FormSection label="Class Code">
+            <TextField size="small" fullWidth required value={form.code ?? ''} onChange={(e) => setField('code', e.target.value)} sx={sectionInputSx} />
+          </FormSection>
+          <FormSection label={`Start Date (${DATE_FORMAT})`}>
+            <DatePicker
+              format={DATE_FORMAT}
+              value={form.startDate ? new Date(form.startDate) : null}
+              onChange={(v) => setField('startDate', v ? v.toISOString().split('T')[0] : '')}
+              slotProps={{ textField: { size: 'small', fullWidth: true, sx: sectionInputSx } }}
+            />
+          </FormSection>
+          <FormSection label={`End Date (${DATE_FORMAT})`}>
+            <DatePicker
+              format={DATE_FORMAT}
+              value={form.endDate ? new Date(form.endDate) : null}
+              onChange={(v) => setField('endDate', v ? v.toISOString().split('T')[0] : '')}
+              slotProps={{ textField: { size: 'small', fullWidth: true, sx: sectionInputSx } }}
+            />
+          </FormSection>
         </Box>
-      </Dialog>
+
+        <FormSection label="Status" showPencil={false}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {(['PENDING', 'INPROGRESS', 'ENDED'] as ClassStatus[]).map((s) => {
+              const badge = STATUS_BADGE[s];
+              const active = form.status === s;
+              return (
+                <Button key={s} type="button" variant="outlined" size="small"
+                  onClick={() => setField('status', s)}
+                  sx={{ fontSize: 12, fontWeight: 600, borderRadius: 3, px: 1.75, py: 1, borderWidth: 2,
+                    ...(active
+                      ? { color: badge.color, bgcolor: badge.bg, borderColor: badge.color, '&:hover': { bgcolor: badge.bg, borderColor: badge.color } }
+                      : { color: 'text.secondary', bgcolor: 'white', borderColor: 'divider', '&:hover': { bgcolor: 'grey.50' } }) }}>
+                  {badge.label}
+                </Button>
+              );
+            })}
+          </Box>
+        </FormSection>
+
+        <FormSection label="Schedule" showPencil={false}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: slots.length > 0 ? 1.5 : 0 }}>
+            {DAYS.map((day) => {
+              const active = !!slots.find((s) => s.day === day);
+              return (
+                <Button key={day} type="button" variant="outlined" size="small"
+                  onClick={() => toggleDay(day)}
+                  sx={{ fontSize: 12, fontWeight: 700, borderRadius: 2, px: 1.5, py: 0.75, borderWidth: 2,
+                    ...(active
+                      ? { color: '#2563EB', bgcolor: '#EFF6FF', borderColor: '#60A5FA', '&:hover': { bgcolor: '#EFF6FF', borderColor: '#60A5FA' } }
+                      : { color: 'text.secondary', bgcolor: 'white', borderColor: 'divider', '&:hover': { bgcolor: 'grey.50' } }) }}>
+                  {DAY_LABELS[day]}
+                </Button>
+              );
+            })}
+          </Box>
+          {slots.length > 0 && (
+            <Box sx={{ borderRadius: 2, p: 1.5, bgcolor: 'white' }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', gap: 1, mb: 0.5 }}>
+                <Box />
+                <Typography sx={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Start time</Typography>
+                <Typography sx={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>End time</Typography>
+              </Box>
+              {DAYS.filter((d) => slots.find((s) => s.day === d)).map((day) => {
+                const slot = slots.find((s) => s.day === day)!;
+                return (
+                  <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', alignItems: 'center', gap: 1, mb: 1 }}>
+                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#2563EB' }}>{DAY_LABELS[day]}</Typography>
+                    <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                    <TextField type="time" required size="small" value={slot.endTime ?? ''} onChange={(e) => setSlotEndTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
+                  </Box>
+                );
+              })}
+            </Box>
+          )}
+        </FormSection>
+      </ModalShell>
     </LocalizationProvider>
   );
 }
@@ -266,29 +232,28 @@ function DeleteConfirmDialog({
   }
 
   return (
-    <Dialog open onClose={onClose} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
-      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography variant="h6" sx={{ fontWeight: 900 }}>Delete class?</Typography>
-      </DialogTitle>
-      <DialogContent sx={{ px: 4, py: 3 }}>
-        <Typography variant="body2" color="text.secondary">
-          Delete class? All homework and sessions in this class will be permanently deleted.
-        </Typography>
-      </DialogContent>
-      <DialogActions sx={{ px: 4, pb: 3.5, gap: 1.5 }}>
-        <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3, fontWeight: 600 }}>Keep class</Button>
-        <Button
-          variant="contained"
-          color="error"
-          disabled={deleting}
-          onClick={handleDelete}
-          startIcon={deleting ? <CircularProgress size={14} color="inherit" /> : undefined}
-          sx={{ flex: 1, borderRadius: 3, fontWeight: 700 }}
-        >
-          {deleting ? 'Deleting...' : 'Delete class'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ModalShell
+      title="Delete class?"
+      onClose={onClose}
+      maxWidth="xs"
+      actions={
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Button variant="outlined" onClick={onClose}
+            sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>
+            Keep class
+          </Button>
+          <Button variant="contained" color="error" disabled={deleting} onClick={handleDelete}
+            startIcon={deleting ? <CircularProgress size={14} color="inherit" /> : undefined}
+            sx={{ borderRadius: '50px', fontWeight: 700, px: 2.5, textTransform: 'none' }}>
+            {deleting ? 'Deleting...' : 'Delete class'}
+          </Button>
+        </Box>
+      }
+    >
+      <Typography variant="body2" color="text.secondary" sx={{ px: 0.5 }}>
+        Delete class? All homework and sessions in this class will be permanently deleted.
+      </Typography>
+    </ModalShell>
   );
 }
 

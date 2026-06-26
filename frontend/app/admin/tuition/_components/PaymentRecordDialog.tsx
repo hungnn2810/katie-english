@@ -2,15 +2,9 @@
 import { useState } from 'react';
 import { recordTuitionPayment } from '@/lib/admin-portal-api';
 import { useToast } from '@/lib/toast-context';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormLabel from '@mui/material/FormLabel';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import CircularProgress from '@mui/material/CircularProgress';
+import ModalShell, { sectionInputSx } from '@/components/ui/ModalShell';
+import FormSection from '@/components/ui/FormSection';
 
 export default function PaymentRecordDialog({
   open,
@@ -48,58 +42,31 @@ export default function PaymentRecordDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
-      <DialogTitle sx={{ fontWeight: 700 }}>
-        Ghi nhận đóng học phí — {studentName} ({totalAmount.toLocaleString('vi-VN')} VNĐ)
-      </DialogTitle>
-      <Box component="form" onSubmit={handleRecord}>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box>
-            <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>
-              Ngày đóng *
-            </FormLabel>
-            <TextField
-              size="small"
-              type="date"
-              fullWidth
-              required
-              value={paidAt}
-              onChange={(e) => setPaidAt(e.target.value)}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-            />
-          </Box>
-
-          <Box>
-            <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>
-              Người ghi nhận *
-            </FormLabel>
-            <TextField
-              size="small"
-              fullWidth
-              required
-              placeholder="Tên admin hoặc giáo viên"
-              value={paidBy}
-              onChange={(e) => setPaidBy(e.target.value)}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-            />
-          </Box>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-          <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2, fontWeight: 600 }}>
-            Huỷ
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            disabled={loading}
-            startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
-            sx={{ borderRadius: 2, fontWeight: 700 }}
-          >
-            {loading ? 'Đang lưu...' : 'Xác nhận đã đóng'}
-          </Button>
-        </DialogActions>
-      </Box>
-    </Dialog>
+    <ModalShell
+      open={open}
+      title={`${studentName} — ${totalAmount.toLocaleString('vi-VN')} VNĐ`}
+      onClose={onClose}
+      onSubmit={handleRecord}
+      submitLabel={loading ? 'Đang lưu...' : 'Xác nhận đã đóng'}
+      loading={loading}
+    >
+      <FormSection label="Ngày đóng">
+        <TextField
+          size="small" type="date" fullWidth required
+          value={paidAt}
+          onChange={(e) => setPaidAt(e.target.value)}
+          sx={sectionInputSx}
+        />
+      </FormSection>
+      <FormSection label="Người ghi nhận">
+        <TextField
+          size="small" fullWidth required
+          placeholder="Tên admin hoặc giáo viên"
+          value={paidBy}
+          onChange={(e) => setPaidBy(e.target.value)}
+          sx={sectionInputSx}
+        />
+      </FormSection>
+    </ModalShell>
   );
 }

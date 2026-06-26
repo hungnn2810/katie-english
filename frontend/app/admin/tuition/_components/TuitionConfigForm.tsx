@@ -4,6 +4,7 @@ import {
   getTuitionConfig,
   updateTuitionConfig,
   CreateTuitionConfigInput,
+  TuitionConfig,
 } from '@/lib/admin-portal-api';
 import { useToast } from '@/lib/toast-context';
 import Box from '@mui/material/Box';
@@ -17,10 +18,14 @@ export default function TuitionConfigForm({
   classId,
   onClose,
   onSaved,
+  getConfigFn = getTuitionConfig,
+  updateConfigFn = updateTuitionConfig,
 }: {
   classId: number;
   onClose: () => void;
   onSaved: () => void;
+  getConfigFn?: (classId: number) => Promise<TuitionConfig>;
+  updateConfigFn?: (classId: number, data: CreateTuitionConfigInput) => Promise<TuitionConfig>;
 }) {
   const { showToast } = useToast();
   const [form, setForm] = useState<CreateTuitionConfigInput>({
@@ -36,7 +41,7 @@ export default function TuitionConfigForm({
       setFetching(false);
       return;
     }
-    getTuitionConfig(classId)
+    getConfigFn(classId)
       .then((config) => {
         setForm({
           pricePerSession: config.pricePerSession,
@@ -61,7 +66,7 @@ export default function TuitionConfigForm({
     e.preventDefault();
     setLoading(true);
     try {
-      await updateTuitionConfig(classId, form);
+      await updateConfigFn(classId, form);
       showToast('Cấu hình học phí đã lưu', 'success');
       onSaved();
       onClose();
