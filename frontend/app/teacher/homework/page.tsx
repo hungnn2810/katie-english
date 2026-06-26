@@ -13,14 +13,11 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
+import ModalShell, { sectionInputSx } from '@/components/ui/ModalShell';
+import FormSection from '@/components/ui/FormSection';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -170,31 +167,31 @@ function HomeworkModal({
   }
 
   const headingName = editingId !== null ? (form.name || meta.label) : meta.label;
+  const modalTitle = (
+    <Box>
+      <Box sx={{ fontWeight: 900, lineHeight: 1.3, fontSize: 20 }}>
+        <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+          {editingId !== null ? 'Edit · ' : 'New · '}
+        </Box>
+        <Box component="span" sx={{ color: meta.color }}>{headingName}</Box>
+      </Box>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+        Reusable template — assign to classes separately.
+      </Typography>
+    </Box>
+  );
+
+  const showSubmit = form.type !== 'READING' && form.type !== 'VOCABULARY' && form.type !== 'LISTEN';
 
   return (
-    <Dialog open onClose={onClose} maxWidth="md" fullWidth
-      slotProps={{ paper: { sx: { borderRadius: 4, maxHeight: '90vh' } } }}>
-      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.3 }}>
-              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                {editingId !== null ? 'Edit Â· ' : 'New Â· '}
-              </Box>
-              <Box component="span" sx={{ color: meta.color }}>{headingName}</Box>
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              Reusable template â€" assign to classes separately.
-            </Typography>
-          </Box>
-          <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: 0.5 }}>
-            <X size={16} />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <form onSubmit={handleSubmit}>
-        <DialogContent sx={{ px: 4, py: 3 }}>
+    <ModalShell
+      title={modalTitle}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      submitLabel={showSubmit ? (loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create') : undefined}
+      loading={loading}
+      maxWidth="md"
+    >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 
             {/* Type selector â€" create mode only */}
@@ -347,7 +344,7 @@ function HomeworkModal({
                                             disabled={wordUploading === uploadKey}
                                             sx={{ width: 20, height: 20, color: 'text.disabled', p: 0 }}>
                                             {wordUploading === uploadKey
-                                              ? <CircularProgress size={12} />
+                                              ? <Loader2 size={12} />
                                               : <ImageIcon size={12} />}
                                           </IconButton>
                                           <input type="file" accept="image/*" hidden
@@ -487,25 +484,7 @@ function HomeworkModal({
               </Box>
             )}
           </Box>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 4, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Button type="button" variant="outlined" onClick={onClose}
-              sx={{ flex: 1, borderRadius: 3, color: 'text.secondary', borderColor: 'divider' }}>
-              Cancel
-            </Button>
-            {form.type !== 'READING' && form.type !== 'VOCABULARY' && form.type !== 'LISTEN' && (
-              <Button type="submit" variant="contained" disabled={loading}
-                sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
-                {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-                {loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create'}
-              </Button>
-            )}
-          </Box>
-        </DialogActions>
-      </form>
-    </Dialog>
+    </ModalShell>
   );
 }
 
@@ -548,87 +527,62 @@ function AssignModal({
   const meta = TYPE_META[homework.type];
   const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? '…' : '') : meta.label);
 
+  const assignTitle = (
+    <Box>
+      <Box sx={{ fontWeight: 900, lineHeight: 1.3, fontSize: 20 }}>
+        <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign · </Box>
+        <Box component="span" sx={{ color: meta.color }}>{assignHeading}</Box>
+      </Box>
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+        <meta.icon size={14} style={{ color: meta.color }} />
+        <Typography variant="caption" sx={{ color: meta.color }}>{meta.label}</Typography>
+      </Box>
+    </Box>
+  );
+
   return (
-    <Dialog open onClose={onClose} maxWidth="md" fullWidth
-      slotProps={{ paper: { sx: { borderRadius: 4 } } }}>
-      <DialogTitle sx={{ px: 4, pt: 3.5, pb: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.3 }}>
-              <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign· </Box>
-              <Box component="span" sx={{ color: meta.color }}>{assignHeading}</Box>
-            </Typography>
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-              <meta.icon size={14} style={{ color: meta.color }} />
-              <Typography variant="caption" sx={{ color: meta.color }}>{meta.label}</Typography>
-            </Box>
+    <ModalShell
+      title={assignTitle}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      submitLabel={loading ? 'Assigning…' : 'Assign'}
+      loading={loading}
+      maxWidth="md"
+    >
+      <FormSection label="Classes" showPencil={false}>
+        {classes.length === 0
+          ? <Typography variant="body2" color="text.disabled" sx={{ fontStyle: 'italic' }}>No classes found.</Typography>
+          : <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+            {classes.map((c) => {
+              const active = selectedClassIds.includes(c.id);
+              return (
+                <Button key={c.id} type="button" variant="outlined" size="small"
+                  onClick={() => toggleClass(c.id)}
+                  sx={{
+                    px: 1.75, py: 0.75, borderRadius: 3, fontWeight: 600, border: '2px solid',
+                    ...(active
+                      ? { bgcolor: colors.primary, color: 'white', borderColor: colors.primary }
+                      : { bgcolor: 'white', color: colors.textSecondary, borderColor: colors.border }),
+                  }}>
+                  {c.name}
+                </Button>
+              );
+            })}
           </Box>
-          <IconButton size="small" onClick={onClose} sx={{ color: 'text.secondary', mt: 0.5 }}>
-            <X size={16} />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <form onSubmit={handleSubmit}>
-        <DialogContent sx={{ px: 4, py: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Box>
-              <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1.5, display: 'block' }}>
-                Classes
-              </Typography>
-              {classes.length === 0
-                ? <Typography variant="body2" color="text.disabled" sx={{ fontStyle: 'italic' }}>No classes found.</Typography>
-                : <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                  {classes.map((c) => {
-                    const active = selectedClassIds.includes(c.id);
-                    return (
-                      <Button key={c.id} type="button" variant="outlined" size="small"
-                        onClick={() => toggleClass(c.id)}
-                        sx={{
-                          px: 1.75, py: 0.75, borderRadius: 3, fontWeight: 600, border: '2px solid',
-                          ...(active
-                            ? { bgcolor: colors.primary, color: 'white', borderColor: colors.primary }
-                            : { bgcolor: 'white', color: colors.textSecondary, borderColor: colors.border }),
-                        }}>
-                        {c.name}
-                      </Button>
-                    );
-                  })}
-                </Box>
-              }
-            </Box>
-            <Box>
-              <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
-                End Date ({DATE_FORMAT})
-              </Typography>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  format={DATE_FORMAT}
-                  value={endDate}
-                  onChange={(v: Date | null) => setEndDate(v)}
-                  minDate={new Date()}
-                  slotProps={{ textField: { size: 'small', fullWidth: true, required: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }}
-                />
-              </LocalizationProvider>
-            </Box>
-          </Box>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 4, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', flexDirection: 'column', alignItems: 'stretch', gap: 0 }}>
-          <Box sx={{ display: 'flex', gap: 1.5 }}>
-            <Button type="button" variant="outlined" onClick={onClose}
-              sx={{ flex: 1, borderRadius: 3, color: 'text.secondary', borderColor: 'divider' }}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="contained" disabled={loading}
-              sx={{ flex: 1, borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1 }}>
-              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-              {loading ? 'Assigning…' : 'Assign'}
-            </Button>
-          </Box>
-        </DialogActions>
-      </form>
-    </Dialog>
+        }
+      </FormSection>
+      <FormSection label={`End Date (${DATE_FORMAT})`} showPencil={false}>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            format={DATE_FORMAT}
+            value={endDate}
+            onChange={(v: Date | null) => setEndDate(v)}
+            minDate={new Date()}
+            slotProps={{ textField: { size: 'small', fullWidth: true, required: true, sx: sectionInputSx } }}
+          />
+        </LocalizationProvider>
+      </FormSection>
+    </ModalShell>
   );
 }
 
