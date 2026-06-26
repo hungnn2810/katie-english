@@ -222,9 +222,8 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
 
           </DialogContent>
           <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
-            <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
+            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined} sx={{ borderRadius: '50px', fontWeight: 600, px: 3, textTransform: 'none', bgcolor: '#E8ECF6', color: '#6B7280', boxShadow: 'none', '&:hover': { bgcolor: '#DDE2F0', boxShadow: 'none' } }}>
               {loading ? 'Adding...' : 'Add Student'}
             </Button>
           </DialogActions>
@@ -325,9 +324,8 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
 
           </DialogContent>
           <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
-            <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, gap: 1 }}>
-              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
+            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined} sx={{ borderRadius: '50px', fontWeight: 600, px: 3, textTransform: 'none', bgcolor: '#E8ECF6', color: '#6B7280', boxShadow: 'none', '&:hover': { bgcolor: '#DDE2F0', boxShadow: 'none' } }}>
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogActions>
@@ -419,9 +417,8 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
             </FormSection>
           </DialogContent>
           <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ flex: 1, borderRadius: 3 }}>Cancel</Button>
-            <Button type="submit" variant="contained" disabled={loading} sx={{ flex: 1, borderRadius: 3, bgcolor: '#10B981', '&:hover': { bgcolor: '#059669' }, gap: 1 }}>
-              {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
+            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined} sx={{ borderRadius: '50px', fontWeight: 600, px: 3, textTransform: 'none', bgcolor: '#E8ECF6', color: '#6B7280', boxShadow: 'none', '&:hover': { bgcolor: '#DDE2F0', boxShadow: 'none' } }}>
               {loading ? 'Approving...' : 'Confirm Approval'}
             </Button>
           </DialogActions>
