@@ -1,5 +1,10 @@
 {
   "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "type": "stdio"
+    },
     "code-review-graph": {
       "command": "C:/Users/hungnn/AppData/Local/Python/pythoncore-3.14-64/Scripts/code-review-graph.exe",
       "args": [
