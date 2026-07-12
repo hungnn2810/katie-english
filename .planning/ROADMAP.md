@@ -14,7 +14,7 @@
 | 2 | Reading Homework | 5/5 | Complete    | 2026-06-23 |
 | 3 | Teacher Dashboard | Unified creation, assignment, results review | v1 | ✅ Complete |
 | 4 | Student Page UI/UX | Kid-friendly polish, due-date ordering | v1 | ✅ Complete |
-| 5 | BFA Quality & Performance | Pipeline fixes, Groq ASR, phoneme feedback | v1 | 🔄 In progress (plan 07) |
+| 5 | BFA Quality & Performance | Pipeline fixes, Azure PA, phoneme feedback | v1 | ✅ Complete 2026-07-12 |
 | 6 | Admin Portal | Super-admin: teachers, classes, results mgmt | v1 | 📋 Planned |
 | 7 | BFA Robustness & Audio Gates | Zero silent failures, audio quality validation | v2 | ✅ Complete 2026-05-31 |
 | 8 | Vocabulary by Image Exercise | Image → student speaks word → phoneme feedback | v2 | 📋 Planned |
@@ -173,7 +173,7 @@
 - [x] 05-04-PLAN.md — pytest unit tests (pure functions) + NestJS Jest spec (axios mock) (Wave 4)
 - [x] 05-05-PLAN.md — Input validation + shared ThreadPoolExecutor + configurable operational thresholds (Wave 5)
 - [x] 05-06-PLAN.md — Replace BFA engine with Azure Pronunciation Assessment SDK (Wave 6)
-- [ ] 05-07-PLAN.md — Rebuild BFA service: revert Azure → Groq ASR + local phonemizer/espeak scoring, zero GPU (Wave 7)
+- [x] 05-07-PLAN.md — skipped: Azure PA (plan 06) retained as production engine — Groq revert not needed (Wave 7)
 
 ---
 
@@ -663,7 +663,20 @@ Plans:
 
 - [ ] 17-02-PLAN.md — Frontend: import-api.ts helpers + admin/import + teacher/import pages + nav items in AdminShell/TeacherShell + TITLES in layouts (Wave 2, depends 17-01)
 
+### Phase 18: Multi-language support across all pages
+
+**Goal:** Every page across the teacher app, admin portal, student game, and marketing site supports switching between Vietnamese and English, with all user-facing text (labels, toasts/errors, dates, currency) sourced from locale-aware translations instead of hardcoded strings.
+**Requirements**: TBD — run `/gsd:discuss-phase 18` or `/gsd:plan-phase 18` to define
+**Depends on:** none (independent of Phase 17 Import)
+**Plans:** 0 plans
+
+> **Scoping note (2026-07-12, pre-research):** App is currently bilingual *by area*, not switchable — teacher/admin (`frontend/app/teacher`, `frontend/app/admin`) is hardcoded English, student game (`frontend/app/student`) and the separate `marketing-site/` Next.js app are hardcoded Vietnamese. No i18n library is installed in either codebase. ~38 `page.tsx` route files in `frontend/app` + 1 marketing landing page (~6 section components); no shared component library between `frontend/` and `marketing-site/`. All strings are inline JSX literals (no `labels.ts`/`strings.ts`); toast/error messages (40+ call sites via `frontend/lib/toast-context.tsx`) are the messiest area — already an inconsistent EN/VI mix (e.g. tuition module is Vietnamese-only while classes/homework are English-only) and will need normalization as part of extraction, not after. Currency (`toLocaleString('vi-VN')`, hardcoded `VNĐ`) and date formatting (`frontend/lib/datetime.ts`) are scattered per call-site, not centralized. No `locale`/`language` field exists yet on `User`/`Student` in `backend/prisma/schema.prisma`. `marketing-site/app/data/content.ts` already has a typed content-object pattern worth reusing as an i18n key precedent. These findings should inform library choice (e.g. `next-intl`) and rollout order in the planning workflow.
+
+Plans:
+
+- [ ] TBD (run /gsd:plan-phase 18 to break down)
+
 ---
 
 *Roadmap created: 2026-05-13*
-*Last updated: 2026-06-22 — Phase 17 Import bulk feature planned (2 plans, 2 waves)*
+*Last updated: 2026-07-12 — Phase 18 Multi-language support added*
