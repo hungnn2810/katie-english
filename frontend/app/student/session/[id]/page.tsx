@@ -5,7 +5,7 @@ import AuthGate from '@/components/AuthGate';
 import { authHeaders } from '@/lib/auth';
 import { saveSpeakingResult, savePhonicsResult, completeSession, GameSession, BfaResult, SpeakingMode } from '@/lib/admin-api';
 import { gradients, scoreHexColor, timerHexColor } from '@/lib/colors';
-import PhonemeChips from './_components/PhonemeChips';
+import PhonemeDetail from './_components/PhonemeDetail';
 import RecordButton from './_components/RecordButton';
 import { School, Mic, Hash, PartyPopper, CheckCircle2, ImageIcon, Play, Pause } from 'lucide-react';
 import Box from '@mui/material/Box';
@@ -778,8 +778,8 @@ export default function SessionPage() {
                             {BFA_ERROR_MESSAGES[item.bfaError] ?? 'Có lỗi — thử lại nhé'}
                           </Typography>
                         )}
-                        {!item.bfaError && item.bfa?.success && item.bfa.feedback.length > 0 && (
-                          <PhonemeChips feedback={item.bfa.feedback} />
+                        {!item.bfaError && item.bfa?.success && (
+                          <PhonemeDetail feedback={item.bfa.feedback} highlight={item.highlight} />
                         )}
                       </Box>
                     ) : (
