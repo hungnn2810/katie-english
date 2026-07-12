@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to plan
-last_updated: "2026-06-23T04:02:15.177Z"
+last_updated: "2026-07-12T12:59:37.678Z"
 progress:
-  total_phases: 17
-  completed_phases: 17
+  total_phases: 18
+  completed_phases: 16
   total_plans: 72
-  completed_plans: 72
-  percent: 100
+  completed_plans: 71
+  percent: 89
 ---
 
 # Project State: Katie English
@@ -89,6 +89,7 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 - Phase 5 added: BFA Quality & Performance (BFA-01–05)
 - Phase 17 added: Import: classes (tuition + books) + students + homework
+- Phase 18 added: Multi-language support across all pages
 
 ---
 *State updated: 2026-05-19*
@@ -97,3 +98,4 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 - **2026-06-19**: Phase 15 tuition management complete. Plans 15-02 (backend), 15-03 (UI forms), 15-04 (TuitionReportTable) all done. Human verify checkpoint approved. TUITION-07 delivered.
 - **2026-06-21**: Phase 16 plan 16-04 complete. admin/page.tsx, admin/teachers/page.tsx ACCENT updated to '#6366F1'; admin/classes 'Reassign' button and admin/students checkbox colors patched. Human visual checkpoint approved. Phase 16 all 4 plans done — Teacher/Admin UI Redesign complete.
+- **2026-07-12**: Phase 18 context gathered (18-CONTEXT.md). Scope: cookie-based EN/VI locale (no URL prefix, no schema change), default VI, independent per app. This phase = i18n foundation + full Teacher portal migration + toast/error normalization; Admin/Student/Marketing migrations deferred to follow-up phases. Next: /gsd:plan-phase 18.
