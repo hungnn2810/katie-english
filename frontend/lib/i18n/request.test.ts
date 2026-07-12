@@ -1,10 +1,15 @@
-import { resolveLocale } from './request';
-
 jest.mock('next/headers', () => ({
   cookies: jest.fn(),
 }));
 
+// next-intl/server ships ESM-only with no require() entry point; stub it out
+// since these tests only exercise resolveLocale(), not the getRequestConfig default export.
+jest.mock('next-intl/server', () => ({
+  getRequestConfig: (fn: unknown) => fn,
+}));
+
 import { cookies } from 'next/headers';
+import { resolveLocale } from './request';
 
 beforeEach(() => {
   jest.clearAllMocks();

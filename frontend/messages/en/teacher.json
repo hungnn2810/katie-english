@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "classes": "Classes",
+    "students": "Students",
+    "homework": "Homework",
+    "sessions": "Sessions",
+    "tuition": "Tuition",
+    "import": "Import",
+    "schedule": "Schedule"
+  },
+  "shell": {
+    "greeting": "👋 Hello {name},",
+    "changePassword": "Change password",
+    "currentPasswordPlaceholder": "Current password",
+    "newPasswordPlaceholder": "New password (min 6)",
+    "passwordUpdated": "Password updated!",
+    "updating": "Updating...",
+    "updatePassword": "Update password",
+    "teacherRole": "Teacher",
+    "signOut": "Sign out"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create"
+  }
+}

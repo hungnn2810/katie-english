@@ -1,0 +1,30 @@
+{
+  "nav": {
+    "dashboard": "Bảng điều khiển",
+    "classes": "Lớp học",
+    "students": "Học sinh",
+    "homework": "Bài tập",
+    "sessions": "Phiên học",
+    "tuition": "Học phí",
+    "import": "Nhập dữ liệu",
+    "schedule": "Lịch học"
+  },
+  "shell": {
+    "greeting": "👋 Chào {name},",
+    "changePassword": "Đổi mật khẩu",
+    "currentPasswordPlaceholder": "Mật khẩu hiện tại",
+    "newPasswordPlaceholder": "Mật khẩu mới (tối thiểu 6 ký tự)",
+    "passwordUpdated": "Đã cập nhật mật khẩu!",
+    "updating": "Đang cập nhật...",
+    "updatePassword": "Cập nhật mật khẩu",
+    "teacherRole": "Giáo viên",
+    "signOut": "Đăng xuất"
+  },
+  "common": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "create": "Tạo"
+  }
+}
