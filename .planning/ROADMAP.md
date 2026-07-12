@@ -676,17 +676,52 @@ Plans:
 
 Plans:
 
+**Wave 1**
+
 - [ ] 18-01-PLAN.md — i18n foundation: next-intl install, cookie-based request config + setLocale action, layout server/client split, LanguageSwitcher + TeacherShell wiring, message-catalog skeleton (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 18-02-PLAN.md — Extract dashboard + login + schedule pages (Wave 2, depends 18-01)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 18-03-PLAN.md — Extract classes + students pages (Wave 3, depends 18-02)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 18-04-PLAN.md — Extract sessions + import pages (Wave 4, depends 18-03)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
 - [ ] 18-05-PLAN.md — Extract tuition page + shared TuitionConfigForm/GenerateRecordsModal/TuitionReportTable, D-11 VI-only normalization (Wave 5, depends 18-04)
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
 - [ ] 18-06-PLAN.md — Extract homework list (HomeworkModal/AssignModal/HwCard) + homework create type-picker (Wave 6, depends 18-05)
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
 - [ ] 18-07-PLAN.md — Extract homework detail + session result detail pages (Wave 7, depends 18-06)
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
 - [ ] 18-08-PLAN.md — Extract homework Try/Preview page, all 5 homework-type branches (Wave 8, depends 18-07)
+
+**Wave 9** *(blocked on Wave 8 completion)*
+
 - [ ] 18-09-PLAN.md — Extract ReadingCreationPage, matching + fill-in-blank editors (Wave 9, depends 18-08)
+
+**Wave 10** *(blocked on Wave 9 completion)*
+
 - [ ] 18-10-PLAN.md — Extract VocabCreationPage + ListenCreationPage (Wave 10, depends 18-09)
+
+**Wave 11** *(blocked on Wave 10 completion)*
+
 - [ ] 18-11-PLAN.md — Toast catalog completeness sweep (D-11 close-out) + full suite/build verification (Wave 11, depends 18-10)
+
+**Wave 12** *(blocked on Wave 11 completion)*
+
 - [ ] 18-12-PLAN.md — Manual EN/VI walkthrough checkpoint, i18n-05 sign-off (Wave 12, depends 18-11)
 
 ---
