@@ -733,22 +733,19 @@ export default function ClassesPage() {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Codemod vs. Manual Extraction?**
+1. **Codemod vs. Manual Extraction?** — RESOLVED: Manual extraction, guided by 18-PATTERNS.md analogs. With ~19 pages (not hundreds), the codemod's review overhead outweighs its speed benefit, and manual extraction matches this project's existing conventions more closely. Applied across plans 18-02 through 18-10.
    - **What we know:** i18next-cli instrument can automate extraction, but output needs review.
    - **What's unclear:** How many false positives will codemod generate for the 600+ hardcoded strings across 19 pages?
-   - **Recommendation:** Plan should include a task to test codemod on 2-3 representative pages first (e.g., classes, students, homework) to validate key generation and decide if full automation is viable or if hybrid manual+codemod approach is better.
 
-2. **Switcher Component Placement in TeacherShell?**
+2. **Switcher Component Placement in TeacherShell?** — RESOLVED: Placed in the TeacherShell header. Implemented in plan 18-01, Task 3 (LanguageSwitcher.tsx, MUI Button + Menu dropdown).
    - **What we know:** D-04 says switcher is persistent on every page (header/sidebar).
    - **What's unclear:** Should it go in the top-right corner of the header, in the sidebar near the logout button, or as a floating button?
-   - **Recommendation:** Claude's Discretion — phase plan should include a design task to mock the LanguageSwitcher placement within the existing TeacherShell layout (light sidebar design from Phase 16) and get visual approval before implementation.
 
-3. **Per-Page Namespace vs. Flat "teacher.json"?**
+3. **Per-Page Namespace vs. Flat "teacher.json"?** — RESOLVED: Flat `messages/{en,vi}/teacher.json`, following the RESEARCH.md recommendation. Created in plan 18-01, Task 2, shared by all extraction plans. If the file exceeds 500 keys post-migration, a follow-up phase can refactor to per-page namespaces — not needed for this phase's scope.
    - **What we know:** Namespace structure affects maintenance and scaling.
    - **What's unclear:** Should `messages/en/teacher.json` have one 1000+-key file, or should we split into `messages/en/teacher/dashboard.json`, `messages/en/teacher/classes.json`, etc.?
-   - **Recommendation:** Start with flat `teacher.json` for simplicity (entire Teacher portal in one file); if file grows beyond 500 keys during phase execution, refactor to per-page namespaces in a follow-up task. Document the decision in PLAN.md so Admin/Student phases can reuse the chosen structure.
 
 ---
 
