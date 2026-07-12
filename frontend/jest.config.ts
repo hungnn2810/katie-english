@@ -14,7 +14,7 @@ const config: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
-  testRegex: '.*\\.test\\.ts$',
+  testRegex: '.*\\.test\\.tsx?$',
 };
 
 export default config;
