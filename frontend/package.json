@@ -5,6 +5,7 @@
     "dev": "dotenv -e ../.env -- next dev",
     "build": "dotenv -e ../.env -- next build",
     "start": "dotenv -e ../.env -- next start",
+    "test": "jest",
     "copy-vad-assets": "shx mkdir -p public && shx cp node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js public/ && shx cp node_modules/@ricky0123/vad-web/dist/silero_vad_legacy.onnx public/ && shx cp node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.wasm public/",
     "postinstall": "npm run copy-vad-assets"
   },
