@@ -666,15 +666,28 @@ Plans:
 ### Phase 18: Multi-language support across all pages
 
 **Goal:** Every page across the teacher app, admin portal, student game, and marketing site supports switching between Vietnamese and English, with all user-facing text (labels, toasts/errors, dates, currency) sourced from locale-aware translations instead of hardcoded strings.
-**Requirements**: TBD — run `/gsd:discuss-phase 18` or `/gsd:plan-phase 18` to define
+**Requirements**: i18n-01, i18n-02, i18n-03, i18n-04, i18n-05 (internal tags defined in 18-RESEARCH.md Validation Architecture — no formal v1/v2 REQUIREMENTS.md entries; phase added directly to ROADMAP.md)
 **Depends on:** none (independent of Phase 17 Import)
-**Plans:** 0 plans
+**Plans:** 12 plans
 
 > **Scoping note (2026-07-12, pre-research):** App is currently bilingual *by area*, not switchable — teacher/admin (`frontend/app/teacher`, `frontend/app/admin`) is hardcoded English, student game (`frontend/app/student`) and the separate `marketing-site/` Next.js app are hardcoded Vietnamese. No i18n library is installed in either codebase. ~38 `page.tsx` route files in `frontend/app` + 1 marketing landing page (~6 section components); no shared component library between `frontend/` and `marketing-site/`. All strings are inline JSX literals (no `labels.ts`/`strings.ts`); toast/error messages (40+ call sites via `frontend/lib/toast-context.tsx`) are the messiest area — already an inconsistent EN/VI mix (e.g. tuition module is Vietnamese-only while classes/homework are English-only) and will need normalization as part of extraction, not after. Currency (`toLocaleString('vi-VN')`, hardcoded `VNĐ`) and date formatting (`frontend/lib/datetime.ts`) are scattered per call-site, not centralized. No `locale`/`language` field exists yet on `User`/`Student` in `backend/prisma/schema.prisma`. `marketing-site/app/data/content.ts` already has a typed content-object pattern worth reusing as an i18n key precedent. These findings should inform library choice (e.g. `next-intl`) and rollout order in the planning workflow.
 
+> **Planning note (2026-07-12, per 18-CONTEXT.md D-09/D-10):** This phase delivers the i18n foundation + full Teacher portal migration (19 pages) only. Admin portal, Student game, and Marketing site migrations are deferred to follow-up phases that reuse the same library/pattern/switcher established here — see 18-01 through 18-12 PLAN.md must_haves for the actual scope this phase closes.
+
 Plans:
 
-- [ ] TBD (run /gsd:plan-phase 18 to break down)
+- [ ] 18-01-PLAN.md — i18n foundation: next-intl install, cookie-based request config + setLocale action, layout server/client split, LanguageSwitcher + TeacherShell wiring, message-catalog skeleton (Wave 1)
+- [ ] 18-02-PLAN.md — Extract dashboard + login + schedule pages (Wave 2, depends 18-01)
+- [ ] 18-03-PLAN.md — Extract classes + students pages (Wave 3, depends 18-02)
+- [ ] 18-04-PLAN.md — Extract sessions + import pages (Wave 4, depends 18-03)
+- [ ] 18-05-PLAN.md — Extract tuition page + shared TuitionConfigForm/GenerateRecordsModal/TuitionReportTable, D-11 VI-only normalization (Wave 5, depends 18-04)
+- [ ] 18-06-PLAN.md — Extract homework list (HomeworkModal/AssignModal/HwCard) + homework create type-picker (Wave 6, depends 18-05)
+- [ ] 18-07-PLAN.md — Extract homework detail + session result detail pages (Wave 7, depends 18-06)
+- [ ] 18-08-PLAN.md — Extract homework Try/Preview page, all 5 homework-type branches (Wave 8, depends 18-07)
+- [ ] 18-09-PLAN.md — Extract ReadingCreationPage, matching + fill-in-blank editors (Wave 9, depends 18-08)
+- [ ] 18-10-PLAN.md — Extract VocabCreationPage + ListenCreationPage (Wave 10, depends 18-09)
+- [ ] 18-11-PLAN.md — Toast catalog completeness sweep (D-11 close-out) + full suite/build verification (Wave 11, depends 18-10)
+- [ ] 18-12-PLAN.md — Manual EN/VI walkthrough checkpoint, i18n-05 sign-off (Wave 12, depends 18-11)
 
 ---
 
