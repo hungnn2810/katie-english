@@ -8,8 +8,8 @@ progress:
   total_phases: 18
   completed_phases: 16
   total_plans: 88
-  completed_plans: 77
-  percent: 88
+  completed_plans: 78
+  percent: 89
 ---
 
 # Project State: Katie English
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** Student completes homework on tablet, gets AI-scored result immediately — no manual teacher grading.
-**Current focus:** Phase 18 — multi-language-support-across-all-pages (2/12 plans done: i18n foundation + dashboard/login/schedule extraction)
+**Current focus:** Phase 18 — multi-language-support-across-all-pages (3/12 plans done: i18n foundation + dashboard/login/schedule + classes/students extraction)
 
 ## Current Phase
 
@@ -101,3 +101,4 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-07-12**: Phase 18 context gathered (18-CONTEXT.md). Scope: cookie-based EN/VI locale (no URL prefix, no schema change), default VI, independent per app. This phase = i18n foundation + full Teacher portal migration + toast/error normalization; Admin/Student/Marketing migrations deferred to follow-up phases. Next: /gsd:plan-phase 18.
 - **2026-07-13**: Plan 18-01 complete. next-intl installed; `lib/i18n/{request,actions}.ts` (cookie-based locale, enum-validated, default VI); `teacher/layout.tsx` split into server component + `TeacherLayoutClient.tsx`; `LanguageSwitcher` wired into `TeacherShell` header; `teacher.json` skeleton (nav/shell/common) in both locales. 12/12 unit tests passing, build clean.
 - **2026-07-13**: Plan 18-02 complete. Dashboard/login/schedule pages fully translation-driven (`teacher.json` +dashboard/login/schedule namespaces); fixed pre-existing bilingual inconsistency (schedule was VI-only, login/dashboard were EN-only). Follow-up fix: LanguageSwitcher was unreachable on the unauthenticated login page (TeacherShell-only wiring from 18-01 didn't cover it) — now rendered directly on `/teacher/login`. Verified via tsc/tests/build + curl-based locale resolution check (no browser available this session for visual confirmation — flagged as outstanding in 18-02-SUMMARY.md).
+- **2026-07-13**: Plan 18-03 complete. Classes/students pages (900+ lines, 7 modal/component functions) fully translation-driven; all 16 showToast call sites catalog-sourced (D-11: 18/38 total). Fixed a `filterTabs.map((t) => ...)` variable-shadowing bug surfaced by introducing the translation function. Same browser-verification caveat as 18-02 — outstanding, flagged in 18-03-SUMMARY.md.
