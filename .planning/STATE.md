@@ -8,8 +8,8 @@ progress:
   total_phases: 18
   completed_phases: 16
   total_plans: 88
-  completed_plans: 84
-  percent: 95
+  completed_plans: 85
+  percent: 97
 ---
 
 # Project State: Katie English
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** Student completes homework on tablet, gets AI-scored result immediately — no manual teacher grading.
-**Current focus:** Phase 18 — multi-language-support-across-all-pages (9/12 plans done, through reading creation editor extraction)
+**Current focus:** Phase 18 — multi-language-support-across-all-pages (10/12 plans done — D-09 fully delivered, all 19 Teacher-portal pages + shared components string-extracted)
 
 **⚠ Known issue introduced by Plan 18-05:** Admin portal's `/admin/tuition` page (TuitionConfigForm/GenerateRecordsModal/TuitionReportTable, shared with Teacher portal) will throw a runtime error ("No intl context found") because `admin/layout.tsx` has no `NextIntlClientProvider` wiring. Accepted risk per plan threat model (T-18-10); needs fixing before/during the Admin portal's own i18n migration. See 18-05-SUMMARY.md.
 
@@ -110,3 +110,4 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-07-14**: Plan 18-07 complete. homework/[id]/page.tsx (assignment list/progress) and homework/[id]/session/[sessionId]/page.tsx (per-activity result rows across 5 components) fully translation-driven. Confirmed via full read: zero showToast calls in either file. scoreLabel() converted to accept t as a parameter (plain function, not a component). Same browser-verification caveat outstanding.
 - **2026-07-14**: Plan 18-08 complete. homework/[id]/try/page.tsx (1034 lines, largest Teacher-portal file — interactive PHONICS/SPEAKING/READING/VOCABULARY/LISTEN preview) fully translation-driven across all 11 page states. Confirmed via full read: zero showToast calls. Same browser-verification caveat outstanding.
 - **2026-07-14**: Plan 18-09 complete. ReadingCreationPage.tsx (758 lines — matching/fill-blank drag-drop editors) fully translation-driven incl. aria-labels + dynamic validation messages. Both toasts catalog-sourced. Same browser-verification caveat outstanding.
+- **2026-07-14**: Plan 18-10 complete. VocabCreationPage.tsx + ListenCreationPage.tsx fully translation-driven. **D-09 fully delivered**: all 19 Teacher-portal pages + shared components now zero hardcoded strings. Browser-verification still outstanding across the whole phase — recommend a dedicated UAT pass before full sign-off.
