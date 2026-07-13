@@ -1,7 +1,6 @@
-import { act } from 'react-dom/test-utils';
 import { Simulate } from 'react-dom/test-utils';
 import { createRoot, Root } from 'react-dom/client';
-import React from 'react';
+import React, { act } from 'react';
 
 jest.mock('next-intl', () => ({
   useLocale: () => 'vi',

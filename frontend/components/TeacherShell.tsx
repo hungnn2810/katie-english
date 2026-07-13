@@ -2,7 +2,9 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { clearAuth, changePassword, AuthUser } from '@/lib/auth';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -52,6 +54,7 @@ interface Props {
 export default function TeacherShell({ user, children, title, subtitle }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations('teacher.shell');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const showUserMenu = Boolean(anchorEl);
   const [showPwForm, setShowPwForm] = useState(false);
@@ -187,7 +190,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
           <Box sx={{ px: '32px', pt: '28px', pb: '20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
             <Box>
               <Typography sx={{ fontSize: 12, color: '#F97316', fontWeight: 700, mb: '5px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                👋 Chào {user.upn?.split('@')[0] ?? 'Teacher'},
+                {t('greeting', { name: user.upn?.split('@')[0] ?? 'Teacher' })}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Typography sx={{ fontSize: 26, fontWeight: 800, color: '#111827', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
@@ -201,7 +204,8 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
             </Box>
 
             {/* User avatar button */}
-            <Box sx={{ position: 'relative', flexShrink: 0, mt: 0.5 }}>
+            <Box sx={{ position: 'relative', flexShrink: 0, mt: 0.5, display: 'flex', gap: 1, alignItems: 'center' }}>
+              <LanguageSwitcher />
               <IconButton
                 onClick={handleMenuOpen}
                 aria-label="Open account menu"
@@ -238,7 +242,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                       <Typography sx={{ fontSize: 14, fontWeight: 600, color: 'text.primary', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {user.upn}
                       </Typography>
-                      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Teacher</Typography>
+                      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{t('teacherRole')}</Typography>
                     </Box>
                   </Box>
                   <IconButton size="small" onClick={handleMenuClose} aria-label="Close menu" sx={{ color: 'text.secondary' }}>
@@ -246,20 +250,20 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                   </IconButton>
                 </Box>
 
-                {/* Change password toggle */}
+                {/* Toggle password-update form (teacher.shell.changePassword) */}
                 <MenuItem
                   onClick={() => { setShowPwForm((v) => !v); setPwError(''); setPwSuccess(false); }}
                   sx={{ borderRadius: 2, fontSize: 14, color: 'text.secondary', gap: 1 }}
                 >
                   <KeyRound size={14} />
-                  Change password
+                  {t('changePassword')}
                 </MenuItem>
 
                 {showPwForm && (
                   <Box component="form" onSubmit={handleChangePassword} sx={{ px: 1, py: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <TextField
                       type="password"
-                      placeholder="Current password"
+                      placeholder={t('currentPasswordPlaceholder')}
                       value={currentPw}
                       onChange={(e) => setCurrentPw(e.target.value)}
                       required
@@ -269,7 +273,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                     />
                     <TextField
                       type="password"
-                      placeholder="New password (min 6)"
+                      placeholder={t('newPasswordPlaceholder')}
                       value={newPw}
                       onChange={(e) => setNewPw(e.target.value)}
                       required
@@ -279,7 +283,7 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                       sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3, fontSize: 12 } }}
                     />
                     {pwError && <Alert severity="error" sx={{ borderRadius: 2, py: 0, fontSize: 11 }}>{pwError}</Alert>}
-                    {pwSuccess && <Alert severity="success" sx={{ borderRadius: 2, py: 0, fontSize: 11 }}>Password updated!</Alert>}
+                    {pwSuccess && <Alert severity="success" sx={{ borderRadius: 2, py: 0, fontSize: 11 }}>{t('passwordUpdated')}</Alert>}
                     <Button
                       type="submit"
                       variant="contained"
@@ -287,17 +291,17 @@ export default function TeacherShell({ user, children, title, subtitle }: Props)
                       disabled={pwLoading}
                       sx={{ bgcolor: '#22C55E', '&:hover': { bgcolor: '#16A34A' }, borderRadius: 3, fontSize: 12 }}
                     >
-                      {pwLoading ? 'Updating...' : 'Update password'}
+                      {pwLoading ? t('updating') : t('updatePassword')}
                     </Button>
                   </Box>
                 )}
 
                 <Divider sx={{ my: 0.5 }} />
 
-                {/* Sign out */}
+                {/* Log out (teacher.shell.signOut) */}
                 <MenuItem onClick={logout} sx={{ borderRadius: 2, color: 'error.main', fontSize: 14, gap: 1, mt: 0.5 }}>
                   <LogOut size={14} />
-                  Sign out
+                  {t('signOut')}
                 </MenuItem>
               </Menu>
             </Box>
