@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   createVocabHomework,
   updateVocabHomework,
@@ -62,6 +63,7 @@ function SortableVocabItemCard({
   onImageRemove: () => void;
   uploading: boolean;
 }) {
+  const t = useTranslations('teacher.vocabCreate.itemCard');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imageHover, setImageHover] = useState(false);
 
@@ -110,7 +112,7 @@ function SortableVocabItemCard({
         {...attributes}
         {...listeners}
         type="button"
-        aria-label="Drag to reorder"
+        aria-label={t('dragToReorder')}
         size="small"
         sx={{
           cursor: 'grab',
@@ -126,7 +128,7 @@ function SortableVocabItemCard({
       {/* Image upload zone — 160x160 */}
       <Box
         role="button"
-        aria-label={`Upload image for item ${index + 1}`}
+        aria-label={t('uploadImageAria', { index: index + 1 })}
         onClick={() => !uploading && fileInputRef.current?.click()}
         onMouseEnter={() => setImageHover(true)}
         onMouseLeave={() => setImageHover(false)}
@@ -182,7 +184,7 @@ function SortableVocabItemCard({
                   variant="caption"
                   sx={{ color: 'white', fontWeight: 700, fontSize: 13 }}
                 >
-                  Remove
+                  {t('removeOverlay')}
                 </Typography>
               </Box>
             )}
@@ -191,7 +193,7 @@ function SortableVocabItemCard({
           <>
             <ImageIcon size={32} style={{ color: '#94A3B8' }} />
             <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600 }}>
-              Upload image
+              {t('uploadImageLabel')}
             </Typography>
           </>
         )}
@@ -208,10 +210,10 @@ function SortableVocabItemCard({
       {/* Word TextField */}
       <Box sx={{ flex: 1 }}>
         <TextField
-          label="Word"
+          label={t('wordLabel')}
           size="small"
           fullWidth
-          placeholder="e.g. apple"
+          placeholder={t('wordPlaceholder')}
           value={item.word}
           onChange={(e) => onWordChange(e.target.value)}
           slotProps={{ htmlInput: { maxLength: 32 } }}
@@ -224,7 +226,7 @@ function SortableVocabItemCard({
         type="button"
         size="small"
         color="error"
-        aria-label={`Remove item ${index + 1}`}
+        aria-label={t('removeItemAria', { index: index + 1 })}
         onClick={onRemove}
         sx={{ flexShrink: 0 }}
       >
@@ -237,6 +239,7 @@ function SortableVocabItemCard({
 // ── VocabCreationPage ─────────────────────────────────────────────────────────
 
 export function VocabCreationPage({ editId }: { editId?: number }) {
+  const t = useTranslations('teacher.vocabCreate.page');
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -260,7 +263,7 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
           }))
         );
       })
-      .catch(() => showToast('Failed to load homework.', 'error'));
+      .catch(() => showToast(t('toasts.load_error'), 'error'));
   }, [editId]);
 
   const sensors = useSensors(
@@ -294,7 +297,7 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
 
   async function handleImageUpload(clientId: string, file: File) {
     if (file.size > 5 * 1024 * 1024) {
-      setUploadError('Image must be under 5MB.');
+      setUploadError(t('errors.imageTooLarge'));
       return;
     }
     setUploadError('');
@@ -305,7 +308,7 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
         prev.map((it) => (it.clientId === clientId ? { ...it, imageUrl: url } : it))
       );
     } catch (err: unknown) {
-      setUploadError('Upload failed. Check file and try again.');
+      setUploadError(t('errors.uploadFailed'));
     } finally {
       setUploadingId(null);
     }
@@ -324,11 +327,11 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
   }
 
   function validate(): string | null {
-    if (!name.trim()) return 'Homework name is required.';
-    if (items.length === 0) return 'Add at least one item.';
+    if (!name.trim()) return t('validation.nameRequired');
+    if (items.length === 0) return t('validation.itemRequired');
     for (const item of items) {
-      if (!item.imageUrl) return 'Each item needs an image.';
-      if (!item.word.trim()) return 'Each item needs a word label.';
+      if (!item.imageUrl) return t('validation.imageRequired');
+      if (!item.word.trim()) return t('validation.wordRequired');
     }
     return null;
   }
@@ -353,7 +356,7 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
       }
       router.push('/teacher/homework');
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.save_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -377,26 +380,26 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
           '&:hover': { color: 'text.primary' },
         }}
       >
-        ← Back to Homework
+        {t('backToHomework')}
       </Box>
 
       {/* Page heading */}
       <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>
         <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-          {editId ? 'Edit' : 'New'} ·{' '}
+          {editId ? t('editPrefix') : t('newPrefix')} ·{' '}
         </Box>
         <Box component="span" sx={{ color: '#FFB26B' }}>
-          Vocabulary
+          {t('vocabularyTitle')}
         </Box>
       </Typography>
 
       {/* Homework name field */}
       <Box sx={{ mb: 3 }}>
         <TextField
-          label="Homework name"
+          label={t('homeworkNameLabel')}
           fullWidth
           required
-          placeholder="e.g. Animals — Unit 3"
+          placeholder={t('homeworkNamePlaceholder')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
@@ -415,7 +418,7 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
           mb: 1.5,
         }}
       >
-        Items (up to 10)
+        {t('itemsHeading')}
       </Typography>
 
       {/* DnD sortable item list */}
@@ -455,12 +458,12 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
         onClick={addItem}
         sx={{ borderRadius: 3, fontWeight: 700, mb: atCap ? 0.5 : 2 }}
       >
-        Add Image
+        {t('addImage')}
       </Button>
 
       {atCap && (
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-          Maximum 10 items reached.
+          {t('maxItemsReached')}
         </Typography>
       )}
 
@@ -497,7 +500,7 @@ export function VocabCreationPage({ editId }: { editId?: number }) {
           }}
         >
           {loading && <CircularProgress size={16} sx={{ color: 'white' }} />}
-          {loading ? 'Saving…' : 'Save Vocabulary Homework'}
+          {loading ? t('saving') : t('saveButton')}
         </Button>
       </Box>
     </Box>

@@ -707,5 +707,87 @@
         "save_error": "Failed to save."
       }
     }
+  },
+  "vocabCreate": {
+    "itemCard": {
+      "dragToReorder": "Drag to reorder",
+      "uploadImageAria": "Upload image for item {index}",
+      "removeOverlay": "Remove",
+      "uploadImageLabel": "Upload image",
+      "wordLabel": "Word",
+      "wordPlaceholder": "e.g. apple",
+      "removeItemAria": "Remove item {index}"
+    },
+    "page": {
+      "backToHomework": "← Back to Homework",
+      "editPrefix": "Edit",
+      "newPrefix": "New",
+      "vocabularyTitle": "Vocabulary",
+      "homeworkNameLabel": "Homework name",
+      "homeworkNamePlaceholder": "e.g. Animals — Unit 3",
+      "itemsHeading": "Items (up to 10)",
+      "addImage": "Add Image",
+      "maxItemsReached": "Maximum 10 items reached.",
+      "saving": "Saving…",
+      "saveButton": "Save Vocabulary Homework",
+      "errors": {
+        "imageTooLarge": "Image must be under 5MB.",
+        "uploadFailed": "Upload failed. Check file and try again."
+      },
+      "validation": {
+        "nameRequired": "Homework name is required.",
+        "itemRequired": "Add at least one item.",
+        "imageRequired": "Each item needs an image.",
+        "wordRequired": "Each item needs a word label."
+      },
+      "toasts": {
+        "load_error": "Failed to load homework.",
+        "save_error": "Failed to save."
+      }
+    }
+  },
+  "listenCreate": {
+    "itemCard": {
+      "dragToReorder": "Drag to reorder",
+      "uploadAudioAria": "Upload audio for question {index}",
+      "audioFileFallback": "audio file",
+      "removeQuestionAria": "Remove question",
+      "uploadAudioPrompt": "Upload audio prompt (mp3 / wav / webm)",
+      "fileTooLargeError": "File too large or unsupported format. Please try a file under 10MB in mp3, wav, or webm format.",
+      "expectedAnswerLabel": "Expected answer",
+      "expectedAnswerPlaceholder": "e.g. The cat is red",
+      "keywordsLabel": "Keywords (comma-separated)",
+      "keywordsPlaceholder": "e.g. red, cat",
+      "keywordsHelperText": "Keywords student must say to score well",
+      "removeItemAria": "Remove item {index}"
+    },
+    "page": {
+      "backToHomework": "← Back to Homework",
+      "editPrefix": "Edit",
+      "newPrefix": "New",
+      "listenTitle": "Listen & Answer",
+      "homeworkNameLabel": "Homework name",
+      "homeworkNamePlaceholder": "e.g. Animals — Unit 3",
+      "questionsHeading": "Questions (up to 10)",
+      "addQuestion": "Add Question",
+      "maxQuestionsReached": "Maximum 10 questions reached.",
+      "saving": "Saving…",
+      "saveButton": "Save Homework",
+      "errors": {
+        "fileTooLarge": "File too large",
+        "uploadFailed": "Upload failed"
+      },
+      "validation": {
+        "nameRequired": "Homework name is required.",
+        "questionRequired": "Add at least one question.",
+        "audioRequired": "Each question needs an audio file.",
+        "keywordsRequired": "Each question needs keywords.",
+        "expectedTextRequired": "Each question needs an expected answer."
+      },
+      "toasts": {
+        "load_error": "Failed to load homework.",
+        "save_error": "Failed to save."
+      }
+    }
   }
 }

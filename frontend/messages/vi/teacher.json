@@ -707,5 +707,87 @@
         "save_error": "Lưu thất bại."
       }
     }
+  },
+  "vocabCreate": {
+    "itemCard": {
+      "dragToReorder": "Kéo để sắp xếp lại",
+      "uploadImageAria": "Tải ảnh cho mục {index}",
+      "removeOverlay": "Xóa",
+      "uploadImageLabel": "Tải ảnh lên",
+      "wordLabel": "Từ",
+      "wordPlaceholder": "vd: apple",
+      "removeItemAria": "Xóa mục {index}"
+    },
+    "page": {
+      "backToHomework": "← Quay lại Bài tập",
+      "editPrefix": "Sửa",
+      "newPrefix": "Mới",
+      "vocabularyTitle": "Từ vựng",
+      "homeworkNameLabel": "Tên bài tập",
+      "homeworkNamePlaceholder": "vd: Động vật — Bài 3",
+      "itemsHeading": "Mục (tối đa 10)",
+      "addImage": "Thêm ảnh",
+      "maxItemsReached": "Đã đạt tối đa 10 mục.",
+      "saving": "Đang lưu…",
+      "saveButton": "Lưu bài tập Từ vựng",
+      "errors": {
+        "imageTooLarge": "Ảnh phải dưới 5MB.",
+        "uploadFailed": "Tải lên thất bại. Kiểm tra tệp và thử lại."
+      },
+      "validation": {
+        "nameRequired": "Vui lòng nhập tên bài tập.",
+        "itemRequired": "Thêm ít nhất một mục.",
+        "imageRequired": "Mỗi mục cần một hình ảnh.",
+        "wordRequired": "Mỗi mục cần một nhãn từ."
+      },
+      "toasts": {
+        "load_error": "Tải bài tập thất bại.",
+        "save_error": "Lưu thất bại."
+      }
+    }
+  },
+  "listenCreate": {
+    "itemCard": {
+      "dragToReorder": "Kéo để sắp xếp lại",
+      "uploadAudioAria": "Tải âm thanh cho câu hỏi {index}",
+      "audioFileFallback": "tệp âm thanh",
+      "removeQuestionAria": "Xóa câu hỏi",
+      "uploadAudioPrompt": "Tải âm thanh gợi ý (mp3 / wav / webm)",
+      "fileTooLargeError": "Tệp quá lớn hoặc định dạng không được hỗ trợ. Vui lòng dùng tệp dưới 10MB định dạng mp3, wav hoặc webm.",
+      "expectedAnswerLabel": "Câu trả lời mong đợi",
+      "expectedAnswerPlaceholder": "vd: The cat is red",
+      "keywordsLabel": "Từ khóa (cách nhau bằng dấu phẩy)",
+      "keywordsPlaceholder": "vd: red, cat",
+      "keywordsHelperText": "Từ khóa học sinh cần nói để được điểm cao",
+      "removeItemAria": "Xóa mục {index}"
+    },
+    "page": {
+      "backToHomework": "← Quay lại Bài tập",
+      "editPrefix": "Sửa",
+      "newPrefix": "Mới",
+      "listenTitle": "Nghe & Trả lời",
+      "homeworkNameLabel": "Tên bài tập",
+      "homeworkNamePlaceholder": "vd: Động vật — Bài 3",
+      "questionsHeading": "Câu hỏi (tối đa 10)",
+      "addQuestion": "Thêm câu hỏi",
+      "maxQuestionsReached": "Đã đạt tối đa 10 câu hỏi.",
+      "saving": "Đang lưu…",
+      "saveButton": "Lưu bài tập",
+      "errors": {
+        "fileTooLarge": "Tệp quá lớn",
+        "uploadFailed": "Tải lên thất bại"
+      },
+      "validation": {
+        "nameRequired": "Vui lòng nhập tên bài tập.",
+        "questionRequired": "Thêm ít nhất một câu hỏi.",
+        "audioRequired": "Mỗi câu hỏi cần một tệp âm thanh.",
+        "keywordsRequired": "Mỗi câu hỏi cần từ khóa.",
+        "expectedTextRequired": "Mỗi câu hỏi cần một câu trả lời mong đợi."
+      },
+      "toasts": {
+        "load_error": "Tải bài tập thất bại.",
+        "save_error": "Lưu thất bại."
+      }
+    }
   }
 }

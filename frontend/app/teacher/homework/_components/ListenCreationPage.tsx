@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   createListenHomework,
   updateListenHomework,
@@ -68,6 +69,7 @@ function SortableListenItemCard({
   uploading: boolean;
   uploadError: string;
 }) {
+  const t = useTranslations('teacher.listenCreate.itemCard');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -115,7 +117,7 @@ function SortableListenItemCard({
         {...attributes}
         {...listeners}
         type="button"
-        aria-label="Drag to reorder"
+        aria-label={t('dragToReorder')}
         size="small"
         sx={{
           cursor: 'grab',
@@ -154,7 +156,7 @@ function SortableListenItemCard({
         {/* Audio upload zone */}
         <Box
           role="button"
-          aria-label={`Upload audio for question ${index + 1}`}
+          aria-label={t('uploadAudioAria', { index: index + 1 })}
           onClick={() => !uploading && fileInputRef.current?.click()}
           sx={{
             flex: 1,
@@ -178,11 +180,11 @@ function SortableListenItemCard({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
               <Headphones size={20} style={{ color: '#1976d2', flexShrink: 0 }} />
               <Typography sx={{ fontSize: 14, flex: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', textAlign: 'left' }}>
-                {item.audioFilename || 'audio file'}
+                {item.audioFilename || t('audioFileFallback')}
               </Typography>
               <IconButton
                 size="small"
-                aria-label="Remove question"
+                aria-label={t('removeQuestionAria')}
                 onClick={(e) => { e.stopPropagation(); onAudioRemove(); }}
                 sx={{ flexShrink: 0 }}
               >
@@ -191,7 +193,7 @@ function SortableListenItemCard({
             </Box>
           ) : (
             <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>
-              Upload audio prompt (mp3 / wav / webm)
+              {t('uploadAudioPrompt')}
             </Typography>
           )}
         </Box>
@@ -207,16 +209,16 @@ function SortableListenItemCard({
         {/* Upload error */}
         {uploadError && (
           <Alert severity="error" sx={{ borderRadius: 2 }}>
-            File too large or unsupported format. Please try a file under 10MB in mp3, wav, or webm format.
+            {t('fileTooLargeError')}
           </Alert>
         )}
 
         {/* Expected answer field */}
         <TextField
-          label="Expected answer"
+          label={t('expectedAnswerLabel')}
           size="small"
           fullWidth
-          placeholder="e.g. The cat is red"
+          placeholder={t('expectedAnswerPlaceholder')}
           value={item.expectedText}
           onChange={(e) => onExpectedTextChange(e.target.value)}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
@@ -224,13 +226,13 @@ function SortableListenItemCard({
 
         {/* Keywords field */}
         <TextField
-          label="Keywords (comma-separated)"
+          label={t('keywordsLabel')}
           size="small"
           fullWidth
-          placeholder="e.g. red, cat"
+          placeholder={t('keywordsPlaceholder')}
           value={item.keywords}
           onChange={(e) => onKeywordsChange(e.target.value)}
-          helperText="Keywords student must say to score well"
+          helperText={t('keywordsHelperText')}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
         />
       </Box>
@@ -240,7 +242,7 @@ function SortableListenItemCard({
         type="button"
         size="small"
         color="error"
-        aria-label={`Remove item ${index + 1}`}
+        aria-label={t('removeItemAria', { index: index + 1 })}
         onClick={onRemove}
         sx={{ flexShrink: 0, mt: 0.5 }}
       >
@@ -253,6 +255,7 @@ function SortableListenItemCard({
 // ── ListenCreationPage ─────────────────────────────────────────────────────────
 
 export function ListenCreationPage({ editId }: { editId?: number }) {
+  const t = useTranslations('teacher.listenCreate.page');
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -285,7 +288,7 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
           })
         );
       })
-      .catch(() => showToast('Failed to load homework.', 'error'));
+      .catch(() => showToast(t('toasts.load_error'), 'error'));
   }, [editId]);
 
   const sensors = useSensors(
@@ -330,7 +333,7 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
 
   async function handleAudioUpload(clientId: string, file: File) {
     if (file.size > 10 * 1024 * 1024) {
-      setUploadErrors((prev) => ({ ...prev, [clientId]: 'File too large' }));
+      setUploadErrors((prev) => ({ ...prev, [clientId]: t('errors.fileTooLarge') }));
       return;
     }
     setUploadErrors((prev) => {
@@ -345,7 +348,7 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
         prev.map((it) => (it.clientId === clientId ? { ...it, audioUrl: url, audioFilename: file.name } : it))
       );
     } catch {
-      setUploadErrors((prev) => ({ ...prev, [clientId]: 'Upload failed' }));
+      setUploadErrors((prev) => ({ ...prev, [clientId]: t('errors.uploadFailed') }));
     } finally {
       setUploadingId(null);
     }
@@ -364,12 +367,12 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
   }
 
   function validate(): string | null {
-    if (!name.trim()) return 'Homework name is required.';
-    if (items.length === 0) return 'Add at least one question.';
+    if (!name.trim()) return t('validation.nameRequired');
+    if (items.length === 0) return t('validation.questionRequired');
     for (const item of items) {
-      if (!item.audioUrl) return 'Each question needs an audio file.';
-      if (!item.keywords.trim()) return 'Each question needs keywords.';
-      if (!item.expectedText.trim()) return 'Each question needs an expected answer.';
+      if (!item.audioUrl) return t('validation.audioRequired');
+      if (!item.keywords.trim()) return t('validation.keywordsRequired');
+      if (!item.expectedText.trim()) return t('validation.expectedTextRequired');
     }
     return null;
   }
@@ -398,7 +401,7 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
       }
       router.push('/teacher/homework');
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.save_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -422,26 +425,26 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
           '&:hover': { color: 'text.primary' },
         }}
       >
-        ← Back to Homework
+        {t('backToHomework')}
       </Box>
 
       {/* Page heading */}
       <Typography variant="h5" sx={{ fontWeight: 900, mb: 3 }}>
         <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-          {editId ? 'Edit' : 'New'} ·{' '}
+          {editId ? t('editPrefix') : t('newPrefix')} ·{' '}
         </Box>
         <Box component="span" sx={{ color: '#60A5FA' }}>
-          Listen & Answer
+          {t('listenTitle')}
         </Box>
       </Typography>
 
       {/* Homework name field */}
       <Box sx={{ mb: 3 }}>
         <TextField
-          label="Homework name"
+          label={t('homeworkNameLabel')}
           fullWidth
           required
-          placeholder="e.g. Animals — Unit 3"
+          placeholder={t('homeworkNamePlaceholder')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
@@ -460,7 +463,7 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
           mb: 1.5,
         }}
       >
-        Questions (up to 10)
+        {t('questionsHeading')}
       </Typography>
 
       {/* DnD sortable item list */}
@@ -502,12 +505,12 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
         onClick={addItem}
         sx={{ borderRadius: 3, fontWeight: 700, mb: atCap ? 0.5 : 2 }}
       >
-        Add Question
+        {t('addQuestion')}
       </Button>
 
       {atCap && (
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-          Maximum 10 questions reached.
+          {t('maxQuestionsReached')}
         </Typography>
       )}
 
@@ -537,7 +540,7 @@ export function ListenCreationPage({ editId }: { editId?: number }) {
           }}
         >
           {loading && <CircularProgress size={16} sx={{ color: 'white' }} />}
-          {loading ? 'Saving…' : 'Save Homework'}
+          {loading ? t('saving') : t('saveButton')}
         </Button>
       </Box>
     </Box>
