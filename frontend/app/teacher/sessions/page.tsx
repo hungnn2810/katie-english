@@ -1,6 +1,7 @@
 'use client';
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   getSessionResults, getSession, getStudents, getHomeworkList,
   GameSession, Student, HomeworkItem,
@@ -42,6 +43,7 @@ function ScoreBadge({ score }: { score?: number | null }) {
 }
 
 export default function SessionsPage() {
+  const t = useTranslations('teacher.sessions');
   const [sessions, setSessions] = useState<GameSession[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [homeworks, setHomeworks] = useState<HomeworkItem[]>([]);
@@ -64,7 +66,7 @@ export default function SessionsPage() {
       setSessions(data);
       setExpanded(null);
     } catch (e: unknown) {
-      showToast(e instanceof Error ? e.message : 'Failed to load sessions', 'error');
+      showToast(e instanceof Error ? e.message : t('toasts.load_error'), 'error');
     } finally {
       setTimeout(() => setLoading(false), PAGE_LOADING_DELAY);
     }
@@ -109,43 +111,43 @@ export default function SessionsPage() {
       <Paper variant="outlined" sx={{ borderRadius: 4, p: 2.5 }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'flex-end' }}>
           <Box sx={{ flex: 1, minWidth: 144 }}>
-            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 0.75 }}>Student</Typography>
+            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 0.75 }}>{t('filters.studentLabel')}</Typography>
             <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
               <MuiSelect value={studentFilter} onChange={e => setStudentFilter(e.target.value as string)} displayEmpty>
-                <MenuItem value="">All students</MenuItem>
+                <MenuItem value="">{t('filters.allStudents')}</MenuItem>
                 {students.map(s => <MenuItem key={s.id} value={String(s.id)}>{s.fullname}</MenuItem>)}
               </MuiSelect>
             </FormControl>
           </Box>
           <Box sx={{ flex: 1, minWidth: 192 }}>
-            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 0.75 }}>Assignment</Typography>
+            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 0.75 }}>{t('filters.assignmentLabel')}</Typography>
             <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
               <MuiSelect value={assignmentFilter} onChange={e => setAssignmentFilter(e.target.value as string)} displayEmpty>
-                <MenuItem value="">All assignments</MenuItem>
+                <MenuItem value="">{t('filters.allAssignments')}</MenuItem>
                 {assignments.map(a => <MenuItem key={a.id} value={String(a.id)}>{a.label}</MenuItem>)}
               </MuiSelect>
             </FormControl>
           </Box>
           <Box>
-            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 0.75 }}>From</Typography>
+            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 0.75 }}>{t('filters.fromLabel')}</Typography>
             <TextField type="date" size="small" value={dateFrom} onChange={e => setDateFrom(e.target.value)} sx={{ width: 144, '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
           </Box>
           <Box>
-            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 0.75 }}>To</Typography>
+            <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 0.75 }}>{t('filters.toLabel')}</Typography>
             <TextField type="date" size="small" value={dateTo} onChange={e => setDateTo(e.target.value)} sx={{ width: 144, '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
           </Box>
           <Button variant="contained" onClick={doSearch} disabled={loading}
             sx={{ borderRadius: 3, bgcolor: colors.teacherAccent, '&:hover': { bgcolor: colors.teacherAccent, opacity: 0.9 }, gap: 1, alignSelf: 'flex-end' }}>
             {loading && <CircularProgress size={14} sx={{ color: 'white' }} />}
-            {loading ? 'Loading…' : 'Search'}
+            {loading ? t('filters.loading') : t('filters.search')}
           </Button>
         </Box>
       </Paper>
 
       {displayed.length > 0 && (
         <Typography sx={{ fontSize: 12, color: 'text.secondary', fontWeight: 500, px: 0.5 }}>
-          {displayed.length} session{displayed.length !== 1 ? 's' : ''}
-          {(dateFrom || dateTo) && <Box component="span" sx={{ ml: 0.5, color: 'primary.main' }}>(date-filtered)</Box>}
+          {t('resultsCount', { count: displayed.length })}
+          {(dateFrom || dateTo) && <Box component="span" sx={{ ml: 0.5, color: 'primary.main' }}>{t('dateFiltered')}</Box>}
         </Typography>
       )}
 
@@ -155,8 +157,8 @@ export default function SessionsPage() {
         <Paper variant="outlined" sx={{ borderRadius: 4, textAlign: 'center', py: 8, color: 'text.secondary', fontSize: 14 }}>
           <Mic size={32} color="#CBD5E1" style={{ margin: '0 auto 12px' }} />
           {sessions.length === 0
-            ? 'No sessions yet. Adjust filters and try Search.'
-            : 'No sessions match the date filter.'}
+            ? t('emptyNoSessions')
+            : t('emptyNoMatch')}
         </Paper>
       ) : null}
 
@@ -179,21 +181,21 @@ export default function SessionsPage() {
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography sx={{ fontWeight: 700, color: 'text.primary', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {s.student?.fullname ?? `Student #${s.studentId}`}
+                    {s.student?.fullname ?? t('unknownStudent', { id: s.studentId })}
                   </Typography>
                   <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-                    {hw?.name ?? hw?.type ?? 'Unknown'} · {new Date(s.startedAt).toLocaleString()}
+                    {hw?.name ?? hw?.type ?? t('unknownHomework')} · {new Date(s.startedAt).toLocaleString()}
                     {s.completedAt && <Box component="span"> · {formatDuration(s.startedAt, s.completedAt)}</Box>}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                   {s.completedAt
                     ? <ScoreBadge score={s.score} />
-                    : <Chip label="In progress" size="small" sx={{ bgcolor: '#FFFBEB', color: '#B45309', fontWeight: 600, height: 22 }} />}
+                    : <Chip label={t('inProgress')} size="small" sx={{ bgcolor: '#FFFBEB', color: '#B45309', fontWeight: 600, height: 22 }} />}
                   {hwId && (
                     <Link href={`/teacher/homework/${hwId}/session/${s.id}`} onClick={e => e.stopPropagation()}
                       style={{ fontSize: 12, fontWeight: 600, color: '#4F9DFF', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 8, border: '1px solid #4F9DFF40' }}>
-                      View <ExternalLink size={12} />
+                      {t('view')} <ExternalLink size={12} />
                     </Link>
                   )}
                   <ChevronDown size={16} color="#94A3B8" style={{ transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'none' }} />
@@ -205,21 +207,21 @@ export default function SessionsPage() {
                   {!detail && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', fontSize: 14 }}>
                       <CircularProgress size={16} />
-                      Loading details…
+                      {t('loadingDetails')}
                     </Box>
                   )}
                   {detail && (
                     <>
                       {isPhonics && detail.phonicsResults && detail.phonicsResults.length > 0 && (
                         <Box>
-                          <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1 }}>Word Results</Typography>
+                          <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1 }}>{t('wordResults')}</Typography>
                           <Box sx={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
                               <thead>
                                 <tr style={{ borderBottom: '1px solid #E2E8F0' }}>
-                                  <th style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600, paddingRight: 16, color: '#64748B', fontSize: 12 }}>Word</th>
-                                  <th style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600, paddingRight: 16, color: '#64748B', fontSize: 12 }}>Transcribed</th>
-                                  <th style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600, color: '#64748B', fontSize: 12 }}>Score</th>
+                                  <th style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600, paddingRight: 16, color: '#64748B', fontSize: 12 }}>{t('tableWord')}</th>
+                                  <th style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600, paddingRight: 16, color: '#64748B', fontSize: 12 }}>{t('tableTranscribed')}</th>
+                                  <th style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600, color: '#64748B', fontSize: 12 }}>{t('tableScore')}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -237,18 +239,18 @@ export default function SessionsPage() {
                       )}
                       {!isPhonics && detail.speakingResults && detail.speakingResults.length > 0 && (
                         <Box>
-                          <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1 }}>Speaking Result</Typography>
+                          <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1 }}>{t('speakingResult')}</Typography>
                           {detail.speakingResults.map(r => (
                             <Paper key={r.id} variant="outlined" sx={{ borderRadius: 3, p: 1.5, bgcolor: 'grey.50', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                              <Typography sx={{ fontSize: 14 }}><Box component="span" sx={{ color: 'text.secondary' }}>Transcribed: </Box>{r.transcribedText || '—'}</Typography>
-                              <Typography sx={{ fontSize: 14 }}><Box component="span" sx={{ color: 'text.secondary' }}>Matched: </Box>{r.matchedWords} / {r.totalWords} words</Typography>
+                              <Typography sx={{ fontSize: 14 }}><Box component="span" sx={{ color: 'text.secondary' }}>{t('transcribedLabel')}</Box>{r.transcribedText || '—'}</Typography>
+                              <Typography sx={{ fontSize: 14 }}>{t('matched', { matched: r.matchedWords, total: r.totalWords })}</Typography>
                               <Box sx={{ pt: 0.5 }}><ScoreBadge score={r.score} /></Box>
                             </Paper>
                           ))}
                         </Box>
                       )}
                       {!detail.phonicsResults?.length && !detail.speakingResults?.length && (
-                        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>No results recorded yet.</Typography>
+                        <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{t('noResultsYet')}</Typography>
                       )}
                     </>
                   )}

@@ -1,5 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { uploadImportFile, downloadTemplate, isImportError, ImportResponse } from '@/lib/import-api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -15,6 +16,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { Download, Upload } from 'lucide-react';
 
 export default function TeacherImportPage() {
+  const t = useTranslations('teacher.import');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ImportResponse | null>(null);
@@ -31,7 +33,7 @@ export default function TeacherImportPage() {
       setResult(response);
       setFile(null);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Upload failed');
+      setError(e instanceof Error ? e.message : t('errors.upload_failed'));
     } finally {
       setLoading(false);
     }
@@ -42,10 +44,10 @@ export default function TeacherImportPage() {
       {/* Intro card */}
       <Paper sx={{ p: 3, borderRadius: 3, mb: 3 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-          Bulk Import
+          {t('heading')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Download the template, fill in your data, and upload.
+          {t('subtext')}
         </Typography>
       </Paper>
 
@@ -55,21 +57,21 @@ export default function TeacherImportPage() {
           {/* Download Template */}
           <Box>
             <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-              Step 1 — Download the template
+              {t('step1')}
             </Typography>
             <Button
               variant="outlined"
               startIcon={<Download size={16} />}
               onClick={() => downloadTemplate('teacher').catch((e: Error) => setError(e.message))}
             >
-              Download Template
+              {t('downloadTemplate')}
             </Button>
           </Box>
 
           {/* File upload */}
           <Box>
             <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-              Step 2 — Fill in and upload the file
+              {t('step2')}
             </Typography>
             <input
               type="file"
@@ -82,11 +84,11 @@ export default function TeacherImportPage() {
               variant="outlined"
               onClick={() => fileInputRef.current?.click()}
             >
-              Choose File (.xlsx)
+              {t('chooseFile')}
             </Button>
             {file && (
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Selected: {file.name}
+                {t('selected', { filename: file.name })}
               </Typography>
             )}
           </Box>
@@ -100,7 +102,7 @@ export default function TeacherImportPage() {
               onClick={handleUpload}
               sx={{ bgcolor: '#3B82F6', '&:hover': { bgcolor: '#2563EB' } }}
             >
-              {loading ? 'Uploading...' : 'Upload'}
+              {loading ? t('uploading') : t('upload')}
             </Button>
           </Box>
         </Box>
@@ -119,16 +121,16 @@ export default function TeacherImportPage() {
           {isImportError(result) ? (
             <>
               <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
-                <strong>Import Failed — Fix Errors and Re-upload</strong>
+                <strong>{t('importFailed')}</strong>
               </Alert>
               <Paper sx={{ borderRadius: 3 }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 700 }}>Sheet</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Row</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Column</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>Error Message</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('columnSheet')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('columnRow')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('columnColumn')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('columnErrorMessage')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -147,11 +149,10 @@ export default function TeacherImportPage() {
           ) : (
             <Alert severity="success" sx={{ borderRadius: 2 }}>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Import successful!
+                {t('importSuccessful')}
               </Typography>
               <Typography variant="body2">
-                {result.imported.classes} classes, {result.imported.students} students,{' '}
-                {result.imported.homework} homework items imported.
+                {t('importedSummary', { classes: result.imported.classes, students: result.imported.students, homework: result.imported.homework })}
               </Typography>
             </Alert>
           )}

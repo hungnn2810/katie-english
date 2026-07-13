@@ -260,5 +260,58 @@
       "student_removed": "Student removed.",
       "remove_error": "Failed to remove student."
     }
+  },
+  "sessions": {
+    "filters": {
+      "studentLabel": "Student",
+      "allStudents": "All students",
+      "assignmentLabel": "Assignment",
+      "allAssignments": "All assignments",
+      "fromLabel": "From",
+      "toLabel": "To",
+      "loading": "Loading…",
+      "search": "Search"
+    },
+    "resultsCount": "{count, plural, one {# session} other {# sessions}}",
+    "dateFiltered": "(date-filtered)",
+    "emptyNoSessions": "No sessions yet. Adjust filters and try Search.",
+    "emptyNoMatch": "No sessions match the date filter.",
+    "unknownStudent": "Student #{id}",
+    "unknownHomework": "Unknown",
+    "inProgress": "In progress",
+    "view": "View",
+    "loadingDetails": "Loading details…",
+    "wordResults": "Word Results",
+    "tableWord": "Word",
+    "tableTranscribed": "Transcribed",
+    "tableScore": "Score",
+    "speakingResult": "Speaking Result",
+    "transcribedLabel": "Transcribed: ",
+    "matched": "Matched: {matched} / {total} words",
+    "noResultsYet": "No results recorded yet.",
+    "toasts": {
+      "load_error": "Failed to load sessions"
+    }
+  },
+  "import": {
+    "heading": "Bulk Import",
+    "subtext": "Download the template, fill in your data, and upload.",
+    "step1": "Step 1 — Download the template",
+    "downloadTemplate": "Download Template",
+    "step2": "Step 2 — Fill in and upload the file",
+    "chooseFile": "Choose File (.xlsx)",
+    "selected": "Selected: {filename}",
+    "uploading": "Uploading...",
+    "upload": "Upload",
+    "importFailed": "Import Failed — Fix Errors and Re-upload",
+    "columnSheet": "Sheet",
+    "columnRow": "Row",
+    "columnColumn": "Column",
+    "columnErrorMessage": "Error Message",
+    "importSuccessful": "Import successful!",
+    "importedSummary": "{classes} classes, {students} students, {homework} homework items imported.",
+    "errors": {
+      "upload_failed": "Upload failed"
+    }
   }
 }

@@ -260,5 +260,58 @@
       "student_removed": "Đã xóa học sinh.",
       "remove_error": "Xóa học sinh thất bại."
     }
+  },
+  "sessions": {
+    "filters": {
+      "studentLabel": "Học sinh",
+      "allStudents": "Tất cả học sinh",
+      "assignmentLabel": "Bài tập",
+      "allAssignments": "Tất cả bài tập",
+      "fromLabel": "Từ ngày",
+      "toLabel": "Đến ngày",
+      "loading": "Đang tải…",
+      "search": "Tìm kiếm"
+    },
+    "resultsCount": "{count} phiên học",
+    "dateFiltered": "(đã lọc theo ngày)",
+    "emptyNoSessions": "Chưa có phiên học nào. Điều chỉnh bộ lọc và thử Tìm kiếm.",
+    "emptyNoMatch": "Không có phiên học nào khớp với bộ lọc ngày.",
+    "unknownStudent": "Học sinh #{id}",
+    "unknownHomework": "Không xác định",
+    "inProgress": "Đang làm",
+    "view": "Xem",
+    "loadingDetails": "Đang tải chi tiết…",
+    "wordResults": "Kết quả từ vựng",
+    "tableWord": "Từ",
+    "tableTranscribed": "Nhận diện",
+    "tableScore": "Điểm",
+    "speakingResult": "Kết quả nói",
+    "transcribedLabel": "Nhận diện: ",
+    "matched": "Khớp: {matched} / {total} từ",
+    "noResultsYet": "Chưa có kết quả nào.",
+    "toasts": {
+      "load_error": "Tải phiên học thất bại"
+    }
+  },
+  "import": {
+    "heading": "Nhập dữ liệu hàng loạt",
+    "subtext": "Tải mẫu, điền dữ liệu và tải lên.",
+    "step1": "Bước 1 — Tải mẫu",
+    "downloadTemplate": "Tải mẫu",
+    "step2": "Bước 2 — Điền và tải lên tệp",
+    "chooseFile": "Chọn tệp (.xlsx)",
+    "selected": "Đã chọn: {filename}",
+    "uploading": "Đang tải lên...",
+    "upload": "Tải lên",
+    "importFailed": "Nhập thất bại — Sửa lỗi và tải lên lại",
+    "columnSheet": "Sheet",
+    "columnRow": "Dòng",
+    "columnColumn": "Cột",
+    "columnErrorMessage": "Thông báo lỗi",
+    "importSuccessful": "Nhập dữ liệu thành công!",
+    "importedSummary": "Đã nhập {classes} lớp, {students} học sinh, {homework} bài tập.",
+    "errors": {
+      "upload_failed": "Tải lên thất bại"
+    }
   }
 }
