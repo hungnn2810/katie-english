@@ -7,9 +7,9 @@ last_updated: "2026-07-12T13:42:14.762Z"
 progress:
   total_phases: 18
   completed_phases: 16
-  total_plans: 84
-  completed_plans: 71
-  percent: 85
+  total_plans: 88
+  completed_plans: 77
+  percent: 88
 ---
 
 # Project State: Katie English
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** Student completes homework on tablet, gets AI-scored result immediately — no manual teacher grading.
-**Current focus:** Phase 17 — import-classes-tuition-books-students-homework
+**Current focus:** Phase 18 — multi-language-support-across-all-pages (2/12 plans done: i18n foundation + dashboard/login/schedule extraction)
 
 ## Current Phase
 
@@ -99,3 +99,5 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-06-19**: Phase 15 tuition management complete. Plans 15-02 (backend), 15-03 (UI forms), 15-04 (TuitionReportTable) all done. Human verify checkpoint approved. TUITION-07 delivered.
 - **2026-06-21**: Phase 16 plan 16-04 complete. admin/page.tsx, admin/teachers/page.tsx ACCENT updated to '#6366F1'; admin/classes 'Reassign' button and admin/students checkbox colors patched. Human visual checkpoint approved. Phase 16 all 4 plans done — Teacher/Admin UI Redesign complete.
 - **2026-07-12**: Phase 18 context gathered (18-CONTEXT.md). Scope: cookie-based EN/VI locale (no URL prefix, no schema change), default VI, independent per app. This phase = i18n foundation + full Teacher portal migration + toast/error normalization; Admin/Student/Marketing migrations deferred to follow-up phases. Next: /gsd:plan-phase 18.
+- **2026-07-13**: Plan 18-01 complete. next-intl installed; `lib/i18n/{request,actions}.ts` (cookie-based locale, enum-validated, default VI); `teacher/layout.tsx` split into server component + `TeacherLayoutClient.tsx`; `LanguageSwitcher` wired into `TeacherShell` header; `teacher.json` skeleton (nav/shell/common) in both locales. 12/12 unit tests passing, build clean.
+- **2026-07-13**: Plan 18-02 complete. Dashboard/login/schedule pages fully translation-driven (`teacher.json` +dashboard/login/schedule namespaces); fixed pre-existing bilingual inconsistency (schedule was VI-only, login/dashboard were EN-only). Follow-up fix: LanguageSwitcher was unreachable on the unauthenticated login page (TeacherShell-only wiring from 18-01 didn't cover it) — now rendered directly on `/teacher/login`. Verified via tsc/tests/build + curl-based locale resolution check (no browser available this session for visual confirmation — flagged as outstanding in 18-02-SUMMARY.md).
