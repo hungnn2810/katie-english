@@ -82,5 +82,183 @@
     "scheduledCount": "{count} classes have a schedule",
     "emptyTitle": "No classes have a schedule",
     "emptySubtitle": "Ask your admin to add a schedule for your class"
+  },
+  "classes": {
+    "classStatus": {
+      "PENDING": "Pending",
+      "INPROGRESS": "In Progress",
+      "ENDED": "Ended"
+    },
+    "dayLabels": {
+      "MON": "Mon",
+      "TUE": "Tue",
+      "WED": "Wed",
+      "THU": "Thu",
+      "FRI": "Fri",
+      "SAT": "Sat",
+      "SUN": "Sun"
+    },
+    "statusChip": {
+      "active": "Active",
+      "pending": "Pending",
+      "ended": "Ended"
+    },
+    "modal": {
+      "editTitle": "Edit {name}",
+      "createTitle": "New Class",
+      "updating": "Updating…",
+      "creating": "Creating…",
+      "updateClass": "Update Class",
+      "createClass": "Create Class",
+      "nameLabel": "Class Name",
+      "namePlaceholder": "e.g. English Beginners",
+      "codeLabel": "Class Code",
+      "codePlaceholder": "e.g. ENG-01",
+      "startDateLabel": "Start Date ({format})",
+      "endDateLabel": "End Date ({format})",
+      "statusLabel": "Status",
+      "scheduleLabel": "Schedule",
+      "startTime": "Start time",
+      "endTime": "End time"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search classes…",
+      "newClass": "New Class"
+    },
+    "filterTabs": {
+      "all": "All",
+      "inProgress": "In Progress",
+      "pending": "Pending",
+      "ended": "Ended"
+    },
+    "table": {
+      "columnClass": "Class",
+      "columnCode": "Code",
+      "columnStudents": "Students",
+      "columnSchedule": "Schedule",
+      "columnStatus": "Status",
+      "notScheduled": "Not scheduled",
+      "emptyTitle": "No classes yet",
+      "emptySubtitle": "Create your first class to get started",
+      "noMatch": "No classes match filter",
+      "deleteConfirm": "Delete?",
+      "no": "No",
+      "yes": "Yes",
+      "editTitle": "Edit",
+      "studentsTitle": "Students",
+      "deleteTitle": "Delete"
+    },
+    "toasts": {
+      "save_error": "Failed to save class",
+      "class_updated": "Class updated!",
+      "class_created": "Class created!",
+      "class_deleted": "Class deleted."
+    }
+  },
+  "students": {
+    "sexToggle": { "male": "Male", "female": "Female" },
+    "parentFields": {
+      "nameLabel": "Name",
+      "namePlaceholder": "Parent name",
+      "phoneLabel": "Phone Number",
+      "phonePlaceholder": "Phone number",
+      "relationshipLabel": "Relationship",
+      "father": "Father",
+      "mother": "Mother",
+      "addParent": "+ Add parent"
+    },
+    "form": {
+      "authLabel": "Auth",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Login username",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Min 6 characters",
+      "studentInfoLabel": "Student Info",
+      "sexLabel": "Sex",
+      "fullNameLabel": "Full Name",
+      "fullNameRequiredLabel": "Full Name *",
+      "fullNamePlaceholder": "Student's full name",
+      "dobLabel": "Date of Birth ({format})",
+      "dobRequiredLabel": "Date of Birth * ({format})",
+      "classLabel": "Class",
+      "noClassAssigned": "No class assigned",
+      "parentGuardianLabel": "Parent / Guardian",
+      "cancel": "Cancel"
+    },
+    "createModal": {
+      "title": "Add Student",
+      "adding": "Adding...",
+      "addStudent": "Add Student"
+    },
+    "editModal": {
+      "titlePrefix": "Edit ",
+      "subtitle": "Update student info and class assignment.",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes"
+    },
+    "approveModal": {
+      "titlePrefix": "Approve ",
+      "titleAccent": "Registration",
+      "subtitle": "Confirm student info for {upn}",
+      "loginLabel": "Login:",
+      "registeredPrefix": "Registered",
+      "approving": "Approving...",
+      "confirmApproval": "Confirm Approval"
+    },
+    "resetModal": {
+      "titlePrefix": "Reset ",
+      "titleAccent": "Password",
+      "subtitle": "Set a new password for {name}",
+      "accountLabel": "Account:",
+      "newPasswordLabel": "New Password",
+      "updating": "Updating...",
+      "setPassword": "Set Password"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search students...",
+      "allClasses": "All classes",
+      "addStudent": "Add Student",
+      "countOf": "{filtered} of {total}"
+    },
+    "pendingSection": {
+      "title": "Pending Approvals",
+      "refresh": "Refresh",
+      "reviewApprove": "Review & Approve"
+    },
+    "resetSection": {
+      "title": "Password Reset Requests",
+      "refresh": "Refresh",
+      "setPassword": "Set Password"
+    },
+    "table": {
+      "columnStudent": "Student",
+      "columnClass": "Class",
+      "columnParent": "Parent",
+      "columnStatus": "Status",
+      "emptyTitle": "No students yet",
+      "emptySubtitle": "Add your first student to get started",
+      "noMatch": "No students match your search.",
+      "deleteConfirm": "Delete?",
+      "no": "No",
+      "yes": "Yes",
+      "editTitle": "Edit",
+      "deleteTitle": "Delete",
+      "approved": "Approved"
+    },
+    "toasts": {
+      "username_required": "Username is required.",
+      "add_error": "Failed to add student.",
+      "save_error": "Failed to save changes.",
+      "name_dob_required": "Full name and date of birth are required.",
+      "approve_error": "Failed to approve.",
+      "password_too_short": "Password must be at least 6 characters.",
+      "reset_error": "Failed to reset password.",
+      "student_added": "Student added!",
+      "changes_saved": "Changes saved!",
+      "student_approved": "Student approved!",
+      "password_updated": "Password updated!",
+      "student_removed": "Student removed.",
+      "remove_error": "Failed to remove student."
+    }
   }
 }

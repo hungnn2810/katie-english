@@ -82,5 +82,183 @@
     "scheduledCount": "{count} lớp có lịch học",
     "emptyTitle": "Không có lớp nào có lịch học",
     "emptySubtitle": "Yêu cầu admin thêm lịch học cho lớp của bạn"
+  },
+  "classes": {
+    "classStatus": {
+      "PENDING": "Chờ khai giảng",
+      "INPROGRESS": "Đang học",
+      "ENDED": "Đã kết thúc"
+    },
+    "dayLabels": {
+      "MON": "T2",
+      "TUE": "T3",
+      "WED": "T4",
+      "THU": "T5",
+      "FRI": "T6",
+      "SAT": "T7",
+      "SUN": "CN"
+    },
+    "statusChip": {
+      "active": "Đang học",
+      "pending": "Chờ khai giảng",
+      "ended": "Đã kết thúc"
+    },
+    "modal": {
+      "editTitle": "Sửa {name}",
+      "createTitle": "Lớp học mới",
+      "updating": "Đang cập nhật…",
+      "creating": "Đang tạo…",
+      "updateClass": "Cập nhật lớp",
+      "createClass": "Tạo lớp",
+      "nameLabel": "Tên lớp",
+      "namePlaceholder": "vd: English Beginners",
+      "codeLabel": "Mã lớp",
+      "codePlaceholder": "vd: ENG-01",
+      "startDateLabel": "Ngày bắt đầu ({format})",
+      "endDateLabel": "Ngày kết thúc ({format})",
+      "statusLabel": "Trạng thái",
+      "scheduleLabel": "Lịch học",
+      "startTime": "Giờ bắt đầu",
+      "endTime": "Giờ kết thúc"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Tìm lớp học…",
+      "newClass": "Lớp học mới"
+    },
+    "filterTabs": {
+      "all": "Tất cả",
+      "inProgress": "Đang học",
+      "pending": "Chờ khai giảng",
+      "ended": "Đã kết thúc"
+    },
+    "table": {
+      "columnClass": "Lớp học",
+      "columnCode": "Mã lớp",
+      "columnStudents": "Học sinh",
+      "columnSchedule": "Lịch học",
+      "columnStatus": "Trạng thái",
+      "notScheduled": "Chưa có lịch",
+      "emptyTitle": "Chưa có lớp học nào",
+      "emptySubtitle": "Tạo lớp học đầu tiên để bắt đầu",
+      "noMatch": "Không có lớp nào khớp bộ lọc",
+      "deleteConfirm": "Xóa?",
+      "no": "Không",
+      "yes": "Có",
+      "editTitle": "Sửa",
+      "studentsTitle": "Học sinh",
+      "deleteTitle": "Xóa"
+    },
+    "toasts": {
+      "save_error": "Lưu lớp học thất bại",
+      "class_updated": "Đã cập nhật lớp học!",
+      "class_created": "Đã tạo lớp học!",
+      "class_deleted": "Đã xóa lớp học."
+    }
+  },
+  "students": {
+    "sexToggle": { "male": "Nam", "female": "Nữ" },
+    "parentFields": {
+      "nameLabel": "Họ tên",
+      "namePlaceholder": "Tên phụ huynh",
+      "phoneLabel": "Số điện thoại",
+      "phonePlaceholder": "Số điện thoại",
+      "relationshipLabel": "Quan hệ",
+      "father": "Bố",
+      "mother": "Mẹ",
+      "addParent": "+ Thêm phụ huynh"
+    },
+    "form": {
+      "authLabel": "Tài khoản",
+      "usernameLabel": "Tên đăng nhập",
+      "usernamePlaceholder": "Tên đăng nhập",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "Tối thiểu 6 ký tự",
+      "studentInfoLabel": "Thông tin học sinh",
+      "sexLabel": "Giới tính",
+      "fullNameLabel": "Họ và tên",
+      "fullNameRequiredLabel": "Họ và tên *",
+      "fullNamePlaceholder": "Họ và tên học sinh",
+      "dobLabel": "Ngày sinh ({format})",
+      "dobRequiredLabel": "Ngày sinh * ({format})",
+      "classLabel": "Lớp học",
+      "noClassAssigned": "Chưa phân lớp",
+      "parentGuardianLabel": "Phụ huynh",
+      "cancel": "Hủy"
+    },
+    "createModal": {
+      "title": "Thêm học sinh",
+      "adding": "Đang thêm...",
+      "addStudent": "Thêm học sinh"
+    },
+    "editModal": {
+      "titlePrefix": "Sửa ",
+      "subtitle": "Cập nhật thông tin học sinh và lớp học.",
+      "saving": "Đang lưu...",
+      "saveChanges": "Lưu thay đổi"
+    },
+    "approveModal": {
+      "titlePrefix": "Duyệt ",
+      "titleAccent": "đăng ký",
+      "subtitle": "Xác nhận thông tin học sinh cho {upn}",
+      "loginLabel": "Đăng nhập:",
+      "registeredPrefix": "Đã đăng ký",
+      "approving": "Đang duyệt...",
+      "confirmApproval": "Xác nhận duyệt"
+    },
+    "resetModal": {
+      "titlePrefix": "Đặt lại ",
+      "titleAccent": "mật khẩu",
+      "subtitle": "Đặt mật khẩu mới cho {name}",
+      "accountLabel": "Tài khoản:",
+      "newPasswordLabel": "Mật khẩu mới",
+      "updating": "Đang cập nhật...",
+      "setPassword": "Đặt mật khẩu"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Tìm học sinh...",
+      "allClasses": "Tất cả các lớp",
+      "addStudent": "Thêm học sinh",
+      "countOf": "{filtered} / {total}"
+    },
+    "pendingSection": {
+      "title": "Chờ duyệt",
+      "refresh": "Làm mới",
+      "reviewApprove": "Xem & Duyệt"
+    },
+    "resetSection": {
+      "title": "Yêu cầu đặt lại mật khẩu",
+      "refresh": "Làm mới",
+      "setPassword": "Đặt mật khẩu"
+    },
+    "table": {
+      "columnStudent": "Học sinh",
+      "columnClass": "Lớp học",
+      "columnParent": "Phụ huynh",
+      "columnStatus": "Trạng thái",
+      "emptyTitle": "Chưa có học sinh nào",
+      "emptySubtitle": "Thêm học sinh đầu tiên để bắt đầu",
+      "noMatch": "Không tìm thấy học sinh phù hợp.",
+      "deleteConfirm": "Xóa?",
+      "no": "Không",
+      "yes": "Có",
+      "editTitle": "Sửa",
+      "deleteTitle": "Xóa",
+      "approved": "Đã duyệt"
+    },
+    "toasts": {
+      "username_required": "Vui lòng nhập tên đăng nhập.",
+      "add_error": "Thêm học sinh thất bại.",
+      "save_error": "Lưu thay đổi thất bại.",
+      "name_dob_required": "Vui lòng nhập họ tên và ngày sinh.",
+      "approve_error": "Duyệt đăng ký thất bại.",
+      "password_too_short": "Mật khẩu phải có ít nhất 6 ký tự.",
+      "reset_error": "Đặt lại mật khẩu thất bại.",
+      "student_added": "Đã thêm học sinh!",
+      "changes_saved": "Đã lưu thay đổi!",
+      "student_approved": "Đã duyệt học sinh!",
+      "password_updated": "Đã cập nhật mật khẩu!",
+      "student_removed": "Đã xóa học sinh.",
+      "remove_error": "Xóa học sinh thất bại."
+    }
   }
 }

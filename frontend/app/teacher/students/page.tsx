@@ -1,6 +1,7 @@
 'use client';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   getStudents, createStudent, deleteStudent, updateStudent, getClasses,
   Student, ClassItem, CreateStudentInput,
@@ -66,6 +67,7 @@ function Modal({ title, onClose, children }: { title: React.ReactNode; subtitle?
 }
 
 function SexToggle({ value, onChange }: { value: 'MALE' | 'FEMALE'; onChange: (v: 'MALE' | 'FEMALE') => void }) {
+  const t = useTranslations('teacher.students');
   return (
     <Box sx={{ display: 'flex', gap: 1 }}>
       {(['MALE', 'FEMALE'] as const).map((s) => (
@@ -78,7 +80,7 @@ function SexToggle({ value, onChange }: { value: 'MALE' | 'FEMALE'; onChange: (v
               : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }),
           }}>
           <User size={14} />
-          {s === 'MALE' ? 'Male' : 'Female'}
+          {s === 'MALE' ? t('sexToggle.male') : t('sexToggle.female')}
         </Button>
       ))}
     </Box>
@@ -89,29 +91,30 @@ function ParentFields({ parents, onChange }: {
   parents: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[];
   onChange: (parents: { name: string; phoneNumber: string; type: 'FATHER' | 'MOTHER' }[]) => void;
 }) {
+  const t = useTranslations('teacher.students');
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       {parents.map((p, i) => (
         <Box key={i} sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
           <Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1.5 }}>
             <Box>
-              <FormLabel sx={fLabelSx}>Name</FormLabel>
-              <TextField size="small" fullWidth placeholder="Parent name" value={p.name}
+              <FormLabel sx={fLabelSx}>{t('parentFields.nameLabel')}</FormLabel>
+              <TextField size="small" fullWidth placeholder={t('parentFields.namePlaceholder')} value={p.name}
                 onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], name: e.target.value }; onChange(ps); }}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
             </Box>
             <Box>
-              <FormLabel sx={fLabelSx}>Phone Number</FormLabel>
-              <TextField size="small" fullWidth placeholder="Phone number" value={p.phoneNumber}
+              <FormLabel sx={fLabelSx}>{t('parentFields.phoneLabel')}</FormLabel>
+              <TextField size="small" fullWidth placeholder={t('parentFields.phonePlaceholder')} value={p.phoneNumber}
                 onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], phoneNumber: e.target.value }; onChange(ps); }}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
             </Box>
             <Box>
-              <FormLabel sx={fLabelSx}>Relationship</FormLabel>
+              <FormLabel sx={fLabelSx}>{t('parentFields.relationshipLabel')}</FormLabel>
               <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
                 <MuiSelect value={p.type} onChange={(e) => { const ps = [...parents]; ps[i] = { ...ps[i], type: e.target.value as 'FATHER' | 'MOTHER' }; onChange(ps); }}>
-                  <MenuItem value="FATHER">Father</MenuItem>
-                  <MenuItem value="MOTHER">Mother</MenuItem>
+                  <MenuItem value="FATHER">{t('parentFields.father')}</MenuItem>
+                  <MenuItem value="MOTHER">{t('parentFields.mother')}</MenuItem>
                 </MuiSelect>
               </FormControl>
             </Box>
@@ -125,7 +128,7 @@ function ParentFields({ parents, onChange }: {
       ))}
       {parents.length < 2 && (
         <Button type="button" size="small" onClick={() => onChange([...parents, { ...emptyParent }])} sx={{ alignSelf: 'flex-start', fontSize: 12 }}>
-          + Add parent
+          {t('parentFields.addParent')}
         </Button>
       )}
     </Box>
@@ -133,20 +136,21 @@ function ParentFields({ parents, onChange }: {
 }
 
 function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onClose: () => void; onSaved: () => void }) {
+  const t = useTranslations('teacher.students');
   const [form, setForm] = useState(emptyCreate());
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.upn.trim()) { showToast('Username is required.', 'error'); return; }
+    if (!form.upn.trim()) { showToast(t('toasts.username_required'), 'error'); return; }
     setLoading(true);
     try {
       await createStudent({ ...form, upn: form.upn.trim(), classId: form.classId || undefined });
       onSaved();
       onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to add student.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.add_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -154,25 +158,25 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Modal title="Add Student" onClose={onClose}>
+      <Modal title={t('createModal.title')} onClose={onClose}>
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent sx={{ px: 3.5, py: 0, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
 
             {/* Section: Auth */}
-            <FormSection label="Auth" showPencil={false}>
+            <FormSection label={t('form.authLabel')} showPencil={false}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box>
-                  <FormLabel sx={fLabelSx}>Username</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.usernameLabel')}</FormLabel>
                   <TextField size="small" fullWidth required value={form.upn}
                     onChange={(e) => setForm((f) => ({ ...f, upn: e.target.value }))}
-                    placeholder="Login username"
+                    placeholder={t('form.usernamePlaceholder')}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                 </Box>
                 <Box>
-                  <FormLabel sx={fLabelSx}>Password</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.passwordLabel')}</FormLabel>
                   <TextField type="password" size="small" fullWidth required value={form.password}
                     onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                    placeholder="Min 6 characters"
+                    placeholder={t('form.passwordPlaceholder')}
                     slotProps={{ htmlInput: { minLength: 6 } }}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                 </Box>
@@ -180,21 +184,21 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
             </FormSection>
 
             {/* Section: Student Info */}
-            <FormSection label="Student Info" showPencil={false}>
+            <FormSection label={t('form.studentInfoLabel')} showPencil={false}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box sx={{ gridColumn: '1/-1' }}>
-                  <FormLabel sx={fLabelSx}>Full Name</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.fullNameLabel')}</FormLabel>
                   <TextField size="small" fullWidth required value={form.fullname}
                     onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))}
-                    placeholder="Student's full name"
+                    placeholder={t('form.fullNamePlaceholder')}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                 </Box>
                 <Box>
-                  <FormLabel sx={fLabelSx}>Sex</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.sexLabel')}</FormLabel>
                   <SexToggle value={form.sex} onChange={(s) => setForm((f) => ({ ...f, sex: s }))} />
                 </Box>
                 <Box>
-                  <FormLabel sx={fLabelSx}>Date of Birth ({DATE_FORMAT})</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.dobLabel', { format: DATE_FORMAT })}</FormLabel>
                   <DatePicker
                     format={DATE_FORMAT}
                     value={form.dateOfBirth ? new Date(form.dateOfBirth) : null}
@@ -202,12 +206,12 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
                     slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }} />
                 </Box>
                 <Box sx={{ gridColumn: '1/-1' }}>
-                  <FormLabel sx={fLabelSx}>Class</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.classLabel')}</FormLabel>
                   <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
                     <MuiSelect
                       value={String(form.classId ?? '')}
                       onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
-                      <MenuItem value="">No class assigned</MenuItem>
+                      <MenuItem value="">{t('form.noClassAssigned')}</MenuItem>
                       {classes.map((c) => <MenuItem key={c.id} value={String(c.id)}>{c.name} ({c.code})</MenuItem>)}
                     </MuiSelect>
                   </FormControl>
@@ -216,15 +220,15 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
             </FormSection>
 
             {/* Section: Parent / Guardian */}
-            <FormSection label="Parent / Guardian" showPencil={false}>
+            <FormSection label={t('form.parentGuardianLabel')} showPencil={false}>
               <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
             </FormSection>
 
           </DialogContent>
           <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>Cancel</Button>
+            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>{t('form.cancel')}</Button>
             <Button type="submit" variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined} sx={{ borderRadius: '50px', fontWeight: 600, px: 3, textTransform: 'none', bgcolor: '#E8ECF6', color: '#6B7280', boxShadow: 'none', '&:hover': { bgcolor: '#DDE2F0', boxShadow: 'none' } }}>
-              {loading ? 'Adding...' : 'Add Student'}
+              {loading ? t('createModal.adding') : t('createModal.addStudent')}
             </Button>
           </DialogActions>
         </Box>
@@ -234,6 +238,7 @@ function CreateModal({ classes, onClose, onSaved }: { classes: ClassItem[]; onCl
 }
 
 function EditModal({ student, classes, onClose, onSaved }: { student: Student; classes: ClassItem[]; onClose: () => void; onSaved: () => void }) {
+  const t = useTranslations('teacher.students');
   const [form, setForm] = useState<EditForm>({
     fullname: student.fullname,
     sex: student.sex,
@@ -254,7 +259,7 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
       onSaved();
       onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to save changes.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.save_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -263,18 +268,18 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Modal
-        title={<><Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Edit </Box><Box component="span" sx={{ color: ACCENT }}>{student.fullname}</Box></>}
-        subtitle="Update student info and class assignment."
+        title={<><Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>{t('editModal.titlePrefix')}</Box><Box component="span" sx={{ color: ACCENT }}>{student.fullname}</Box></>}
+        subtitle={t('editModal.subtitle')}
         onClose={onClose}
       >
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent sx={{ px: 3.5, py: 0, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
 
             {/* Section: Auth */}
-            <FormSection label="Auth" showPencil={false}>
+            <FormSection label={t('form.authLabel')} showPencil={false}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box>
-                  <FormLabel sx={fLabelSx}>Username</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.usernameLabel')}</FormLabel>
                   <TextField size="small" fullWidth disabled value={student.user?.upn ?? ''}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                 </Box>
@@ -282,21 +287,21 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
             </FormSection>
 
             {/* Section: Student Info */}
-            <FormSection label="Student Info" showPencil={false}>
+            <FormSection label={t('form.studentInfoLabel')} showPencil={false}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Box sx={{ gridColumn: '1/-1' }}>
-                  <FormLabel sx={fLabelSx}>Full Name</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.fullNameLabel')}</FormLabel>
                   <TextField size="small" fullWidth required value={form.fullname}
                     onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))}
-                    placeholder="Student's full name"
+                    placeholder={t('form.fullNamePlaceholder')}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                 </Box>
                 <Box>
-                  <FormLabel sx={fLabelSx}>Sex</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.sexLabel')}</FormLabel>
                   <SexToggle value={form.sex} onChange={(s) => setForm((f) => ({ ...f, sex: s }))} />
                 </Box>
                 <Box>
-                  <FormLabel sx={fLabelSx}>Date of Birth ({DATE_FORMAT})</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.dobLabel', { format: DATE_FORMAT })}</FormLabel>
                   <DatePicker
                     format={DATE_FORMAT}
                     value={form.dateOfBirth ? new Date(form.dateOfBirth) : null}
@@ -304,12 +309,12 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
                     slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }} />
                 </Box>
                 <Box sx={{ gridColumn: '1/-1' }}>
-                  <FormLabel sx={fLabelSx}>Class</FormLabel>
+                  <FormLabel sx={fLabelSx}>{t('form.classLabel')}</FormLabel>
                   <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
                     <MuiSelect
                       value={String(form.classId ?? '')}
                       onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
-                      <MenuItem value="">No class assigned</MenuItem>
+                      <MenuItem value="">{t('form.noClassAssigned')}</MenuItem>
                       {classes.map((c) => <MenuItem key={c.id} value={String(c.id)}>{c.name} ({c.code})</MenuItem>)}
                     </MuiSelect>
                   </FormControl>
@@ -318,15 +323,15 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
             </FormSection>
 
             {/* Section: Parent / Guardian */}
-            <FormSection label="Parent / Guardian" showPencil={false}>
+            <FormSection label={t('form.parentGuardianLabel')} showPencil={false}>
               <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
             </FormSection>
 
           </DialogContent>
           <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>Cancel</Button>
+            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>{t('form.cancel')}</Button>
             <Button type="submit" variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined} sx={{ borderRadius: '50px', fontWeight: 600, px: 3, textTransform: 'none', bgcolor: '#E8ECF6', color: '#6B7280', boxShadow: 'none', '&:hover': { bgcolor: '#DDE2F0', boxShadow: 'none' } }}>
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? t('editModal.saving') : t('editModal.saveChanges')}
             </Button>
           </DialogActions>
         </Box>
@@ -336,6 +341,7 @@ function EditModal({ student, classes, onClose, onSaved }: { student: Student; c
 }
 
 function ApproveModal({ pending, classes, onClose, onSaved }: { pending: PendingStudent; classes: ClassItem[]; onClose: () => void; onSaved: () => void }) {
+  const t = useTranslations('teacher.students');
   const [form, setForm] = useState<ApproveForm>(() => {
     if (pending.registrationData) {
       const r = pending.registrationData;
@@ -352,7 +358,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.fullname || !form.dateOfBirth) { showToast('Full name and date of birth are required.', 'error'); return; }
+    if (!form.fullname || !form.dateOfBirth) { showToast(t('toasts.name_dob_required'), 'error'); return; }
     setLoading(true);
     try {
       const payload: ApproveStudentInput = {
@@ -364,7 +370,7 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
       onSaved();
       onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to approve.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.approve_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -373,53 +379,53 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Modal
-        title={<><Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Approve </Box><Box component="span" sx={{ color: '#10B981' }}>Registration</Box></>}
-        subtitle={`Confirm student info for ${pending.upn}`}
+        title={<><Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>{t('approveModal.titlePrefix')}</Box><Box component="span" sx={{ color: '#10B981' }}>{t('approveModal.titleAccent')}</Box></>}
+        subtitle={t('approveModal.subtitle', { upn: pending.upn })}
         onClose={onClose}
       >
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent sx={{ px: 3.5, py: 0, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             <Alert severity="warning" sx={{ borderRadius: 3, mb: 2, fontSize: 13 }}>
-              <strong>Login:</strong> {pending.upn} &middot; Registered {new Date(pending.createdAt).toLocaleDateString()}
+              <strong>{t('approveModal.loginLabel')}</strong> {pending.upn} &middot; {t('approveModal.registeredPrefix')} {new Date(pending.createdAt).toLocaleDateString()}
             </Alert>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
               <Box sx={{ gridColumn: '1/-1' }}>
-                <FormLabel sx={fLabelSx}>Full Name *</FormLabel>
+                <FormLabel sx={fLabelSx}>{t('form.fullNameRequiredLabel')}</FormLabel>
                 <TextField size="small" fullWidth required value={form.fullname}
                   onChange={(e) => setForm((f) => ({ ...f, fullname: e.target.value }))}
-                  placeholder="Student's full name"
+                  placeholder={t('form.fullNamePlaceholder')}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
               </Box>
               <Box>
-                <FormLabel sx={fLabelSx}>Sex</FormLabel>
+                <FormLabel sx={fLabelSx}>{t('form.sexLabel')}</FormLabel>
                 <SexToggle value={form.sex} onChange={(s) => setForm((f) => ({ ...f, sex: s }))} />
               </Box>
               <Box>
-                <FormLabel sx={fLabelSx}>Date of Birth * ({DATE_FORMAT})</FormLabel>
+                <FormLabel sx={fLabelSx}>{t('form.dobRequiredLabel', { format: DATE_FORMAT })}</FormLabel>
                 <DatePicker
                   value={form.dateOfBirth ? new Date(form.dateOfBirth) : null}
                   onChange={(v: Date | null) => setForm((f) => ({ ...f, dateOfBirth: v ? v.toISOString().split('T')[0] : '' }))}
                   slotProps={{ textField: { size: 'small', fullWidth: true, sx: { '& .MuiOutlinedInput-root': { borderRadius: 3 } } } }} />
               </Box>
               <Box sx={{ gridColumn: '1/-1' }}>
-                <FormLabel sx={fLabelSx}>Class</FormLabel>
+                <FormLabel sx={fLabelSx}>{t('form.classLabel')}</FormLabel>
                 <FormControl fullWidth size="small" sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
                   <MuiSelect value={String(form.classId ?? '')}
                     onChange={(e) => setForm((f) => ({ ...f, classId: e.target.value ? Number(e.target.value) : undefined }))}>
-                    <MenuItem value="">No class assigned</MenuItem>
+                    <MenuItem value="">{t('form.noClassAssigned')}</MenuItem>
                     {classes.map((c) => <MenuItem key={c.id} value={String(c.id)}>{c.name} ({c.code})</MenuItem>)}
                   </MuiSelect>
                 </FormControl>
               </Box>
             </Box>
-            <FormSection label="Parent / Guardian" showPencil={false}>
+            <FormSection label={t('form.parentGuardianLabel')} showPencil={false}>
               <ParentFields parents={form.parents} onChange={(ps) => setForm((f) => ({ ...f, parents: ps }))} />
             </FormSection>
           </DialogContent>
           <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
-            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>Cancel</Button>
+            <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>{t('form.cancel')}</Button>
             <Button type="submit" variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined} sx={{ borderRadius: '50px', fontWeight: 600, px: 3, textTransform: 'none', bgcolor: '#E8ECF6', color: '#6B7280', boxShadow: 'none', '&:hover': { bgcolor: '#DDE2F0', boxShadow: 'none' } }}>
-              {loading ? 'Approving...' : 'Confirm Approval'}
+              {loading ? t('approveModal.approving') : t('approveModal.confirmApproval')}
             </Button>
           </DialogActions>
         </Box>
@@ -429,20 +435,21 @@ function ApproveModal({ pending, classes, onClose, onSaved }: { pending: Pending
 }
 
 function ResetModal({ request, onClose, onSaved }: { request: PasswordResetRequest; onClose: () => void; onSaved: () => void }) {
+  const t = useTranslations('teacher.students');
   const [pw, setPw] = useState('');
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (pw.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
+    if (pw.length < 6) { showToast(t('toasts.password_too_short'), 'error'); return; }
     setLoading(true);
     try {
       await resetStudentPassword(request.id, pw);
       onSaved();
       onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to reset password.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.reset_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -450,25 +457,25 @@ function ResetModal({ request, onClose, onSaved }: { request: PasswordResetReque
 
   return (
     <Modal
-      title={<><Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Reset </Box><Box component="span" sx={{ color: '#3B82F6' }}>Password</Box></>}
-      subtitle={`Set a new password for ${request.student?.fullname ?? request.upn}`}
+      title={<><Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>{t('resetModal.titlePrefix')}</Box><Box component="span" sx={{ color: '#3B82F6' }}>{t('resetModal.titleAccent')}</Box></>}
+      subtitle={t('resetModal.subtitle', { name: request.student?.fullname ?? request.upn })}
       onClose={onClose}
     >
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent sx={{ px: 4, py: 3 }}>
           <Alert severity="info" sx={{ borderRadius: 3, mb: 2, fontSize: 13 }}>
-            <strong>Account:</strong> {request.upn}
+            <strong>{t('resetModal.accountLabel')}</strong> {request.upn}
           </Alert>
-          <FormLabel sx={fLabelSx}>New Password</FormLabel>
-          <TextField type="password" size="small" fullWidth required placeholder="Min 6 characters"
+          <FormLabel sx={fLabelSx}>{t('resetModal.newPasswordLabel')}</FormLabel>
+          <TextField type="password" size="small" fullWidth required placeholder={t('form.passwordPlaceholder')}
             value={pw} onChange={(e) => setPw(e.target.value)}
             slotProps={{ htmlInput: { minLength: 6 } }} autoFocus
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
         </DialogContent>
         <DialogActions sx={{ px: 3.5, pb: 3, pt: 0.5, justifyContent: 'flex-end', gap: 1.5 }}>
-          <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>Cancel</Button>
+          <Button variant="outlined" onClick={onClose} sx={{ borderRadius: '50px', fontWeight: 600, px: 2.5, textTransform: 'none' }}>{t('form.cancel')}</Button>
           <Button type="submit" variant="contained" disabled={loading} startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined} sx={{ borderRadius: '50px', fontWeight: 600, px: 3, textTransform: 'none', bgcolor: '#E8ECF6', color: '#6B7280', boxShadow: 'none', '&:hover': { bgcolor: '#DDE2F0', boxShadow: 'none' } }}>
-            {loading ? 'Updating...' : 'Set Password'}
+            {loading ? t('resetModal.updating') : t('resetModal.setPassword')}
           </Button>
         </DialogActions>
       </Box>
@@ -484,6 +491,7 @@ type ModalState =
   | null;
 
 export default function StudentsPage() {
+  const t = useTranslations('teacher.students');
   const searchParams = useSearchParams();
   const [students, setStudents] = useState<Student[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -527,43 +535,43 @@ export default function StudentsPage() {
     <Box>
       {modal?.kind === 'create' && (
         <CreateModal classes={classes} onClose={() => setModal(null)}
-          onSaved={() => { load(classFilter ? Number(classFilter) : undefined); showToast('Student added!', 'success'); }} />
+          onSaved={() => { load(classFilter ? Number(classFilter) : undefined); showToast(t('toasts.student_added'), 'success'); }} />
       )}
       {modal?.kind === 'edit' && (
         <EditModal student={modal.student} classes={classes} onClose={() => setModal(null)}
-          onSaved={() => { load(classFilter ? Number(classFilter) : undefined); showToast('Changes saved!', 'success'); }} />
+          onSaved={() => { load(classFilter ? Number(classFilter) : undefined); showToast(t('toasts.changes_saved'), 'success'); }} />
       )}
       {modal?.kind === 'approve' && (
         <ApproveModal pending={modal.pending} classes={classes} onClose={() => setModal(null)}
-          onSaved={() => { load(classFilter ? Number(classFilter) : undefined); loadPending(); showToast('Student approved!', 'success'); }} />
+          onSaved={() => { load(classFilter ? Number(classFilter) : undefined); loadPending(); showToast(t('toasts.student_approved'), 'success'); }} />
       )}
       {modal?.kind === 'reset' && (
         <ResetModal request={modal.request} onClose={() => setModal(null)}
-          onSaved={() => { loadResets(); showToast('Password updated!', 'success'); }} />
+          onSaved={() => { loadResets(); showToast(t('toasts.password_updated'), 'success'); }} />
       )}
 
       {/* Toolbar */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, mb: '16px', flexWrap: 'wrap' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <TextField size="small" placeholder="Search students..." value={search} onChange={(e) => setSearch(e.target.value)}
+          <TextField size="small" placeholder={t('toolbar.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)}
             sx={{ width: 200, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
             slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> } }} />
           <FormControl size="small" sx={{ width: 180, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}>
             <MuiSelect value={classFilter} onChange={(e) => setClassFilter(e.target.value)} displayEmpty>
-              <MenuItem value="">All classes</MenuItem>
+              <MenuItem value="">{t('toolbar.allClasses')}</MenuItem>
               {classes.map((c) => <MenuItem key={c.id} value={String(c.id)}>{c.name}</MenuItem>)}
             </MuiSelect>
           </FormControl>
           {students.length > 0 && (
             <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-              {filtered.length} of {students.length}
+              {t('toolbar.countOf', { filtered: filtered.length, total: students.length })}
               {activeClassName && <Box component="span" sx={{ ml: 0.5, color: ACCENT, fontWeight: 600 }}>&middot; {activeClassName}</Box>}
             </Typography>
           )}
         </Box>
         <Button variant="contained" onClick={() => setModal({ kind: 'create' })}
           sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: '8px', gap: 1 }}>
-          <Plus size={16} /> Add Student
+          <Plus size={16} /> {t('toolbar.addStudent')}
         </Button>
       </Box>
 
@@ -575,10 +583,10 @@ export default function StudentsPage() {
               <Box sx={{ width: 28, height: 28, bgcolor: '#FEF3C7', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Clock size={14} color="#D97706" />
               </Box>
-              <Typography sx={{ fontWeight: 700, color: '#92400E', fontSize: 14 }}>Pending Approvals</Typography>
+              <Typography sx={{ fontWeight: 700, color: '#92400E', fontSize: 14 }}>{t('pendingSection.title')}</Typography>
               <Chip label={pending.length} size="small" sx={{ bgcolor: '#FDE68A', color: '#92400E', fontWeight: 700, height: 20 }} />
             </Box>
-            <Button size="small" onClick={loadPending} sx={{ fontSize: 12, fontWeight: 600, color: '#B45309' }}>Refresh</Button>
+            <Button size="small" onClick={loadPending} sx={{ fontSize: 12, fontWeight: 600, color: '#B45309' }}>{t('pendingSection.refresh')}</Button>
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {pending.map((p) => (
@@ -589,7 +597,7 @@ export default function StudentsPage() {
                 </Box>
                 <Button size="small" variant="contained" onClick={() => setModal({ kind: 'approve', pending: p })}
                   sx={{ fontSize: 12, fontWeight: 700, borderRadius: 3, bgcolor: '#10B981', '&:hover': { bgcolor: '#059669' } }}>
-                  Review &amp; Approve
+                  {t('pendingSection.reviewApprove')}
                 </Button>
               </Paper>
             ))}
@@ -605,10 +613,10 @@ export default function StudentsPage() {
               <Box sx={{ width: 28, height: 28, bgcolor: '#DBEAFE', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <KeyRound size={14} color="#2563EB" />
               </Box>
-              <Typography sx={{ fontWeight: 700, color: '#1E3A8A', fontSize: 14 }}>Password Reset Requests</Typography>
+              <Typography sx={{ fontWeight: 700, color: '#1E3A8A', fontSize: 14 }}>{t('resetSection.title')}</Typography>
               <Chip label={resetRequests.length} size="small" sx={{ bgcolor: '#BFDBFE', color: '#1E40AF', fontWeight: 700, height: 20 }} />
             </Box>
-            <Button size="small" onClick={loadResets} sx={{ fontSize: 12, fontWeight: 600, color: '#1D4ED8' }}>Refresh</Button>
+            <Button size="small" onClick={loadResets} sx={{ fontSize: 12, fontWeight: 600, color: '#1D4ED8' }}>{t('resetSection.refresh')}</Button>
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
             {resetRequests.map((r) => (
@@ -619,7 +627,7 @@ export default function StudentsPage() {
                 </Box>
                 <Button size="small" variant="contained" onClick={() => setModal({ kind: 'reset', request: r })}
                   sx={{ fontSize: 12, fontWeight: 700, borderRadius: 3, bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 } }}>
-                  Set Password
+                  {t('resetSection.setPassword')}
                 </Button>
               </Paper>
             ))}
@@ -635,28 +643,28 @@ export default function StudentsPage() {
           <Box sx={{ width: 56, height: 56, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <Users size={24} color="#94A3B8" />
           </Box>
-          <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No students yet</Typography>
-          <Typography sx={{ fontSize: 14, mt: 0.5 }}>Add your first student to get started</Typography>
+          <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>{t('table.emptyTitle')}</Typography>
+          <Typography sx={{ fontSize: 14, mt: 0.5 }}>{t('table.emptySubtitle')}</Typography>
         </Box>
       ) : (
         <TableShell columns={[
-          { label: 'Student', width: '2fr' },
-          { label: 'Class', width: '1fr' },
-          { label: 'Parent', width: '1.4fr' },
-          { label: 'Status', width: '1.2fr' },
+          { label: t('table.columnStudent'), width: '2fr' },
+          { label: t('table.columnClass'), width: '1fr' },
+          { label: t('table.columnParent'), width: '1.4fr' },
+          { label: t('table.columnStatus'), width: '1.2fr' },
         ]}>
           {filtered.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>No students match your search.</Typography>
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{t('table.noMatch')}</Typography>
             </Box>
           ) : (
             filtered.map((s, i) => {
               const isDeleting = deletingId === s.id;
               const statusCell = isDeleting ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
+                  <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{t('table.deleteConfirm')}</Typography>
                   <Button size="small" onClick={() => setDeletingId(null)}
-                    sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+                    sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>{t('table.no')}</Button>
                   <Button size="small" variant="contained" disabled={submitting}
                     onClick={async () => {
                       setSubmitting(true);
@@ -664,28 +672,28 @@ export default function StudentsPage() {
                         await deleteStudent(s.id);
                         setDeletingId(null);
                         load(classFilter ? Number(classFilter) : undefined);
-                        showToast('Student removed.', 'success');
+                        showToast(t('toasts.student_removed'), 'success');
                       } catch (err) {
                         setDeletingId(null);
-                        showToast(err instanceof Error ? err.message : 'Failed to remove student.', 'error');
+                        showToast(err instanceof Error ? err.message : t('toasts.remove_error'), 'error');
                       } finally {
                         setSubmitting(false);
                       }
                     }}
                     sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>
-                    {submitting ? '…' : 'Yes'}
+                    {submitting ? '…' : t('table.yes')}
                   </Button>
                 </Box>
               ) : (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip label="Approved" size="small" sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
+                  <Chip label={t('table.approved')} size="small" sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
                   <Box sx={{ display: 'flex', gap: 0.25 }}>
                     <IconButton size="small" onClick={() => setModal({ kind: 'edit', student: s })}
-                      sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
+                      sx={{ color: ACCENT, width: 26, height: 26 }} title={t('table.editTitle')}>
                       <Pencil size={13} />
                     </IconButton>
                     <IconButton size="small" onClick={() => setDeletingId(s.id)}
-                      sx={{ color: 'error.main', width: 26, height: 26 }} title="Delete">
+                      sx={{ color: 'error.main', width: 26, height: 26 }} title={t('table.deleteTitle')}>
                       <UserMinus size={13} />
                     </IconButton>
                   </Box>
@@ -696,10 +704,10 @@ export default function StudentsPage() {
                 <TableShellRow
                   key={s.id}
                   columns={[
-                    { label: 'Student', width: '2fr' },
-                    { label: 'Class', width: '1fr' },
-                    { label: 'Parent', width: '1.4fr' },
-                    { label: 'Status', width: '1.2fr' },
+                    { label: t('table.columnStudent'), width: '2fr' },
+                    { label: t('table.columnClass'), width: '1fr' },
+                    { label: t('table.columnParent'), width: '1.4fr' },
+                    { label: t('table.columnStatus'), width: '1.2fr' },
                   ]}
                   last={i === filtered.length - 1}
                   cells={[
@@ -710,7 +718,7 @@ export default function StudentsPage() {
                       <Box>
                         <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: 14 }}>{s.fullname}</Typography>
                         <Typography sx={{ fontSize: 12, color: '#64748B', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <User size={11} />{s.sex === 'MALE' ? 'Male' : 'Female'}
+                          <User size={11} />{s.sex === 'MALE' ? t('sexToggle.male') : t('sexToggle.female')}
                         </Typography>
                       </Box>
                     </Box>,
@@ -722,7 +730,7 @@ export default function StudentsPage() {
                           {s.parents.map((p) => (
                             <Typography key={p.id} sx={{ fontSize: 12, color: '#64748B', display: 'flex', alignItems: 'center', gap: 0.75 }}>
                               <User size={11} style={{ flexShrink: 0 }} />
-                              {p.type === 'FATHER' ? 'Father' : 'Mother'}: {p.name} &middot; {p.phoneNumber}
+                              {p.type === 'FATHER' ? t('parentFields.father') : t('parentFields.mother')}: {p.name} &middot; {p.phoneNumber}
                             </Typography>
                           ))}
                         </Box>

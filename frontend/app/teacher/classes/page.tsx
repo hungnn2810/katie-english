@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { getClasses, createClass, deleteClass, updateClass, ClassItem, ClassStatus, ScheduleSlot } from '@/lib/admin-api';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -23,10 +24,10 @@ import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 const ACCENT = colors.teacherAccent;
 
-const STATUS_CONFIG: Record<ClassStatus, { label: string; color: string; bg: string; dot: string }> = {
-  PENDING:    { label: 'Pending',     color: '#92400E', bg: '#FEF3C7', dot: '#F59E0B' },
-  INPROGRESS: { label: 'In Progress', color: '#065F46', bg: '#D1FAE5', dot: '#10B981' },
-  ENDED:      { label: 'Ended',       color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
+const STATUS_CONFIG: Record<ClassStatus, { color: string; bg: string; dot: string }> = {
+  PENDING:    { color: '#92400E', bg: '#FEF3C7', dot: '#F59E0B' },
+  INPROGRESS: { color: '#065F46', bg: '#D1FAE5', dot: '#10B981' },
+  ENDED:      { color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
 };
 
 const STATUS_AVATAR_BG: Record<ClassStatus, string> = {
@@ -41,7 +42,6 @@ const STATUS_AVATAR_COLOR: Record<ClassStatus, string> = {
 };
 
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-const DAY_LABELS: Record<string, string> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' };
 
 const emptyForm = () => ({ name: '', code: '', startDate: '', endDate: '', status: 'PENDING' as ClassStatus, scheduleSlots: [] as ScheduleSlot[] });
 
@@ -52,6 +52,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('teacher.classes');
   const [form, setForm] = useState(initial);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
@@ -83,28 +84,28 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
       else { await createClass(form); }
       onSaved(); onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to save class', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.save_error'), 'error');
     } finally { setLoading(false); }
   }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <ModalShell
-        title={editing ? `Edit ${editing.name}` : 'New Class'}
+        title={editing ? t('modal.editTitle', { name: editing.name }) : t('modal.createTitle')}
         onClose={onClose}
         onSubmit={handleSubmit}
-        submitLabel={loading ? (editing ? 'Updating…' : 'Creating…') : (editing ? 'Update Class' : 'Create Class')}
+        submitLabel={loading ? (editing ? t('modal.updating') : t('modal.creating')) : (editing ? t('modal.updateClass') : t('modal.createClass'))}
         loading={loading}
         maxWidth="md"
       >
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-          <FormSection label="Class Name">
-            <TextField size="small" fullWidth required value={form.name} onChange={(e) => setField('name', e.target.value)} placeholder="e.g. English Beginners" sx={sectionInputSx} />
+          <FormSection label={t('modal.nameLabel')}>
+            <TextField size="small" fullWidth required value={form.name} onChange={(e) => setField('name', e.target.value)} placeholder={t('modal.namePlaceholder')} sx={sectionInputSx} />
           </FormSection>
-          <FormSection label="Class Code">
-            <TextField size="small" fullWidth required value={form.code} onChange={(e) => setField('code', e.target.value)} placeholder="e.g. ENG-01" sx={sectionInputSx} />
+          <FormSection label={t('modal.codeLabel')}>
+            <TextField size="small" fullWidth required value={form.code} onChange={(e) => setField('code', e.target.value)} placeholder={t('modal.codePlaceholder')} sx={sectionInputSx} />
           </FormSection>
-          <FormSection label={`Start Date (${DATE_FORMAT})`}>
+          <FormSection label={t('modal.startDateLabel', { format: DATE_FORMAT })}>
             <DatePicker
               format={DATE_FORMAT}
               value={form.startDate ? new Date(form.startDate) : null}
@@ -112,7 +113,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
               slotProps={{ textField: { size: 'small', fullWidth: true, sx: sectionInputSx } }}
             />
           </FormSection>
-          <FormSection label={`End Date (${DATE_FORMAT})`}>
+          <FormSection label={t('modal.endDateLabel', { format: DATE_FORMAT })}>
             <DatePicker
               format={DATE_FORMAT}
               value={form.endDate ? new Date(form.endDate) : null}
@@ -122,7 +123,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
           </FormSection>
         </Box>
 
-        <FormSection label="Status" showPencil={false}>
+        <FormSection label={t('modal.statusLabel')} showPencil={false}>
           <Box sx={{ display: 'flex', gap: 1 }}>
             {(['PENDING', 'INPROGRESS', 'ENDED'] as ClassStatus[]).map((s) => {
               const sc = STATUS_CONFIG[s];
@@ -134,14 +135,14 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
                     ...(active ? { bgcolor: sc.bg, color: sc.color, borderColor: sc.dot, '&:hover': { bgcolor: sc.bg } }
                       : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
                   <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: active ? sc.dot : 'divider', display: 'inline-block' }} />
-                  {sc.label}
+                  {t(`classStatus.${s}`)}
                 </Button>
               );
             })}
           </Box>
         </FormSection>
 
-        <FormSection label="Schedule" showPencil={false}>
+        <FormSection label={t('modal.scheduleLabel')} showPencil={false}>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: form.scheduleSlots.length > 0 ? 1.5 : 0 }}>
             {DAYS.map((day) => {
               const active = !!form.scheduleSlots.find((s) => s.day === day);
@@ -151,7 +152,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
                   sx={{ borderRadius: 2, fontSize: 12, fontWeight: 700, minWidth: 0, px: 1.5, border: '2px solid',
                     ...(active ? { bgcolor: '#EFF6FF', color: ACCENT, borderColor: ACCENT, '&:hover': { bgcolor: '#EFF6FF' } }
                       : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
-                  {DAY_LABELS[day]}
+                  {t(`dayLabels.${day}`)}
                 </Button>
               );
             })}
@@ -160,14 +161,14 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
             <Box sx={{ borderRadius: 2, p: 1.5, bgcolor: 'white' }}>
               <Box sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', gap: 1, mb: 1 }}>
                 <Box />
-                <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>Start time</Typography>
-                <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>End time</Typography>
+                <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>{t('modal.startTime')}</Typography>
+                <Typography sx={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', px: 0.5 }}>{t('modal.endTime')}</Typography>
               </Box>
               {DAYS.filter((d) => form.scheduleSlots.find((s) => s.day === d)).map((day) => {
                 const slot = form.scheduleSlots.find((s) => s.day === day)!;
                 return (
                   <Box key={day} sx={{ display: 'grid', gridTemplateColumns: '36px 1fr 1fr', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>{DAY_LABELS[day]}</Typography>
+                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: ACCENT }}>{t(`dayLabels.${day}`)}</Typography>
                     <TextField type="time" required size="small" value={slot.time} onChange={(e) => setSlotTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
                     <TextField type="time" required size="small" value={slot.endTime ?? ''} onChange={(e) => setSlotEndTime(day, e.target.value)} sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }} />
                   </Box>
@@ -182,6 +183,7 @@ function ClassModal({ editing, initial, onClose, onSaved }: {
 }
 
 export default function ClassesPage() {
+  const t = useTranslations('teacher.classes');
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<ClassItem | null>(null);
@@ -213,10 +215,10 @@ export default function ClassesPage() {
   });
 
   const filterTabs: { key: 'ALL' | ClassStatus; label: string }[] = [
-    { key: 'ALL', label: 'All' },
-    { key: 'INPROGRESS', label: 'In Progress' },
-    { key: 'PENDING', label: 'Pending' },
-    { key: 'ENDED', label: 'Ended' },
+    { key: 'ALL', label: t('filterTabs.all') },
+    { key: 'INPROGRESS', label: t('filterTabs.inProgress') },
+    { key: 'PENDING', label: t('filterTabs.pending') },
+    { key: 'ENDED', label: t('filterTabs.ended') },
   ];
 
   return (
@@ -226,7 +228,7 @@ export default function ClassesPage() {
           editing={editing}
           initial={initialForm}
           onClose={() => setShowModal(false)}
-          onSaved={() => { load(); showToast(editing ? 'Class updated!' : 'Class created!'); }}
+          onSaved={() => { load(); showToast(editing ? t('toasts.class_updated') : t('toasts.class_created')); }}
         />
       )}
 
@@ -234,28 +236,28 @@ export default function ClassesPage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
         <TextField
           size="small"
-          placeholder="Search classes…"
+          placeholder={t('toolbar.searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ maxWidth: 240, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search size={16} color="#94A3B8" /></InputAdornment> } }}
         />
         <Box sx={{ display: 'flex', gap: 0.75, flex: 1 }}>
-          {filterTabs.map((t) => {
-            const active = statusFilter === t.key;
-            const sc = t.key !== 'ALL' ? STATUS_CONFIG[t.key] : null;
+          {filterTabs.map((tab) => {
+            const active = statusFilter === tab.key;
+            const sc = tab.key !== 'ALL' ? STATUS_CONFIG[tab.key] : null;
             return (
-              <Button key={t.key} variant="outlined" size="small" onClick={() => setStatusFilter(t.key)}
+              <Button key={tab.key} variant="outlined" size="small" onClick={() => setStatusFilter(tab.key)}
                 sx={{ borderRadius: 3, fontSize: 12, fontWeight: 600, gap: 0.75, border: '1px solid',
                   ...(active
                     ? { bgcolor: sc ? sc.bg : '#EFF6FF', color: sc ? sc.color : ACCENT, borderColor: sc ? sc.dot : ACCENT, '&:hover': { bgcolor: sc ? sc.bg : '#EFF6FF' } }
                     : { bgcolor: 'white', color: 'text.secondary', borderColor: 'divider' }) }}>
                 {sc && <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: sc.dot, display: 'inline-block' }} />}
-                {t.label}
+                {tab.label}
                 <Box component="span" sx={{ fontSize: 10, fontWeight: 700, px: 0.75, py: 0.25, borderRadius: '99px',
                   bgcolor: active ? (sc ? sc.dot + '25' : '#EFF6FF') : '#F3F4F6',
                   color: active ? (sc ? sc.color : ACCENT) : 'text.secondary' }}>
-                  {counts[t.key] ?? 0}
+                  {counts[tab.key] ?? 0}
                 </Box>
               </Button>
             );
@@ -263,7 +265,7 @@ export default function ClassesPage() {
         </Box>
         <Button variant="contained" onClick={openCreate} sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: 3, gap: 1, flexShrink: 0 }}>
           <Plus size={16} />
-          New Class
+          {t('toolbar.newClass')}
         </Button>
       </Box>
 
@@ -275,20 +277,20 @@ export default function ClassesPage() {
           <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <Users size={28} color="#94A3B8" />
           </Box>
-          <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>No classes yet</Typography>
-          <Typography sx={{ fontSize: 14, mt: 0.5 }}>Create your first class to get started</Typography>
+          <Typography sx={{ fontWeight: 600, color: 'text.primary' }}>{t('table.emptyTitle')}</Typography>
+          <Typography sx={{ fontSize: 14, mt: 0.5 }}>{t('table.emptySubtitle')}</Typography>
         </Box>
       ) : (
         <TableShell columns={[
-          { label: 'Class', width: '2fr' },
-          { label: 'Code', width: '1fr' },
-          { label: 'Students', width: '1fr' },
-          { label: 'Schedule', width: '1.4fr' },
-          { label: 'Status', width: '1fr' },
+          { label: t('table.columnClass'), width: '2fr' },
+          { label: t('table.columnCode'), width: '1fr' },
+          { label: t('table.columnStudents'), width: '1fr' },
+          { label: t('table.columnSchedule'), width: '1.4fr' },
+          { label: t('table.columnStatus'), width: '1fr' },
         ]}>
           {filtered.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
-              <Typography sx={{ fontWeight: 500, fontSize: 14 }}>No classes match filter</Typography>
+              <Typography sx={{ fontWeight: 500, fontSize: 14 }}>{t('table.noMatch')}</Typography>
             </Box>
           ) : (
             filtered.map((c, i) => {
@@ -299,25 +301,25 @@ export default function ClassesPage() {
               const scheduleText = activeDays.length > 0
                 ? activeDays.map((day) => {
                     const slot = slots.find((s) => s.day === day)!;
-                    return `${DAY_LABELS[day]}${slot.time ? ` ${slot.time}` : ''}`;
+                    return `${t(`dayLabels.${day}`)}${slot.time ? ` ${slot.time}` : ''}`;
                   }).join(' · ')
-                : 'Not scheduled';
+                : t('table.notScheduled');
 
               const statusChip = c.status === 'INPROGRESS'
-                ? <Chip label="Active" size="small" sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
+                ? <Chip label={t('statusChip.active')} size="small" sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, height: 22 }} />
                 : c.status === 'PENDING'
-                  ? <Chip label="Pending" size="small" sx={{ bgcolor: '#FEF3C7', color: '#92400E', fontWeight: 700, height: 22 }} />
-                  : <Chip label="Ended" size="small" sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontWeight: 700, height: 22 }} />;
+                  ? <Chip label={t('statusChip.pending')} size="small" sx={{ bgcolor: '#FEF3C7', color: '#92400E', fontWeight: 700, height: 22 }} />
+                  : <Chip label={t('statusChip.ended')} size="small" sx={{ bgcolor: '#F3F4F6', color: '#6B7280', fontWeight: 700, height: 22 }} />;
 
               return (
                 <TableShellRow
                   key={c.id}
                   columns={[
-                    { label: 'Class', width: '2fr' },
-                    { label: 'Code', width: '1fr' },
-                    { label: 'Students', width: '1fr' },
-                    { label: 'Schedule', width: '1.4fr' },
-                    { label: 'Status', width: '1fr' },
+                    { label: t('table.columnClass'), width: '2fr' },
+                    { label: t('table.columnCode'), width: '1fr' },
+                    { label: t('table.columnStudents'), width: '1fr' },
+                    { label: t('table.columnSchedule'), width: '1.4fr' },
+                    { label: t('table.columnStatus'), width: '1fr' },
                   ]}
                   last={i === filtered.length - 1}
                   cells={[
@@ -347,23 +349,23 @@ export default function ClassesPage() {
                     /* Status */
                     isDeleting ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
-                        <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+                        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{t('table.deleteConfirm')}</Typography>
+                        <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>{t('table.no')}</Button>
                         <Button size="small" variant="contained" disabled={submitting}
-                          onClick={async () => { setSubmitting(true); try { await deleteClass(c.id); setDeletingId(null); load(); showToast('Class deleted.'); } catch { setDeletingId(null); } finally { setSubmitting(false); } }}
-                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : 'Yes'}</Button>
+                          onClick={async () => { setSubmitting(true); try { await deleteClass(c.id); setDeletingId(null); load(); showToast(t('toasts.class_deleted')); } catch { setDeletingId(null); } finally { setSubmitting(false); } }}
+                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : t('table.yes')}</Button>
                       </Box>
                     ) : (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {statusChip}
                         <Box sx={{ display: 'flex', gap: 0.25, ml: 0.5 }}>
-                          <IconButton size="small" onClick={() => openEdit(c)} sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
+                          <IconButton size="small" onClick={() => openEdit(c)} sx={{ color: ACCENT, width: 26, height: 26 }} title={t('table.editTitle')}>
                             <Pencil size={13} />
                           </IconButton>
-                          <IconButton size="small" component={Link} href={`/teacher/students?classId=${c.id}`} sx={{ color: '#8B5CF6', width: 26, height: 26 }} title="Students">
+                          <IconButton size="small" component={Link} href={`/teacher/students?classId=${c.id}`} sx={{ color: '#8B5CF6', width: 26, height: 26 }} title={t('table.studentsTitle')}>
                             <Users size={13} />
                           </IconButton>
-                          <IconButton size="small" onClick={() => setDeletingId(c.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title="Delete">
+                          <IconButton size="small" onClick={() => setDeletingId(c.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title={t('table.deleteTitle')}>
                             <Trash2 size={13} />
                           </IconButton>
                         </Box>
