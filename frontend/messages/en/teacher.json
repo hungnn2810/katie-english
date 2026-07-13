@@ -385,5 +385,149 @@
         "load_error": "Failed to load report"
       }
     }
+  },
+  "homeworkCreate": {
+    "hwTypes": {
+      "PHONICS": "Phonics",
+      "SPEAKING": "Speaking",
+      "VOCABULARY": "Vocabulary",
+      "LISTEN": "Listen"
+    },
+    "backToHomework": "Back to Homework",
+    "step1": "1 · Choose type",
+    "step2": "2 · Build word list",
+    "titleLabel": "Title",
+    "assignToLabel": "Assign to",
+    "addWordLabel": "Add a word",
+    "addWordPlaceholder": "type a word and press Add",
+    "add": "Add",
+    "cancel": "Cancel",
+    "publishHomework": "Publish homework"
+  },
+  "homework": {
+    "typeMeta": {
+      "PHONICS": "Phonics",
+      "SPEAKING": "Speaking",
+      "READING": "Reading",
+      "VOCABULARY": "Vocabulary",
+      "LISTEN": "Listen"
+    },
+    "homeworkModal": {
+      "typeLabel": "Type",
+      "editPrefix": "Edit · ",
+      "newPrefix": "New · ",
+      "reusableTemplateNote": "Reusable template — assign to classes separately.",
+      "saving": "Saving…",
+      "update": "Update",
+      "create": "Create",
+      "readingRedirect": {
+        "heading": "Reading homework uses a dedicated editor",
+        "subtext": "Build activities, set sequences, and preview inline.",
+        "button": "Open Reading Editor"
+      },
+      "vocabRedirect": {
+        "heading": "Vocabulary homework is created in the dedicated editor.",
+        "button": "Open Vocabulary Editor"
+      },
+      "listenRedirect": {
+        "heading": "Listen & Answer homework is created in the dedicated editor.",
+        "button": "Open Listen Editor"
+      },
+      "homeworkNameLabel": "Homework Name",
+      "homeworkNamePlaceholder": "e.g. er, r, ou",
+      "partsLabel": "Parts",
+      "partsCount": "({count, plural, one {# part} other {# parts}}, {words, plural, one {# word} other {# words}})",
+      "removePart": "Remove",
+      "wordCountLabel": "{count, plural, one {# word} other {# words}}",
+      "addWordPlaceholder": "Add word (e.g. paper) — Enter to add",
+      "addWordButton": "+ Add",
+      "newPartPlaceholder": "New part name (e.g. er)",
+      "addPartButton": "+ Part",
+      "modeLabel": "Mode",
+      "scriptMatchLabel": "Script Match",
+      "scriptMatchDesc": "Student reads target text",
+      "freeSpeakLabel": "Free Speak",
+      "freeSpeakDesc": "Student speaks from image prompt",
+      "imagePromptLabel": "Image Prompt",
+      "optional": "(optional)",
+      "uploading": "Uploading…",
+      "clickToUploadPicture": "Click to upload picture",
+      "keywordsLabel": "Keywords (comma-separated)",
+      "targetTextLabel": "Target Text",
+      "keywordsPlaceholder": "e.g. cat, sits, mat, fluffy",
+      "targetTextPlaceholder": "Enter the sentence the student should say…",
+      "keywordsHint": "Student gets credit for each keyword found in their recording.",
+      "errors": {
+        "upload_failed": "Upload failed"
+      },
+      "toasts": {
+        "part_required": "Add at least one part.",
+        "word_required": "Each part needs at least one word.",
+        "keywords_required": "Enter keywords (comma-separated).",
+        "script_required": "Enter the text to speak.",
+        "save_error": "Failed to save."
+      }
+    },
+    "assignModal": {
+      "classesLabel": "Classes",
+      "noClassesFound": "No classes found.",
+      "endDateLabel": "End Date ({format})",
+      "assignPrefix": "Assign · ",
+      "assigning": "Assigning…",
+      "assign": "Assign",
+      "toasts": {
+        "class_required": "Select at least one class.",
+        "end_date_required": "Set an end date.",
+        "assign_error": "Failed to assign."
+      }
+    },
+    "card": {
+      "overdue": "Overdue",
+      "submittedOf": "{submitted}/{total} submitted",
+      "deleteConfirm": "Delete?",
+      "no": "No",
+      "yes": "Yes",
+      "assignTitle": "Assign",
+      "editTitle": "Edit",
+      "tryTitle": "Try",
+      "deleteTitle": "Delete"
+    },
+    "page": {
+      "searchPlaceholder": "Search homework…",
+      "filterTabs": {
+        "all": "All",
+        "phonics": "Phonics",
+        "speaking": "Speaking",
+        "reading": "Reading",
+        "vocabulary": "Vocab",
+        "listen": "Listen"
+      },
+      "createHomework": "Create Homework",
+      "emptyTitle": "No homework yet",
+      "emptySubtitle": "Create a reusable homework template",
+      "noMatch": "No homework matches filter",
+      "table": {
+        "columnHomework": "Homework",
+        "columnType": "Type",
+        "columnClass": "Class",
+        "columnDue": "Due",
+        "columnSubmitted": "Submitted",
+        "overdue": "Overdue",
+        "deleteConfirm": "Delete?",
+        "no": "No",
+        "yes": "Yes",
+        "assignTitle": "Assign",
+        "editTitle": "Edit",
+        "tryTitle": "Try",
+        "deleteTitle": "Delete"
+      },
+      "toasts": {
+        "homework_updated": "Homework updated!",
+        "homework_created": "Homework created!",
+        "homework_assigned": "Homework assigned!",
+        "deleted": "Deleted.",
+        "delete_failed": "Delete failed."
+      }
+    }
   }
 }

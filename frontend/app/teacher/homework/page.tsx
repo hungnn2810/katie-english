@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   getHomeworkList, createHomework, updateHomework, deleteHomework,
   getClasses, createAssignment, uploadSpeakingImage,
@@ -33,12 +34,12 @@ import PageLoading, { PAGE_LOADING_DELAY } from '@/components/ui/PageLoading';
 
 const ACCENT = colors.teacherAccent;
 
-const TYPE_META: Record<HomeworkType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
-  PHONICS:    { label: 'Phonics',    icon: Hash,       color: '#A78BFA', bg: '#A78BFA18' },
-  SPEAKING:   { label: 'Speaking',   icon: Mic,        color: '#FF9BD2', bg: '#FF9BD218' },
-  READING:    { label: 'Reading',    icon: BookOpen,   color: '#6ED6C1', bg: '#6ED6C118' },
-  VOCABULARY: { label: 'Vocabulary', icon: ImageIcon,  color: '#FFB26B', bg: '#FFB26B18' },
-  LISTEN:     { label: 'Listen',     icon: Headphones, color: '#60A5FA', bg: '#60A5FA18' },
+const TYPE_META: Record<HomeworkType, { icon: React.ElementType; color: string; bg: string }> = {
+  PHONICS:    { icon: Hash,       color: '#A78BFA', bg: '#A78BFA18' },
+  SPEAKING:   { icon: Mic,        color: '#FF9BD2', bg: '#FF9BD218' },
+  READING:    { icon: BookOpen,   color: '#6ED6C1', bg: '#6ED6C118' },
+  VOCABULARY: { icon: ImageIcon,  color: '#FFB26B', bg: '#FFB26B18' },
+  LISTEN:     { icon: Headphones, color: '#60A5FA', bg: '#60A5FA18' },
 };
 
 // â"€â"€ Homework form modal â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
@@ -55,6 +56,8 @@ function HomeworkModal({
   onNavigateToVocab: () => void;
   onNavigateToListen: () => void;
 }) {
+  const t = useTranslations('teacher.homework.homeworkModal');
+  const tType = useTranslations('teacher.homework.typeMeta');
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [newPartName, setNewPartName] = useState('');
@@ -111,7 +114,7 @@ function HomeworkModal({
         }
       ));
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : 'Upload failed');
+      setUploadError(err instanceof Error ? err.message : t('errors.upload_failed'));
     } finally {
       setWordUploading(null);
     }
@@ -126,7 +129,7 @@ function HomeworkModal({
       const url = await uploadSpeakingImage(file);
       setForm((f) => ({ ...f, speakingPictureUrl: url }));
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : 'Upload failed');
+      setUploadError(err instanceof Error ? err.message : t('errors.upload_failed'));
     } finally {
       setSpeakUploading(false);
       if (speakFileRef.current) speakFileRef.current.value = '';
@@ -136,11 +139,11 @@ function HomeworkModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (form.type === 'PHONICS') {
-      if (parts.length === 0) { showToast('Add at least one part.', 'error'); return; }
-      if (parts.some((p) => p.words.length === 0)) { showToast('Each part needs at least one word.', 'error'); return; }
+      if (parts.length === 0) { showToast(t('toasts.part_required'), 'error'); return; }
+      if (parts.some((p) => p.words.length === 0)) { showToast(t('toasts.word_required'), 'error'); return; }
     }
     if (form.type === 'SPEAKING' && !form.speakingText?.trim()) {
-      showToast(form.speakingMode === 'FREE_SPEAK' ? 'Enter keywords (comma-separated).' : 'Enter the text to speak.', 'error');
+      showToast(form.speakingMode === 'FREE_SPEAK' ? t('toasts.keywords_required') : t('toasts.script_required'), 'error');
       return;
     }
     setLoading(true);
@@ -160,23 +163,24 @@ function HomeworkModal({
       onSaved();
       onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.save_error'), 'error');
     } finally {
       setLoading(false);
     }
   }
 
-  const headingName = editingId !== null ? (form.name || meta.label) : meta.label;
+  const typeLabel = tType(form.type);
+  const headingName = editingId !== null ? (form.name || typeLabel) : typeLabel;
   const modalTitle = (
     <Box>
       <Box sx={{ fontWeight: 900, lineHeight: 1.3, fontSize: 20 }}>
         <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-          {editingId !== null ? 'Edit · ' : 'New · '}
+          {editingId !== null ? t('editPrefix') : t('newPrefix')}
         </Box>
         <Box component="span" sx={{ color: meta.color }}>{headingName}</Box>
       </Box>
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-        Reusable template — assign to classes separately.
+        {t('reusableTemplateNote')}
       </Typography>
     </Box>
   );
@@ -188,7 +192,7 @@ function HomeworkModal({
       title={modalTitle}
       onClose={onClose}
       onSubmit={handleSubmit}
-      submitLabel={showSubmit ? (loading ? 'Saving…' : editingId !== null ? 'Update' : 'Create') : undefined}
+      submitLabel={showSubmit ? (loading ? t('saving') : editingId !== null ? t('update') : t('create')) : undefined}
       loading={loading}
       maxWidth="md"
     >
@@ -198,15 +202,15 @@ function HomeworkModal({
             {editingId === null && (
               <Box>
                 <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1.5, display: 'block' }}>
-                  Type
+                  {t('typeLabel')}
                 </Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1.5 }}>
-                  {(Object.keys(TYPE_META) as HomeworkType[]).map((t) => {
-                    const m = TYPE_META[t];
-                    const active = form.type === t;
+                  {(Object.keys(TYPE_META) as HomeworkType[]).map((hwType) => {
+                    const m = TYPE_META[hwType];
+                    const active = form.type === hwType;
                     return (
-                      <Button key={t} type="button"
-                        onClick={() => setForm((f) => ({ ...f, type: t, speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingText: '', speakingPictureUrl: '' }))}
+                      <Button key={hwType} type="button"
+                        onClick={() => setForm((f) => ({ ...f, type: hwType, speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingText: '', speakingPictureUrl: '' }))}
                         sx={{
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
                           py: 2, borderRadius: 3, border: '2px solid', fontSize: 14, fontWeight: 700,
@@ -215,7 +219,7 @@ function HomeworkModal({
                             : { background: m.bg, color: m.color, borderColor: m.color + '40' }),
                         }}>
                         <m.icon size={20} />
-                        {m.label}
+                        {tType(hwType)}
                       </Button>
                     );
                   })}
@@ -230,13 +234,13 @@ function HomeworkModal({
                   <BookOpen size={28} style={{ color: meta.color }} />
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Reading homework uses a dedicated editor</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>Build activities, set sequences, and preview inline.</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('readingRedirect.heading')}</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>{t('readingRedirect.subtext')}</Typography>
                 </Box>
                 <Button type="button" variant="contained"
                   sx={{ px: 3, borderRadius: 3, fontWeight: 700, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}
                   onClick={() => { onClose(); onNavigateToReading(); }}>
-                  Open Reading Editor
+                  {t('readingRedirect.button')}
                 </Button>
               </Box>
             )}
@@ -248,12 +252,12 @@ function HomeworkModal({
                   <ImageIcon size={28} style={{ color: meta.color }} />
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Vocabulary homework is created in the dedicated editor.</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('vocabRedirect.heading')}</Typography>
                 </Box>
                 <Button type="button" variant="contained"
                   sx={{ px: 3, borderRadius: 3, fontWeight: 700, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}
                   onClick={() => { onClose(); onNavigateToVocab(); }}>
-                  Open Vocabulary Editor
+                  {t('vocabRedirect.button')}
                 </Button>
               </Box>
             )}
@@ -265,12 +269,12 @@ function HomeworkModal({
                   <Headphones size={28} style={{ color: meta.color }} />
                 </Box>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Listen & Answer homework is created in the dedicated editor.</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t('listenRedirect.heading')}</Typography>
                 </Box>
                 <Button type="button" variant="contained"
                   sx={{ px: 3, borderRadius: 3, fontWeight: 700, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}
                   onClick={() => { onClose(); onNavigateToListen(); }}>
-                  Open Listen Editor
+                  {t('listenRedirect.button')}
                 </Button>
               </Box>
             )}
@@ -280,10 +284,10 @@ function HomeworkModal({
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <Box>
                   <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
-                    Homework Name
+                    {t('homeworkNameLabel')}
                   </Typography>
                   <TextField size="small" fullWidth type="text"
-                    placeholder="e.g. er, r, ou"
+                    placeholder={t('homeworkNamePlaceholder')}
                     value={form.name ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
@@ -292,9 +296,9 @@ function HomeworkModal({
                 <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                     <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary' }}>
-                      Parts{' '}
+                      {t('partsLabel')}{' '}
                       <Box component="span" sx={{ fontWeight: 400, textTransform: 'none', color: meta.color }}>
-                        ({parts.length} part{parts.length !== 1 ? 's' : ''}, {parts.reduce((s, p) => s + p.words.length, 0)} words)
+                        {t('partsCount', { count: parts.length, words: parts.reduce((s, p) => s + p.words.length, 0) })}
                       </Box>
                     </Typography>
                   </Box>
@@ -308,11 +312,11 @@ function HomeworkModal({
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
                             <Chip label={part.name} size="small" sx={{ bgcolor: meta.color, color: 'white', fontWeight: 700, borderRadius: '999px' }} />
                             <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
-                              {part.words.length} word{part.words.length !== 1 ? 's' : ''}
+                              {t('wordCountLabel', { count: part.words.length })}
                             </Typography>
                             <Button type="button" size="small" onClick={() => removePart(pIdx)}
                               sx={{ fontSize: 12, color: 'error.light', '&:hover': { color: 'error.main', bgcolor: 'error.50' }, minWidth: 0, px: 1 }}>
-                              Remove
+                              {t('removePart')}
                             </Button>
                           </Box>
 
@@ -370,13 +374,13 @@ function HomeworkModal({
                             {/* Add word */}
                             <Box sx={{ display: 'flex', gap: 1 }}>
                               <TextField size="small" sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 3, fontSize: 14 } }}
-                                placeholder={`Add word (e.g. paper) â€" Enter to add`}
+                                placeholder={t('addWordPlaceholder')}
                                 value={newWordTexts[pIdx] ?? ''}
                                 onChange={(e) => setNewWordTexts((prev) => ({ ...prev, [pIdx]: e.target.value }))}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addWord(pIdx); } }} />
                               <Button type="button" variant="contained" onClick={() => addWord(pIdx)}
                                 sx={{ borderRadius: 3, fontWeight: 700, flexShrink: 0, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}>
-                                + Add
+                                {t('addWordButton')}
                               </Button>
                             </Box>
                           </Box>
@@ -388,13 +392,13 @@ function HomeworkModal({
                   {/* Add part row */}
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <TextField size="small" sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                      placeholder="New part name (e.g. er)"
+                      placeholder={t('newPartPlaceholder')}
                       value={newPartName}
                       onChange={(e) => setNewPartName(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addPart(); } }} />
                     <Button type="button" variant="contained" onClick={addPart}
                       sx={{ borderRadius: 3, fontWeight: 700, flexShrink: 0, bgcolor: meta.color, '&:hover': { bgcolor: meta.color, opacity: 0.9 } }}>
-                      + Part
+                      {t('addPartButton')}
                     </Button>
                   </Box>
                   {uploadError && <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 1 }}>{uploadError}</Typography>}
@@ -407,12 +411,12 @@ function HomeworkModal({
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <Box>
                   <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
-                    Mode
+                    {t('modeLabel')}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1.5 }}>
                     {([
-                      { value: 'SCRIPT_MATCH' as SpeakingMode, label: 'Script Match', desc: 'Student reads target text' },
-                      { value: 'FREE_SPEAK' as SpeakingMode, label: 'Free Speak', desc: 'Student speaks from image prompt' },
+                      { value: 'SCRIPT_MATCH' as SpeakingMode, label: t('scriptMatchLabel'), desc: t('scriptMatchDesc') },
+                      { value: 'FREE_SPEAK' as SpeakingMode, label: t('freeSpeakLabel'), desc: t('freeSpeakDesc') },
                     ]).map(({ value, label, desc }) => {
                       const active = (form.speakingMode ?? 'SCRIPT_MATCH') === value;
                       return (
@@ -436,7 +440,7 @@ function HomeworkModal({
                 {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' && (
                   <Box>
                     <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
-                      Image Prompt <Box component="span" sx={{ fontWeight: 400, textTransform: 'none' }}>(optional)</Box>
+                      {t('imagePromptLabel')} <Box component="span" sx={{ fontWeight: 400, textTransform: 'none' }}>{t('optional')}</Box>
                     </Typography>
                     {form.speakingPictureUrl ? (
                       <Box sx={{ position: 'relative', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', maxHeight: 160 }}>
@@ -452,10 +456,10 @@ function HomeworkModal({
                       <Box component="button" type="button" onClick={() => speakFileRef.current?.click()} disabled={speakUploading}
                         sx={{ width: '100%', borderRadius: 3, border: '2px dashed', borderColor: meta.color + '55', background: meta.bg, py: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.75, cursor: 'pointer', '&:disabled': { opacity: 0.6 }, '&:hover': { opacity: 0.8 } }}>
                         {speakUploading
-                          ? <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>Uploading…</Typography>
+                          ? <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>{t('uploading')}</Typography>
                           : <>
                             <ImageIcon size={20} style={{ color: meta.color }} />
-                            <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>Click to upload picture</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: meta.color }}>{t('clickToUploadPicture')}</Typography>
                           </>}
                       </Box>
                     )}
@@ -466,18 +470,18 @@ function HomeworkModal({
 
                 <Box>
                   <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', mb: 1, display: 'block' }}>
-                    {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' ? 'Keywords (comma-separated)' : 'Target Text'}
+                    {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' ? t('keywordsLabel') : t('targetTextLabel')}
                   </Typography>
                   <TextField multiline rows={3} fullWidth size="small"
                     placeholder={(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK'
-                      ? 'e.g. cat, sits, mat, fluffy'
-                      : 'Enter the sentence the student should say…'}
+                      ? t('keywordsPlaceholder')
+                      : t('targetTextPlaceholder')}
                     value={form.speakingText ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, speakingText: e.target.value }))}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }} />
                   {(form.speakingMode ?? 'SCRIPT_MATCH') === 'FREE_SPEAK' && (
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                      Student gets credit for each keyword found in their recording.
+                      {t('keywordsHint')}
                     </Typography>
                   )}
                 </Box>
@@ -498,6 +502,8 @@ function AssignModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('teacher.homework.assignModal');
+  const tType = useTranslations('teacher.homework.typeMeta');
   const { showToast } = useToast();
   const [selectedClassIds, setSelectedClassIds] = useState<number[]>([]);
   const [endDate, setEndDate] = useState<Date | null>(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d; });
@@ -509,8 +515,8 @@ function AssignModal({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (selectedClassIds.length === 0) { showToast('Select at least one class.', 'error'); return; }
-    if (!endDate) { showToast('Set an end date.', 'error'); return; }
+    if (selectedClassIds.length === 0) { showToast(t('toasts.class_required'), 'error'); return; }
+    if (!endDate) { showToast(t('toasts.end_date_required'), 'error'); return; }
     setLoading(true);
     try {
       const input: CreateAssignmentInput = { homeworkId: homework.id, classIds: selectedClassIds, endDate: endDate.toISOString() };
@@ -518,24 +524,25 @@ function AssignModal({
       onSaved();
       onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to assign.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.assign_error'), 'error');
     } finally {
       setLoading(false);
     }
   }
 
   const meta = TYPE_META[homework.type];
-  const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? '…' : '') : meta.label);
+  const homeworkTypeLabel = tType(homework.type);
+  const assignHeading = homework.name || (homework.speakingText ? homework.speakingText.slice(0, 30) + (homework.speakingText.length > 30 ? '…' : '') : homeworkTypeLabel);
 
   const assignTitle = (
     <Box>
       <Box sx={{ fontWeight: 900, lineHeight: 1.3, fontSize: 20 }}>
-        <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>Assign · </Box>
+        <Box component="span" sx={{ color: 'text.secondary', fontWeight: 600 }}>{t('assignPrefix')}</Box>
         <Box component="span" sx={{ color: meta.color }}>{assignHeading}</Box>
       </Box>
       <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
         <meta.icon size={14} style={{ color: meta.color }} />
-        <Typography variant="caption" sx={{ color: meta.color }}>{meta.label}</Typography>
+        <Typography variant="caption" sx={{ color: meta.color }}>{homeworkTypeLabel}</Typography>
       </Box>
     </Box>
   );
@@ -545,13 +552,13 @@ function AssignModal({
       title={assignTitle}
       onClose={onClose}
       onSubmit={handleSubmit}
-      submitLabel={loading ? 'Assigning…' : 'Assign'}
+      submitLabel={loading ? t('assigning') : t('assign')}
       loading={loading}
       maxWidth="md"
     >
-      <FormSection label="Classes" showPencil={false}>
+      <FormSection label={t('classesLabel')} showPencil={false}>
         {classes.length === 0
-          ? <Typography variant="body2" color="text.disabled" sx={{ fontStyle: 'italic' }}>No classes found.</Typography>
+          ? <Typography variant="body2" color="text.disabled" sx={{ fontStyle: 'italic' }}>{t('noClassesFound')}</Typography>
           : <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
             {classes.map((c) => {
               const active = selectedClassIds.includes(c.id);
@@ -571,7 +578,7 @@ function AssignModal({
           </Box>
         }
       </FormSection>
-      <FormSection label={`End Date (${DATE_FORMAT})`} showPencil={false}>
+      <FormSection label={t('endDateLabel', { format: DATE_FORMAT })} showPencil={false}>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DatePicker
             format={DATE_FORMAT}
@@ -601,6 +608,8 @@ interface HwCardProps {
 }
 
 function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel, onDeleteConfirm, submitting }: HwCardProps) {
+  const t = useTranslations('teacher.homework.card');
+  const tType = useTranslations('teacher.homework.typeMeta');
   const meta = TYPE_META[h.type];
 
   // Derived values
@@ -620,10 +629,10 @@ function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel
     .filter((d): d is Date => d !== null)
     .sort((a, b) => a.getTime() - b.getTime())[0];
   const dueText = nearestDue
-    ? nearestDue < now ? 'Overdue' : nearestDue.toLocaleDateString()
+    ? nearestDue < now ? t('overdue') : nearestDue.toLocaleDateString()
     : '—';
   const isOverdue = nearestDue ? nearestDue < now : false;
-  const hwName = h.name || (h.speakingText ? h.speakingText.slice(0, 32) + (h.speakingText.length > 32 ? '…' : '') : meta.label);
+  const hwName = h.name || (h.speakingText ? h.speakingText.slice(0, 32) + (h.speakingText.length > 32 ? '…' : '') : tType(h.type));
   const progressValue = totalEnrolled > 0 ? (submittedCount / totalEnrolled) * 100 : 0;
 
   return (
@@ -635,7 +644,7 @@ function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel
       <Box sx={{ px: 2.5, pt: 2.5, pb: 1.5, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <HwTypeChip type={h.type as 'PHONICS' | 'SPEAKING' | 'VOCABULARY' | 'LISTEN' | 'READING'} />
         {isOverdue && (
-          <Chip label="Overdue" size="small" sx={{ bgcolor: '#FEE2E2', color: '#DC2626', fontWeight: 700, fontSize: 10 }} />
+          <Chip label={t('overdue')} size="small" sx={{ bgcolor: '#FEE2E2', color: '#DC2626', fontWeight: 700, fontSize: 10 }} />
         )}
       </Box>
 
@@ -651,7 +660,7 @@ function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel
       <Box sx={{ px: 2.5, py: 1.5 }}>
         {/* Submitted / due row */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
-          <Typography sx={{ fontSize: 11, color: '#64748B' }}>{submittedCount}/{totalEnrolled} submitted</Typography>
+          <Typography sx={{ fontSize: 11, color: '#64748B' }}>{t('submittedOf', { submitted: submittedCount, total: totalEnrolled })}</Typography>
           <Typography sx={{ fontSize: 11, color: isOverdue ? '#DC2626' : '#64748B' }}>{dueText}</Typography>
         </Box>
         {/* Progress bar */}
@@ -667,23 +676,23 @@ function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.25, mt: 1.5 }}>
           {deletingId === h.id ? (
             <>
-              <Typography sx={{ fontSize: 12, color: 'text.secondary', alignSelf: 'center', mr: 0.5 }}>Delete?</Typography>
-              <Button size="small" onClick={onDeleteCancel} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+              <Typography sx={{ fontSize: 12, color: 'text.secondary', alignSelf: 'center', mr: 0.5 }}>{t('deleteConfirm')}</Typography>
+              <Button size="small" onClick={onDeleteCancel} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>{t('no')}</Button>
               <Button size="small" variant="contained" onClick={onDeleteConfirm} disabled={submitting}
-                sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : 'Yes'}</Button>
+                sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : t('yes')}</Button>
             </>
           ) : (
             <>
-              <IconButton size="small" onClick={onAssign} sx={{ color: '#059669', width: 26, height: 26 }} title="Assign">
+              <IconButton size="small" onClick={onAssign} sx={{ color: '#059669', width: 26, height: 26 }} title={t('assignTitle')}>
                 <CheckCircle2 size={13} />
               </IconButton>
-              <IconButton size="small" onClick={onEdit} sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
+              <IconButton size="small" onClick={onEdit} sx={{ color: ACCENT, width: 26, height: 26 }} title={t('editTitle')}>
                 <Pencil size={13} />
               </IconButton>
-              <IconButton size="small" component={Link} href={'/teacher/homework/' + h.id + '/try'} sx={{ color: '#A855F7', width: 26, height: 26 }} title="Try">
+              <IconButton size="small" component={Link} href={'/teacher/homework/' + h.id + '/try'} sx={{ color: '#A855F7', width: 26, height: 26 }} title={t('tryTitle')}>
                 <Eye size={13} />
               </IconButton>
-              <IconButton size="small" onClick={onDelete} sx={{ color: 'error.main', width: 26, height: 26 }} title="Delete">
+              <IconButton size="small" onClick={onDelete} sx={{ color: 'error.main', width: 26, height: 26 }} title={t('deleteTitle')}>
                 <Trash2 size={13} />
               </IconButton>
             </>
@@ -699,6 +708,8 @@ function HwCard({ h, now, deletingId, onAssign, onEdit, onDelete, onDeleteCancel
 const emptyForm = (): CreateHomeworkInput => ({ type: 'PHONICS', speakingMode: 'SCRIPT_MATCH', name: '', parts: [], speakingPictureUrl: '', speakingText: '' });
 
 export default function HomeworkPage() {
+  const t = useTranslations('teacher.homework.page');
+  const tType = useTranslations('teacher.homework.typeMeta');
   const router = useRouter();
   const { showToast } = useToast();
   const [list, setList] = useState<HomeworkItem[]>([]);
@@ -762,20 +773,20 @@ export default function HomeworkPage() {
           form={form}
           setForm={setForm}
           onClose={closeModal}
-          onSaved={() => { load(); showToast(editingId !== null ? 'Homework updated!' : 'Homework created!', 'success'); }}
+          onSaved={() => { load(); showToast(editingId !== null ? t('toasts.homework_updated') : t('toasts.homework_created'), 'success'); }}
           onNavigateToReading={() => router.push('/teacher/homework/create/reading')}
           onNavigateToVocab={() => router.push('/teacher/homework/create/vocabulary')}
           onNavigateToListen={() => router.push('/teacher/homework/create/listen')}
         />
       )}
-      {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={() => { load(); showToast('Homework assigned!', 'success'); }} />}
+      {assigningHw && <AssignModal homework={assigningHw} classes={classes} onClose={() => setAssigningHw(null)} onSaved={() => { load(); showToast(t('toasts.homework_assigned'), 'success'); }} />}
 
       {/* Action row: search/filter (left) + Create Homework (right) */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, mb: '16px', flexWrap: 'wrap' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <TextField
             size="small"
-            placeholder="Search homework…"
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             sx={{ width: 200, '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
@@ -783,28 +794,28 @@ export default function HomeworkPage() {
           />
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             {([
-              { key: 'ALL', label: 'All' },
-              { key: 'PHONICS', label: 'Phonics' },
-              { key: 'SPEAKING', label: 'Speaking' },
-              { key: 'READING', label: 'Reading' },
-              { key: 'VOCABULARY', label: 'Vocab' },
-              { key: 'LISTEN', label: 'Listen' },
-            ] as const).map((t) => (
-              <Button key={t.key} size="small" onClick={() => setTypeFilter(t.key)}
+              { key: 'ALL', label: t('filterTabs.all') },
+              { key: 'PHONICS', label: t('filterTabs.phonics') },
+              { key: 'SPEAKING', label: t('filterTabs.speaking') },
+              { key: 'READING', label: t('filterTabs.reading') },
+              { key: 'VOCABULARY', label: t('filterTabs.vocabulary') },
+              { key: 'LISTEN', label: t('filterTabs.listen') },
+            ] as const).map((tab) => (
+              <Button key={tab.key} size="small" onClick={() => setTypeFilter(tab.key)}
                 sx={{
                   px: 1.75, py: 0.5, borderRadius: '999px', fontSize: 12, fontWeight: 600, border: 'none',
                   minWidth: 0, textTransform: 'none',
-                  ...(typeFilter === t.key
+                  ...(typeFilter === tab.key
                     ? { bgcolor: '#EFF6FF', color: '#3B82F6', '&:hover': { bgcolor: '#DBEAFE' } }
                     : { bgcolor: 'transparent', color: '#64748B', '&:hover': { bgcolor: '#F1F5F9' } }),
                 }}>
-                {t.label}
+                {tab.label}
                 <Box component="span" sx={{
                   ml: 0.75, px: 0.75, py: 0.125, borderRadius: '999px',
                   fontSize: 10, fontWeight: 700,
-                  bgcolor: typeFilter === t.key ? '#DBEAFE' : '#F1F5F9',
-                  color: typeFilter === t.key ? '#3B82F6' : '#94A3B8',
-                }}>{counts[t.key]}</Box>
+                  bgcolor: typeFilter === tab.key ? '#DBEAFE' : '#F1F5F9',
+                  color: typeFilter === tab.key ? '#3B82F6' : '#94A3B8',
+                }}>{counts[tab.key]}</Box>
               </Button>
             ))}
           </Box>
@@ -824,7 +835,7 @@ export default function HomeworkPage() {
         <Button variant="contained" onClick={openCreate}
           sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, borderRadius: '8px', gap: 1, flexShrink: 0 }}>
           <Plus size={16} />
-          Create Homework
+          {t('createHomework')}
         </Button>
       </Box>
 
@@ -836,13 +847,13 @@ export default function HomeworkPage() {
           <Box sx={{ width: 64, height: 64, bgcolor: 'grey.100', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <BookOpen size={32} color="#94A3B8" />
           </Box>
-          <Typography sx={{ fontWeight: 500 }}>No homework yet</Typography>
-          <Typography sx={{ fontSize: 14, mt: 0.5 }}>Create a reusable homework template</Typography>
+          <Typography sx={{ fontWeight: 500 }}>{t('emptyTitle')}</Typography>
+          <Typography sx={{ fontSize: 14, mt: 0.5 }}>{t('emptySubtitle')}</Typography>
         </Box>
       ) : viewMode === 'grid' ? (
         filtered.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>No homework matches filter</Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{t('noMatch')}</Typography>
           </Box>
         ) : (
           <Box sx={{
@@ -868,8 +879,8 @@ export default function HomeworkPage() {
                 submitting={submitting}
                 onDeleteConfirm={async () => {
                   setSubmitting(true);
-                  try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.', 'success'); }
-                  catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.', 'error'); }
+                  try { await deleteHomework(h.id); setDeletingId(null); load(); showToast(t('toasts.deleted'), 'success'); }
+                  catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : t('toasts.delete_failed'), 'error'); }
                   finally { setSubmitting(false); }
                 }}
               />
@@ -878,15 +889,15 @@ export default function HomeworkPage() {
         )
       ) : (
         <TableShell columns={[
-          { label: 'Homework', width: '2.2fr' },
-          { label: 'Type', width: '1fr' },
-          { label: 'Class', width: '1fr' },
-          { label: 'Due', width: '1fr' },
-          { label: 'Submitted', width: '1fr' },
+          { label: t('table.columnHomework'), width: '2.2fr' },
+          { label: t('table.columnType'), width: '1fr' },
+          { label: t('table.columnClass'), width: '1fr' },
+          { label: t('table.columnDue'), width: '1fr' },
+          { label: t('table.columnSubmitted'), width: '1fr' },
         ]}>
           {filtered.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
-              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>No homework matches filter</Typography>
+              <Typography sx={{ fontSize: 14, fontWeight: 500 }}>{t('noMatch')}</Typography>
             </Box>
           ) : (
             filtered.map((h, i) => {
@@ -907,20 +918,20 @@ export default function HomeworkPage() {
                 .filter((d): d is Date => d !== null)
                 .sort((a, b) => a.getTime() - b.getTime())[0];
               const dueText = nearestDue
-                ? nearestDue < now ? 'Overdue' : nearestDue.toLocaleDateString()
+                ? nearestDue < now ? t('table.overdue') : nearestDue.toLocaleDateString()
                 : '—';
               const isOverdue = nearestDue ? nearestDue < now : false;
-              const hwName = h.name || (h.speakingText ? h.speakingText.slice(0, 32) + (h.speakingText.length > 32 ? '…' : '') : meta.label);
+              const hwName = h.name || (h.speakingText ? h.speakingText.slice(0, 32) + (h.speakingText.length > 32 ? '…' : '') : tType(h.type));
 
               return (
                 <TableShellRow
                   key={h.id}
                   columns={[
-                    { label: 'Homework', width: '2.2fr' },
-                    { label: 'Type', width: '1fr' },
-                    { label: 'Class', width: '1fr' },
-                    { label: 'Due', width: '1fr' },
-                    { label: 'Submitted', width: '1fr' },
+                    { label: t('table.columnHomework'), width: '2.2fr' },
+                    { label: t('table.columnType'), width: '1fr' },
+                    { label: t('table.columnClass'), width: '1fr' },
+                    { label: t('table.columnDue'), width: '1fr' },
+                    { label: t('table.columnSubmitted'), width: '1fr' },
                   ]}
                   last={i === filtered.length - 1}
                   cells={[
@@ -940,17 +951,17 @@ export default function HomeworkPage() {
                     /* Submitted */
                     deletingId === h.id ? (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>Delete?</Typography>
-                        <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>No</Button>
+                        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{t('table.deleteConfirm')}</Typography>
+                        <Button size="small" onClick={() => setDeletingId(null)} sx={{ fontSize: 11, borderRadius: 1.5, color: 'text.secondary', minWidth: 0, px: 0.75 }}>{t('table.no')}</Button>
                         <Button size="small" variant="contained" disabled={submitting}
-                          onClick={async () => { setSubmitting(true); try { await deleteHomework(h.id); setDeletingId(null); load(); showToast('Deleted.', 'success'); } catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : 'Delete failed.', 'error'); } finally { setSubmitting(false); } }}
-                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : 'Yes'}</Button>
+                          onClick={async () => { setSubmitting(true); try { await deleteHomework(h.id); setDeletingId(null); load(); showToast(t('toasts.deleted'), 'success'); } catch (err) { setDeletingId(null); showToast(err instanceof Error ? err.message : t('toasts.delete_failed'), 'error'); } finally { setSubmitting(false); } }}
+                          sx={{ fontSize: 11, borderRadius: 1.5, bgcolor: 'error.main', '&:hover': { bgcolor: 'error.dark' }, minWidth: 0, px: 0.75 }}>{submitting ? '…' : t('table.yes')}</Button>
                       </Box>
                     ) : (
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography sx={{ fontSize: 13, color: '#64748B' }}>{submittedCount} / {totalEnrolled}</Typography>
                         <Box sx={{ display: 'flex', gap: 0.25, ml: 'auto' }}>
-                          <IconButton size="small" onClick={() => setAssigningHw(h)} sx={{ color: '#059669', width: 26, height: 26 }} title="Assign">
+                          <IconButton size="small" onClick={() => setAssigningHw(h)} sx={{ color: '#059669', width: 26, height: 26 }} title={t('table.assignTitle')}>
                             <CheckCircle2 size={13} />
                           </IconButton>
                           <IconButton size="small"
@@ -960,13 +971,13 @@ export default function HomeworkPage() {
                               else if (h.type === 'LISTEN') router.push(`/teacher/homework/${h.id}/edit/listen`);
                               else openEdit(h);
                             }}
-                            sx={{ color: ACCENT, width: 26, height: 26 }} title="Edit">
+                            sx={{ color: ACCENT, width: 26, height: 26 }} title={t('table.editTitle')}>
                             <Pencil size={13} />
                           </IconButton>
-                          <IconButton size="small" component={Link} href={`/teacher/homework/${h.id}/try`} sx={{ color: '#A855F7', width: 26, height: 26 }} title="Try">
+                          <IconButton size="small" component={Link} href={`/teacher/homework/${h.id}/try`} sx={{ color: '#A855F7', width: 26, height: 26 }} title={t('table.tryTitle')}>
                             <Eye size={13} />
                           </IconButton>
-                          <IconButton size="small" onClick={() => setDeletingId(h.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title="Delete">
+                          <IconButton size="small" onClick={() => setDeletingId(h.id)} sx={{ color: 'error.main', width: 26, height: 26 }} title={t('table.deleteTitle')}>
                             <Trash2 size={13} />
                           </IconButton>
                         </Box>

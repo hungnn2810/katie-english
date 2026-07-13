@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -19,6 +20,7 @@ const HW_TYPES = [
 type HwType = typeof HW_TYPES[number]['type'];
 
 export default function CreateHomeworkPage() {
+  const t = useTranslations('teacher.homeworkCreate');
   const router = useRouter();
   const [picked, setPicked] = useState<HwType>('PHONICS');
   const [words, setWords] = useState<string[]>(['cat', 'dog', 'ship']);
@@ -26,7 +28,7 @@ export default function CreateHomeworkPage() {
   const [title, setTitle] = useState('');
   const [assignTo, setAssignTo] = useState('');
 
-  const pickedMeta = HW_TYPES.find((t) => t.type === picked)!;
+  const pickedMeta = HW_TYPES.find((hw) => hw.type === picked)!;
 
   function addWord(e: React.FormEvent) {
     e.preventDefault();
@@ -59,46 +61,46 @@ export default function CreateHomeworkPage() {
         sx={{ mb: '14px', pl: 0, color: '#64748B', fontSize: 13, fontWeight: 600, gap: 0.5 }}
       >
         <ChevronLeft size={16} />
-        Back to Homework
+        {t('backToHomework')}
       </Button>
 
       {/* Step 1 label */}
       <Typography sx={{ mb: '12px', fontSize: 13, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        1 · Choose type
+        {t('step1')}
       </Typography>
 
       {/* Type selector grid */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', mb: '26px' }}>
-        {HW_TYPES.map((t) => {
-          const Icon = t.icon;
-          const selected = picked === t.type;
+        {HW_TYPES.map((hw) => {
+          const Icon = hw.icon;
+          const selected = picked === hw.type;
           return (
             <Box
-              key={t.type}
-              onClick={() => setPicked(t.type)}
+              key={hw.type}
+              onClick={() => setPicked(hw.type)}
               sx={{
                 padding: '16px',
                 borderRadius: '12px',
                 cursor: 'pointer',
                 textAlign: 'center',
                 bgcolor: 'white',
-                border: `2px solid ${selected ? t.color : '#E2E8F0'}`,
-                boxShadow: selected ? `0 4px 12px ${t.color}33` : 'none',
+                border: `2px solid ${selected ? hw.color : '#E2E8F0'}`,
+                boxShadow: selected ? `0 4px 12px ${hw.color}33` : 'none',
                 transition: 'border-color 0.15s, box-shadow 0.15s',
                 '&:hover': {
-                  borderColor: selected ? t.color : '#CBD5E1',
+                  borderColor: selected ? hw.color : '#CBD5E1',
                 },
               }}
             >
               <Box sx={{
                 width: 44, height: 44, mx: 'auto', mb: '10px',
-                borderRadius: '12px', bgcolor: t.color + '18',
+                borderRadius: '12px', bgcolor: hw.color + '18',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Icon size={20} color={t.color} />
+                <Icon size={20} color={hw.color} />
               </Box>
               <Typography sx={{ fontSize: 13, fontWeight: 700, textTransform: 'capitalize', color: '#0F172A' }}>
-                {t.label}
+                {t(`hwTypes.${hw.type}`)}
               </Typography>
             </Box>
           );
@@ -107,7 +109,7 @@ export default function CreateHomeworkPage() {
 
       {/* Step 2 label */}
       <Typography sx={{ mb: '12px', fontSize: 13, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        2 · Build word list
+        {t('step2')}
       </Typography>
 
       {/* Details card */}
@@ -115,14 +117,14 @@ export default function CreateHomeworkPage() {
         {/* Title + Assign to */}
         <Box sx={{ display: 'flex', gap: '16px', mb: '18px' }}>
           <TextField
-            label="Title"
+            label={t('titleLabel')}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             size="small"
             sx={{ flex: 1 }}
           />
           <TextField
-            label="Assign to"
+            label={t('assignToLabel')}
             value={assignTo}
             onChange={(e) => setAssignTo(e.target.value)}
             size="small"
@@ -156,17 +158,17 @@ export default function CreateHomeworkPage() {
         {/* Add word form */}
         <Box component="form" onSubmit={addWord} sx={{ display: 'flex', gap: '10px' }}>
           <TextField
-            label="Add a word"
+            label={t('addWordLabel')}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="type a word and press Add"
+            placeholder={t('addWordPlaceholder')}
             size="small"
             sx={{ flex: 1 }}
           />
           <Button type="submit" variant="contained"
             sx={{ bgcolor: '#3B82F6', '&:hover': { bgcolor: '#3B82F6', opacity: 0.9 }, borderRadius: '8px', gap: 0.5, flexShrink: 0 }}>
             <Plus size={16} />
-            Add
+            {t('add')}
           </Button>
         </Box>
       </Card>
@@ -175,12 +177,12 @@ export default function CreateHomeworkPage() {
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', mt: '20px' }}>
         <Button variant="outlined" onClick={() => router.push('/teacher/homework')}
           sx={{ borderRadius: '8px', color: '#64748B', borderColor: '#E2E8F0' }}>
-          Cancel
+          {t('cancel')}
         </Button>
         <Button variant="contained" onClick={handlePublish}
           sx={{ bgcolor: '#3B82F6', '&:hover': { bgcolor: '#3B82F6', opacity: 0.9 }, borderRadius: '8px', gap: 0.5 }}>
           <Check size={16} />
-          Publish homework
+          {t('publishHomework')}
         </Button>
       </Box>
     </Box>

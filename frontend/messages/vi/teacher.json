@@ -385,5 +385,149 @@
         "load_error": "Tải báo cáo thất bại"
       }
     }
+  },
+  "homeworkCreate": {
+    "hwTypes": {
+      "PHONICS": "Ngữ âm",
+      "SPEAKING": "Nói",
+      "VOCABULARY": "Từ vựng",
+      "LISTEN": "Nghe"
+    },
+    "backToHomework": "Quay lại Bài tập",
+    "step1": "1 · Chọn loại bài tập",
+    "step2": "2 · Xây dựng danh sách từ",
+    "titleLabel": "Tiêu đề",
+    "assignToLabel": "Giao cho",
+    "addWordLabel": "Thêm từ",
+    "addWordPlaceholder": "nhập từ và nhấn Thêm",
+    "add": "Thêm",
+    "cancel": "Hủy",
+    "publishHomework": "Xuất bản bài tập"
+  },
+  "homework": {
+    "typeMeta": {
+      "PHONICS": "Ngữ âm",
+      "SPEAKING": "Nói",
+      "READING": "Đọc",
+      "VOCABULARY": "Từ vựng",
+      "LISTEN": "Nghe"
+    },
+    "homeworkModal": {
+      "typeLabel": "Loại",
+      "editPrefix": "Sửa · ",
+      "newPrefix": "Mới · ",
+      "reusableTemplateNote": "Mẫu dùng lại — giao cho lớp riêng.",
+      "saving": "Đang lưu…",
+      "update": "Cập nhật",
+      "create": "Tạo",
+      "readingRedirect": {
+        "heading": "Bài tập Đọc dùng trình chỉnh sửa riêng",
+        "subtext": "Xây dựng hoạt động, sắp xếp trình tự và xem trước.",
+        "button": "Mở trình chỉnh sửa Đọc"
+      },
+      "vocabRedirect": {
+        "heading": "Bài tập Từ vựng được tạo trong trình chỉnh sửa riêng.",
+        "button": "Mở trình chỉnh sửa Từ vựng"
+      },
+      "listenRedirect": {
+        "heading": "Bài tập Nghe & Trả lời được tạo trong trình chỉnh sửa riêng.",
+        "button": "Mở trình chỉnh sửa Nghe"
+      },
+      "homeworkNameLabel": "Tên bài tập",
+      "homeworkNamePlaceholder": "vd: er, r, ou",
+      "partsLabel": "Phần",
+      "partsCount": "({count} phần, {words} từ)",
+      "removePart": "Xóa",
+      "wordCountLabel": "{count} từ",
+      "addWordPlaceholder": "Thêm từ (vd: paper) — Nhấn Enter để thêm",
+      "addWordButton": "+ Thêm",
+      "newPartPlaceholder": "Tên phần mới (vd: er)",
+      "addPartButton": "+ Phần",
+      "modeLabel": "Chế độ",
+      "scriptMatchLabel": "Đọc theo mẫu",
+      "scriptMatchDesc": "Học sinh đọc văn bản có sẵn",
+      "freeSpeakLabel": "Nói tự do",
+      "freeSpeakDesc": "Học sinh nói theo gợi ý hình ảnh",
+      "imagePromptLabel": "Hình ảnh gợi ý",
+      "optional": "(tuỳ chọn)",
+      "uploading": "Đang tải lên…",
+      "clickToUploadPicture": "Nhấn để tải ảnh lên",
+      "keywordsLabel": "Từ khóa (cách nhau bằng dấu phẩy)",
+      "targetTextLabel": "Văn bản mục tiêu",
+      "keywordsPlaceholder": "vd: cat, sits, mat, fluffy",
+      "targetTextPlaceholder": "Nhập câu học sinh cần nói…",
+      "keywordsHint": "Học sinh được tính điểm cho mỗi từ khóa tìm thấy trong bản ghi âm.",
+      "errors": {
+        "upload_failed": "Tải lên thất bại"
+      },
+      "toasts": {
+        "part_required": "Thêm ít nhất một phần.",
+        "word_required": "Mỗi phần cần ít nhất một từ.",
+        "keywords_required": "Nhập từ khóa (cách nhau bằng dấu phẩy).",
+        "script_required": "Nhập văn bản cần nói.",
+        "save_error": "Lưu thất bại."
+      }
+    },
+    "assignModal": {
+      "classesLabel": "Lớp học",
+      "noClassesFound": "Không tìm thấy lớp học nào.",
+      "endDateLabel": "Hạn nộp ({format})",
+      "assignPrefix": "Giao · ",
+      "assigning": "Đang giao…",
+      "assign": "Giao bài",
+      "toasts": {
+        "class_required": "Chọn ít nhất một lớp.",
+        "end_date_required": "Chọn hạn nộp.",
+        "assign_error": "Giao bài thất bại."
+      }
+    },
+    "card": {
+      "overdue": "Quá hạn",
+      "submittedOf": "{submitted}/{total} đã nộp",
+      "deleteConfirm": "Xóa?",
+      "no": "Không",
+      "yes": "Có",
+      "assignTitle": "Giao bài",
+      "editTitle": "Sửa",
+      "tryTitle": "Thử",
+      "deleteTitle": "Xóa"
+    },
+    "page": {
+      "searchPlaceholder": "Tìm bài tập…",
+      "filterTabs": {
+        "all": "Tất cả",
+        "phonics": "Ngữ âm",
+        "speaking": "Nói",
+        "reading": "Đọc",
+        "vocabulary": "Từ vựng",
+        "listen": "Nghe"
+      },
+      "createHomework": "Tạo bài tập",
+      "emptyTitle": "Chưa có bài tập nào",
+      "emptySubtitle": "Tạo mẫu bài tập để dùng lại",
+      "noMatch": "Không có bài tập nào khớp bộ lọc",
+      "table": {
+        "columnHomework": "Bài tập",
+        "columnType": "Loại",
+        "columnClass": "Lớp",
+        "columnDue": "Hạn nộp",
+        "columnSubmitted": "Đã nộp",
+        "overdue": "Quá hạn",
+        "deleteConfirm": "Xóa?",
+        "no": "Không",
+        "yes": "Có",
+        "assignTitle": "Giao bài",
+        "editTitle": "Sửa",
+        "tryTitle": "Thử",
+        "deleteTitle": "Xóa"
+      },
+      "toasts": {
+        "homework_updated": "Đã cập nhật bài tập!",
+        "homework_created": "Đã tạo bài tập!",
+        "homework_assigned": "Đã giao bài tập!",
+        "deleted": "Đã xóa.",
+        "delete_failed": "Xóa thất bại."
+      }
+    }
   }
 }
