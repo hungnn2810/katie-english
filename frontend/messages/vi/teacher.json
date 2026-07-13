@@ -529,5 +529,67 @@
         "delete_failed": "Xóa thất bại."
       }
     }
+  },
+  "homeworkDetail": {
+    "typeMeta": {
+      "PHONICS": "Ngữ âm",
+      "SPEAKING": "Nói",
+      "READING": "Đọc",
+      "VOCABULARY": "Từ vựng",
+      "LISTEN": "Nghe"
+    },
+    "loading": "Đang tải...",
+    "breadcrumbHomework": "Bài tập",
+    "tryButton": "Thử",
+    "createdOn": "Tạo {date}",
+    "stats": {
+      "assignments": "Đã giao",
+      "active": "Đang mở",
+      "enrolled": "Đăng ký",
+      "submitted": "Đã nộp"
+    },
+    "assignmentsHeading": "Đã giao",
+    "noAssignmentsYet": "Chưa có bài giao nào. Nhấn \"Giao bài\" trên danh sách bài tập để giao cho một lớp.",
+    "open": "Đang mở",
+    "closed": "Đã đóng",
+    "submittedOfShort": "{submitted} / {total} đã nộp",
+    "dueLabel": "Hạn {date}",
+    "removeConfirm": "Xóa?",
+    "cancel": "Hủy",
+    "yes": "Có",
+    "remove": "Xóa",
+    "noSubmissionsYet": "Chưa có bài nộp nào.",
+    "completedAt": "Hoàn thành {date}",
+    "startedInProgress": "Bắt đầu {date} · đang làm",
+    "notSubmittedCount": "Chưa nộp ({count})"
+  },
+  "sessionDetail": {
+    "loading": "Đang tải...",
+    "breadcrumbHomework": "Bài tập",
+    "breadcrumbDetail": "Chi tiết",
+    "startedAt": "Bắt đầu {date}",
+    "completedAtSuffix": "· Hoàn thành {date}",
+    "inProgress": "Đang làm",
+    "scoreLabels": {
+      "great": "Tuyệt vời",
+      "ok": "Khá",
+      "needsWork": "Cần cố gắng"
+    },
+    "phonicsHeading": "Ngữ âm",
+    "speakingHeading": "Nói",
+    "readingHeading": "Đọc",
+    "vocabularyHeading": "Từ vựng",
+    "freeSpeak": "Nói tự do",
+    "scriptMatch": "Đọc theo mẫu",
+    "noAnswer": "chưa trả lời",
+    "saidPrefix": "Đã nói: ",
+    "noAnswerRecorded": "Chưa ghi âm câu trả lời",
+    "wordsMatched": "Khớp {matched} / {total} từ",
+    "noSubmissionsYet": "Chưa có bài nộp nào.",
+    "noResultsYet": "Chưa có kết quả nào.",
+    "matching": "Nối từ",
+    "fillInBlank": "Điền vào chỗ trống",
+    "chosePrefix": "đã chọn ",
+    "blankLabel": "Chỗ trống {index}"
   }
 }

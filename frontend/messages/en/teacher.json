@@ -529,5 +529,67 @@
         "delete_failed": "Delete failed."
       }
     }
+  },
+  "homeworkDetail": {
+    "typeMeta": {
+      "PHONICS": "Phonics",
+      "SPEAKING": "Speaking",
+      "READING": "Reading",
+      "VOCABULARY": "Vocabulary",
+      "LISTEN": "Listen"
+    },
+    "loading": "Loading...",
+    "breadcrumbHomework": "Homework",
+    "tryButton": "Try",
+    "createdOn": "Created {date}",
+    "stats": {
+      "assignments": "Assignments",
+      "active": "Active",
+      "enrolled": "Enrolled",
+      "submitted": "Submitted"
+    },
+    "assignmentsHeading": "Assignments",
+    "noAssignmentsYet": "No assignments yet. Click \"Assign\" on the homework list to assign this to a class.",
+    "open": "Open",
+    "closed": "Closed",
+    "submittedOfShort": "{submitted} / {total} submitted",
+    "dueLabel": "Due {date}",
+    "removeConfirm": "Remove?",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "remove": "Remove",
+    "noSubmissionsYet": "No submissions yet.",
+    "completedAt": "Completed {date}",
+    "startedInProgress": "Started {date} · in progress",
+    "notSubmittedCount": "Not submitted ({count})"
+  },
+  "sessionDetail": {
+    "loading": "Loading...",
+    "breadcrumbHomework": "Homework",
+    "breadcrumbDetail": "Detail",
+    "startedAt": "Started {date}",
+    "completedAtSuffix": "· Completed {date}",
+    "inProgress": "In progress",
+    "scoreLabels": {
+      "great": "Great",
+      "ok": "OK",
+      "needsWork": "Needs work"
+    },
+    "phonicsHeading": "Phonics",
+    "speakingHeading": "Speaking",
+    "readingHeading": "Reading",
+    "vocabularyHeading": "Vocabulary",
+    "freeSpeak": "Free Speak",
+    "scriptMatch": "Script Match",
+    "noAnswer": "no answer",
+    "saidPrefix": "Said: ",
+    "noAnswerRecorded": "No answer recorded",
+    "wordsMatched": "{matched} of {total} words matched",
+    "noSubmissionsYet": "No submissions yet.",
+    "noResultsYet": "No results recorded yet.",
+    "matching": "Matching",
+    "fillInBlank": "Fill in Blank",
+    "chosePrefix": "chose ",
+    "blankLabel": "Blank {index}"
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -24,15 +25,16 @@ function scoreBg(score: number) {
   return '#FEF2F2';
 }
 
-function scoreLabel(score: number) {
-  if (score >= 80) return 'Great';
-  if (score >= 50) return 'OK';
-  return 'Needs work';
+function scoreLabel(score: number, t: (key: string) => string) {
+  if (score >= 80) return t('scoreLabels.great');
+  if (score >= 50) return t('scoreLabels.ok');
+  return t('scoreLabels.needsWork');
 }
 
 // ── MatchingResultRow ─────────────────────────────────────────────────────────
 
 function MatchingResultRow({ r }: { r: MatchingItemResult }) {
+  const t = useTranslations('teacher.sessionDetail');
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
       {r.pair?.imageUrl && (
@@ -41,7 +43,7 @@ function MatchingResultRow({ r }: { r: MatchingItemResult }) {
           style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'cover', border: '1px solid #E2E8F0', flexShrink: 0 }} />
       )}
       <Box sx={{ flex: 1, fontSize: 14, color: 'text.primary' }}>
-        <Box component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>chose </Box>
+        <Box component="span" sx={{ color: 'text.secondary', fontSize: 12 }}>{t('chosePrefix')}</Box>
         <Box component="span" sx={{ fontWeight: 600 }}>&quot;{r.studentChosenWord}&quot;</Box>
       </Box>
       <Box sx={{
@@ -59,7 +61,8 @@ function MatchingResultRow({ r }: { r: MatchingItemResult }) {
 // ── FillInBlankResultRow ──────────────────────────────────────────────────────
 
 function FillInBlankResultRow({ r }: { r: FillInBlankItemResult }) {
-  const sentence = r.blank ? `Blank ${r.blank.blankIndex ?? '?'}` : '—';
+  const t = useTranslations('teacher.sessionDetail');
+  const sentence = r.blank ? t('blankLabel', { index: r.blank.blankIndex ?? '?' }) : '—';
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, py: 1, fontSize: 14 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
@@ -87,10 +90,11 @@ function FillInBlankResultRow({ r }: { r: FillInBlankItemResult }) {
 // ── ActivityResultCard ────────────────────────────────────────────────────────
 
 function ActivityResultCard({ activityResult }: { activityResult: ReadingActivityResult }) {
+  const t = useTranslations('teacher.sessionDetail');
   const [expanded, setExpanded] = useState(false);
   const pct = Math.round(activityResult.score);
   const isMatching = activityResult.activity?.type === 'MATCH';
-  const label = isMatching ? 'Matching' : 'Fill in Blank';
+  const label = isMatching ? t('matching') : t('fillInBlank');
   const color = scoreHex(pct);
   const bg = scoreBg(pct);
 
@@ -171,10 +175,11 @@ function ActivityResultCard({ activityResult }: { activityResult: ReadingActivit
 // ── VocabResultRow ────────────────────────────────────────────────────────────
 
 function VocabResultRow({ r }: { r: PhonicsItemResult }) {
+  const t = useTranslations('teacher.sessionDetail');
   const pct = r.score;
   const color = scoreHex(pct);
   const bg = scoreBg(pct);
-  const label = pct >= 80 ? `Great ${pct}%` : `${pct}%`;
+  const label = pct >= 80 ? `${t('scoreLabels.great')} ${pct}%` : `${pct}%`;
   const word = r.vocabItem?.word ?? '';
   const imageUrl = r.vocabItem?.imageUrl;
   const hasFeedback = r.bfa?.success && (r.bfa?.feedback ?? []).length > 0;
@@ -204,7 +209,7 @@ function VocabResultRow({ r }: { r: PhonicsItemResult }) {
         {/* Right: score badge */}
         <Box
           component="span"
-          aria-label={`${pct} percent — ${scoreLabel(pct)}`}
+          aria-label={`${pct} percent — ${scoreLabel(pct, t)}`}
           sx={{ flexShrink: 0, fontSize: 14, fontWeight: 700, px: 1.5, py: 0.5, borderRadius: '999px' }}
           style={{ background: bg, color }}
         >
@@ -218,6 +223,7 @@ function VocabResultRow({ r }: { r: PhonicsItemResult }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function TeacherSessionDetailPage() {
+  const t = useTranslations('teacher.sessionDetail');
   const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
   const hwId = Number(id);
   const sId = Number(sessionId);
@@ -225,7 +231,7 @@ export default function TeacherSessionDetailPage() {
   useEffect(() => { getSession(sId).then(setSession).catch(() => {}); }, [sId]);
 
   if (!session) return (
-    <Box sx={{ color: 'text.secondary', py: 8, textAlign: 'center' }}>Loading...</Box>
+    <Box sx={{ color: 'text.secondary', py: 8, textAlign: 'center' }}>{t('loading')}</Box>
   );
 
   const homeworkType = session.assignment?.homework?.type;
@@ -262,12 +268,12 @@ export default function TeacherSessionDetailPage() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 14, mb: 3 }}>
         <Box component={Link} href="/teacher/homework"
           sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' }, transition: 'color 0.15s', textDecoration: 'none' }}>
-          Homework
+          {t('breadcrumbHomework')}
         </Box>
         <Box component="span" sx={{ color: 'divider' }}>/</Box>
         <Box component={Link} href={`/teacher/homework/${hwId}`}
           sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary' }, transition: 'color 0.15s', textDecoration: 'none' }}>
-          Detail
+          {t('breadcrumbDetail')}
         </Box>
         <Box component="span" sx={{ color: 'divider' }}>/</Box>
         <Box component="span" sx={{ color: 'text.primary', fontWeight: 500 }}>{studentName}</Box>
@@ -286,14 +292,14 @@ export default function TeacherSessionDetailPage() {
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography sx={{ fontWeight: 900, color: 'text.primary', fontSize: 18 }}>{studentName}</Typography>
             <Typography sx={{ color: 'text.secondary', fontSize: 12, mt: 0.5 }}>
-              Started {new Date(session.startedAt).toLocaleString()}
+              {t('startedAt', { date: new Date(session.startedAt).toLocaleString() })}
               {session.completedAt && (
-                <> · Completed {new Date(session.completedAt).toLocaleString()}</>
+                <> {t('completedAtSuffix', { date: new Date(session.completedAt).toLocaleString() })}</>
               )}
             </Typography>
             {!session.completedAt && (
               <Box component="span" sx={{ display: 'inline-block', mt: 0.5, fontSize: 10, fontWeight: 700, px: 1, py: 0.25, borderRadius: '99px', bgcolor: '#FFFBEB', color: '#D97706' }}>
-                In progress
+                {t('inProgress')}
               </Box>
             )}
           </Box>
@@ -304,7 +310,7 @@ export default function TeacherSessionDetailPage() {
               </Typography>
               <Box component="span" sx={{ fontSize: 12, fontWeight: 700, mt: 0.5, px: 1.25, py: 0.25, borderRadius: '99px', display: 'inline-block' }}
                 style={{ background: scoreBgColor, color: scoreColor }}>
-                {scoreLabel(score)}
+                {scoreLabel(score, t)}
               </Box>
             </Box>
           )}
@@ -319,7 +325,7 @@ export default function TeacherSessionDetailPage() {
               style={{ background: '#A78BFA18' }}>
               <Hash size={14} style={{ color: '#A78BFA' }} />
             </Box>
-            Phonics
+            {t('phonicsHeading')}
             <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>({phonicsResults.length})</Box>
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -338,7 +344,7 @@ export default function TeacherSessionDetailPage() {
                           &quot;{r.transcribedText}&quot;
                         </Box>
                       ) : (
-                        <Box component="span" sx={{ color: 'text.secondary', fontSize: 14, fontStyle: 'italic', opacity: 0.5 }}>no answer</Box>
+                        <Box component="span" sx={{ color: 'text.secondary', fontSize: 14, fontStyle: 'italic', opacity: 0.5 }}>{t('noAnswer')}</Box>
                       )}
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
@@ -366,14 +372,14 @@ export default function TeacherSessionDetailPage() {
               style={{ background: '#FF9BD218' }}>
               <Mic size={14} style={{ color: '#FF9BD2' }} />
             </Box>
-            Speaking
+            {t('speakingHeading')}
             {session.assignment?.homework?.speakingMode && (
               <Box component="span" sx={{ fontSize: 10, fontWeight: 700, px: 1, py: 0.25, borderRadius: '99px' }}
                 style={{
                   background: session.assignment.homework.speakingMode === 'FREE_SPEAK' ? '#FF9BD218' : '#A78BFA18',
                   color: session.assignment.homework.speakingMode === 'FREE_SPEAK' ? '#FF9BD2' : '#A78BFA',
                 }}>
-                {session.assignment.homework.speakingMode === 'FREE_SPEAK' ? 'Free Speak' : 'Script Match'}
+                {session.assignment.homework.speakingMode === 'FREE_SPEAK' ? t('freeSpeak') : t('scriptMatch')}
               </Box>
             )}
           </Typography>
@@ -388,13 +394,13 @@ export default function TeacherSessionDetailPage() {
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       {r.transcribedText ? (
                         <Typography sx={{ fontSize: 14, color: 'text.primary' }}>
-                          Said: <Box component="span" sx={{ fontWeight: 500 }}>&quot;{r.transcribedText}&quot;</Box>
+                          {t('saidPrefix')}<Box component="span" sx={{ fontWeight: 500 }}>&quot;{r.transcribedText}&quot;</Box>
                         </Typography>
                       ) : (
-                        <Typography sx={{ fontSize: 14, color: 'text.secondary', fontStyle: 'italic', opacity: 0.6 }}>No answer recorded</Typography>
+                        <Typography sx={{ fontSize: 14, color: 'text.secondary', fontStyle: 'italic', opacity: 0.6 }}>{t('noAnswerRecorded')}</Typography>
                       )}
                       <Typography sx={{ fontSize: 12, mt: 0.5, fontWeight: 500 }} style={{ color }}>
-                        {r.matchedWords} of {r.totalWords} words matched
+                        {t('wordsMatched', { matched: r.matchedWords, total: r.totalWords })}
                       </Typography>
                     </Box>
                     <Box sx={{ flexShrink: 0, textAlign: 'right' }}>
@@ -424,7 +430,7 @@ export default function TeacherSessionDetailPage() {
               style={{ background: '#6ED6C118' }}>
               <BookOpen size={14} style={{ color: '#6ED6C1' }} />
             </Box>
-            Reading
+            {t('readingHeading')}
             <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>({readingActivityResults.length})</Box>
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -443,7 +449,7 @@ export default function TeacherSessionDetailPage() {
               style={{ background: '#FFB26B18' }}>
               <ImageIcon size={14} style={{ color: '#FFB26B' }} />
             </Box>
-            <Box component="span" style={{ color: '#FFB26B' }}>Vocabulary</Box>
+            <Box component="span" style={{ color: '#FFB26B' }}>{t('vocabularyHeading')}</Box>
             <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>({vocabResults.length})</Box>
           </Typography>
           {vocabResults.length > 0 ? (
@@ -454,7 +460,7 @@ export default function TeacherSessionDetailPage() {
             </Box>
           ) : (
             <Paper variant="outlined" sx={{ color: 'text.secondary', fontSize: 14, py: 4, textAlign: 'center', borderRadius: 2 }}>
-              No submissions yet.
+              {t('noSubmissionsYet')}
             </Paper>
           )}
         </Box>
@@ -462,7 +468,7 @@ export default function TeacherSessionDetailPage() {
 
       {phonicsResults.length === 0 && speakingResults.length === 0 && readingActivityResults.length === 0 && !isVocabulary && (
         <Paper variant="outlined" sx={{ color: 'text.secondary', fontSize: 14, py: 5, textAlign: 'center', borderRadius: 4 }}>
-          No results recorded yet.
+          {t('noResultsYet')}
         </Paper>
       )}
     </Box>
