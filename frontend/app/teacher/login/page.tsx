@@ -13,6 +13,7 @@ import { teacherTheme } from '@/lib/theme';
 import { setAuth } from '@/lib/auth';
 import { useToast } from '@/lib/toast-context';
 import { colors } from '@/lib/colors';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const ACCENT = colors.teacherAccent;
 
@@ -49,7 +50,10 @@ export default function TeacherLoginPage() {
   return (
     <ThemeProvider theme={teacherTheme}>
       <CssBaseline />
-    <Box sx={{ minHeight: '100vh', display: 'flex', minWidth: 1024 }}>
+    <Box sx={{ minHeight: '100vh', display: 'flex', minWidth: 1024, position: 'relative' }}>
+      <Box sx={{ position: 'absolute', top: 20, right: 20, zIndex: 1 }}>
+        <LanguageSwitcher />
+      </Box>
       {/* Left panel — dark navy */}
       <Box sx={{ width: 420, flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', p: 6, bgcolor: '#0C1220' }}>
         <Box>
