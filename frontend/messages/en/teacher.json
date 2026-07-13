@@ -646,5 +646,66 @@
       "activityOf": "Activity {current} of {total}",
       "correctOfTotal": "{correct} / {total} correct"
     }
+  },
+  "readingCreate": {
+    "matchingEditor": {
+      "pairsCount": "{count} / 6 pairs",
+      "noPairsYet": "No pairs yet — click \"+ Add pair\" to start.",
+      "wordLabelPlaceholder": "Word label",
+      "removePairAria": "Remove pair",
+      "addPair": "+ Add pair",
+      "maxPairsReached": "Maximum 6 pairs reached",
+      "minPairsWarning": "Add at least 2 image-word pairs.",
+      "imageUploadFailed": "Image upload failed"
+    },
+    "fillBlankEditor": {
+      "sentenceLabel": "Sentence",
+      "editingClearsBlanks": "Editing the sentence will clear existing blanks.",
+      "sentencePlaceholder": "Type a sentence, then click words below to mark them as blanks",
+      "clickWordToBlank": "Click a word to make it a blank",
+      "removeBlankAria": "Remove blank for \"{word}\"",
+      "makeBlankAria": "Make \"{word}\" a blank",
+      "distractorsPerBlank": "Distractors per blank",
+      "blankLabel": "Blank {index}: \"{word}\"",
+      "distractorsPlaceholder": "Comma-separated distractors (e.g. dog, bird)",
+      "typeSentenceToStart": "Type a sentence above to get started."
+    },
+    "sortableCard": {
+      "dragToReorder": "Drag to reorder",
+      "matching": "Matching",
+      "fillInTheBlank": "Fill in the Blank",
+      "activityNumber": "Activity {index}",
+      "removeActivity": "Remove activity",
+      "remove": "Remove"
+    },
+    "page": {
+      "back": "← Back",
+      "editHeading": "Edit Reading Homework",
+      "newHeading": "New Reading Homework",
+      "try": "Try",
+      "saving": "Saving…",
+      "update": "Update",
+      "create": "Create",
+      "homeworkNameLabel": "Homework Name",
+      "homeworkNamePlaceholder": "e.g. Animals – Unit 3 Reading",
+      "activitiesLabel": "Activities",
+      "loading": "Loading…",
+      "noActivitiesYet": "No activities yet. Use the buttons below to add a Matching or Fill-in-blank activity.",
+      "addMatchingActivity": "+ Add Matching Activity",
+      "addFillBlankActivity": "+ Add Fill-in-blank Activity",
+      "validation": {
+        "nameRequired": "Homework name is required.",
+        "activityRequired": "Add at least one activity.",
+        "matchingPairRange": "Matching activity {index}: add 2 to 6 image-word pairs.",
+        "matchingWordRequired": "Matching activity {index}: every pair needs a word label.",
+        "fillBlankNeedsBlank": "Fill-in-blank activity {index}: needs at least one blank.",
+        "fillBlankOutOfSequence": "Fill-in-blank activity {index}: internal blank index out of sequence — try toggling one blank again.",
+        "fillBlankNeedsDistractor": "Fill-in-blank activity {index}: each blank needs at least one distractor."
+      },
+      "toasts": {
+        "load_error": "Failed to load homework.",
+        "save_error": "Failed to save."
+      }
+    }
   }
 }

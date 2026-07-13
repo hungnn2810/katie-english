@@ -646,5 +646,66 @@
       "activityOf": "Hoạt động {current} / {total}",
       "correctOfTotal": "{correct} / {total} đúng"
     }
+  },
+  "readingCreate": {
+    "matchingEditor": {
+      "pairsCount": "{count} / 6 cặp",
+      "noPairsYet": "Chưa có cặp nào — nhấn \"+ Thêm cặp\" để bắt đầu.",
+      "wordLabelPlaceholder": "Nhãn từ",
+      "removePairAria": "Xóa cặp",
+      "addPair": "+ Thêm cặp",
+      "maxPairsReached": "Đã đạt tối đa 6 cặp",
+      "minPairsWarning": "Thêm ít nhất 2 cặp hình ảnh-từ.",
+      "imageUploadFailed": "Tải ảnh lên thất bại"
+    },
+    "fillBlankEditor": {
+      "sentenceLabel": "Câu",
+      "editingClearsBlanks": "Chỉnh sửa câu sẽ xóa các chỗ trống hiện có.",
+      "sentencePlaceholder": "Nhập một câu, sau đó nhấn vào các từ bên dưới để đánh dấu chỗ trống",
+      "clickWordToBlank": "Nhấn vào một từ để biến nó thành chỗ trống",
+      "removeBlankAria": "Bỏ đánh dấu chỗ trống cho \"{word}\"",
+      "makeBlankAria": "Đánh dấu \"{word}\" là chỗ trống",
+      "distractorsPerBlank": "Từ gây nhiễu cho mỗi chỗ trống",
+      "blankLabel": "Chỗ trống {index}: \"{word}\"",
+      "distractorsPlaceholder": "Các từ gây nhiễu, cách nhau bằng dấu phẩy (vd: dog, bird)",
+      "typeSentenceToStart": "Nhập một câu ở trên để bắt đầu."
+    },
+    "sortableCard": {
+      "dragToReorder": "Kéo để sắp xếp lại",
+      "matching": "Nối từ",
+      "fillInTheBlank": "Điền vào chỗ trống",
+      "activityNumber": "Hoạt động {index}",
+      "removeActivity": "Xóa hoạt động",
+      "remove": "Xóa"
+    },
+    "page": {
+      "back": "← Quay lại",
+      "editHeading": "Sửa bài tập Đọc",
+      "newHeading": "Bài tập Đọc mới",
+      "try": "Thử",
+      "saving": "Đang lưu…",
+      "update": "Cập nhật",
+      "create": "Tạo",
+      "homeworkNameLabel": "Tên bài tập",
+      "homeworkNamePlaceholder": "vd: Động vật – Bài 3 Đọc hiểu",
+      "activitiesLabel": "Hoạt động",
+      "loading": "Đang tải…",
+      "noActivitiesYet": "Chưa có hoạt động nào. Dùng các nút bên dưới để thêm hoạt động Nối từ hoặc Điền vào chỗ trống.",
+      "addMatchingActivity": "+ Thêm hoạt động Nối từ",
+      "addFillBlankActivity": "+ Thêm hoạt động Điền vào chỗ trống",
+      "validation": {
+        "nameRequired": "Vui lòng nhập tên bài tập.",
+        "activityRequired": "Thêm ít nhất một hoạt động.",
+        "matchingPairRange": "Hoạt động Nối từ {index}: thêm 2 đến 6 cặp hình ảnh-từ.",
+        "matchingWordRequired": "Hoạt động Nối từ {index}: mỗi cặp cần một nhãn từ.",
+        "fillBlankNeedsBlank": "Hoạt động Điền vào chỗ trống {index}: cần ít nhất một chỗ trống.",
+        "fillBlankOutOfSequence": "Hoạt động Điền vào chỗ trống {index}: thứ tự chỗ trống không hợp lệ — hãy thử bật/tắt một chỗ trống lại.",
+        "fillBlankNeedsDistractor": "Hoạt động Điền vào chỗ trống {index}: mỗi chỗ trống cần ít nhất một từ gây nhiễu."
+      },
+      "toasts": {
+        "load_error": "Tải bài tập thất bại.",
+        "save_error": "Lưu thất bại."
+      }
+    }
   }
 }

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   createReadingHomework,
   updateReadingHomework,
@@ -138,6 +139,7 @@ function MatchingActivityEditor({
   onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
   onUploadError: (msg: string) => void;
 }) {
+  const t = useTranslations('teacher.readingCreate.matchingEditor');
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const pairs = activity.pairs ?? [];
 
@@ -161,7 +163,7 @@ function MatchingActivityEditor({
       const url = await uploadSpeakingImage(file);
       onUpdate({ pairs: pairs.map((p, i) => (i === idx ? { ...p, imageUrl: url } : p)) });
     } catch (err: unknown) {
-      onUploadError(err instanceof Error ? err.message : 'Image upload failed');
+      onUploadError(err instanceof Error ? err.message : t('imageUploadFailed'));
     } finally {
       setUploadingIdx(null);
     }
@@ -170,12 +172,12 @@ function MatchingActivityEditor({
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{pairs.length} / 6 pairs</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{t('pairsCount', { count: pairs.length })}</Typography>
       </Box>
 
       {pairs.length === 0 ? (
         <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic', display: 'block', mb: 1.5 }}>
-          No pairs yet — click &quot;+ Add pair&quot; to start.
+          {t('noPairsYet')}
         </Typography>
       ) : (
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5, mb: 2 }}>
@@ -209,7 +211,7 @@ function MatchingActivityEditor({
               <TextField
                 size="small"
                 fullWidth
-                placeholder="Word label"
+                placeholder={t('wordLabelPlaceholder')}
                 value={pair.word}
                 onChange={(e) => updatePairWord(i, e.target.value)}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 14 } }}
@@ -218,7 +220,7 @@ function MatchingActivityEditor({
                 type="button"
                 size="small"
                 onClick={() => removePair(i)}
-                aria-label="Remove pair"
+                aria-label={t('removePairAria')}
                 fullWidth
                 sx={{ mt: 0.5, fontSize: 12, color: 'error.light', '&:hover': { color: 'error.main', bgcolor: 'error.50' } }}
               >
@@ -236,17 +238,17 @@ function MatchingActivityEditor({
           onClick={addPair}
           sx={{ fontSize: 14, fontWeight: 700, color: 'secondary.main', '&:hover': { textDecoration: 'underline' }, px: 0 }}
         >
-          + Add pair
+          {t('addPair')}
         </Button>
       ) : (
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, opacity: 0.6 }}>
-          Maximum 6 pairs reached
+          {t('maxPairsReached')}
         </Typography>
       )}
 
       {pairs.length === 1 && (
         <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 1 }}>
-          Add at least 2 image-word pairs.
+          {t('minPairsWarning')}
         </Typography>
       )}
     </Box>
@@ -262,6 +264,7 @@ function FillInBlankActivityEditor({
   activity: ReadingActivityDraft;
   onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
 }) {
+  const t = useTranslations('teacher.readingCreate.fillBlankEditor');
   const segments = activity.segments ?? [];
   const sentenceText = segments.map((s) => s.text).join('');
   const hasExistingBlanks = segments.some((s) => s.blank);
@@ -290,11 +293,11 @@ function FillInBlankActivityEditor({
       {/* Sentence textarea */}
       <Box sx={{ mb: 1.5 }}>
         <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.5 }}>
-          Sentence
+          {t('sentenceLabel')}
         </Typography>
         {hasExistingBlanks && (
           <Typography variant="caption" sx={{ color: '#d97706', display: 'block', mb: 0.5 }}>
-            Editing the sentence will clear existing blanks.
+            {t('editingClearsBlanks')}
           </Typography>
         )}
         <TextField
@@ -302,7 +305,7 @@ function FillInBlankActivityEditor({
           rows={2}
           fullWidth
           size="small"
-          placeholder="Type a sentence, then click words below to mark them as blanks"
+          placeholder={t('sentencePlaceholder')}
           value={sentenceText}
           onChange={(e) => setSentence(e.target.value)}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
@@ -313,7 +316,7 @@ function FillInBlankActivityEditor({
       {segments.length > 0 && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>
-            Click a word to make it a blank
+            {t('clickWordToBlank')}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
             {segments.map((s, i) => {
@@ -327,7 +330,7 @@ function FillInBlankActivityEditor({
                     type="button"
                     size="small"
                     onClick={() => toggleSegmentBlank(i)}
-                    aria-label={`Remove blank for "${s.text}"`}
+                    aria-label={t('removeBlankAria', { word: s.text })}
                     sx={{ bgcolor: 'primary.main', color: 'white', px: 1.25, py: 0.5, borderRadius: 2, fontSize: 14, fontWeight: 600, gap: 0.5, minWidth: 0, '&:hover': { bgcolor: 'primary.dark' } }}
                   >
                     ___
@@ -341,7 +344,7 @@ function FillInBlankActivityEditor({
                   type="button"
                   size="small"
                   onClick={() => toggleSegmentBlank(i)}
-                  aria-label={`Make "${s.text}" a blank`}
+                  aria-label={t('makeBlankAria', { word: s.text })}
                   sx={{ bgcolor: 'grey.100', color: 'text.primary', px: 1.25, py: 0.5, borderRadius: 2, fontSize: 14, cursor: 'pointer', minWidth: 0, '&:hover': { bgcolor: 'primary.50' } }}
                 >
                   {s.text}
@@ -356,12 +359,12 @@ function FillInBlankActivityEditor({
       {blanks.length > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 0.5 }}>
-            Distractors per blank
+            {t('distractorsPerBlank')}
           </Typography>
           {blanks.map((b) => (
             <Box key={b.blankIndex} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary', flexShrink: 0, width: 96 }}>
-                Blank {(b.blankIndex ?? 0) + 1}: &quot;{b.correctWord}&quot;
+                {t('blankLabel', { index: (b.blankIndex ?? 0) + 1, word: b.correctWord ?? '' })}
               </Typography>
               <TextField
                 size="small"
@@ -376,7 +379,7 @@ function FillInBlankActivityEditor({
                       .filter(Boolean)
                   )
                 }
-                placeholder="Comma-separated distractors (e.g. dog, bird)"
+                placeholder={t('distractorsPlaceholder')}
                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, fontSize: 14 } }}
               />
             </Box>
@@ -386,7 +389,7 @@ function FillInBlankActivityEditor({
 
       {segments.length === 0 && (
         <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-          Type a sentence above to get started.
+          {t('typeSentenceToStart')}
         </Typography>
       )}
     </Box>
@@ -410,6 +413,7 @@ function SortableActivityCard({
   onUpdate: (patch: Partial<ReadingActivityDraft>) => void;
   onUploadError: (msg: string) => void;
 }) {
+  const t = useTranslations('teacher.readingCreate.sortableCard');
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -436,7 +440,7 @@ function SortableActivityCard({
           {...attributes}
           {...listeners}
           type="button"
-          aria-label="Drag to reorder"
+          aria-label={t('dragToReorder')}
           size="small"
           sx={{ cursor: 'grab', '&:active': { cursor: 'grabbing' }, borderRadius: 2, color: 'text.secondary' }}
         >
@@ -446,23 +450,23 @@ function SortableActivityCard({
         </IconButton>
 
         {activity.type === 'MATCH' ? (
-          <Chip label="Matching" size="small" sx={{ bgcolor: 'secondary.50', color: 'secondary.main', fontWeight: 700 }} />
+          <Chip label={t('matching')} size="small" sx={{ bgcolor: 'secondary.50', color: 'secondary.main', fontWeight: 700 }} />
         ) : (
-          <Chip label="Fill in the Blank" size="small" sx={{ bgcolor: '#FFF8E1', color: '#B45309', fontWeight: 700 }} />
+          <Chip label={t('fillInTheBlank')} size="small" sx={{ bgcolor: '#FFF8E1', color: '#B45309', fontWeight: 700 }} />
         )}
 
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, ml: 'auto' }}>
-          Activity {index + 1}
+          {t('activityNumber', { index: index + 1 })}
         </Typography>
 
         <Button
           type="button"
           size="small"
           onClick={onRemove}
-          aria-label="Remove activity"
+          aria-label={t('removeActivity')}
           sx={{ fontSize: 12, fontWeight: 700, color: 'error.light', '&:hover': { color: 'error.main', bgcolor: 'error.50' }, minWidth: 0, px: 1 }}
         >
-          Remove
+          {t('remove')}
         </Button>
       </Box>
 
@@ -480,6 +484,7 @@ function SortableActivityCard({
 // ── ReadingCreationPage ───────────────────────────────────────────────────────
 
 export function ReadingCreationPage({ editId }: { editId?: number }) {
+  const t = useTranslations('teacher.readingCreate.page');
   const router = useRouter();
   const { showToast } = useToast();
   const editMode = typeof editId === 'number';
@@ -524,7 +529,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
         });
         setActivities(drafts);
       } catch (err: unknown) {
-        showToast(err instanceof Error ? err.message : 'Failed to load homework.', 'error');
+        showToast(err instanceof Error ? err.message : t('toasts.load_error'), 'error');
       } finally {
         setInitialLoading(false);
       }
@@ -568,36 +573,36 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
   }
 
   function validate(): string | null {
-    if (!name.trim()) return 'Homework name is required.';
-    if (activities.length === 0) return 'Add at least one activity.';
+    if (!name.trim()) return t('validation.nameRequired');
+    if (activities.length === 0) return t('validation.activityRequired');
 
     for (let idx = 0; idx < activities.length; idx++) {
       const activity = activities[idx];
       if (activity.type === 'MATCH') {
         const pairCount = activity.pairs?.length ?? 0;
         if (pairCount < 2 || pairCount > 6) {
-          return `Matching activity ${idx + 1}: add 2 to 6 image-word pairs.`;
+          return t('validation.matchingPairRange', { index: idx + 1 });
         }
         const emptyWord = (activity.pairs ?? []).some((p) => !p.word.trim());
         if (emptyWord) {
-          return `Matching activity ${idx + 1}: every pair needs a word label.`;
+          return t('validation.matchingWordRequired', { index: idx + 1 });
         }
       } else {
         // FILL_BLANK — segment-based validation
         const segs = activity.segments ?? [];
         if (!segs.length || !segs.some((s) => s.blank)) {
-          return `Fill-in-blank activity ${idx + 1}: needs at least one blank.`;
+          return t('validation.fillBlankNeedsBlank', { index: idx + 1 });
         }
         // Verify contiguous blankIndex sequence 0..n-1 (Pitfall 3 defense)
         const blanks = segs.filter((s) => s.blank).sort((a, b) => (a.blankIndex ?? 0) - (b.blankIndex ?? 0));
         for (let i = 0; i < blanks.length; i++) {
           if (blanks[i].blankIndex !== i) {
-            return `Fill-in-blank activity ${idx + 1}: internal blank index out of sequence — try toggling one blank again.`;
+            return t('validation.fillBlankOutOfSequence', { index: idx + 1 });
           }
         }
         // Require at least 1 distractor per blank (D-08)
         if (blanks.some((b) => !(b.distractors?.length ?? 0))) {
-          return `Fill-in-blank activity ${idx + 1}: each blank needs at least one distractor.`;
+          return t('validation.fillBlankNeedsDistractor', { index: idx + 1 });
         }
       }
     }
@@ -627,7 +632,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
       }
       router.push('/teacher/homework');  // D-03: no AssignModal auto-open
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to save.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.save_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -639,7 +644,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
       <Box sx={{ maxWidth: 768, mx: 'auto', px: 4, py: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 256 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'text.secondary' }}>
           <CircularProgress size={20} color="inherit" />
-          <Typography variant="body2">Loading…</Typography>
+          <Typography variant="body2">{t('loading')}</Typography>
         </Box>
       </Box>
     );
@@ -651,10 +656,10 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
         <Box>
           <Box component={Link} href="/teacher/homework" sx={{ fontSize: 14, color: 'text.secondary', textDecoration: 'none', '&:hover': { color: 'text.primary' } }}>
-            ← Back
+            {t('back')}
           </Box>
           <Typography variant="h5" sx={{ fontWeight: 900, mt: 0.5 }}>
-            {editMode ? 'Edit Reading Homework' : 'New Reading Homework'}
+            {editMode ? t('editHeading') : t('newHeading')}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -666,7 +671,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
               sx={{ borderRadius: 3, gap: 0.75, bgcolor: '#3B82F6', '&:hover': { bgcolor: '#3B82F6', opacity: 0.9 } }}
             >
               <svg style={{ width: 16, height: 16 }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-              Try
+              {t('try')}
             </Button>
           )}
           <Button
@@ -677,7 +682,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
             sx={{ borderRadius: 3, gap: 1, flexShrink: 0, background: gradients.greenSecondary, '&:hover': { background: gradients.greenSecondary, opacity: 0.9 }, '&:disabled': { opacity: 0.6 } }}
           >
             {loading && <CircularProgress size={16} sx={{ color: 'white' }} />}
-            {loading ? 'Saving…' : editMode ? 'Update' : 'Create'}
+            {loading ? t('saving') : editMode ? t('update') : t('create')}
           </Button>
         </Box>
       </Box>
@@ -685,12 +690,12 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
       {/* Homework name */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1 }}>
-          Homework Name
+          {t('homeworkNameLabel')}
         </Typography>
         <TextField
           fullWidth
           size="small"
-          placeholder="e.g. Animals – Unit 3 Reading"
+          placeholder={t('homeworkNamePlaceholder')}
           value={name}
           onChange={(e) => setName(e.target.value)}
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
@@ -704,7 +709,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
       {/* Activities section */}
       <Box>
         <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'text.secondary', display: 'block', mb: 1.5 }}>
-          Activities
+          {t('activitiesLabel')}
         </Typography>
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -712,7 +717,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
             {activities.length === 0 ? (
               <Box sx={{ borderRadius: 3, border: '2px dashed', borderColor: 'divider', bgcolor: 'background.default', py: 6, textAlign: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
-                  No activities yet. Use the buttons below to add a Matching or Fill-in-blank activity.
+                  {t('noActivitiesYet')}
                 </Typography>
               </Box>
             ) : (
@@ -741,7 +746,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
             onClick={addMatchingActivity}
             sx={{ display: 'flex', alignItems: 'center', gap: 1, borderRadius: 3, fontWeight: 700, border: '2px dashed', borderColor: 'secondary.main', color: 'secondary.main', '&:hover': { bgcolor: 'secondary.50', border: '2px dashed' } }}
           >
-            + Add Matching Activity
+            {t('addMatchingActivity')}
           </Button>
           <Button
             type="button"
@@ -749,7 +754,7 @@ export function ReadingCreationPage({ editId }: { editId?: number }) {
             onClick={addFillBlankActivity}
             sx={{ display: 'flex', alignItems: 'center', gap: 1, borderRadius: 3, fontWeight: 700, border: '2px dashed', borderColor: 'warning.main', color: '#d97706', '&:hover': { bgcolor: 'warning.50', border: '2px dashed' } }}
           >
-            + Add Fill-in-blank Activity
+            {t('addFillBlankActivity')}
           </Button>
         </Box>
       </Box>
