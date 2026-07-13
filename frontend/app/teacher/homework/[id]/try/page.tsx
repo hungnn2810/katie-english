@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -35,6 +36,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function PreviewBanner() {
+  const t = useTranslations('teacher.homeworkTry.previewBanner');
   return (
     <Box sx={{
       bgcolor: 'rgba(0,0,0,0.05)',
@@ -49,7 +51,7 @@ function PreviewBanner() {
       textTransform: 'uppercase',
       letterSpacing: '0.1em',
     }}>
-      Preview Mode — Results not saved
+      {t('message')}
     </Box>
   );
 }
@@ -73,6 +75,7 @@ function MatchingRenderer({
   setState: (u: (p: ActivityState) => ActivityState) => void;
   onComplete: () => void;
 }) {
+  const t = useTranslations('teacher.homeworkTry.matching');
   const lockedCount = state.pairs.filter((p) => p.status === 'locked').length;
 
   useEffect(() => {
@@ -117,7 +120,7 @@ function MatchingRenderer({
   return (
     <Box sx={{ maxWidth: 752, mx: 'auto', width: '100%' }}>
       <Box sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 4, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-        <ImageIcon style={{ width: 16, height: 16 }} />Match each image to its word
+        <ImageIcon style={{ width: 16, height: 16 }} />{t('instructions')}
       </Box>
       <Box sx={{ display: 'flex', gap: 3, justifyContent: 'center', mb: 4 }}>
         {state.pairs.map((p) => {
@@ -205,6 +208,7 @@ function FillBlankRenderer({
   setState: (u: (p: ActivityState) => ActivityState) => void;
   onComplete: () => void;
 }) {
+  const t = useTranslations('teacher.homeworkTry.fillBlank');
   const isFinished = state.currentItemIndex >= state.items.length;
   useEffect(() => {
     if (isFinished && !state.complete) {
@@ -248,7 +252,7 @@ function FillBlankRenderer({
           idx < arr.length - 1
             ? [
                 <Typography key={`t${idx}`} component="span" sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900 }}>{part}</Typography>,
-                <Box key={`b${idx}`} component="span" sx={{ display: 'inline-block', width: 96, height: 32, borderRadius: 2, border: '2px solid rgba(0,0,0,0.2)', bgcolor: 'rgba(0,0,0,0.05)', verticalAlign: 'middle', mx: 0.5 }} />,
+                <Box key={`b${idx}`} component="span" aria-label={t('blank')} sx={{ display: 'inline-block', width: 96, height: 32, borderRadius: 2, border: '2px solid rgba(0,0,0,0.2)', bgcolor: 'rgba(0,0,0,0.05)', verticalAlign: 'middle', mx: 0.5 }} />,
               ]
             : [<Typography key={`t${idx}`} component="span" sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900 }}>{part}</Typography>]
         )}
@@ -296,6 +300,7 @@ function FillBlankRenderer({
 // ── Phonics result display ─────────────────────────────────────────────────────
 
 function PhonemeTag({ op }: { op: PhonemeOp }) {
+  const t = useTranslations('teacher.homeworkTry.phonemeTag');
   const colorMap: Record<string, { bgcolor: string; color: string; borderColor: string }> = {
     correct:     { bgcolor: 'rgba(34,197,94,0.2)',   color: '#86efac', borderColor: 'rgba(34,197,94,0.4)' },
     similar:     { bgcolor: 'rgba(234,179,8,0.2)',   color: '#fde047', borderColor: 'rgba(234,179,8,0.4)' },
@@ -306,6 +311,8 @@ function PhonemeTag({ op }: { op: PhonemeOp }) {
   };
   const c = colorMap[op.status] ?? colorMap.error;
   const label = op.expected ?? op.aligned ?? '?';
+  const statusLabels = ['correct', 'similar', 'substituted', 'missing', 'extra', 'error'];
+  const statusLabel = statusLabels.includes(op.status) ? t(`status.${op.status}`) : op.status;
   return (
     <Box component="span" sx={{
       display: 'inline-flex',
@@ -323,7 +330,7 @@ function PhonemeTag({ op }: { op: PhonemeOp }) {
       gap: 0.25,
     }}>
       <span>{label}</span>
-      <span style={{ fontSize: 9, opacity: 0.6, textTransform: 'capitalize' }}>{op.status}</span>
+      <span style={{ fontSize: 9, opacity: 0.6, textTransform: 'capitalize' }}>{statusLabel}</span>
     </Box>
   );
 }
@@ -348,6 +355,7 @@ type PageState =
   | 'error';
 
 export default function TeacherTryHomeworkPage() {
+  const t = useTranslations('teacher.homeworkTry.page');
   const { id } = useParams<{ id: string }>();
   const hwId = Number(id);
   const router = useRouter();
@@ -501,7 +509,7 @@ export default function TeacherTryHomeworkPage() {
     return (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: '#4C4F7A' }} />
-            <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>Loading…</Typography>
+            <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>{t('loading')}</Typography>
           </Box>
     );
   }
@@ -510,13 +518,13 @@ export default function TeacherTryHomeworkPage() {
   if (pageState === 'error') {
     return (
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
-            <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>Failed to load homework.</Typography>
+            <Typography sx={{ color: '#FF7B7B', fontSize: 18, fontWeight: 700 }}>{t('errorLoadFailed')}</Typography>
             <Box
               component="button"
               onClick={() => router.push(backUrl)}
               sx={{ color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
             >
-              ← Back
+              {t('back')}
             </Box>
           </Box>
     );
@@ -536,13 +544,13 @@ export default function TeacherTryHomeworkPage() {
               onClick={() => router.push(backUrl)}
               sx={{ alignSelf: 'flex-start', color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
             >
-              ← Back
+              {t('back')}
             </Box>
             <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography sx={{ fontSize: 36, mb: 1.5 }}>{isFreespeak ? '🖼️' : '🎤'}</Typography>
-                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>{isFreespeak ? 'Free Speak' : 'Script Match'}</Typography>
-                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Record to preview scoring</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>{isFreespeak ? t('freeSpeak') : t('scriptMatch')}</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>{t('recordToPreview')}</Typography>
               </Box>
               {isFreespeak && hw?.speakingPictureUrl && (
                 <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(0,0,0,0.1)', maxWidth: 320, width: '100%' }}>
@@ -557,7 +565,7 @@ export default function TeacherTryHomeworkPage() {
               )}
               {isFreespeak && hw?.speakingText && (
                 <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 3, px: 2, py: 1.5, width: '100%' }}>
-                  <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.5 }}>Talk about:</Typography>
+                  <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 0.5 }}>{t('talkAbout')}</Typography>
                   <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>{hw.speakingText.split(',').map((k) => k.trim()).join(' · ')}</Typography>
                 </Box>
               )}
@@ -579,7 +587,7 @@ export default function TeacherTryHomeworkPage() {
                     >
                       <span style={{ fontSize: 36 }}>🎤</span>
                     </Box>
-                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Tap to start recording</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>{t('tapToStartRecording')}</Typography>
                   </>
                 )}
                 {recordState === 'recording' && (
@@ -603,7 +611,7 @@ export default function TeacherTryHomeworkPage() {
                       </Box>
                     </Box>
                     <Typography sx={{ color: '#1E1B4B', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
-                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600, animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } } }}>Recording… tap to stop</Typography>
+                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600, animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } } }}>{t('recordingTapToStop')}</Typography>
                   </>
                 )}
                 {recordState === 'recorded' && (
@@ -611,14 +619,14 @@ export default function TeacherTryHomeworkPage() {
                     <Box sx={{ width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(52,211,153,0.5)' }} style={{ background: 'rgba(52,211,153,0.15)' }}>
                       <span style={{ fontSize: 36 }}>✅</span>
                     </Box>
-                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>{t('recordedLabel', { mins, secs })}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
                       <Box
                         component="button"
                         onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
                         sx={{ flex: 1, py: 1.5, borderRadius: 4, color: '#1E1B4B', fontWeight: 700, fontSize: 14, border: '1px solid rgba(0,0,0,0.12)', bgcolor: 'transparent', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' }, transition: 'colors 0.2s' }}
                       >
-                        Re-record
+                        {t('reRecord')}
                       </Box>
                       <Box
                         component="button"
@@ -626,7 +634,7 @@ export default function TeacherTryHomeworkPage() {
                         sx={{ flex: 1, py: 1.5, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 14, border: 'none', cursor: 'pointer', '&:hover': { transform: 'scale(1.02)' }, transition: 'transform 0.2s' }}
                         style={{ background: gradients.primaryPurple }}
                       >
-                        Submit for Preview
+                        {t('submitForPreview')}
                       </Box>
                     </Box>
                   </>
@@ -643,7 +651,7 @@ export default function TeacherTryHomeworkPage() {
 
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: '#7BD88F' }} />
-            <Typography sx={{ color: '#7BD88F', fontWeight: 700 }}>Scoring…</Typography>
+            <Typography sx={{ color: '#7BD88F', fontWeight: 700 }}>{t('scoring')}</Typography>
           </Box>
     );
   }
@@ -658,9 +666,9 @@ export default function TeacherTryHomeworkPage() {
               <PreviewBanner />
               <Box sx={{ textAlign: 'center', my: 5 }}>
                 <Typography sx={{ fontSize: 60, mb: 2 }}>🎉</Typography>
-                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Preview Complete!</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>{t('previewComplete')}</Typography>
                 <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(speakResult.score) }}>{speakResult.score}%</Typography>
-                <Typography sx={{ color: '#6B7280', fontSize: 14, mt: 1 }}>This is how students experience the scoring</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14, mt: 1 }}>{t('scoringExplanation')}</Typography>
               </Box>
               <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4, px: 2.5, py: 2, mb: 4 }}>
                 {isFreespeak && speakResult.speakingPictureUrl && (
@@ -672,10 +680,10 @@ export default function TeacherTryHomeworkPage() {
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
                   <Box sx={{ flex: 1 }}>
                     {speakResult.transcribedText && (
-                      <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>You said: <em style={{ color: '#1E1B4B' }}>&quot;{speakResult.transcribedText}&quot;</em></Typography>
+                      <Typography sx={{ color: '#4C4F7A', fontSize: 14 }}>{t('youSaid')}<em style={{ color: '#1E1B4B' }}>&quot;{speakResult.transcribedText}&quot;</em></Typography>
                     )}
                     {isFreespeak && (
-                      <Typography sx={{ color: '#4C4F7A', fontSize: 14, mt: 0.5 }}>Keywords matched: {speakResult.matchedWords}/{speakResult.totalWords}</Typography>
+                      <Typography sx={{ color: '#4C4F7A', fontSize: 14, mt: 0.5 }}>{t('keywordsMatched', { matched: speakResult.matchedWords, total: speakResult.totalWords })}</Typography>
                     )}
                   </Box>
                   <Typography sx={{ fontSize: 24, fontWeight: 900, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }} style={{ color: scoreHexColor(speakResult.score) }}>{speakResult.score}%</Typography>
@@ -688,7 +696,7 @@ export default function TeacherTryHomeworkPage() {
                   sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer' }}
                   style={{ background: gradients.primarySecondary }}
                 >
-                  Try Again
+                  {t('tryAgain')}
                 </Box>
                 <Box
                   component="button"
@@ -696,7 +704,7 @@ export default function TeacherTryHomeworkPage() {
                   sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 16, border: 'none', cursor: 'pointer' }}
                   style={{ background: gradients.primaryPurple }}
                 >
-                  Back to Homework
+                  {t('backToHomework')}
                 </Box>
               </Box>
             </Box>
@@ -716,13 +724,13 @@ export default function TeacherTryHomeworkPage() {
               onClick={() => router.push(backUrl)}
               sx={{ alignSelf: 'flex-start', color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
             >
-              ← Back
+              {t('back')}
             </Box>
             <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography sx={{ fontSize: 36, mb: 1.5 }}>#️⃣</Typography>
-                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>Phonics Preview</Typography>
-                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Pick a word to test pronunciation scoring</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>{t('phonicsPreviewHeading')}</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>{t('pickWordSubtitle')}</Typography>
               </Box>
               <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
                 {allWords.map((w) => (
@@ -760,14 +768,14 @@ export default function TeacherTryHomeworkPage() {
               onClick={() => { stopSpeakRecording(); setPageState('phonics_word_select'); }}
               sx={{ alignSelf: 'flex-start', color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
             >
-              ← Back
+              {t('back')}
             </Box>
             <Box sx={{ width: '100%', maxWidth: 384, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography sx={{ fontSize: 36, mb: 1.5 }}>🎤</Typography>
-                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>Say the word</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 0.5 }}>{t('sayTheWord')}</Typography>
                 <Typography sx={{ color: '#1E1B4B', fontSize: 48, fontWeight: 900, mt: 1.5, mb: 0.5 }}>{selectedWord?.text}</Typography>
-                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Record to see phoneme scoring</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14 }}>{t('recordToSeePhoneme')}</Typography>
               </Box>
               {selectedWord?.imageUrl && (
                 <Box sx={{ borderRadius: 4, overflow: 'hidden', border: '4px solid rgba(0,0,0,0.1)', maxWidth: 320, width: '100%' }}>
@@ -791,7 +799,7 @@ export default function TeacherTryHomeworkPage() {
                     >
                       <span style={{ fontSize: 36 }}>🎤</span>
                     </Box>
-                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Tap to start recording</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>{t('tapToStartRecording')}</Typography>
                   </>
                 )}
                 {recordState === 'recording' && (
@@ -815,7 +823,7 @@ export default function TeacherTryHomeworkPage() {
                       </Box>
                     </Box>
                     <Typography sx={{ color: '#1E1B4B', fontFamily: 'monospace', fontSize: 30, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{mins}:{secs}</Typography>
-                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600, animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } } }}>Recording… tap to stop</Typography>
+                    <Typography sx={{ color: '#f87171', fontSize: 14, fontWeight: 600, animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite', '@keyframes pulse': { '0%,100%': { opacity: 1 }, '50%': { opacity: 0.5 } } }}>{t('recordingTapToStop')}</Typography>
                   </>
                 )}
                 {recordState === 'recorded' && (
@@ -823,14 +831,14 @@ export default function TeacherTryHomeworkPage() {
                     <Box sx={{ width: 96, height: 96, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(52,211,153,0.5)' }} style={{ background: 'rgba(52,211,153,0.15)' }}>
                       <span style={{ fontSize: 36 }}>✅</span>
                     </Box>
-                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>Recorded: {mins}:{secs}</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 14 }}>{t('recordedLabel', { mins, secs })}</Typography>
                     <Box sx={{ display: 'flex', gap: 1.5, width: '100%' }}>
                       <Box
                         component="button"
                         onClick={() => { setRecordedBlob(null); setRecordState('idle'); setRecordingSeconds(0); }}
                         sx={{ flex: 1, py: 1.5, borderRadius: 4, color: '#1E1B4B', fontWeight: 700, fontSize: 14, border: '1px solid rgba(0,0,0,0.12)', bgcolor: 'transparent', cursor: 'pointer', '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' }, transition: 'colors 0.2s' }}
                       >
-                        Re-record
+                        {t('reRecord')}
                       </Box>
                       <Box
                         component="button"
@@ -838,7 +846,7 @@ export default function TeacherTryHomeworkPage() {
                         sx={{ flex: 1, py: 1.5, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 14, border: 'none', cursor: 'pointer', '&:hover': { transform: 'scale(1.02)' }, transition: 'transform 0.2s' }}
                         style={{ background: gradients.primaryPurple }}
                       >
-                        Submit for Preview
+                        {t('submitForPreview')}
                       </Box>
                     </Box>
                   </>
@@ -855,7 +863,7 @@ export default function TeacherTryHomeworkPage() {
 
           <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }} style={{ background: gradients.gameBg }}>
             <CircularProgress size={48} sx={{ color: '#7BD88F' }} />
-            <Typography sx={{ color: '#7BD88F', fontWeight: 700 }}>Analyzing pronunciation…</Typography>
+            <Typography sx={{ color: '#7BD88F', fontWeight: 700 }}>{t('analyzingPronunciation')}</Typography>
           </Box>
     );
   }
@@ -869,24 +877,24 @@ export default function TeacherTryHomeworkPage() {
               <PreviewBanner />
               <Box sx={{ textAlign: 'center', my: 5 }}>
                 <Typography sx={{ fontSize: 60, mb: 2 }}>🎤</Typography>
-                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Pronunciation Score</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>{t('pronunciationScore')}</Typography>
                 <Typography sx={{ color: '#1E1B4B', fontSize: 30, fontWeight: 900, mt: 1, mb: 0.5 }}>{phonicsResult.wordText}</Typography>
                 <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(phonicsResult.score) }}>{phonicsResult.score}%</Typography>
               </Box>
               <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderRadius: 4, px: 2.5, py: 2, mb: 3 }}>
                 {phonicsResult.transcribedText && (
-                  <Typography sx={{ color: '#4C4F7A', fontSize: 14, mb: 1.5 }}>You said: <em style={{ color: '#1E1B4B' }}>&quot;{phonicsResult.transcribedText}&quot;</em></Typography>
+                  <Typography sx={{ color: '#4C4F7A', fontSize: 14, mb: 1.5 }}>{t('youSaid')}<em style={{ color: '#1E1B4B' }}>&quot;{phonicsResult.transcribedText}&quot;</em></Typography>
                 )}
                 {phonicsResult.bfa?.feedback && phonicsResult.bfa.feedback.length > 0 && (
                   <Box>
-                    <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 1 }}>Phoneme breakdown</Typography>
+                    <Typography sx={{ color: '#6B7280', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', mb: 1 }}>{t('phonemeBreakdown')}</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                       {phonicsResult.bfa.feedback.map((op, i) => <PhonemeTag key={i} op={op} />)}
                     </Box>
                   </Box>
                 )}
                 {phonicsResult.bfa?.espeak_fallback && (
-                  <Typography sx={{ color: '#9CA3AF', fontSize: 12, mt: 1.5 }}>Used eSpeak fallback for expected phonemes</Typography>
+                  <Typography sx={{ color: '#9CA3AF', fontSize: 12, mt: 1.5 }}>{t('espeakFallback')}</Typography>
                 )}
               </Box>
               <Box sx={{ display: 'flex', gap: 1.5 }}>
@@ -896,7 +904,7 @@ export default function TeacherTryHomeworkPage() {
                   sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer' }}
                   style={{ background: gradients.primarySecondary }}
                 >
-                  Try Again
+                  {t('tryAgain')}
                 </Box>
                 <Box
                   component="button"
@@ -904,7 +912,7 @@ export default function TeacherTryHomeworkPage() {
                   sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer' }}
                   style={{ background: gradients.primarySecondary }}
                 >
-                  Other Word
+                  {t('otherWord')}
                 </Box>
                 <Box
                   component="button"
@@ -912,7 +920,7 @@ export default function TeacherTryHomeworkPage() {
                   sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 16, border: 'none', cursor: 'pointer' }}
                   style={{ background: gradients.primaryPurple }}
                 >
-                  Back
+                  {t('backPlain')}
                 </Box>
               </Box>
             </Box>
@@ -932,7 +940,7 @@ export default function TeacherTryHomeworkPage() {
                 onClick={() => router.push(backUrl)}
                 sx={{ color: '#6B7280', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', '&:hover': { color: '#1E1B4B' } }}
               >
-                ← Back
+                {t('back')}
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 {activityStates.map((_, i) => (
@@ -942,10 +950,10 @@ export default function TeacherTryHomeworkPage() {
                   }} />
                 ))}
               </Box>
-              <Typography sx={{ color: '#4C4F7A', fontSize: 14, fontWeight: 700 }}>Activity {currentActivityIndex + 1} of {activityStates.length}</Typography>
+              <Typography sx={{ color: '#4C4F7A', fontSize: 14, fontWeight: 700 }}>{t('activityOf', { current: currentActivityIndex + 1, total: activityStates.length })}</Typography>
             </Box>
             <Box sx={{ bgcolor: 'rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(0,0,0,0.08)', px: 4, py: 0.75, textAlign: 'center', color: '#9CA3AF', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>
-              Preview Mode — Not saved
+              {t('previewModeNotSaved')}
             </Box>
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 4, pb: 4, overflow: 'auto' }}>
               {cur ? (
@@ -989,9 +997,9 @@ export default function TeacherTryHomeworkPage() {
               <PreviewBanner />
               <Box sx={{ textAlign: 'center', my: 5 }}>
                 <Typography sx={{ fontSize: 60, mb: 2 }}>🎉</Typography>
-                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>Preview Complete!</Typography>
+                <Typography sx={{ color: '#1E1B4B', fontSize: 24, fontWeight: 900, mb: 1 }}>{t('previewComplete')}</Typography>
                 <Typography sx={{ fontSize: 72, fontWeight: 900, mt: 2 }} style={{ color: scoreHexColor(score) }}>{score}%</Typography>
-                <Typography sx={{ color: '#6B7280', fontSize: 14, mt: 1 }}>{correct} / {total} correct</Typography>
+                <Typography sx={{ color: '#6B7280', fontSize: 14, mt: 1 }}>{t('correctOfTotal', { correct, total })}</Typography>
               </Box>
               <Box sx={{ display: 'flex', gap: 1.5 }}>
                 <Box
@@ -1007,7 +1015,7 @@ export default function TeacherTryHomeworkPage() {
                   sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 700, fontSize: 16, border: 'none', cursor: 'pointer' }}
                   style={{ background: gradients.primarySecondary }}
                 >
-                  Try Again
+                  {t('tryAgain')}
                 </Box>
                 <Box
                   component="button"
@@ -1015,7 +1023,7 @@ export default function TeacherTryHomeworkPage() {
                   sx={{ flex: 1, py: 2, borderRadius: 4, color: 'white', fontWeight: 900, fontSize: 16, border: 'none', cursor: 'pointer' }}
                   style={{ background: gradients.primaryPurple }}
                 >
-                  Back to Homework
+                  {t('backToHomework')}
                 </Box>
               </Box>
             </Box>

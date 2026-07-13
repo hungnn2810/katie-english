@@ -591,5 +591,60 @@
     "fillInBlank": "Fill in Blank",
     "chosePrefix": "chose ",
     "blankLabel": "Blank {index}"
+  },
+  "homeworkTry": {
+    "previewBanner": {
+      "message": "Preview Mode — Results not saved"
+    },
+    "matching": {
+      "instructions": "Match each image to its word"
+    },
+    "fillBlank": {
+      "blank": "blank"
+    },
+    "phonemeTag": {
+      "status": {
+        "correct": "correct",
+        "similar": "similar",
+        "substituted": "substituted",
+        "missing": "missing",
+        "extra": "extra",
+        "error": "error"
+      }
+    },
+    "page": {
+      "loading": "Loading…",
+      "back": "← Back",
+      "backPlain": "Back",
+      "errorLoadFailed": "Failed to load homework.",
+      "freeSpeak": "Free Speak",
+      "scriptMatch": "Script Match",
+      "recordToPreview": "Record to preview scoring",
+      "talkAbout": "Talk about:",
+      "tapToStartRecording": "Tap to start recording",
+      "recordingTapToStop": "Recording… tap to stop",
+      "recordedLabel": "Recorded: {mins}:{secs}",
+      "reRecord": "Re-record",
+      "submitForPreview": "Submit for Preview",
+      "scoring": "Scoring…",
+      "previewComplete": "Preview Complete!",
+      "scoringExplanation": "This is how students experience the scoring",
+      "youSaid": "You said: ",
+      "keywordsMatched": "Keywords matched: {matched}/{total}",
+      "tryAgain": "Try Again",
+      "backToHomework": "Back to Homework",
+      "phonicsPreviewHeading": "Phonics Preview",
+      "pickWordSubtitle": "Pick a word to test pronunciation scoring",
+      "sayTheWord": "Say the word",
+      "recordToSeePhoneme": "Record to see phoneme scoring",
+      "analyzingPronunciation": "Analyzing pronunciation…",
+      "pronunciationScore": "Pronunciation Score",
+      "phonemeBreakdown": "Phoneme breakdown",
+      "espeakFallback": "Used eSpeak fallback for expected phonemes",
+      "otherWord": "Other Word",
+      "previewModeNotSaved": "Preview Mode — Not saved",
+      "activityOf": "Activity {current} of {total}",
+      "correctOfTotal": "{correct} / {total} correct"
+    }
   }
 }

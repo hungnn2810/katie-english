@@ -591,5 +591,60 @@
     "fillInBlank": "Điền vào chỗ trống",
     "chosePrefix": "đã chọn ",
     "blankLabel": "Chỗ trống {index}"
+  },
+  "homeworkTry": {
+    "previewBanner": {
+      "message": "Chế độ xem thử — Kết quả không được lưu"
+    },
+    "matching": {
+      "instructions": "Nối mỗi hình ảnh với từ tương ứng"
+    },
+    "fillBlank": {
+      "blank": "chỗ trống"
+    },
+    "phonemeTag": {
+      "status": {
+        "correct": "đúng",
+        "similar": "gần đúng",
+        "substituted": "thay thế",
+        "missing": "thiếu",
+        "extra": "thừa",
+        "error": "lỗi"
+      }
+    },
+    "page": {
+      "loading": "Đang tải…",
+      "back": "← Quay lại",
+      "backPlain": "Quay lại",
+      "errorLoadFailed": "Tải bài tập thất bại.",
+      "freeSpeak": "Nói tự do",
+      "scriptMatch": "Đọc theo mẫu",
+      "recordToPreview": "Ghi âm để xem thử điểm số",
+      "talkAbout": "Nói về:",
+      "tapToStartRecording": "Nhấn để bắt đầu ghi âm",
+      "recordingTapToStop": "Đang ghi âm… nhấn để dừng",
+      "recordedLabel": "Đã ghi: {mins}:{secs}",
+      "reRecord": "Ghi lại",
+      "submitForPreview": "Gửi để xem thử",
+      "scoring": "Đang chấm điểm…",
+      "previewComplete": "Xem thử hoàn tất!",
+      "scoringExplanation": "Đây là cách học sinh trải nghiệm việc chấm điểm",
+      "youSaid": "Bạn đã nói: ",
+      "keywordsMatched": "Từ khóa khớp: {matched}/{total}",
+      "tryAgain": "Thử lại",
+      "backToHomework": "Quay lại Bài tập",
+      "phonicsPreviewHeading": "Xem thử Ngữ âm",
+      "pickWordSubtitle": "Chọn một từ để thử điểm phát âm",
+      "sayTheWord": "Nói từ này",
+      "recordToSeePhoneme": "Ghi âm để xem điểm âm vị",
+      "analyzingPronunciation": "Đang phân tích phát âm…",
+      "pronunciationScore": "Điểm phát âm",
+      "phonemeBreakdown": "Phân tích âm vị",
+      "espeakFallback": "Đã dùng eSpeak dự phòng cho âm vị mong đợi",
+      "otherWord": "Từ khác",
+      "previewModeNotSaved": "Chế độ xem thử — Không lưu",
+      "activityOf": "Hoạt động {current} / {total}",
+      "correctOfTotal": "{correct} / {total} đúng"
+    }
   }
 }
