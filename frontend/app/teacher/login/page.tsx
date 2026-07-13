@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { GraduationCap, Mic } from 'lucide-react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -16,6 +17,7 @@ import { colors } from '@/lib/colors';
 const ACCENT = colors.teacherAccent;
 
 export default function TeacherLoginPage() {
+  const t = useTranslations('teacher.login');
   const router = useRouter();
   const [upn, setUpn] = useState('');
   const [password, setPassword] = useState('');
@@ -33,12 +35,12 @@ export default function TeacherLoginPage() {
       });
       const d = await res.json();
       if (!res.ok) {
-        throw new Error(d.error ?? 'Invalid credentials');
+        throw new Error(d.error ?? t('toasts.invalid_credentials'));
       }
       setAuth(d.token, d.user);
       router.push('/teacher');
     } catch {
-      showToast('Invalid credentials', 'error');
+      showToast(t('toasts.invalid_credentials'), 'error');
     } finally {
       setLoading(false);
     }
@@ -60,19 +62,19 @@ export default function TeacherLoginPage() {
           </Box>
 
           <Typography sx={{ fontSize: 36, fontWeight: 900, color: 'white', lineHeight: 1.15, mb: 2, letterSpacing: '-0.02em' }}>
-            Teacher Portal<br />
-            <Box component="span" sx={{ color: ACCENT }}>the smart way</Box>
+            {t('heading1')}<br />
+            <Box component="span" sx={{ color: ACCENT }}>{t('headingAccent')}</Box>
           </Typography>
           <Typography sx={{ color: '#94A3B8', fontSize: 14, lineHeight: 1.6, maxWidth: 280 }}>
-            Create homework, manage classes, and track student progress with AI-powered scoring.
+            {t('subtitle')}
           </Typography>
         </Box>
 
         {/* Feature list */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {[
-            { icon: GraduationCap, text: 'Manage your classes and students' },
-            { icon: Mic, text: 'AI-scored pronunciation homework' },
+            { icon: GraduationCap, text: t('feature1') },
+            { icon: Mic, text: t('feature2') },
           ].map((f) => {
             const Icon = f.icon;
             return (
@@ -91,15 +93,15 @@ export default function TeacherLoginPage() {
       <Box sx={{ flex: 1, bgcolor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 6 }}>
         <Box sx={{ width: '100%', maxWidth: 448 }}>
           <Box sx={{ mb: 5 }}>
-            <Typography sx={{ fontSize: 24, fontWeight: 900, color: 'text.primary', mb: 1, letterSpacing: '-0.02em' }}>Teacher Login</Typography>
-            <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>Sign in to your teacher account</Typography>
+            <Typography sx={{ fontSize: 24, fontWeight: 900, color: 'text.primary', mb: 1, letterSpacing: '-0.02em' }}>{t('formHeading')}</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>{t('formSubtitle')}</Typography>
           </Box>
 
           <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <TextField
               id="upn"
               type="email"
-              label="Email"
+              label={t('emailLabel')}
               value={upn}
               onChange={(e) => setUpn(e.target.value)}
               placeholder="teacher@katie.com"
@@ -114,7 +116,7 @@ export default function TeacherLoginPage() {
               <TextField
                 id="password"
                 type="password"
-                label="Password"
+                label={t('passwordLabel')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -134,7 +136,7 @@ export default function TeacherLoginPage() {
               fullWidth
               sx={{ bgcolor: ACCENT, '&:hover': { bgcolor: ACCENT, opacity: 0.9 }, fontWeight: 600, color: 'white', borderRadius: 1, py: 1.5 }}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? t('signingIn') : t('signIn')}
             </Button>
           </Box>
         </Box>

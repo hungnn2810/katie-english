@@ -26,5 +26,61 @@
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create"
+  },
+  "dashboard": {
+    "statCards": {
+      "classes": "Total Classes",
+      "students": "Total Students",
+      "homework": "Homework Sets"
+    },
+    "quickLinks": {
+      "classes": { "label": "Manage Classes", "desc": "Create and schedule classes" },
+      "students": { "label": "Manage Students", "desc": "Add students and parent contacts" },
+      "homework": { "label": "Assign Homework", "desc": "Create word-list homework" },
+      "sessions": { "label": "View Sessions", "desc": "Review completed homework sessions" }
+    },
+    "pendingApprovals": "{count, plural, one {# pending registration approval} other {# pending registration approvals}}",
+    "passwordResets": "{count, plural, one {# password reset request} other {# password reset requests}}",
+    "upcomingClasses": "Upcoming Classes",
+    "todayBadge": "{count} today",
+    "viewAll": "View all",
+    "viewAllCount": "View all ({count})",
+    "noUpcomingClasses": "No upcoming classes",
+    "addScheduleSlots": "Add schedule slots to your classes",
+    "in_minutes": "in {count} min",
+    "tomorrow": "tomorrow",
+    "in_hours": "in {count}h",
+    "in_days": "in {count} days",
+    "quickActions": "Quick Actions",
+    "toasts": {
+      "load_error": "Failed to load dashboard."
+    }
+  },
+  "login": {
+    "heading1": "Teacher Portal",
+    "headingAccent": "the smart way",
+    "subtitle": "Create homework, manage classes, and track student progress with AI-powered scoring.",
+    "feature1": "Manage your classes and students",
+    "feature2": "AI-scored pronunciation homework",
+    "formHeading": "Teacher Login",
+    "formSubtitle": "Sign in to your teacher account",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "signingIn": "Signing in...",
+    "signIn": "Sign in",
+    "toasts": {
+      "invalid_credentials": "Invalid credentials"
+    }
+  },
+  "schedule": {
+    "filters": {
+      "inProgress": "In Progress",
+      "pending": "Upcoming",
+      "all": "All",
+      "ended": "Ended"
+    },
+    "scheduledCount": "{count} classes have a schedule",
+    "emptyTitle": "No classes have a schedule",
+    "emptySubtitle": "Ask your admin to add a schedule for your class"
   }
 }

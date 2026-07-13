@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -11,17 +12,18 @@ import { colors } from '@/lib/colors';
 
 const ACCENT = colors.teacherAccent;
 
-const FILTERS: { key: ClassStatus | 'ALL'; label: string }[] = [
-  { key: 'INPROGRESS', label: 'Đang học' },
-  { key: 'PENDING',    label: 'Chờ khai giảng' },
-  { key: 'ALL',        label: 'Tất cả' },
-  { key: 'ENDED',      label: 'Đã kết thúc' },
-];
-
 export default function TeacherSchedulePage() {
+  const t = useTranslations('teacher.schedule');
   const [classes, setClasses]           = useState<ClassItem[]>([]);
   const [pageLoading, setPageLoading]   = useState(true);
   const [statusFilter, setStatusFilter] = useState<ClassStatus | 'ALL'>('INPROGRESS');
+
+  const FILTERS: { key: ClassStatus | 'ALL'; label: string }[] = [
+    { key: 'INPROGRESS', label: t('filters.inProgress') },
+    { key: 'PENDING',    label: t('filters.pending') },
+    { key: 'ALL',        label: t('filters.all') },
+    { key: 'ENDED',      label: t('filters.ended') },
+  ];
 
   useEffect(() => {
     getClasses()
@@ -60,7 +62,7 @@ export default function TeacherSchedulePage() {
         })}
         <Box sx={{ flex: 1 }} />
         <Typography sx={{ fontSize: 13, color: '#64748B' }}>
-          {withSchedule.length} lớp có lịch học
+          {t('scheduledCount', { count: withSchedule.length })}
         </Typography>
       </Box>
 
@@ -74,9 +76,9 @@ export default function TeacherSchedulePage() {
           <Box sx={{ width: 56, height: 56, bgcolor: '#F1F5F9', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
             <CalendarDays size={26} color="#94A3B8" />
           </Box>
-          <Typography sx={{ fontWeight: 600, color: '#374151' }}>Không có lớp nào có lịch học</Typography>
+          <Typography sx={{ fontWeight: 600, color: '#374151' }}>{t('emptyTitle')}</Typography>
           <Typography sx={{ fontSize: 14, color: '#6B7280', mt: 0.5 }}>
-            Yêu cầu admin thêm lịch học cho lớp của bạn
+            {t('emptySubtitle')}
           </Typography>
         </Box>
       )}

@@ -26,5 +26,61 @@
     "delete": "Xóa",
     "edit": "Sửa",
     "create": "Tạo"
+  },
+  "dashboard": {
+    "statCards": {
+      "classes": "Tổng số lớp",
+      "students": "Tổng số học sinh",
+      "homework": "Bộ bài tập"
+    },
+    "quickLinks": {
+      "classes": { "label": "Quản lý lớp học", "desc": "Tạo và lên lịch lớp học" },
+      "students": { "label": "Quản lý học sinh", "desc": "Thêm học sinh và liên hệ phụ huynh" },
+      "homework": { "label": "Giao bài tập", "desc": "Tạo bài tập danh sách từ" },
+      "sessions": { "label": "Xem phiên học", "desc": "Xem lại các phiên bài tập đã hoàn thành" }
+    },
+    "pendingApprovals": "{count} yêu cầu duyệt đăng ký đang chờ",
+    "passwordResets": "{count} yêu cầu đặt lại mật khẩu đang chờ",
+    "upcomingClasses": "Lớp học sắp tới",
+    "todayBadge": "{count} hôm nay",
+    "viewAll": "Xem tất cả",
+    "viewAllCount": "Xem tất cả ({count})",
+    "noUpcomingClasses": "Không có lớp học sắp tới",
+    "addScheduleSlots": "Thêm lịch học cho lớp của bạn",
+    "in_minutes": "trong {count} phút nữa",
+    "tomorrow": "ngày mai",
+    "in_hours": "trong {count} giờ nữa",
+    "in_days": "trong {count} ngày nữa",
+    "quickActions": "Thao tác nhanh",
+    "toasts": {
+      "load_error": "Không thể tải bảng điều khiển."
+    }
+  },
+  "login": {
+    "heading1": "Cổng giáo viên",
+    "headingAccent": "thông minh và hiệu quả",
+    "subtitle": "Tạo bài tập, quản lý lớp học và theo dõi tiến độ học sinh với chấm điểm AI.",
+    "feature1": "Quản lý lớp học và học sinh của bạn",
+    "feature2": "Bài tập phát âm được chấm bằng AI",
+    "formHeading": "Đăng nhập giáo viên",
+    "formSubtitle": "Đăng nhập vào tài khoản giáo viên của bạn",
+    "emailLabel": "Email",
+    "passwordLabel": "Mật khẩu",
+    "signingIn": "Đang đăng nhập...",
+    "signIn": "Đăng nhập",
+    "toasts": {
+      "invalid_credentials": "Sai thông tin đăng nhập"
+    }
+  },
+  "schedule": {
+    "filters": {
+      "inProgress": "Đang học",
+      "pending": "Chờ khai giảng",
+      "all": "Tất cả",
+      "ended": "Đã kết thúc"
+    },
+    "scheduledCount": "{count} lớp có lịch học",
+    "emptyTitle": "Không có lớp nào có lịch học",
+    "emptySubtitle": "Yêu cầu admin thêm lịch học cho lớp của bạn"
   }
 }

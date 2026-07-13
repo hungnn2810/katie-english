@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { getClasses, getStudents, getHomeworkList, getPendingStudents, getPasswordResetRequests, ClassItem, ScheduleSlot } from '@/lib/admin-api';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -28,18 +29,6 @@ const AVATAR_PALETTES = [
   { bg: '#CCFBF1', color: '#134E4A' },
 ];
 
-function formatRelativeTime(date: Date): string {
-  const now = new Date().getTime();
-  const diffMs = date.getTime() - now;
-  const mins = Math.round(diffMs / 60000);
-  if (mins < 60) return `in ${Math.max(mins, 1)} min`;
-  const hours = Math.round(mins / 60);
-  if (hours < 24) return `in ${hours}h`;
-  const days = Math.round(hours / 24);
-  if (days === 1) return 'tomorrow';
-  return `in ${days} days`;
-}
-
 function getNextOccurrence(slots: ScheduleSlot[]): Date | null {
   if (!slots.length) return null;
   const now = new Date();
@@ -60,20 +49,8 @@ function getNextOccurrence(slots: ScheduleSlot[]): Date | null {
   return nearest;
 }
 
-const STAT_CARDS = [
-  { key: 'classes' as const, label: 'Total Classes', icon: School, color: ACCENT, bgColor: colors.greenLight, href: '/teacher/classes' },
-  { key: 'students' as const, label: 'Total Students', icon: Users, color: '#6ED6C1', bgColor: '#F0FDFB', href: '/teacher/students' },
-  { key: 'homework' as const, label: 'Homework Sets', icon: BookOpen, color: '#A78BFA', bgColor: '#F5F3FF', href: '/teacher/homework' },
-];
-
-const QUICK_LINKS = [
-  { href: '/teacher/classes', label: 'Manage Classes', desc: 'Create and schedule classes', icon: School, color: ACCENT },
-  { href: '/teacher/students', label: 'Manage Students', desc: 'Add students and parent contacts', icon: Users, color: '#6ED6C1' },
-  { href: '/teacher/homework', label: 'Assign Homework', desc: 'Create word-list homework', icon: BookOpen, color: '#A78BFA' },
-  { href: '/teacher/sessions', label: 'View Sessions', desc: 'Review completed homework sessions', icon: Video, color: '#64748B' },
-];
-
 export default function TeacherDashboard() {
+  const t = useTranslations('teacher.dashboard');
   const [stats, setStats] = useState({ classes: 0, students: 0, homework: 0 });
   const [upcomingClasses, setUpcomingClasses] = useState<(ClassItem & { nextAt: Date })[]>([]);
   const [allClasses, setAllClasses] = useState<ClassItem[]>([]);
@@ -81,6 +58,31 @@ export default function TeacherDashboard() {
   const [resetCount, setResetCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+
+  function formatRelativeTime(date: Date): string {
+    const now = new Date().getTime();
+    const diffMs = date.getTime() - now;
+    const mins = Math.round(diffMs / 60000);
+    if (mins < 60) return t('in_minutes', { count: Math.max(mins, 1) });
+    const hours = Math.round(mins / 60);
+    if (hours < 24) return t('in_hours', { count: hours });
+    const days = Math.round(hours / 24);
+    if (days === 1) return t('tomorrow');
+    return t('in_days', { count: days });
+  }
+
+  const STAT_CARDS = [
+    { key: 'classes' as const, label: t('statCards.classes'), icon: School, color: ACCENT, bgColor: colors.greenLight, href: '/teacher/classes' },
+    { key: 'students' as const, label: t('statCards.students'), icon: Users, color: '#6ED6C1', bgColor: '#F0FDFB', href: '/teacher/students' },
+    { key: 'homework' as const, label: t('statCards.homework'), icon: BookOpen, color: '#A78BFA', bgColor: '#F5F3FF', href: '/teacher/homework' },
+  ];
+
+  const QUICK_LINKS = [
+    { href: '/teacher/classes', label: t('quickLinks.classes.label'), desc: t('quickLinks.classes.desc'), icon: School, color: ACCENT },
+    { href: '/teacher/students', label: t('quickLinks.students.label'), desc: t('quickLinks.students.desc'), icon: Users, color: '#6ED6C1' },
+    { href: '/teacher/homework', label: t('quickLinks.homework.label'), desc: t('quickLinks.homework.desc'), icon: BookOpen, color: '#A78BFA' },
+    { href: '/teacher/sessions', label: t('quickLinks.sessions.label'), desc: t('quickLinks.sessions.desc'), icon: Video, color: '#64748B' },
+  ];
 
   async function loadDashboard() {
     setLoading(true);
@@ -103,7 +105,7 @@ export default function TeacherDashboard() {
         .sort((a, b) => a.nextAt.getTime() - b.nextAt.getTime());
       setUpcomingClasses(withNext);
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Failed to load dashboard.', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.load_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -122,12 +124,12 @@ export default function TeacherDashboard() {
           <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
             {pendingCount > 0 && (
               <Link href="/teacher/students" style={{ color: '#1D4ED8', fontWeight: 600, fontSize: 14 }}>
-                {pendingCount} pending registration approval{pendingCount !== 1 ? 's' : ''}
+                {t('pendingApprovals', { count: pendingCount })}
               </Link>
             )}
             {resetCount > 0 && (
               <Link href="/teacher/students" style={{ color: '#1D4ED8', fontWeight: 600, fontSize: 14 }}>
-                {resetCount} password reset request{resetCount !== 1 ? 's' : ''}
+                {t('passwordResets', { count: resetCount })}
               </Link>
             )}
           </Box>
@@ -175,10 +177,10 @@ export default function TeacherDashboard() {
             bgcolor: '#F0FDF4',
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>Upcoming Classes</Typography>
+              <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>{t('upcomingClasses')}</Typography>
               {!loading && todayCount > 0 && (
                 <Box sx={{ px: '8px', py: '2px', borderRadius: '999px', bgcolor: colors.greenLight, color: colors.greenDark, fontSize: 11, fontWeight: 700 }}>
-                  {todayCount} today
+                  {t('todayBadge', { count: todayCount })}
                 </Box>
               )}
             </Box>
@@ -188,7 +190,7 @@ export default function TeacherDashboard() {
               </Button>
               <Link href="/teacher/classes" style={{ textDecoration: 'none' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', px: '10px', py: '4px', borderRadius: '999px', bgcolor: colors.greenLight, color: colors.greenDark, fontSize: 12, fontWeight: 700, '&:hover': { opacity: 0.85 } }}>
-                  Xem tất cả{!loading && upcomingClasses.length > 0 && ` (${upcomingClasses.length})`} <ChevronRight size={12} />
+                  {!loading && upcomingClasses.length > 0 ? t('viewAllCount', { count: upcomingClasses.length }) : t('viewAll')} <ChevronRight size={12} />
                 </Box>
               </Link>
             </Box>
@@ -213,8 +215,8 @@ export default function TeacherDashboard() {
                 <Box sx={{ width: 48, height: 48, bgcolor: colors.greenLight, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: '12px' }}>
                   <School size={20} color={colors.greenDark} />
                 </Box>
-                <Typography sx={{ fontSize: 14, color: '#64748B', fontWeight: 500 }}>No upcoming classes</Typography>
-                <Typography sx={{ fontSize: 12, color: '#94A3B8', mt: '4px' }}>Add schedule slots to your classes</Typography>
+                <Typography sx={{ fontSize: 14, color: '#64748B', fontWeight: 500 }}>{t('noUpcomingClasses')}</Typography>
+                <Typography sx={{ fontSize: 12, color: '#94A3B8', mt: '4px' }}>{t('addScheduleSlots')}</Typography>
               </Box>
             ) : (
               <Box>
@@ -265,7 +267,7 @@ export default function TeacherDashboard() {
             px: '22px', py: '14px', borderBottom: '1px solid #DCFCE7',
             bgcolor: '#F0FDF4',
           }}>
-            <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>Quick Actions</Typography>
+            <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: 14 }}>{t('quickActions')}</Typography>
           </Box>
           <Box sx={{ p: '14px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
             {QUICK_LINKS.map((link) => {
