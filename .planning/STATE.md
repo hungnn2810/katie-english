@@ -8,8 +8,8 @@ progress:
   total_phases: 18
   completed_phases: 16
   total_plans: 88
-  completed_plans: 79
-  percent: 90
+  completed_plans: 80
+  percent: 91
 ---
 
 # Project State: Katie English
@@ -19,7 +19,9 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** Student completes homework on tablet, gets AI-scored result immediately — no manual teacher grading.
-**Current focus:** Phase 18 — multi-language-support-across-all-pages (4/12 plans done: i18n foundation + dashboard/login/schedule + classes/students + sessions/import extraction)
+**Current focus:** Phase 18 — multi-language-support-across-all-pages (5/12 plans done: i18n foundation + dashboard/login/schedule + classes/students + sessions/import + tuition extraction)
+
+**⚠ Known issue introduced by Plan 18-05:** Admin portal's `/admin/tuition` page (TuitionConfigForm/GenerateRecordsModal/TuitionReportTable, shared with Teacher portal) will throw a runtime error ("No intl context found") because `admin/layout.tsx` has no `NextIntlClientProvider` wiring. Accepted risk per plan threat model (T-18-10); needs fixing before/during the Admin portal's own i18n migration. See 18-05-SUMMARY.md.
 
 ## Current Phase
 
@@ -103,3 +105,4 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-07-13**: Plan 18-02 complete. Dashboard/login/schedule pages fully translation-driven (`teacher.json` +dashboard/login/schedule namespaces); fixed pre-existing bilingual inconsistency (schedule was VI-only, login/dashboard were EN-only). Follow-up fix: LanguageSwitcher was unreachable on the unauthenticated login page (TeacherShell-only wiring from 18-01 didn't cover it) — now rendered directly on `/teacher/login`. Verified via tsc/tests/build + curl-based locale resolution check (no browser available this session for visual confirmation — flagged as outstanding in 18-02-SUMMARY.md).
 - **2026-07-13**: Plan 18-03 complete. Classes/students pages (900+ lines, 7 modal/component functions) fully translation-driven; all 16 showToast call sites catalog-sourced (D-11: 18/38 total). Fixed a `filterTabs.map((t) => ...)` variable-shadowing bug surfaced by introducing the translation function. Same browser-verification caveat as 18-02 — outstanding, flagged in 18-03-SUMMARY.md.
 - **2026-07-13**: Plan 18-04 complete. Sessions (filters, results list, phonics/speaking detail panel) and Import (upload flow, results table) pages fully translation-driven; load-error toast and upload-failed fallback catalog-sourced. Same browser-verification caveat outstanding, flagged in 18-04-SUMMARY.md.
+- **2026-07-13**: Plan 18-05 complete. Teacher-portal tuition module (previously 100% Vietnamese-only, the CONTEXT.md-flagged inconsistency) now fully bilingual: page + TuitionConfigForm/GenerateRecordsModal/TuitionReportTable. Currency (`toLocaleString('vi-VN')`+VNĐ) and date formatting preserved byte-identical per D-12/D-13. **Introduces a known regression**: these shared components are also rendered by admin/tuition/page.tsx, whose layout has no NextIntlClientProvider — will throw at runtime until Admin's own i18n migration. Accepted per plan threat model T-18-10, flagged above and in 18-05-SUMMARY.md.
