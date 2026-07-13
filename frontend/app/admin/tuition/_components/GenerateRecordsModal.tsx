@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { createTuitionRecords, GenerateRecordsInput, TuitionRecord } from '@/lib/admin-portal-api';
 import { useToast } from '@/lib/toast-context';
 import Box from '@mui/material/Box';
@@ -21,6 +22,7 @@ export default function GenerateRecordsModal({
   onSaved: () => void;
   createRecordsFn?: (data: GenerateRecordsInput) => Promise<TuitionRecord[]>;
 }) {
+  const t = useTranslations('teacher.tuition.generateModal');
   const { showToast } = useToast();
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -31,11 +33,11 @@ export default function GenerateRecordsModal({
     setLoading(true);
     try {
       await createRecordsFn({ classId, month, year });
-      showToast('Tạo phiếu thu thành công', 'success');
+      showToast(t('toasts.created'), 'success');
       onSaved();
       onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Tạo phiếu thu thất bại', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.create_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -44,18 +46,18 @@ export default function GenerateRecordsModal({
   return (
     <ModalShell
       open={open}
-      title="Tạo phiếu thu tháng"
+      title={t('title')}
       onClose={onClose}
       onSubmit={handleGenerate}
-      submitLabel={loading ? 'Đang tạo...' : 'Tạo phiếu thu'}
+      submitLabel={loading ? t('creating') : t('generate')}
       loading={loading}
     >
       <Typography variant="body2" color="warning.main" sx={{ fontStyle: 'italic', px: 0.5 }}>
-        Nếu phiếu thu đã tồn tại cho tháng này, hệ thống sẽ báo lỗi.
+        {t('warning')}
       </Typography>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
-        <FormSection label="Tháng (1–12)">
+        <FormSection label={t('monthLabel')}>
           <TextField
             size="small" type="number" fullWidth required
             value={month}
@@ -64,7 +66,7 @@ export default function GenerateRecordsModal({
             sx={sectionInputSx}
           />
         </FormSection>
-        <FormSection label="Năm">
+        <FormSection label={t('yearLabel')}>
           <TextField
             size="small" type="number" fullWidth required
             value={year}

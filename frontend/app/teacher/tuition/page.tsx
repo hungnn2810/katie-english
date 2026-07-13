@@ -1,6 +1,7 @@
 'use client';
 // Teacher tuition: uses authHeaders() (teacher JWT) via teacher-tuition-api for all direct API calls
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { getClasses, ClassItem } from '@/lib/admin-api';
 import {
   getTuitionConfig,
@@ -26,6 +27,7 @@ import GenerateRecordsModal from '../../admin/tuition/_components/GenerateRecord
 import TuitionReportTable from '../../admin/tuition/_components/TuitionReportTable';
 
 export default function TeacherTuitionPage() {
+  const t = useTranslations('teacher.tuition.page');
   const { showToast } = useToast();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [selectedClassId, setSelectedClassId] = useState<number | ''>('');
@@ -45,7 +47,7 @@ export default function TeacherTuitionPage() {
       setClasses(data);
       if (data.length > 0) setSelectedClassId(data[0].id);
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Tải danh sách lớp thất bại', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.load_classes_error'), 'error');
     } finally {
       setTimeout(() => setLoading(false), PAGE_LOADING_DELAY);
     }
@@ -62,7 +64,7 @@ export default function TeacherTuitionPage() {
   if (classes.length === 0) {
     return (
       <Box sx={{ py: 8, textAlign: 'center' }}>
-        <Typography color="text.secondary">Bạn chưa được phân công lớp nào.</Typography>
+        <Typography color="text.secondary">{t('emptyClasses')}</Typography>
       </Box>
     );
   }
@@ -72,13 +74,13 @@ export default function TeacherTuitionPage() {
   return (
     <Box>
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 700 }}>
-        Quản lý học phí
+        {t('heading')}
       </Typography>
 
       {/* Class selector */}
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <FormLabel sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary', minWidth: 60 }}>
-          Lớp học
+          {t('classLabel')}
         </FormLabel>
         <Select
           value={selectedClassId}
@@ -95,7 +97,7 @@ export default function TeacherTuitionPage() {
       </Box>
 
       {classId === 0 ? (
-        <Typography color="text.secondary">Chọn một lớp để quản lý học phí.</Typography>
+        <Typography color="text.secondary">{t('noClassSelected')}</Typography>
       ) : (
         <Card sx={{ borderRadius: 3 }}>
           <Tabs
@@ -103,9 +105,9 @@ export default function TeacherTuitionPage() {
             onChange={(_, v) => setActiveTab(v)}
             sx={{ borderBottom: '1px solid', borderColor: 'divider', px: 2 }}
           >
-            <Tab label="Cấu hình" />
-            <Tab label="Tạo phiếu thu" />
-            <Tab label="Báo cáo" />
+            <Tab label={t('tabs.config')} />
+            <Tab label={t('tabs.generate')} />
+            <Tab label={t('tabs.report')} />
           </Tabs>
 
           <CardContent sx={{ p: 3 }}>
@@ -122,14 +124,14 @@ export default function TeacherTuitionPage() {
             {activeTab === 1 && (
               <Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Tạo phiếu thu học phí cho tất cả học sinh trong lớp theo tháng.
+                  {t('generateIntro')}
                 </Typography>
                 <Button
                   variant="contained"
                   onClick={() => setGenerateOpen(true)}
                   sx={{ borderRadius: 2, fontWeight: 700 }}
                 >
-                  Tạo phiếu thu tháng này
+                  {t('generateButton')}
                 </Button>
                 <GenerateRecordsModal
                   open={generateOpen}
@@ -146,7 +148,7 @@ export default function TeacherTuitionPage() {
                 <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
                   <Box>
                     <FormLabel sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5 }}>
-                      Tháng
+                      {t('monthLabel')}
                     </FormLabel>
                     <TextField
                       type="number"
@@ -158,7 +160,7 @@ export default function TeacherTuitionPage() {
                   </Box>
                   <Box>
                     <FormLabel sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary', display: 'block', mb: 0.5 }}>
-                      Năm
+                      {t('yearLabel')}
                     </FormLabel>
                     <TextField
                       type="number"
@@ -177,7 +179,7 @@ export default function TeacherTuitionPage() {
                     getReportFn={getTuitionReport}
                   />
                 ) : (
-                  <Typography color="text.secondary">Chọn lớp để xem báo cáo.</Typography>
+                  <Typography color="text.secondary">{t('selectClassForReport')}</Typography>
                 )}
               </Box>
             )}

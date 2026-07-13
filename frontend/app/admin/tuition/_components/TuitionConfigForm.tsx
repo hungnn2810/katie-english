@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   getTuitionConfig,
   updateTuitionConfig,
@@ -27,6 +28,7 @@ export default function TuitionConfigForm({
   getConfigFn?: (classId: number) => Promise<TuitionConfig>;
   updateConfigFn?: (classId: number, data: CreateTuitionConfigInput) => Promise<TuitionConfig>;
 }) {
+  const t = useTranslations('teacher.tuition.configForm');
   const { showToast } = useToast();
   const [form, setForm] = useState<CreateTuitionConfigInput>({
     pricePerSession: 0,
@@ -67,11 +69,11 @@ export default function TuitionConfigForm({
     setLoading(true);
     try {
       await updateConfigFn(classId, form);
-      showToast('Cấu hình học phí đã lưu', 'success');
+      showToast(t('toasts.saved'), 'success');
       onSaved();
       onClose();
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Lưu thất bại', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.save_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -82,12 +84,12 @@ export default function TuitionConfigForm({
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 480 }}>
       <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-        Cấu hình học phí
+        {t('heading')}
       </Typography>
 
       <Box>
         <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>
-          Giá/buổi (VNĐ) *
+          {t('priceLabel')}
         </FormLabel>
         <TextField
           size="small"
@@ -104,7 +106,7 @@ export default function TuitionConfigForm({
 
       <Box>
         <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>
-          Tiền sách (VNĐ, tuỳ chọn)
+          {t('bookFeeLabel')}
         </FormLabel>
         <TextField
           size="small"
@@ -122,7 +124,7 @@ export default function TuitionConfigForm({
 
       <Box>
         <FormLabel sx={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.05em', mb: 0.75 }}>
-          Ngày hạn trong tháng (1–31) *
+          {t('dueDayLabel')}
         </FormLabel>
         <TextField
           size="small"
@@ -138,7 +140,7 @@ export default function TuitionConfigForm({
 
       <Box sx={{ display: 'flex', gap: 1.5, mt: 1 }}>
         <Button type="button" variant="outlined" onClick={onClose} sx={{ borderRadius: 2, fontWeight: 600 }}>
-          Huỷ
+          {t('cancel')}
         </Button>
         <Button
           type="submit"
@@ -147,7 +149,7 @@ export default function TuitionConfigForm({
           startIcon={loading ? <CircularProgress size={14} color="inherit" /> : undefined}
           sx={{ borderRadius: 2, fontWeight: 700 }}
         >
-          {loading ? 'Đang lưu...' : 'Lưu cấu hình'}
+          {loading ? t('saving') : t('saveConfig')}
         </Button>
       </Box>
     </Box>

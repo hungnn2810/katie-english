@@ -313,5 +313,77 @@
     "errors": {
       "upload_failed": "Upload failed"
     }
+  },
+  "tuition": {
+    "page": {
+      "heading": "Tuition Management",
+      "emptyClasses": "You haven't been assigned to any classes yet.",
+      "classLabel": "Class",
+      "noClassSelected": "Select a class to manage tuition.",
+      "tabs": {
+        "config": "Config",
+        "generate": "Generate Records",
+        "report": "Report"
+      },
+      "generateIntro": "Generate tuition records for all students in this class for the month.",
+      "generateButton": "Generate This Month's Records",
+      "monthLabel": "Month",
+      "yearLabel": "Year",
+      "selectClassForReport": "Select a class to view the report.",
+      "toasts": {
+        "load_classes_error": "Failed to load classes"
+      }
+    },
+    "configForm": {
+      "heading": "Tuition Configuration",
+      "priceLabel": "Price/session (VNĐ) *",
+      "bookFeeLabel": "Book fee (VNĐ, optional)",
+      "dueDayLabel": "Due day of month (1–31) *",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveConfig": "Save Configuration",
+      "toasts": {
+        "saved": "Tuition configuration saved",
+        "save_error": "Save failed"
+      }
+    },
+    "generateModal": {
+      "title": "Generate Monthly Records",
+      "warning": "If records already exist for this month, the system will show an error.",
+      "monthLabel": "Month (1–12)",
+      "yearLabel": "Year",
+      "creating": "Creating...",
+      "generate": "Generate Records",
+      "toasts": {
+        "created": "Records generated successfully",
+        "create_error": "Failed to generate records"
+      }
+    },
+    "report": {
+      "status": {
+        "PAID": "Paid",
+        "PENDING": "Pending",
+        "OVERDUE": "Overdue"
+      },
+      "columnStudent": "Student",
+      "columnTuition": "Tuition (VNĐ)",
+      "columnBookFee": "Book Fee (VNĐ)",
+      "columnTotal": "Total (VNĐ)",
+      "columnDueDate": "Due Date",
+      "columnStatus": "Status",
+      "columnPaidDate": "Paid Date",
+      "statusFilterLabel": "Status",
+      "filterAll": "All",
+      "deselectAll": "Deselect all",
+      "selectAllCount": "Select all ({count})",
+      "totalCollectedLabel": "Collected:",
+      "totalPendingLabel": "Pending:",
+      "totalOverdueLabel": "Overdue:",
+      "noDataThisMonth": "No tuition data for this month.",
+      "recordPayment": "Record Payment",
+      "toasts": {
+        "load_error": "Failed to load report"
+      }
+    }
   }
 }

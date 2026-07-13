@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useToast } from '@/lib/toast-context';
 import { getTuitionReport, TuitionReportItem } from '@/lib/admin-portal-api';
 import Box from '@mui/material/Box';
@@ -13,30 +14,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import TableShell, { TableRow } from '@/components/ui/TableShell';
 
-const COLUMNS = [
-  { label: '', width: '0.4fr' },
-  { label: 'Học sinh', width: '1.5fr' },
-  { label: 'Tiền học (VNĐ)', width: '1fr' },
-  { label: 'Tiền sách (VNĐ)', width: '1fr' },
-  { label: 'Tổng (VNĐ)', width: '1.2fr' },
-  { label: 'Hạn đóng', width: '1fr' },
-  { label: 'Trạng thái', width: '0.8fr' },
-  { label: 'Ngày đóng', width: '1fr' },
-  { label: '', width: '0.8fr' },
-];
-
 function StatusBadge({ status }: { status: 'PAID' | 'PENDING' | 'OVERDUE' }) {
+  const t = useTranslations('teacher.tuition.report');
   const styles: Record<string, React.CSSProperties> = {
     PAID: { backgroundColor: '#dcfce7', color: '#15803d', padding: '3px 10px', borderRadius: 4, fontWeight: 600, fontSize: 12, display: 'inline-block' },
     PENDING: { backgroundColor: '#fef3c7', color: '#92400e', padding: '3px 10px', borderRadius: 4, fontWeight: 600, fontSize: 12, display: 'inline-block' },
     OVERDUE: { backgroundColor: '#fee2e2', color: '#b91c1c', padding: '3px 10px', borderRadius: 4, fontWeight: 600, fontSize: 12, display: 'inline-block' },
   };
-  const labels: Record<string, string> = {
-    PAID: 'Đã đóng',
-    PENDING: 'Chưa đóng',
-    OVERDUE: 'Quá hạn',
-  };
-  return <span style={styles[status]}>{labels[status] ?? status}</span>;
+  return <span style={styles[status]}>{t(`status.${status}`)}</span>;
 }
 
 export default function TuitionReportTable({
@@ -54,6 +39,7 @@ export default function TuitionReportTable({
   onPaymentRecord?: (recordId: number, studentName: string, totalAmount: number) => void;
   getReportFn?: (params: { classId: number; month: number; year: number; statuses?: string[] }) => Promise<TuitionReportItem[]>;
 }) {
+  const t = useTranslations('teacher.tuition.report');
   const { showToast } = useToast();
   const [rows, setRows] = useState<TuitionReportItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,7 +64,7 @@ export default function TuitionReportTable({
       setSelectedIds([]);
       onSelectionChange?.([]);
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Tải báo cáo thất bại', 'error');
+      showToast(err instanceof Error ? err.message : t('toasts.load_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -128,12 +114,24 @@ export default function TuitionReportTable({
     );
   }
 
+  const COLUMNS = [
+    { label: '', width: '0.4fr' },
+    { label: t('columnStudent'), width: '1.5fr' },
+    { label: t('columnTuition'), width: '1fr' },
+    { label: t('columnBookFee'), width: '1fr' },
+    { label: t('columnTotal'), width: '1.2fr' },
+    { label: t('columnDueDate'), width: '1fr' },
+    { label: t('columnStatus'), width: '0.8fr' },
+    { label: t('columnPaidDate'), width: '1fr' },
+    { label: '', width: '0.8fr' },
+  ];
+
   return (
     <Box>
       {/* Filter row */}
       <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
         <FormLabel sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
-          Trạng thái
+          {t('statusFilterLabel')}
         </FormLabel>
         <Select
           value={statusFilter}
@@ -141,10 +139,10 @@ export default function TuitionReportTable({
           size="small"
           sx={{ minWidth: 160, borderRadius: 2 }}
         >
-          <MenuItem value="ALL">Tất cả</MenuItem>
-          <MenuItem value="PENDING">Chưa đóng</MenuItem>
-          <MenuItem value="PAID">Đã đóng</MenuItem>
-          <MenuItem value="OVERDUE">Quá hạn</MenuItem>
+          <MenuItem value="ALL">{t('filterAll')}</MenuItem>
+          <MenuItem value="PENDING">{t('status.PENDING')}</MenuItem>
+          <MenuItem value="PAID">{t('status.PAID')}</MenuItem>
+          <MenuItem value="OVERDUE">{t('status.OVERDUE')}</MenuItem>
         </Select>
         {selectableRows.length > 0 && (
           <FormControlLabel
@@ -158,7 +156,7 @@ export default function TuitionReportTable({
             }
             label={
               <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-                {allSelected ? 'Bỏ chọn tất cả' : `Chọn tất cả (${selectableRows.length})`}
+                {allSelected ? t('deselectAll') : t('selectAllCount', { count: selectableRows.length })}
               </Typography>
             }
           />
@@ -168,20 +166,20 @@ export default function TuitionReportTable({
       {/* Totals summary */}
       <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <Box sx={{ px: 2, py: 1, borderRadius: 2, backgroundColor: '#dcfce7', color: '#15803d', fontWeight: 600, fontSize: 13 }}>
-          Đã thu: {totalCollected.toLocaleString('vi-VN')} VNĐ
+          {t('totalCollectedLabel')} {totalCollected.toLocaleString('vi-VN')} VNĐ
         </Box>
         <Box sx={{ px: 2, py: 1, borderRadius: 2, backgroundColor: '#fef3c7', color: '#92400e', fontWeight: 600, fontSize: 13 }}>
-          Chưa thu: {totalPending.toLocaleString('vi-VN')} VNĐ
+          {t('totalPendingLabel')} {totalPending.toLocaleString('vi-VN')} VNĐ
         </Box>
         <Box sx={{ px: 2, py: 1, borderRadius: 2, backgroundColor: '#fee2e2', color: '#b91c1c', fontWeight: 600, fontSize: 13 }}>
-          Quá hạn: {totalOverdue.toLocaleString('vi-VN')} VNĐ
+          {t('totalOverdueLabel')} {totalOverdue.toLocaleString('vi-VN')} VNĐ
         </Box>
       </Box>
 
       {/* Table or empty state */}
       {rows.length === 0 ? (
         <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-          Không có dữ liệu học phí cho tháng này.
+          {t('noDataThisMonth')}
         </Typography>
       ) : (
         <TableShell columns={COLUMNS}>
@@ -214,7 +212,7 @@ export default function TuitionReportTable({
                     onClick={() => onPaymentRecord?.(row.id, row.studentName, row.totalAmount)}
                     sx={{ borderRadius: 2, fontSize: 12, whiteSpace: 'nowrap' }}
                   >
-                    Ghi nhận đóng
+                    {t('recordPayment')}
                   </Button>
                 ) : <span key="action" />,
               ]}

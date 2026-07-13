@@ -313,5 +313,77 @@
     "errors": {
       "upload_failed": "Tải lên thất bại"
     }
+  },
+  "tuition": {
+    "page": {
+      "heading": "Quản lý học phí",
+      "emptyClasses": "Bạn chưa được phân công lớp nào.",
+      "classLabel": "Lớp học",
+      "noClassSelected": "Chọn một lớp để quản lý học phí.",
+      "tabs": {
+        "config": "Cấu hình",
+        "generate": "Tạo phiếu thu",
+        "report": "Báo cáo"
+      },
+      "generateIntro": "Tạo phiếu thu học phí cho tất cả học sinh trong lớp theo tháng.",
+      "generateButton": "Tạo phiếu thu tháng này",
+      "monthLabel": "Tháng",
+      "yearLabel": "Năm",
+      "selectClassForReport": "Chọn lớp để xem báo cáo.",
+      "toasts": {
+        "load_classes_error": "Tải danh sách lớp thất bại"
+      }
+    },
+    "configForm": {
+      "heading": "Cấu hình học phí",
+      "priceLabel": "Giá/buổi (VNĐ) *",
+      "bookFeeLabel": "Tiền sách (VNĐ, tuỳ chọn)",
+      "dueDayLabel": "Ngày hạn trong tháng (1–31) *",
+      "cancel": "Huỷ",
+      "saving": "Đang lưu...",
+      "saveConfig": "Lưu cấu hình",
+      "toasts": {
+        "saved": "Cấu hình học phí đã lưu",
+        "save_error": "Lưu thất bại"
+      }
+    },
+    "generateModal": {
+      "title": "Tạo phiếu thu tháng",
+      "warning": "Nếu phiếu thu đã tồn tại cho tháng này, hệ thống sẽ báo lỗi.",
+      "monthLabel": "Tháng (1–12)",
+      "yearLabel": "Năm",
+      "creating": "Đang tạo...",
+      "generate": "Tạo phiếu thu",
+      "toasts": {
+        "created": "Tạo phiếu thu thành công",
+        "create_error": "Tạo phiếu thu thất bại"
+      }
+    },
+    "report": {
+      "status": {
+        "PAID": "Đã đóng",
+        "PENDING": "Chưa đóng",
+        "OVERDUE": "Quá hạn"
+      },
+      "columnStudent": "Học sinh",
+      "columnTuition": "Tiền học (VNĐ)",
+      "columnBookFee": "Tiền sách (VNĐ)",
+      "columnTotal": "Tổng (VNĐ)",
+      "columnDueDate": "Hạn đóng",
+      "columnStatus": "Trạng thái",
+      "columnPaidDate": "Ngày đóng",
+      "statusFilterLabel": "Trạng thái",
+      "filterAll": "Tất cả",
+      "deselectAll": "Bỏ chọn tất cả",
+      "selectAllCount": "Chọn tất cả ({count})",
+      "totalCollectedLabel": "Đã thu:",
+      "totalPendingLabel": "Chưa thu:",
+      "totalOverdueLabel": "Quá hạn:",
+      "noDataThisMonth": "Không có dữ liệu học phí cho tháng này.",
+      "recordPayment": "Ghi nhận đóng",
+      "toasts": {
+        "load_error": "Tải báo cáo thất bại"
+      }
+    }
   }
 }
