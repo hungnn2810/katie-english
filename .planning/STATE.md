@@ -8,8 +8,8 @@ progress:
   total_phases: 18
   completed_phases: 16
   total_plans: 88
-  completed_plans: 81
-  percent: 92
+  completed_plans: 82
+  percent: 93
 ---
 
 # Project State: Katie English
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** Student completes homework on tablet, gets AI-scored result immediately — no manual teacher grading.
-**Current focus:** Phase 18 — multi-language-support-across-all-pages (6/12 plans done: i18n foundation + dashboard/login/schedule + classes/students + sessions/import + tuition + homework list/create extraction)
+**Current focus:** Phase 18 — multi-language-support-across-all-pages (7/12 plans done: i18n foundation + dashboard/login/schedule + classes/students + sessions/import + tuition + homework list/create + homework/session detail extraction)
 
 **⚠ Known issue introduced by Plan 18-05:** Admin portal's `/admin/tuition` page (TuitionConfigForm/GenerateRecordsModal/TuitionReportTable, shared with Teacher portal) will throw a runtime error ("No intl context found") because `admin/layout.tsx` has no `NextIntlClientProvider` wiring. Accepted risk per plan threat model (T-18-10); needs fixing before/during the Admin portal's own i18n migration. See 18-05-SUMMARY.md.
 
@@ -107,3 +107,4 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-07-13**: Plan 18-04 complete. Sessions (filters, results list, phonics/speaking detail panel) and Import (upload flow, results table) pages fully translation-driven; load-error toast and upload-failed fallback catalog-sourced. Same browser-verification caveat outstanding, flagged in 18-04-SUMMARY.md.
 - **2026-07-13**: Plan 18-05 complete. Teacher-portal tuition module (previously 100% Vietnamese-only, the CONTEXT.md-flagged inconsistency) now fully bilingual: page + TuitionConfigForm/GenerateRecordsModal/TuitionReportTable. Currency (`toLocaleString('vi-VN')`+VNĐ) and date formatting preserved byte-identical per D-12/D-13. **Introduces a known regression**: these shared components are also rendered by admin/tuition/page.tsx, whose layout has no NextIntlClientProvider — will throw at runtime until Admin's own i18n migration. Accepted per plan threat model T-18-10, flagged above and in 18-05-SUMMARY.md.
 - **2026-07-14**: Plan 18-06 complete. homework/page.tsx (985 lines, largest file in phase — HomeworkModal, AssignModal, HwCard, HomeworkPage) and homework/create/page.tsx fully translation-driven; all 12 showToast sites in homework/page.tsx catalog-sourced (D-11: 31/38 total). Fixed two more `.map((t) => ...)` variable-shadowing bugs (same class as 18-03's fix) plus one pre-existing mojibake em-dash. Same browser-verification caveat outstanding.
+- **2026-07-14**: Plan 18-07 complete. homework/[id]/page.tsx (assignment list/progress) and homework/[id]/session/[sessionId]/page.tsx (per-activity result rows across 5 components) fully translation-driven. Confirmed via full read: zero showToast calls in either file. scoreLabel() converted to accept t as a parameter (plain function, not a component). Same browser-verification caveat outstanding.
