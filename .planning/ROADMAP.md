@@ -674,55 +674,57 @@ Plans:
 
 > **Planning note (2026-07-12, per 18-CONTEXT.md D-09/D-10):** This phase delivers the i18n foundation + full Teacher portal migration (19 pages) only. Admin portal, Student game, and Marketing site migrations are deferred to follow-up phases that reuse the same library/pattern/switcher established here — see 18-01 through 18-12 PLAN.md must_haves for the actual scope this phase closes.
 
+**Status:** ✅ Complete 2026-07-14 — all 12/12 plans done, i18n-01 through i18n-05 delivered and human-verified (18-12 sign-off APPROVED, zero blocking defects).
+
 Plans:
 
 **Wave 1**
 
-- [ ] 18-01-PLAN.md — i18n foundation: next-intl install, cookie-based request config + setLocale action, layout server/client split, LanguageSwitcher + TeacherShell wiring, message-catalog skeleton (Wave 1)
+- [x] 18-01-PLAN.md — i18n foundation: next-intl install, cookie-based request config + setLocale action, layout server/client split, LanguageSwitcher + TeacherShell wiring, message-catalog skeleton (Wave 1) ✅ 2026-07-13
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 18-02-PLAN.md — Extract dashboard + login + schedule pages (Wave 2, depends 18-01)
+- [x] 18-02-PLAN.md — Extract dashboard + login + schedule pages (Wave 2, depends 18-01) ✅ 2026-07-13
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 18-03-PLAN.md — Extract classes + students pages (Wave 3, depends 18-02)
+- [x] 18-03-PLAN.md — Extract classes + students pages (Wave 3, depends 18-02) ✅ 2026-07-13
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 18-04-PLAN.md — Extract sessions + import pages (Wave 4, depends 18-03)
+- [x] 18-04-PLAN.md — Extract sessions + import pages (Wave 4, depends 18-03) ✅ 2026-07-13
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 18-05-PLAN.md — Extract tuition page + shared TuitionConfigForm/GenerateRecordsModal/TuitionReportTable, D-11 VI-only normalization (Wave 5, depends 18-04)
+- [x] 18-05-PLAN.md — Extract tuition page + shared TuitionConfigForm/GenerateRecordsModal/TuitionReportTable, D-11 VI-only normalization (Wave 5, depends 18-04) ✅ 2026-07-13
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 18-06-PLAN.md — Extract homework list (HomeworkModal/AssignModal/HwCard) + homework create type-picker (Wave 6, depends 18-05)
+- [x] 18-06-PLAN.md — Extract homework list (HomeworkModal/AssignModal/HwCard) + homework create type-picker (Wave 6, depends 18-05) ✅ 2026-07-14
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 18-07-PLAN.md — Extract homework detail + session result detail pages (Wave 7, depends 18-06)
+- [x] 18-07-PLAN.md — Extract homework detail + session result detail pages (Wave 7, depends 18-06) ✅ 2026-07-14
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
-- [ ] 18-08-PLAN.md — Extract homework Try/Preview page, all 5 homework-type branches (Wave 8, depends 18-07)
+- [x] 18-08-PLAN.md — Extract homework Try/Preview page, all 5 homework-type branches (Wave 8, depends 18-07) ✅ 2026-07-14
 
 **Wave 9** *(blocked on Wave 8 completion)*
 
-- [ ] 18-09-PLAN.md — Extract ReadingCreationPage, matching + fill-in-blank editors (Wave 9, depends 18-08)
+- [x] 18-09-PLAN.md — Extract ReadingCreationPage, matching + fill-in-blank editors (Wave 9, depends 18-08) ✅ 2026-07-14
 
 **Wave 10** *(blocked on Wave 9 completion)*
 
-- [ ] 18-10-PLAN.md — Extract VocabCreationPage + ListenCreationPage (Wave 10, depends 18-09)
+- [x] 18-10-PLAN.md — Extract VocabCreationPage + ListenCreationPage (Wave 10, depends 18-09) ✅ 2026-07-14
 
 **Wave 11** *(blocked on Wave 10 completion)*
 
-- [ ] 18-11-PLAN.md — Toast catalog completeness sweep (D-11 close-out) + full suite/build verification (Wave 11, depends 18-10)
+- [x] 18-11-PLAN.md — Toast catalog completeness sweep (D-11 close-out) + full suite/build verification (Wave 11, depends 18-10) ✅ 2026-07-14
 
 **Wave 12** *(blocked on Wave 11 completion)*
 
-- [ ] 18-12-PLAN.md — Manual EN/VI walkthrough checkpoint, i18n-05 sign-off (Wave 12, depends 18-11)
+- [x] 18-12-PLAN.md — Manual EN/VI walkthrough checkpoint, i18n-05 sign-off (Wave 12, depends 18-11) ✅ 2026-07-14
 
 ---
 

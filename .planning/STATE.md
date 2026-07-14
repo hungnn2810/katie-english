@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-last_updated: "2026-07-12T13:42:14.762Z"
+last_updated: "2026-07-14T00:00:00.000Z"
 progress:
   total_phases: 18
-  completed_phases: 16
+  completed_phases: 17
   total_plans: 88
-  completed_plans: 86
-  percent: 98
+  completed_plans: 87
+  percent: 99
 ---
 
 # Project State: Katie English
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** Student completes homework on tablet, gets AI-scored result immediately — no manual teacher grading.
-**Current focus:** Phase 18 — multi-language-support-across-all-pages (11/12 plans done — D-11 toast normalization fully closed, en/vi teacher.json key structures converged; only 18-12 human sign-off remains)
+**Current focus:** Phase 18 — multi-language-support-across-all-pages — ✅ COMPLETE (12/12 plans, all of i18n-01–i18n-05 delivered, human sign-off APPROVED with zero blocking defects). Remaining project work: Phase 17 Plan 17-02 (frontend import pages, currently 1/2 done) is the last open plan in the roadmap.
 
 **⚠ Known issue introduced by Plan 18-05:** Admin portal's `/admin/tuition` page (TuitionConfigForm/GenerateRecordsModal/TuitionReportTable, shared with Teacher portal) will throw a runtime error ("No intl context found") because `admin/layout.tsx` has no `NextIntlClientProvider` wiring. Accepted risk per plan threat model (T-18-10); needs fixing before/during the Admin portal's own i18n migration. See 18-05-SUMMARY.md.
 
@@ -112,3 +112,4 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 - **2026-07-14**: Plan 18-09 complete. ReadingCreationPage.tsx (758 lines — matching/fill-blank drag-drop editors) fully translation-driven incl. aria-labels + dynamic validation messages. Both toasts catalog-sourced. Same browser-verification caveat outstanding.
 - **2026-07-14**: Plan 18-10 complete. VocabCreationPage.tsx + ListenCreationPage.tsx fully translation-driven. **D-09 fully delivered**: all 19 Teacher-portal pages + shared components now zero hardcoded strings. Browser-verification still outstanding across the whole phase — recommend a dedicated UAT pass before full sign-off.
 - **2026-07-14**: Plan 18-11 complete (verification-only, zero code changes). Grep audit confirms zero stray showToast() literals under frontend/app/teacher/** (38/38 catalog-sourced, D-11 closed). messages/en and messages/vi teacher.json confirmed byte-identical key structure (604 keys each). Full test suite + build green. Only 18-12 (human sign-off, no files_modified) remains.
+- **2026-07-14**: Plan 18-12 complete — human tester approved all 6 manual EN/VI walkthrough checks (VI-by-default on first visit, full EN/VI page-by-page correctness across all 19 Teacher-portal pages, no leaked translation keys, currency/date locale-invariance, cookie persistence across reload) with zero blocking defects. **Phase 18 is now fully complete (12/12 plans, i18n-01–i18n-05 delivered).** Carried-forward known issue: `/admin/tuition` will throw ("No intl context found") until Admin portal gets its own `NextIntlClientProvider`/i18n migration — deferred, not blocking. Remaining open work project-wide: Plan 17-02 (frontend import pages) is the only unexecuted plan left in the roadmap.
